@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Jaringan Transportasi Umum Jakarta & Jabodetabek
+    </title>
+
+
+    <!-- LEAFLET -->
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+
+    <!-- STYLE -->
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+    <!-- ======================================================
+         SIDEBAR
+    ======================================================= -->
+
+    <aside class="sidebar">
+
+
+        <div class="sidebar-header">
+
+            <h1>
+                Jaringan Transportasi Umum
+            </h1>
+
+            <p class="subtitle">
+                Jakarta & Jabodetabek
+            </p>
+
+        </div>
+
+
+
+        <!-- ==================================================
+             MODA
+        =================================================== -->
+
+        <div class="section">
+
+            <label for="modeSelect">
+                Moda
+            </label>
+
+            <select
+                id="modeSelect"
+                disabled
+            >
+
+                <option value="ALL">
+                    Semua Moda
+                </option>
+
+            </select>
+
+        </div>
+
+
+
+        <!-- ==================================================
+             RUTE
+        =================================================== -->
+
+        <div class="section">
+
+            <label for="routeSelect">
+                Rute
+            </label>
+
+            <select
+                id="routeSelect"
+                disabled
+            >
+
+                <option value="ALL">
+                    Semua Rute
+                </option>
+
+            </select>
+
+        </div>
+
+
+
+        <!-- ==================================================
+             STATUS
+        =================================================== -->
+
+        <div class="section">
+
+            <div class="section-title">
+                Status
+            </div>
+
+
+            <div class="status-filter">
+
+
+                <label class="status-option">
+
+                    <input
+                        type="checkbox"
+                        class="status-checkbox"
+                        value="Eksisting"
+                        checked
+                    >
+
+                    <span class="status-check-ui"></span>
+
+                    <span>
+                        Eksisting
+                    </span>
+
+                </label>
+
+
+
+                <label class="status-option">
+
+                    <input
+                        type="checkbox"
+                        class="status-checkbox"
+                        value="Rencana Resmi"
+                        checked
+                    >
+
+                    <span class="status-check-ui"></span>
+
+                    <span>
+                        Rencana Resmi
+                    </span>
+
+                </label>
+
+
+
+                <label class="status-option">
+
+                    <input
+                        type="checkbox"
+                        class="status-checkbox"
+                        value="Usulan Pemerintah"
+                        checked
+                    >
+
+                    <span class="status-check-ui"></span>
+
+                    <span>
+                        Usulan Pemerintah
+                    </span>
+
+                </label>
+
+
+            </div>
+
+
+
+            <div class="status-legend">
+
+
+                <div class="legend-row">
+
+                    <span
+                        class="
+                            legend-line
+                            legend-existing
+                        "
+                    ></span>
+
+                    <span>
+                        Jaringan eksisting
+                    </span>
+
+                </div>
+
+
+
+                <div class="legend-row">
+
+                    <span
+                        class="
+                            legend-line
+                            legend-plan
+                        "
+                    ></span>
+
+                    <span>
+                        Rencana / usulan
+                    </span>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ==================================================
+             INFORMASI RUTE
+        =================================================== -->
+
+        <div
+            id="routeInfo"
+            class="route-info"
+        >
+
+            <span class="small-title">
+                Tampilan
+            </span>
+
+            <h2>
+                Memuat jaringan...
+            </h2>
+
+            <p>
+                Data transportasi sedang dimuat.
+            </p>
+
+        </div>
+
+
+
+        <!-- ==================================================
+             CATATAN PUBLIK
+        =================================================== -->
+
+        <div class="public-note">
+
+            <strong>
+                Tentang peta
+            </strong>
+
+            <p>
+                Peta menampilkan jaringan eksisting serta
+                rencana atau usulan pemerintah yang memiliki
+                sumber publik.
+            </p>
+
+            <p>
+                Trase yang belum ditetapkan secara rinci dapat
+                ditampilkan secara indikatif dan diberi
+                keterangan pada informasi rute.
+            </p>
+
+        </div>
+
+
+    </aside>
+
+
+
+    <!-- ======================================================
+         MAP
+    ======================================================= -->
+
+    <main id="map"></main>
+
+
+</div>
+
+
+
+<!-- LEAFLET -->
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+
+<!-- MAP SCRIPT -->
+
+<script src="js/map.js"></script>
+
+
+</body>
+
+</html>
