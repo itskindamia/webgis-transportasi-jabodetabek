@@ -18,22 +18,11 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="css/style.css?v=20260829-mobile1" />
+  <link rel="stylesheet" href="css/style.css?v=20260830-visual-asset-credits1" />
 </head>
 
 <body>
   <div id="map"></div>
-
-  <!-- Judul -->
-  <header class="webgis-title-card">
-    <div class="webgis-title-main">
-      <h1>Jaringan Transportasi Umum Jabodetabek</h1>
-    </div>
-
-    <div class="webgis-title-sub">
-      <p>Eksisting · Rencana · Usulan Personal</p>
-    </div>
-  </header>
 
   <!-- Tombol panel rute khusus ponsel -->
   <button
@@ -58,7 +47,9 @@
 
     <div class="filter-panel-content">
 
-      <div class="filter-grid">
+      <section class="filter-controls-card">
+
+        <div class="filter-grid">
         <div class="form-field">
           <label for="modeSelect">Moda</label>
           <select id="modeSelect">
@@ -73,34 +64,156 @@
         <div class="form-field">
           <label for="statusSelect">Status</label>
           <select id="statusSelect">
-            <option value="ALL" selected>Semua Status</option>
-            <option value="Eksisting">Eksisting</option>
-            <option value="Rencana">Rencana</option>
-            <option value="Usulan Personal">Usulan Personal</option>
+            <option value="ALL">Semua Status</option>
+            <option value="Existing" selected>Eksisting</option>
+            <option value="Planned">Rencana</option>
+            <option value="Proposed">Usulan</option>
+            <option value="Conceptual">Konseptual</option>
           </select>
         </div>
       </div>
 
-      <div class="form-field">
-        <label for="routeSelect">Pilih Lin / Koridor</label>
+      <div class="form-field stop-search-field">
+        <label for="stopSearchInput">Cari Halte / Stasiun</label>
+
+        <div class="stop-search-input-wrap">
+          <input
+            type="search"
+            id="stopSearchInput"
+            placeholder="Cari halte atau stasiun…"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Cari halte atau stasiun"
+            aria-controls="stopSearchResults"
+            aria-expanded="false"
+          />
+
+          <button
+            type="button"
+            class="stop-search-clear"
+            id="stopSearchClear"
+            aria-label="Hapus pencarian"
+            title="Hapus pencarian"
+            hidden
+          >×</button>
+        </div>
+
+        <div
+          class="stop-search-results"
+          id="stopSearchResults"
+          role="listbox"
+          aria-label="Hasil pencarian halte atau stasiun"
+          hidden
+        ></div>
+      </div>
+
+      <div class="form-field poi-search-field">
+        <label for="poiSearchInput">Cari Tempat / POI</label>
+
+        <div class="poi-search-input-wrap">
+          <input
+            type="search"
+            id="poiSearchInput"
+            placeholder="Cari tempat, gedung, kawasan…"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Cari tempat atau POI"
+            aria-controls="poiSearchResults"
+            aria-expanded="false"
+          />
+
+          <button
+            type="button"
+            class="poi-search-clear"
+            id="poiSearchClear"
+            aria-label="Hapus pencarian tempat"
+            title="Hapus pencarian"
+            hidden
+          >×</button>
+        </div>
+
+        <div
+          class="poi-search-results"
+          id="poiSearchResults"
+          role="listbox"
+          aria-label="Hasil pencarian tempat atau POI"
+          hidden
+        ></div>
+
+        <div class="poi-search-attribution">
+          Pencarian tempat menggunakan OpenStreetMap Nominatim.
+        </div>
+      </div>
+
+      <div class="form-field route-select-field">
+        <label for="routeSelect" id="routeSelectLabel">Pilih Lin / Koridor</label>
         <select id="routeSelect">
           <option value="ALL">Semua Lin / Koridor</option>
         </select>
       </div>
 
-      <section id="routeInfo" class="route-info">
-        <div class="eyebrow">TAMPILAN</div>
-        <h2>Semua Lin / Koridor</h2>
-        <p>Semua Moda · Semua Status</p>
       </section>
 
-      <section id="selectedStopInfo" class="selected-stop-card" hidden></section>
-      <section id="stopList" class="stop-list"></section>
+      <section class="route-detail-card">
+
+        <section id="routeInfo" class="route-info">
+        <div class="eyebrow">TAMPILAN</div>
+        <h2>Semua Lin / Koridor</h2>
+        <p>Semua Moda · Existing</p>
+      </section>
+
+        <section id="selectedStopInfo" class="selected-stop-card" hidden></section>
+        <section id="stopList" class="stop-list"></section>
+
+      </section>
+
     </div>
   </aside>
 
+  <!-- Collapse / expand panel kiri (desktop) -->
+  <button
+    type="button"
+    class="desktop-panel-handle left-panel-collapse"
+    id="leftPanelCollapse"
+    title="Sembunyikan panel kontrol"
+    aria-label="Sembunyikan panel kontrol"
+  >‹</button>
+
+  <button
+    type="button"
+    class="desktop-panel-handle left-panel-restore"
+    id="leftPanelRestore"
+    title="Tampilkan panel kontrol"
+    aria-label="Tampilkan panel kontrol"
+    hidden
+  >›</button>
+
   <!-- Toolbar kanan bawah -->
   <div class="bottom-toolbar" id="bottomToolbar">
+
+    <button
+      type="button"
+      class="toolbar-button mobile-bottom-route"
+      id="mobileBottomRouteButton"
+      title="Rute"
+      aria-label="Buka panel rute"
+      aria-expanded="false"
+    >
+      <svg viewBox="0 0 24 24" class="toolbar-icon" aria-hidden="true">
+        <circle cx="6" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+        <circle cx="18" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+        <circle cx="8" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+        <path
+          d="M7.8 7.2l8.2-.1 M16.7 8.6L9.3 16.4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+        />
+      </svg>
+      <span class="mobile-toolbar-label">Rute</span>
+    </button>
+
     <button
       type="button"
       class="toolbar-button basemap-main-button"
@@ -108,6 +221,40 @@
       title="Peta Dasar"
     >
       <img id="currentBasemapThumb" class="toolbar-thumbnail" alt="Peta dasar" />
+      <span class="mobile-toolbar-label">Basemap</span>
+    </button>
+
+    <button
+      type="button"
+      class="toolbar-button info-button"
+      id="infoButton"
+      title="Informasi dan Disclaimer"
+      aria-label="Buka informasi dan disclaimer"
+    >
+      <svg viewBox="0 0 24 24" class="toolbar-icon" aria-hidden="true">
+        <circle
+          cx="12"
+          cy="12"
+          r="8.5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        />
+        <path
+          d="M12 10.5v6"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+        <circle
+          cx="12"
+          cy="7.5"
+          r="1"
+          fill="currentColor"
+        />
+      </svg>
+      <span class="mobile-toolbar-label">Info</span>
     </button>
 
     <button
@@ -127,6 +274,7 @@
           stroke-linecap="round"
         />
       </svg>
+      <span class="mobile-toolbar-label">Lokasi Saya</span>
     </button>
 
     <div class="toolbar-scale" id="numericScale">1 : -</div>
@@ -150,17 +298,248 @@
 
   </div>
 
-  <!-- North arrow melayang -->
-  <div class="floating-north" title="Utara" aria-label="Utara">
-    <span class="floating-north-n">N</span>
-    <span class="floating-north-arrow">▲</span>
+  <!-- Stack navigasi kanan bawah: North + Zoom -->
+  <div
+    class="lower-right-nav-stack"
+    id="lowerRightNavStack"
+    aria-label="Kontrol orientasi dan zoom"
+  >
+    <button
+      type="button"
+      class="floating-north"
+      id="northButton"
+      title="Kembalikan orientasi utara ke atas"
+      aria-label="Kembalikan orientasi utara ke atas"
+    >
+      <span class="floating-north-n">N</span>
+      <span class="floating-north-arrow" id="northArrowGlyph">▲</span>
+    </button>
+
+    <div class="floating-zoom" id="floatingZoom" aria-label="Kontrol zoom">
+      <button
+        type="button"
+        id="zoomInButton"
+        title="Perbesar"
+        aria-label="Perbesar"
+      >+</button>
+      <button
+        type="button"
+        id="zoomOutButton"
+        title="Perkecil"
+        aria-label="Perkecil"
+      >−</button>
+    </div>
   </div>
 
-  <!-- Zoom melayang di atas panel basemap -->
-  <div class="floating-zoom" id="floatingZoom" aria-label="Kontrol zoom">
-    <button type="button" id="zoomInButton" title="Perbesar" aria-label="Perbesar">+</button>
-    <button type="button" id="zoomOutButton" title="Perkecil" aria-label="Perkecil">−</button>
-  </div>
+  <!-- Panel informasi kanan -->
+  <aside class="right-info-panel" id="rightInfoPanel">
+    <header class="right-info-header">
+      <div class="right-info-heading">
+        <h1>Jaringan Transportasi Umum Jabodetabek</h1>
+        <p>Eksisting · Rencana · Usulan · Konseptual</p>
+      </div>
+
+      <button
+        type="button"
+        class="mobile-info-close"
+        id="mobileInfoClose"
+        aria-label="Tutup panel informasi"
+      >×</button>
+    </header>
+
+    <div class="right-info-body">
+      <section class="right-info-section">
+        <div class="right-info-section-title">Legenda</div>
+
+        <details
+          class="legend-section legend-collapsible-section"
+          data-legend-section="status"
+          open
+        >
+          <summary class="legend-section-toggle">
+            <span class="legend-section-title">Status Jaringan</span>
+            <span class="legend-section-chevron" aria-hidden="true">⌃</span>
+          </summary>
+
+          <div class="legend-section-content">
+            <div class="legend-item">
+              <svg class="legend-route-swatch" viewBox="0 0 54 10" aria-hidden="true">
+                <line
+                  x1="2" y1="5" x2="52" y2="5"
+                  stroke="currentColor"
+                  stroke-width="4"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Eksisting</span>
+            </div>
+
+            <div class="legend-item">
+              <svg class="legend-route-swatch" viewBox="0 0 54 10" aria-hidden="true">
+                <line
+                  x1="2" y1="5" x2="52" y2="5"
+                  stroke="currentColor"
+                  stroke-width="4"
+                  stroke-linecap="round"
+                  stroke-dasharray="12 7"
+                />
+              </svg>
+              <span>Rencana</span>
+            </div>
+
+            <div class="legend-item">
+              <svg class="legend-route-swatch is-proposed" viewBox="0 0 54 10" aria-hidden="true">
+                <line
+                  x1="2" y1="5" x2="52" y2="5"
+                  stroke="currentColor"
+                  stroke-width="4"
+                  stroke-linecap="round"
+                  stroke-dasharray="7 6"
+                />
+              </svg>
+              <span>Usulan</span>
+            </div>
+
+            <div class="legend-item">
+              <svg class="legend-route-swatch is-conceptual" viewBox="0 0 54 10" aria-hidden="true">
+                <line
+                  x1="2" y1="5" x2="52" y2="5"
+                  stroke="currentColor"
+                  stroke-width="4"
+                  stroke-linecap="round"
+                  stroke-dasharray="2 6"
+                />
+              </svg>
+              <span>Konseptual</span>
+            </div>
+
+            <p class="legend-note">
+              Warna garis mengikuti identitas masing-masing lin atau koridor.
+            </p>
+          </div>
+        </details>
+
+        <details
+          class="legend-section legend-mode-section legend-collapsible-section"
+          data-legend-section="mode"
+        >
+          <summary class="legend-section-toggle">
+            <span class="legend-section-title">Moda</span>
+            <span class="legend-section-chevron" aria-hidden="true">⌃</span>
+          </summary>
+
+          <div class="legend-section-content">
+            <div class="legend-mode-grid">
+              <div class="legend-mode-item">
+                <span class="legend-mode-code">BRT</span>
+                <span>Bus Rapid Transit</span>
+              </div>
+
+              <div class="legend-mode-item">
+                <span class="legend-mode-code">MRT</span>
+                <span>Mass Rapid Transit</span>
+              </div>
+
+              <div class="legend-mode-item">
+                <span class="legend-mode-code">LRT</span>
+                <span>Light Rail Transit</span>
+              </div>
+
+              <div class="legend-mode-item">
+                <span class="legend-mode-code">KRL</span>
+                <span>Commuter Rail</span>
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section class="right-info-section right-info-help">
+        <button
+          type="button"
+          class="right-info-action"
+          id="rightInfoGuideButton"
+        >
+          <span class="right-info-action-icon" aria-hidden="true">?</span>
+          <span>Cara Menggunakan</span>
+        </button>
+
+        <button
+          type="button"
+          class="right-info-action"
+          id="rightInfoAboutButton"
+        >
+          <span class="right-info-action-icon" aria-hidden="true">ⓘ</span>
+          <span>Informasi &amp; Disclaimer</span>
+        </button>
+      </section>
+    </div>
+  </aside>
+
+  <!-- Pencarian global -->
+  <section
+    class="global-search-panel"
+    id="globalSearchPanel"
+    aria-label="Pencarian lokasi"
+  >
+    <label for="globalSearchInput">Cari Lokasi</label>
+
+    <div class="global-search-input-wrap">
+      <svg
+        viewBox="0 0 24 24"
+        class="global-search-icon"
+        aria-hidden="true"
+      >
+        <circle
+          cx="10.5"
+          cy="10.5"
+          r="6.2"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        />
+        <path
+          d="M15.2 15.2L20 20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+      </svg>
+
+      <input
+        type="search"
+        id="globalSearchInput"
+        placeholder="Halte, stasiun, atau tempat…"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="Cari halte, stasiun, atau tempat"
+        aria-controls="globalSearchResults"
+        aria-expanded="false"
+      />
+
+      <button
+        type="button"
+        class="global-search-clear"
+        id="globalSearchClear"
+        aria-label="Hapus pencarian"
+        title="Hapus pencarian"
+        hidden
+      >×</button>
+    </div>
+
+    <div
+      class="global-search-results"
+      id="globalSearchResults"
+      role="listbox"
+      aria-label="Hasil pencarian lokasi"
+      hidden
+    ></div>
+
+    <div class="global-search-source">
+      Halte/stasiun dari data WebGIS · tempat dari OpenStreetMap
+    </div>
+  </section>
 
   <!-- Basemap panel -->
   <section class="basemap-panel" id="basemapPanel" hidden>
@@ -221,7 +600,285 @@
     </div>
   </section>
 
+  <!-- Informasi / Disclaimer -->
+  <div
+    class="info-modal-backdrop"
+    id="infoModalBackdrop"
+    hidden
+  >
+    <section
+      class="info-modal"
+      id="infoModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="infoModalTitle"
+      aria-describedby="infoModalDescription"
+    >
+      <div class="info-modal-header">
+        <div>
+          <div class="info-modal-eyebrow">INFORMASI</div>
+          <h2 id="infoModalTitle">Tentang Peta</h2>
+        </div>
+
+        <button
+          type="button"
+          class="info-modal-close"
+          id="infoModalClose"
+          aria-label="Tutup informasi"
+        >×</button>
+      </div>
+
+      <div class="info-modal-body" id="infoModalDescription">
+        <p>
+          WebGIS ini dibuat sebagai infografis mengenai jaringan transportasi
+          umum di Jabodetabek. Peta di dalam WebGIS ini menggunakan empat
+          tingkat status jaringan:
+          <strong>Eksisting</strong>,
+          <strong>Rencana</strong>,
+          <strong>Usulan</strong>, dan
+          <strong>Konseptual</strong>.
+        </p>
+
+        <div class="info-modal-notice info-status-notice">
+          <p>
+            <strong>Eksisting</strong> — jaringan yang telah beroperasi.
+          </p>
+
+          <p>
+            <strong>Rencana</strong> — jaringan yang telah tercantum dalam
+            rencana resmi, kebijakan, atau program/proyek resmi.
+          </p>
+
+          <p>
+            <strong>Usulan</strong> — proposal atau skenario jaringan dari
+            studi/institusi, tetapi tidak otomatis berarti telah menjadi
+            rencana resmi, termasuk usulan reaktivasi halte/stasiun.
+          </p>
+
+          <p>
+            <strong>Konseptual</strong> — skenario pengembangan yang disusun
+            untuk WebGIS ini dan bukan rencana resmi pemerintah maupun
+            operator transportasi.
+          </p>
+        </div>
+
+        <p>
+          Informasi pada peta dapat berubah mengikuti pembaruan data dan
+          sumber. Untuk kebutuhan operasional atau keputusan resmi,
+          gunakan informasi terbaru dari instansi atau operator terkait.
+        </p>
+
+        <div class="visual-asset-credits">
+
+          <div class="visual-asset-credits-title">
+            Kredit Aset Visual
+          </div>
+
+          <p>
+            Sejumlah ikon lin transportasi pada WebGIS ini menggunakan karya
+            <a
+              href="https://transportforjakarta.or.id/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Transport for Jakarta – FDTJ
+            </a>
+            yang tersedia berdasarkan
+            <a
+              href="https://creativecommons.org/licenses/by-sa/4.0/"
+              target="_blank"
+              rel="license noopener noreferrer"
+            >
+              Creative Commons Attribution-ShareAlike 4.0 International
+              (CC BY-SA 4.0)
+            </a>.
+            Penyesuaian ukuran dan penempatan dilakukan untuk kebutuhan
+            antarmuka WebGIS.
+          </p>
+
+          <p>
+            Ikon LRT Jakarta Lin S versi vektor dikreditkan kepada
+            <a
+              href="https://commons.wikimedia.org/wiki/User:Vulphere"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Vulphere
+            </a>,
+            berdasarkan karya Transport for Jakarta – FDTJ.
+          </p>
+
+          <p>
+            <a
+              href="https://www.flaticon.com/free-icons/terminal"
+              title="terminal icons"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Terminal icons created by rcherem - Flaticon
+            </a>.
+          </p>
+
+          <p class="visual-asset-trademark-note">
+            Nama, logo, dan merek operator transportasi yang ditampilkan
+            merupakan milik masing-masing pemegang hak dan digunakan pada
+            WebGIS ini semata-mata untuk keperluan identifikasi dan
+            penyampaian informasi. WebGIS ini tidak berafiliasi dengan atau
+            mewakili operator transportasi terkait.
+          </p>
+
+        </div>
+
+        <details class="visual-asset-details">
+          <summary>
+            Lihat aset lin yang dikreditkan
+          </summary>
+
+          <div class="visual-asset-details-body">
+
+            <div class="visual-asset-source-group">
+              <strong>Transport for Jakarta – FDTJ (CC BY-SA 4.0)</strong>
+
+              <ul>
+                <li>KA Bandara</li>
+                <li>KRL Cikarang</li>
+                <li>KRL Rangkasbitung</li>
+                <li>KRL Tangerang</li>
+                <li>KRL Tanjung Priok</li>
+                <li>LRT Jabodebek Bekasi</li>
+                <li>LRT Jabodebek Cibubur</li>
+                <li>MRT Jakarta Utara–Selatan</li>
+              </ul>
+            </div>
+
+            <div class="visual-asset-source-group">
+              <strong>Transport for Jakarta – FDTJ / Vulphere (CC BY-SA 4.0)</strong>
+
+              <ul>
+                <li>LRT Jakarta Lin S</li>
+              </ul>
+            </div>
+
+          </div>
+        </details>
+
+        <section class="info-guide-section">
+          <div class="info-guide-title">Cara Menggunakan</div>
+
+                  <div class="info-guide-grid">
+            <div class="info-guide-item">
+              <div class="info-guide-number">1</div>
+              <div>
+                <strong>Pilih jaringan</strong>
+                <span>Pilih moda, status, lalu Lin/Koridor yang ingin dilihat.</span>
+              </div>
+            </div>
+
+            <div class="info-guide-item">
+              <div class="info-guide-number">2</div>
+              <div>
+                <strong>Pilih halte atau stasiun</strong>
+                <span>Klik titik di peta atau nama pada daftar untuk melihat detail.</span>
+              </div>
+            </div>
+
+            <div class="info-guide-item">
+              <div class="info-guide-number">3</div>
+              <div>
+                <strong>Berpindah rute</strong>
+                <span>Klik badge nomor koridor/lin di popup untuk membuka rute tersebut.</span>
+              </div>
+            </div>
+
+            <div class="info-guide-item">
+              <div class="info-guide-number">4</div>
+              <div>
+                <strong>Cari tujuan</strong>
+                <span>Gunakan pencarian Halte/Stasiun atau Tempat/POI.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="info-modal-footer">
+        <button
+          type="button"
+          class="info-modal-primary"
+          id="infoModalAccept"
+        >
+          Saya Mengerti
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- First-visit walkthrough -->
+  <div
+    class="product-tour"
+    id="productTour"
+    hidden
+    aria-live="polite"
+  >
+    <div
+      class="product-tour-spotlight"
+      id="productTourSpotlight"
+      aria-hidden="true"
+    ></div>
+
+    <section
+      class="product-tour-card"
+      id="productTourCard"
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="productTourTitle"
+    >
+      <div class="product-tour-progress" id="productTourProgress">
+        TIP 1 DARI 3
+      </div>
+
+      <h2 id="productTourTitle">Pilih jaringan</h2>
+
+      <p id="productTourText"></p>
+
+      <div
+        class="product-tour-visual"
+        id="productTourVisual"
+        aria-hidden="true"
+      ></div>
+
+      <div class="product-tour-footer">
+        <button
+          type="button"
+          class="product-tour-skip"
+          id="productTourSkip"
+        >
+          Lewati
+        </button>
+
+        <div class="product-tour-nav">
+          <button
+            type="button"
+            class="product-tour-secondary"
+            id="productTourPrevious"
+            hidden
+          >
+            Sebelumnya
+          </button>
+
+          <button
+            type="button"
+            class="product-tour-primary"
+            id="productTourNext"
+          >
+            Berikutnya
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/map.js?v=20260829-mobile1"></script>
+  <script src="js/map.js?v=20260830-visual-asset-credits1"></script>
 </body>
 </html>

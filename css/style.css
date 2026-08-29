@@ -1180,7 +1180,8 @@ body.basemap-panel-open .floating-zoom {
 }
 
 .stop-popup-status.is-existing,
-.selected-stop-status.is-existing {
+.selected-stop-status.is-existing,
+.stop-status-badge.is-existing {
   color: #555;
   background: #f0f0f0;
 }
@@ -1192,9 +1193,16 @@ body.basemap-panel-open .floating-zoom {
   background: #fff3c4;
 }
 
-.stop-popup-status.is-proposal,
-.selected-stop-status.is-proposal,
-.stop-status-badge.is-proposal {
+.stop-popup-status.is-proposed,
+.selected-stop-status.is-proposed,
+.stop-status-badge.is-proposed {
+  color: #245d87;
+  background: #e2f0fb;
+}
+
+.stop-popup-status.is-conceptual,
+.selected-stop-status.is-conceptual,
+.stop-status-badge.is-conceptual {
   color: #6b1f78;
   background: #f2dcf6;
 }
@@ -1415,9 +1423,11 @@ body.basemap-panel-open .floating-zoom {
 }
 
 .leaflet-popup-content {
-  width: auto !important;
-  min-width: 280px;
-  max-width: 400px;
+  /*
+    Width sengaja tidak diatur di CSS.
+    Leaflet menentukan width berdasarkan minWidth/maxWidth
+    dari getStopPopupOptions().
+  */
   max-height: min(72vh, 650px);
   overflow-y: auto;
   overflow-x: hidden;
@@ -1619,10 +1629,9 @@ body.basemap-panel-open .floating-zoom {
 }
 
 
-/* Popup lebih lega */
+/* Popup lebih lega secara vertikal.
+   Lebar tetap dikendalikan Leaflet dari JavaScript. */
 .leaflet-popup-content {
-  min-width: 300px !important;
-  max-width: 440px !important;
   max-height: min(74vh, 680px) !important;
 }
 
@@ -2367,3 +2376,7944 @@ select {
     flex-basis: 57px !important;
   }
 }
+
+/* =========================================================
+   LEGEND PANEL
+   ========================================================= */
+
+.legend-panel {
+  position: absolute;
+  right: 16px;
+  bottom: 82px;
+  width: 290px;
+  padding: 13px 12px 12px;
+  background: rgba(255,255,255,.99);
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 7px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.24);
+  z-index: 1600;
+}
+
+.legend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.legend-header h2 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 500;
+  color: #262626;
+}
+
+.legend-section + .legend-section {
+  margin-top: 13px;
+  padding-top: 12px;
+  border-top: 1px solid #e4e4e4;
+}
+
+.legend-section-title {
+  margin-bottom: 9px;
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: .03em;
+  color: #5c5c5c;
+  text-transform: uppercase;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 29px;
+  font-size: 11px;
+  line-height: 1.3;
+  color: #303030;
+}
+
+.legend-route-swatch {
+  width: 54px;
+  height: 10px;
+  flex: 0 0 54px;
+  color: #555;
+  overflow: visible;
+}
+
+.legend-route-swatch.is-proposal {
+  opacity: .82;
+}
+
+.legend-note {
+  margin: 8px 0 0;
+  font-size: 9px;
+  line-height: 1.4;
+  color: #777;
+}
+
+.legend-mode-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
+.legend-mode-item {
+  display: grid;
+  grid-template-columns: 39px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  font-size: 10px;
+  line-height: 1.3;
+  color: #444;
+}
+
+.legend-mode-code {
+  min-width: 36px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border: 1px solid #d4d4d4;
+  border-radius: 4px;
+  background: #f5f5f5;
+  color: #333;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+
+/* =========================================================
+   LEGEND PANEL — MOBILE
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  .legend-panel {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: calc(
+      64px +
+      env(safe-area-inset-bottom)
+    ) !important;
+
+    width: auto !important;
+    max-width: none !important;
+
+    padding: 12px 11px !important;
+    border-radius: 11px !important;
+    z-index: 1810 !important;
+  }
+
+  .legend-header h2 {
+    font-size: 13px !important;
+  }
+
+  .legend-item {
+    min-height: 31px;
+    font-size: 11px;
+  }
+
+  .legend-route-swatch {
+    width: 58px;
+    flex-basis: 58px;
+  }
+
+  .legend-mode-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+  }
+
+}
+
+@media (max-width: 430px) {
+  .legend-mode-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+/* =========================================================
+   LEGEND PANEL — ALWAYS VISIBLE
+   ========================================================= */
+
+.legend-panel {
+  right: 16px !important;
+  bottom: 178px !important;
+}
+
+@media (max-width: 760px) {
+  .legend-panel {
+    left: auto !important;
+    right: 8px !important;
+    bottom: calc(
+      158px +
+      env(safe-area-inset-bottom)
+    ) !important;
+
+    width: min(
+      290px,
+      calc(100vw - 16px)
+    ) !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .legend-panel {
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+  }
+}
+
+/* =========================================================
+   STOP POPUP — PREVIOUS / NEXT NAVIGATION
+   ========================================================= */
+
+.stop-popup-navigation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 13px;
+  border-top: 1px solid #e1e1e1;
+}
+
+.stop-popup-nav-button {
+  min-width: 0;
+  min-height: 48px;
+  padding: 7px 8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+
+  background: #fff;
+  color: #303030;
+
+  font-family: var(--font-main);
+  text-align: left;
+
+  cursor: pointer;
+  transition:
+    background .12s ease,
+    border-color .12s ease;
+}
+
+.stop-popup-nav-next {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.stop-popup-nav-button:hover:not(:disabled) {
+  background: #f4f4f4;
+  border-color: #bdbdbd;
+}
+
+.stop-popup-nav-button:focus-visible {
+  outline: 2px solid rgba(0,122,194,.28);
+  outline-offset: 1px;
+}
+
+.stop-popup-nav-button:disabled {
+  opacity: .42;
+  cursor: default;
+  background: #f7f7f7;
+}
+
+.stop-popup-nav-arrow {
+  flex: 0 0 auto;
+  font-size: 25px;
+  line-height: 1;
+  font-weight: 400;
+  color: #555;
+}
+
+.stop-popup-nav-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stop-popup-nav-label {
+  font-size: 8px;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #777;
+}
+
+.stop-popup-nav-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 10px;
+  line-height: 1.25;
+  font-weight: 500;
+  color: #2f2f2f;
+}
+
+@media (max-width: 520px) {
+  .stop-popup-navigation {
+    gap: 6px;
+  }
+
+  .stop-popup-nav-button {
+    min-height: 46px;
+    padding: 6px 7px;
+  }
+
+  .stop-popup-nav-name {
+    font-size: 9px;
+  }
+}
+
+/* =========================================================
+   STOP / STATION SEARCH
+   ========================================================= */
+
+.stop-search-field {
+  position: relative;
+  z-index: 8;
+}
+
+.stop-search-input-wrap {
+  position: relative;
+}
+
+.stop-search-input-wrap input {
+  width: 100%;
+  height: 34px;
+  padding: 0 34px 0 9px;
+
+  border: 1px solid #c9c9c9;
+  border-radius: 3px;
+
+  background: #fff;
+  color: #303030;
+
+  font-family: var(--font-main);
+  font-size: 11px;
+
+  outline: none;
+}
+
+.stop-search-input-wrap input:focus {
+  border-color: #6fa9d7;
+  box-shadow: 0 0 0 1px rgba(0,122,194,.15);
+}
+
+.stop-search-input-wrap input::placeholder {
+  color: #8a8a8a;
+}
+
+.stop-search-input-wrap input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.stop-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+
+  width: 26px;
+  height: 26px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  transform: translateY(-50%);
+
+  border: 0;
+  border-radius: 4px;
+
+  background: transparent;
+  color: #777;
+
+  font-family: var(--font-main);
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.stop-search-clear:hover {
+  background: #f0f0f0;
+  color: #444;
+}
+
+.stop-search-clear[hidden] {
+  display: none;
+}
+
+.stop-search-results {
+  margin-top: 5px;
+  max-height: 252px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  border: 1px solid #d4d4d4;
+  border-radius: 5px;
+
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+
+  scrollbar-width: thin;
+}
+
+.stop-search-results[hidden] {
+  display: none;
+}
+
+.stop-search-result {
+  width: 100%;
+  min-height: 48px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+
+  padding: 8px 9px;
+
+  border: 0;
+  border-bottom: 1px solid #eeeeee;
+
+  background: #fff;
+  color: #2f2f2f;
+
+  font-family: var(--font-main);
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.stop-search-result:last-child {
+  border-bottom: 0;
+}
+
+.stop-search-result:hover,
+.stop-search-result:focus-visible {
+  background: #f3f3f3;
+  outline: none;
+}
+
+.stop-search-result-main {
+  min-width: 0;
+
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.stop-search-result-name {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+.stop-search-result-type {
+  flex: 0 0 auto;
+
+  font-size: 8px;
+  line-height: 1.2;
+  letter-spacing: .03em;
+
+  color: #777;
+}
+
+.stop-search-result-routes {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 9px;
+  line-height: 1.3;
+
+  color: #6a6a6a;
+}
+
+.stop-search-empty {
+  padding: 11px 9px;
+
+  font-size: 10px;
+  line-height: 1.4;
+
+  color: #777;
+}
+
+
+@media (max-width: 760px) {
+
+  .stop-search-input-wrap input {
+    height: 42px !important;
+    padding-left: 10px;
+    padding-right: 38px;
+
+    border-radius: 6px;
+
+    font-size: 12px;
+  }
+
+  .stop-search-clear {
+    right: 6px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .stop-search-results {
+    max-height: min(
+      32dvh,
+      280px
+    );
+  }
+
+  .stop-search-result {
+    min-height: 52px;
+    padding: 9px 10px;
+  }
+
+  .stop-search-result-name {
+    font-size: 12px;
+  }
+
+  .stop-search-result-routes {
+    font-size: 9px;
+  }
+}
+
+/* =========================================================
+   POI SEARCH
+   ========================================================= */
+
+.poi-search-field {
+  position: relative;
+  z-index: 7;
+}
+
+.poi-search-input-wrap {
+  position: relative;
+}
+
+.poi-search-input-wrap input {
+  width: 100%;
+  height: 34px;
+  padding: 0 34px 0 9px;
+
+  border: 1px solid #c9c9c9;
+  border-radius: 3px;
+
+  background: #fff;
+  color: #303030;
+
+  font-family: var(--font-main);
+  font-size: 11px;
+
+  outline: none;
+}
+
+.poi-search-input-wrap input:focus {
+  border-color: #6fa9d7;
+  box-shadow: 0 0 0 1px rgba(0,122,194,.15);
+}
+
+.poi-search-input-wrap input::placeholder {
+  color: #8a8a8a;
+}
+
+.poi-search-input-wrap input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.poi-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+
+  width: 26px;
+  height: 26px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  transform: translateY(-50%);
+
+  border: 0;
+  border-radius: 4px;
+
+  background: transparent;
+  color: #777;
+
+  font-family: var(--font-main);
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.poi-search-clear:hover {
+  background: #f0f0f0;
+  color: #444;
+}
+
+.poi-search-clear[hidden] {
+  display: none;
+}
+
+.poi-search-results {
+  margin-top: 5px;
+  max-height: 252px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  border: 1px solid #d4d4d4;
+  border-radius: 5px;
+
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+
+  scrollbar-width: thin;
+}
+
+.poi-search-results[hidden] {
+  display: none;
+}
+
+.poi-search-result {
+  width: 100%;
+  min-height: 50px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+
+  padding: 8px 9px;
+
+  border: 0;
+  border-bottom: 1px solid #eeeeee;
+
+  background: #fff;
+  color: #2f2f2f;
+
+  font-family: var(--font-main);
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.poi-search-result:last-child {
+  border-bottom: 0;
+}
+
+.poi-search-result:hover,
+.poi-search-result:focus-visible {
+  background: #f3f3f3;
+  outline: none;
+}
+
+.poi-search-result-main {
+  min-width: 0;
+
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.poi-search-result-name {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+.poi-search-result-type {
+  flex: 0 0 auto;
+
+  font-size: 8px;
+  line-height: 1.2;
+
+  color: #777;
+}
+
+.poi-search-result-address {
+  display: -webkit-box;
+  overflow: hidden;
+
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  font-size: 9px;
+  line-height: 1.35;
+
+  color: #6a6a6a;
+}
+
+.poi-search-loading,
+.poi-search-empty {
+  padding: 11px 9px;
+
+  font-size: 10px;
+  line-height: 1.4;
+
+  color: #777;
+}
+
+.poi-search-attribution {
+  margin-top: 5px;
+
+  font-size: 8px;
+  line-height: 1.35;
+
+  color: #888;
+}
+
+.poi-popup {
+  min-width: 230px;
+  padding: 5px 2px;
+}
+
+.poi-popup-eyebrow {
+  margin-bottom: 4px;
+
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+
+  color: #777;
+}
+
+.poi-popup-title {
+  padding-right: 20px;
+
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 600;
+
+  color: #282828;
+}
+
+.poi-popup-address {
+  margin-top: 7px;
+
+  font-size: 10px;
+  line-height: 1.45;
+
+  color: #555;
+}
+
+.poi-popup-source {
+  margin-top: 10px;
+  padding-top: 8px;
+
+  border-top: 1px solid #e4e4e4;
+
+  font-size: 8px;
+  line-height: 1.3;
+
+  color: #888;
+}
+
+
+/* =========================================================
+   INFORMATION / DISCLAIMER MODAL
+   ========================================================= */
+
+body.info-modal-open {
+  overflow: hidden;
+}
+
+.info-modal-backdrop {
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0,0,0,.38);
+
+  z-index: 5000;
+}
+
+.info-modal-backdrop[hidden] {
+  display: none;
+}
+
+.info-modal {
+  width: min(
+    460px,
+    calc(100vw - 32px)
+  );
+
+  max-height: min(
+    82vh,
+    620px
+  );
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 10px;
+
+  background: #fff;
+  box-shadow: 0 12px 35px rgba(0,0,0,.28);
+}
+
+.info-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+
+  padding: 17px 18px 14px;
+
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.info-modal-eyebrow {
+  margin-bottom: 4px;
+
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: .07em;
+
+  color: #777;
+}
+
+.info-modal-header h2 {
+  margin: 0;
+
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 600;
+
+  color: #252525;
+}
+
+.info-modal-close {
+  width: 31px;
+  height: 31px;
+
+  flex: 0 0 31px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: #f1f1f1;
+  color: #666;
+
+  font-family: var(--font-main);
+  font-size: 21px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.info-modal-close:hover {
+  background: #e7e7e7;
+}
+
+.info-modal-body {
+  overflow-y: auto;
+
+  padding: 16px 18px 5px;
+
+  font-size: 12px;
+  line-height: 1.55;
+
+  color: #454545;
+}
+
+.info-modal-body p {
+  margin: 0 0 13px;
+}
+
+.info-modal-notice {
+  margin: 3px 0 14px;
+  padding: 11px 12px;
+
+  border-left: 3px solid #555;
+  border-radius: 3px;
+
+  background: #f4f4f4;
+
+  font-size: 11px;
+  line-height: 1.5;
+
+  color: #3d3d3d;
+}
+
+.info-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+
+  padding: 12px 18px 16px;
+
+  border-top: 1px solid #eeeeee;
+}
+
+.info-modal-primary {
+  min-width: 118px;
+  height: 36px;
+
+  padding: 0 15px;
+
+  border: 1px solid #444;
+  border-radius: 5px;
+
+  background: #333;
+  color: #fff;
+
+  font-family: var(--font-main);
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.info-modal-primary:hover {
+  background: #222;
+}
+
+
+@media (max-width: 760px) {
+
+  .poi-search-input-wrap input {
+    height: 42px !important;
+    padding-left: 10px;
+    padding-right: 38px;
+
+    border-radius: 6px;
+
+    font-size: 12px;
+  }
+
+  .poi-search-clear {
+    right: 6px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .poi-search-results {
+    max-height: min(
+      30dvh,
+      260px
+    );
+  }
+
+  .poi-search-result {
+    min-height: 54px;
+    padding: 9px 10px;
+  }
+
+  .poi-search-result-name {
+    font-size: 12px;
+  }
+
+  .info-modal-backdrop {
+    align-items: flex-end;
+    padding:
+      10px
+      10px
+      calc(
+        10px +
+        env(safe-area-inset-bottom)
+      );
+  }
+
+  .info-modal {
+    width: 100%;
+    max-height: min(
+      78dvh,
+      620px
+    );
+
+    border-radius: 13px;
+  }
+
+  .info-modal-header {
+    padding: 15px 15px 12px;
+  }
+
+  .info-modal-body {
+    padding: 14px 15px 4px;
+  }
+
+  .info-modal-footer {
+    padding: 11px 15px 15px;
+  }
+
+  .info-modal-primary {
+    width: 100%;
+    height: 42px;
+  }
+}
+
+/* =========================================================
+   RIGHT INFORMATION PANEL
+   Layout terinspirasi panel workspace:
+   kiri = kontrol, kanan = identitas + informasi.
+   ========================================================= */
+
+:root {
+  --right-panel-width: 315px;
+}
+
+/* Title card lama tidak lagi dipakai pada desktop. */
+.webgis-title-card {
+  display: none !important;
+}
+
+/* Panel filter bisa naik karena judul dipindahkan ke kanan. */
+@media (min-width: 761px) {
+  .filter-panel {
+    top: 16px !important;
+    max-height: calc(100vh - 34px) !important;
+  }
+}
+
+.right-info-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  bottom: 84px;
+
+  width: var(--right-panel-width);
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background: rgba(255,255,255,.98);
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 8px;
+  box-shadow: 0 3px 13px rgba(0,0,0,.20);
+
+  z-index: 1450;
+}
+
+.right-info-header {
+  flex: 0 0 auto;
+
+  padding: 15px 15px 12px;
+
+  background: #fff;
+  border-bottom: 1px solid #dedede;
+}
+
+.right-info-header h1 {
+  margin: 0;
+
+  font-size: 18px;
+  line-height: 1.22;
+  font-weight: 600;
+  letter-spacing: -.18px;
+
+  color: #242424;
+}
+
+.right-info-header p {
+  margin: 7px 0 0;
+
+  font-size: 9px;
+  line-height: 1.35;
+
+  color: #707070;
+}
+
+.right-info-body {
+  min-height: 0;
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 12px 14px 14px;
+
+  scrollbar-width: thin;
+}
+
+.right-info-section + .right-info-section {
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid #e3e3e3;
+}
+
+.right-info-section-title {
+  margin-bottom: 11px;
+
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: 600;
+
+  color: #333;
+}
+
+.right-info-panel .legend-section + .legend-section {
+  margin-top: 13px;
+  padding-top: 12px;
+  border-top: 1px solid #e6e6e6;
+}
+
+.right-info-panel .legend-section-title {
+  margin-bottom: 8px;
+
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+
+  color: #707070;
+}
+
+.right-info-panel .legend-item {
+  min-height: 28px;
+}
+
+.right-info-panel .legend-note {
+  margin-top: 8px;
+}
+
+.right-info-panel .legend-mode-grid {
+  gap: 6px;
+}
+
+.right-info-help {
+  margin-top: auto !important;
+}
+
+.right-info-action {
+  width: 100%;
+  min-height: 38px;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  padding: 8px 10px;
+
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+
+  background: #fff;
+  color: #3b3b3b;
+
+  font-family: var(--font-main);
+  font-size: 10px;
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.right-info-action:hover {
+  background: #f5f5f5;
+}
+
+.right-info-action-icon {
+  flex: 0 0 auto;
+  font-size: 16px;
+  line-height: 1;
+  color: #666;
+}
+
+/*
+  Legend panel lama dinonaktifkan karena kontennya
+  sekarang berada di dalam right-info-panel.
+*/
+.legend-panel {
+  display: none !important;
+}
+
+/*
+  North arrow bergeser ke kiri panel kanan.
+*/
+@media (min-width: 761px) {
+  .floating-north {
+    right: calc(
+      16px +
+      var(--right-panel-width) +
+      13px
+    ) !important;
+  }
+}
+
+/*
+  Toolbar tetap di pojok kanan bawah.
+  Panel kanan berhenti di atas toolbar.
+*/
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  /*
+    Di ponsel panel kanan tidak dibuat menjadi sidebar sempit.
+    Identitas peta tampil sebagai kartu kompak di atas,
+    agar ruang peta tetap usable.
+  */
+  .right-info-panel {
+    top: max(8px, env(safe-area-inset-top)) !important;
+    left: 8px !important;
+    right: 8px !important;
+    bottom: auto !important;
+
+    width: auto !important;
+    max-height: 94px;
+
+    border-radius: 9px !important;
+
+    z-index: 1700 !important;
+  }
+
+  .right-info-header {
+    padding: 10px 12px 9px;
+  }
+
+  .right-info-header h1 {
+    font-size: 16px;
+    line-height: 1.2;
+  }
+
+  .right-info-header p {
+    margin-top: 4px;
+    font-size: 8px;
+  }
+
+  /*
+    Detail legenda/info disembunyikan pada mobile card.
+    Legend status tetap dapat diketahui dari subtitle,
+    dan Informasi tersedia dari tombol toolbar.
+  */
+  .right-info-body {
+    display: none;
+  }
+
+  .mobile-filter-toggle {
+    top: calc(
+      max(8px, env(safe-area-inset-top)) +
+      78px
+    ) !important;
+  }
+
+  .floating-north {
+    top: calc(
+      max(8px, env(safe-area-inset-top)) +
+      84px
+    ) !important;
+    right: 14px !important;
+  }
+}
+
+/* =========================================================
+   STOP POPUP — CLICKABLE ROUTE / LINE BADGES
+   ========================================================= */
+
+.stop-popup-direct-routes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stop-popup-route-button {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 2px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: transparent;
+
+  font-family: var(--font-main);
+
+  cursor: pointer;
+
+  transition:
+    transform .12s ease,
+    box-shadow .12s ease,
+    background .12s ease;
+}
+
+.stop-popup-route-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: rgba(0,0,0,.05);
+}
+
+.stop-popup-route-button:focus-visible {
+  outline: 2px solid rgba(0,0,0,.35);
+  outline-offset: 2px;
+}
+
+.stop-popup-route-button.is-active {
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px #333333;
+}
+
+.stop-popup-route-button.is-active:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.stop-popup-route-button .brt-route-badge {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+
+  font-size: 25px;
+}
+
+.stop-popup-route-button .brt-route-badge.is-double-digit {
+  font-size: 20px;
+}
+
+.stop-popup-route-button .rail-line-badge-image {
+  width: 34px;
+  height: 34px;
+}
+
+.stop-popup-route-button .rail-line-badge-fallback {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+
+  display: inline-flex;
+
+  font-size: 10px;
+}
+
+.stop-popup-route-hint {
+  margin-top: 7px;
+
+  font-size: 8px;
+  line-height: 1.35;
+
+  color: #858585;
+}
+
+/*
+  Rule lama untuk brt-route-badges tetap dipakai pada bagian lain,
+  sedangkan direct service sekarang memakai container khusus.
+*/
+
+@media (max-width: 520px) {
+
+  .stop-popup-direct-routes {
+    gap: 7px;
+  }
+
+  .stop-popup-route-button .brt-route-badge {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+
+    font-size: 23px;
+  }
+
+  .stop-popup-route-button .brt-route-badge.is-double-digit {
+    font-size: 19px;
+  }
+
+  .stop-popup-route-button .rail-line-badge-image,
+  .stop-popup-route-button .rail-line-badge-fallback {
+    width: 32px;
+    height: 32px;
+  }
+
+  .stop-popup-route-button .rail-line-badge-fallback {
+    flex-basis: 32px;
+  }
+}
+
+/* =========================================================
+   STOP POPUP — ROUTE STATUS EMPHASIS
+   ========================================================= */
+
+/*
+  Badge rute eksisting tampil normal.
+
+  Rute Rencana dan Usulan Konseptual diredupkan ketika
+  hanya menjadi pilihan alternatif pada halte/stasiun.
+  Ini membantu pengguna memahami bahwa rute tersebut belum
+  setara dengan jaringan yang sudah beroperasi.
+*/
+.stop-popup-route-button.is-existing-route {
+  opacity: 1;
+}
+
+.stop-popup-route-button.is-planned-route:not(.is-active) {
+  opacity: .56;
+}
+
+.stop-popup-route-button.is-proposed-route:not(.is-active) {
+  opacity: .45;
+}
+
+.stop-popup-route-button.is-concept-route:not(.is-active) {
+  opacity: .34;
+}
+
+/*
+  Saat hover, rute non-existing sedikit diperjelas.
+*/
+.stop-popup-route-button.is-planned-route:hover:not(:disabled) {
+  opacity: .78;
+}
+
+.stop-popup-route-button.is-proposed-route:hover:not(:disabled) {
+  opacity: .70;
+}
+
+.stop-popup-route-button.is-concept-route:hover:not(:disabled) {
+  opacity: .62;
+}
+
+.stop-popup-route-button.is-active {
+  opacity: 1 !important;
+}
+
+.stop-popup-route-button.is-planned-route.is-active {
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px #777777;
+}
+
+.stop-popup-route-button.is-proposed-route.is-active {
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px #5d7f96;
+}
+
+.stop-popup-route-button.is-concept-route.is-active {
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px #8a6d8f;
+}
+
+/*
+  Ring visual:
+  Rencana     = dash panjang
+  Usulan      = dash sedang
+  Konseptual  = dotted
+*/
+.stop-popup-route-button.is-planned-route:not(.is-active)::after,
+.stop-popup-route-button.is-proposed-route:not(.is-active)::after,
+.stop-popup-route-button.is-concept-route:not(.is-active)::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.stop-popup-route-button.is-planned-route:not(.is-active)::after {
+  border: 1px dashed rgba(70,70,70,.58);
+}
+
+.stop-popup-route-button.is-proposed-route:not(.is-active)::after {
+  border: 1px dashed rgba(65,105,130,.58);
+}
+
+.stop-popup-route-button.is-concept-route:not(.is-active)::after {
+  border: 1px dotted rgba(90,70,95,.58);
+}
+
+/* =========================================================
+   COLLAPSIBLE SIDEBARS + MOBILE SHEETS
+   ========================================================= */
+
+:root {
+  --panel-transition: .22s ease;
+}
+
+
+/* -------------------------
+   DESKTOP PANEL MOTION
+   ------------------------- */
+
+@media (min-width: 761px) {
+
+  .filter-panel,
+  .right-info-panel {
+    transition:
+      transform var(--panel-transition),
+      opacity var(--panel-transition);
+    will-change: transform;
+  }
+
+  body.left-panel-collapsed .filter-panel {
+    transform:
+      translateX(
+        calc(-100% - 28px)
+      );
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  body.right-panel-collapsed .right-info-panel {
+    transform:
+      translateX(
+        calc(100% + 28px)
+      );
+    opacity: 0;
+    pointer-events: none;
+  }
+
+
+  /* -------------------------
+     EDGE HANDLES
+     ------------------------- */
+
+  .desktop-panel-handle {
+    position: absolute;
+    z-index: 1720;
+
+    width: 30px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid rgba(0,0,0,.11);
+    background: rgba(255,255,255,.98);
+    color: #4d4d4d;
+
+    box-shadow: 0 2px 8px rgba(0,0,0,.16);
+
+    font-family: var(--font-main);
+    font-size: 22px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+      background .12s ease,
+      transform .12s ease,
+      opacity .12s ease;
+  }
+
+  .desktop-panel-handle:hover {
+    background: #f2f2f2;
+  }
+
+  .desktop-panel-handle[hidden] {
+    display: none !important;
+  }
+
+  .left-panel-collapse {
+    top: 24px;
+    left: calc(
+      16px +
+      var(--panel-width) +
+      6px
+    );
+
+    border-radius: 0 7px 7px 0;
+  }
+
+  .left-panel-restore {
+    top: 24px;
+    left: 0;
+
+    border-radius: 0 7px 7px 0;
+  }
+
+  .right-panel-collapse {
+    top: 24px;
+    right: calc(
+      16px +
+      var(--right-panel-width) +
+      6px
+    );
+
+    border-radius: 7px 0 0 7px;
+  }
+
+  .right-panel-restore {
+    top: 24px;
+    right: 0;
+
+    border-radius: 7px 0 0 7px;
+  }
+
+
+  /* -------------------------
+     MAP CONTROLS FOLLOW PANEL
+     ------------------------- */
+
+  .floating-north,
+  .floating-zoom,
+  .basemap-panel {
+    transition:
+      right var(--panel-transition),
+      bottom var(--panel-transition);
+  }
+
+  body:not(.right-panel-collapsed)
+    .floating-north {
+    right: calc(
+      16px +
+      var(--right-panel-width) +
+      13px
+    ) !important;
+  }
+
+  body.right-panel-collapsed
+    .floating-north {
+    right: 22px !important;
+  }
+
+  body:not(.right-panel-collapsed)
+    .floating-zoom {
+    right: calc(
+      16px +
+      var(--right-panel-width) +
+      12px
+    ) !important;
+  }
+
+  body.right-panel-collapsed
+    .floating-zoom {
+    right: 16px !important;
+  }
+
+  body:not(.right-panel-collapsed)
+    .basemap-panel {
+    right: calc(
+      16px +
+      var(--right-panel-width) +
+      12px
+    ) !important;
+  }
+
+  body.right-panel-collapsed
+    .basemap-panel {
+    right: 16px !important;
+  }
+}
+
+
+/* Desktop handles never appear on mobile. */
+@media (max-width: 760px) {
+  .desktop-panel-handle {
+    display: none !important;
+  }
+}
+
+
+/* =========================================================
+   MOBILE — MAP FIRST
+   ========================================================= */
+
+.mobile-info-close {
+  display: none;
+}
+
+@media (max-width: 760px) {
+
+  /*
+    Tidak ada lagi title/info card permanen yang menutup map.
+    Panel kanan berubah menjadi bottom sheet.
+  */
+  .right-info-panel {
+    top: auto !important;
+    left: var(--mobile-edge, 8px) !important;
+    right: var(--mobile-edge, 8px) !important;
+    bottom: calc(
+      64px +
+      env(safe-area-inset-bottom)
+    ) !important;
+
+    width: auto !important;
+    max-height: min(
+      62dvh,
+      560px
+    ) !important;
+
+    border-radius: 12px !important;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transform: translateY(14px);
+
+    transition:
+      opacity .18s ease,
+      transform .18s ease,
+      visibility .18s linear;
+
+    z-index: 1805 !important;
+  }
+
+  body.mobile-info-open
+    .right-info-panel {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+
+    transform: translateY(0);
+  }
+
+  .right-info-header {
+    position: relative;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding:
+      13px
+      48px
+      11px
+      13px !important;
+  }
+
+  .right-info-heading {
+    min-width: 0;
+  }
+
+  .right-info-header h1 {
+    font-size: 16px !important;
+    line-height: 1.2 !important;
+  }
+
+  .right-info-header p {
+    margin-top: 4px !important;
+
+    font-size: 8px !important;
+  }
+
+  .mobile-info-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 17px;
+
+    background: #f1f1f1;
+    color: #555;
+
+    font-family: var(--font-main);
+    font-size: 21px;
+    line-height: 1;
+
+    cursor: pointer;
+  }
+
+  /*
+    Konten info/legend sekarang benar-benar tersedia di mobile.
+  */
+  .right-info-body {
+    min-height: 0;
+
+    display: flex !important;
+    flex-direction: column;
+
+    overflow-y: auto !important;
+
+    padding: 12px 13px 14px !important;
+
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+
+  /* -------------------------
+     ROUTE SHEET
+     ------------------------- */
+
+  .filter-panel {
+    max-height: min(
+      68dvh,
+      620px
+    ) !important;
+  }
+
+  /*
+    Tombol Rute berada dekat tepi atas, tidak lagi
+    didorong turun oleh title card.
+  */
+  .mobile-filter-toggle {
+    top: max(
+      10px,
+      calc(
+        env(safe-area-inset-top) +
+        8px
+      )
+    ) !important;
+
+    left: 10px !important;
+  }
+
+
+  /* -------------------------
+     MAP CONTROLS
+     ------------------------- */
+
+  .floating-north {
+    top: max(
+      14px,
+      calc(
+        env(safe-area-inset-top) +
+        10px
+      )
+    ) !important;
+
+    right: 14px !important;
+  }
+
+  /*
+    Saat info atau route sheet terbuka, toolbar tetap di
+    bawah sehingga user masih punya akses keluar/kontrol.
+  */
+  .bottom-toolbar {
+    z-index: 1790 !important;
+  }
+
+  .floating-zoom {
+    z-index: 1780 !important;
+  }
+
+  /*
+    Basemap adalah sheet ketiga dan berada sedikit di atas
+    toolbar, sama seperti sebelumnya.
+  */
+  .basemap-panel {
+    z-index: 1810 !important;
+  }
+
+
+  /* -------------------------
+     INFO BUTTON ACTIVE STATE
+     ------------------------- */
+
+  body.mobile-info-open
+    .info-button {
+    color: #006da8;
+    background: #f3faff;
+  }
+
+  body.mobile-filter-open
+    .mobile-filter-toggle {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 430px) {
+
+  .right-info-panel,
+  .filter-panel {
+    left: 6px !important;
+    right: 6px !important;
+  }
+
+  .right-info-panel {
+    max-height: min(
+      68dvh,
+      610px
+    ) !important;
+  }
+
+  .filter-panel {
+    max-height: min(
+      72dvh,
+      650px
+    ) !important;
+  }
+}
+
+/* =========================================================
+   LEFT PANEL — SPLIT CONTROL / ROUTE DETAIL CARDS
+   ========================================================= */
+
+/*
+  Sidebar kiri menjadi container transparan.
+  Masing-masing bagian memiliki card sendiri:
+  1. filter-controls-card
+  2. route-detail-card
+*/
+@media (min-width: 761px) {
+
+  .filter-panel {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .filter-panel-content {
+    min-height: 0;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    overflow: hidden !important;
+
+    padding: 0 !important;
+  }
+
+  .filter-controls-card,
+  .route-detail-card {
+    width: 100%;
+
+    background: rgba(244,244,244,.97);
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 6px;
+    box-shadow: 0 2px 9px rgba(0,0,0,.20);
+  }
+
+  .filter-controls-card {
+    flex: 0 0 auto;
+
+    padding: 13px 14px 6px;
+
+    overflow: visible;
+  }
+
+  /*
+    Hilangkan margin bawah pada kontrol terakhir agar
+    ruang bawah kartu atas tidak berlebihan.
+  */
+  .filter-controls-card .route-select-field {
+    margin-bottom: 0;
+  }
+
+  .route-detail-card {
+    min-height: 0;
+    flex: 1 1 auto;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 13px 14px 16px;
+
+    scrollbar-width: thin;
+    scrollbar-color: #999 transparent;
+  }
+
+  .route-detail-card::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .route-detail-card::-webkit-scrollbar-thumb {
+    background: #999;
+    border-radius: 10px;
+  }
+
+  .route-detail-card::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /*
+    Route info sekarang berada di awal kartu baru,
+    jadi tidak perlu garis pemisah dari form di atas.
+  */
+  .route-detail-card .route-info {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  /*
+    Collapse handle mengikuti sidebar keseluruhan.
+  */
+  .left-panel-collapse {
+    top: 24px !important;
+  }
+}
+
+
+/* =========================================================
+   MOBILE — TWO CARDS INSIDE ROUTE SHEET
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  /*
+    Bottom-sheet luar dibuat transparan supaya dua card
+    benar-benar terlihat sebagai bagian terpisah.
+  */
+  .filter-panel {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .filter-panel-content {
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    overflow: hidden !important;
+
+    padding: 0 !important;
+  }
+
+  .filter-controls-card,
+  .route-detail-card {
+    background: rgba(244,244,244,.99);
+    border: 1px solid rgba(0,0,0,.09);
+    border-radius: 11px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.20);
+  }
+
+  .filter-controls-card {
+    flex: 0 1 auto;
+
+    /*
+      Sisakan ruang untuk tombol X mobile.
+    */
+    padding: 46px 12px 4px;
+
+    max-height: min(
+      40dvh,
+      360px
+    );
+
+    overflow-y: auto;
+    overflow-x: visible;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filter-controls-card .route-select-field {
+    margin-bottom: 4px !important;
+  }
+
+  .route-detail-card {
+    min-height: 120px;
+    flex: 1 1 auto;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 12px 12px 14px;
+
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .route-detail-card .route-info {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    border-top: 0 !important;
+  }
+
+  /*
+    Close button tetap berada di pojok kartu kontrol.
+  */
+  .mobile-filter-close {
+    top: 7px !important;
+    right: 8px !important;
+    z-index: 12 !important;
+  }
+}
+
+
+/* =========================================================
+   SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 430px) {
+
+  .filter-controls-card {
+    max-height: min(
+      43dvh,
+      380px
+    );
+  }
+
+  .route-detail-card {
+    min-height: 105px;
+  }
+}
+
+/* =========================================================
+   MOBILE FINAL NAVIGATION
+   Target: map-first + 4 bottom actions
+   ========================================================= */
+
+.mobile-toolbar-label,
+.mobile-bottom-route {
+  display: none;
+}
+
+@media (max-width: 760px) {
+
+  /*
+    Floating button Rute lama tidak lagi dibutuhkan.
+    Akses Rute sekarang dari bottom navigation.
+  */
+  .mobile-filter-toggle {
+    display: none !important;
+  }
+
+  /*
+    Bottom toolbar berubah menjadi navigation bar.
+  */
+  .bottom-toolbar {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: calc(
+      8px +
+      env(safe-area-inset-bottom)
+    ) !important;
+
+    width: auto !important;
+    max-width: none !important;
+    height: 58px !important;
+
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+
+    border-radius: 11px !important;
+    overflow: hidden !important;
+  }
+
+  .bottom-toolbar .toolbar-button {
+    width: auto !important;
+    min-width: 0 !important;
+    height: 58px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+
+    padding: 4px 2px !important;
+
+    border-right: 1px solid #e7e7e7 !important;
+
+    background: rgba(255,255,255,.98);
+  }
+
+  .bottom-toolbar .toolbar-button:last-of-type {
+    border-right: 0 !important;
+  }
+
+  .mobile-bottom-route {
+    display: flex !important;
+  }
+
+  .mobile-toolbar-label {
+    display: block !important;
+
+    max-width: 100%;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 8px;
+    line-height: 1.1;
+    font-weight: 500;
+
+    color: #555;
+  }
+
+  .bottom-toolbar .toolbar-icon {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  /*
+    Thumbnail basemap dibuat lebih kecil agar selaras
+    dengan ikon tombol lain.
+  */
+  .bottom-toolbar .toolbar-thumbnail {
+    width: 22px !important;
+    height: 22px !important;
+    border-radius: 4px !important;
+  }
+
+  /*
+    Scale + Home tidak masuk 4-tab mobile navigation.
+    Desktop tetap menampilkan keduanya.
+  */
+  .bottom-toolbar .toolbar-scale,
+  .bottom-toolbar #homeButton {
+    display: none !important;
+  }
+
+  /*
+    State aktif memberi feedback seperti tab mobile.
+  */
+  body.mobile-filter-open
+    .mobile-bottom-route,
+  body.basemap-panel-open
+    .basemap-main-button,
+  body.mobile-info-open
+    .info-button,
+  .gps-button.is-active {
+    background: #eef6ff !important;
+    color: #006fbd !important;
+  }
+
+  body.mobile-filter-open
+    .mobile-bottom-route
+    .mobile-toolbar-label,
+  body.basemap-panel-open
+    .basemap-main-button
+    .mobile-toolbar-label,
+  body.mobile-info-open
+    .info-button
+    .mobile-toolbar-label,
+  .gps-button.is-active
+    .mobile-toolbar-label {
+    color: #006fbd !important;
+    font-weight: 600;
+  }
+
+
+  /* -------------------------
+     SHEET POSITIONS
+     ------------------------- */
+
+  /*
+    Semua sheet berhenti tepat di atas nav bar.
+  */
+  .filter-panel,
+  .right-info-panel,
+  .basemap-panel {
+    bottom: calc(
+      74px +
+      env(safe-area-inset-bottom)
+    ) !important;
+  }
+
+  /*
+    Sedikit lebih banyak tinggi tersedia karena tidak ada
+    floating Rute button di bagian atas.
+  */
+  .filter-panel {
+    max-height: min(
+      74dvh,
+      680px
+    ) !important;
+  }
+
+  .right-info-panel {
+    max-height: min(
+      68dvh,
+      620px
+    ) !important;
+  }
+
+  /*
+    Zoom mengambang di atas nav bar.
+  */
+  .floating-zoom {
+    bottom: calc(
+      76px +
+      env(safe-area-inset-bottom)
+    ) !important;
+  }
+
+  body.basemap-panel-open
+    .floating-zoom {
+    bottom: calc(
+      84px +
+      env(safe-area-inset-bottom) +
+      var(--basemap-panel-height, 260px)
+    ) !important;
+  }
+
+  /*
+    North arrow tetap kecil di pojok atas.
+  */
+  .floating-north {
+    top: calc(
+      max(8px, env(safe-area-inset-top)) +
+      8px
+    ) !important;
+    right: 14px !important;
+  }
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 360px) {
+
+  .bottom-toolbar {
+    left: 5px !important;
+    right: 5px !important;
+  }
+
+  .mobile-toolbar-label {
+    font-size: 7px !important;
+  }
+
+  .bottom-toolbar .toolbar-icon {
+    width: 19px !important;
+    height: 19px !important;
+  }
+}
+
+/* =========================================================
+   ROUTE DETAIL CARD — ONLY STOP LIST SCROLLS
+   ========================================================= */
+
+/*
+  Struktur kartu bawah:
+  - route-info            : FIXED
+  - selected-stop-card    : FIXED
+  - stop-list heading     : FIXED
+  - stop-list help        : FIXED
+  - stop-list-scroll      : SCROLLABLE
+
+  Jadi informasi rute dan halte terpilih tidak ikut hilang
+  ketika user menggulir daftar halte yang panjang.
+*/
+
+@media (min-width: 761px) {
+
+  .route-detail-card {
+    min-height: 0 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    overflow: hidden !important;
+  }
+
+  .route-detail-card > .route-info {
+    flex: 0 0 auto;
+  }
+
+  .route-detail-card > .selected-stop-card {
+    flex: 0 0 auto;
+  }
+
+  .route-detail-card > .stop-list {
+    min-height: 0;
+    flex: 1 1 auto;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden !important;
+  }
+
+  .stop-list-heading,
+  .stop-list-help {
+    flex: 0 0 auto;
+  }
+
+  .stop-list-scroll {
+    min-height: 0;
+    flex: 1 1 auto;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding-right: 4px;
+
+    scrollbar-width: thin;
+    scrollbar-color: #999 transparent;
+
+    overscroll-behavior: contain;
+  }
+
+  .stop-list-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .stop-list-scroll::-webkit-scrollbar-thumb {
+    background: #999;
+    border-radius: 10px;
+  }
+
+  .stop-list-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /*
+    Kartu bawah tidak memiliki scrollbar sendiri lagi.
+  */
+  .route-detail-card::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+
+/* =========================================================
+   MOBILE — SAME BEHAVIOR INSIDE BOTTOM SHEET
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  .route-detail-card {
+    min-height: 0 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    overflow: hidden !important;
+  }
+
+  .route-detail-card > .route-info,
+  .route-detail-card > .selected-stop-card {
+    flex: 0 0 auto;
+  }
+
+  .route-detail-card > .stop-list {
+    min-height: 0;
+    flex: 1 1 auto;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden !important;
+  }
+
+  .stop-list-heading,
+  .stop-list-help {
+    flex: 0 0 auto;
+  }
+
+  .stop-list-scroll {
+    min-height: 0;
+    flex: 1 1 auto;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding-right: 3px;
+
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+
+    scrollbar-width: thin;
+  }
+}
+
+
+/* =========================================================
+   NON-POPUP SELECTED STOP INFORMATION
+   ========================================================= */
+
+/*
+  Halte yang dipilih selalu mempunyai informasi ringkas
+  di panel kiri, terpisah dari popup di peta.
+*/
+.selected-stop-card:not([hidden]) {
+  position: relative;
+  flex: 0 0 auto;
+
+  margin-bottom: 0;
+
+  background: #ffffff;
+  border: 1px solid #d8d8d8;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+
+/* =========================================================
+   RIGHT INFO — GUIDE BUTTONS
+   ========================================================= */
+
+.right-info-help {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+
+/* =========================================================
+   PERMANENT GUIDE INSIDE INFO MODAL
+   ========================================================= */
+
+.info-guide-section {
+  margin-top: 17px;
+  padding-top: 15px;
+
+  border-top: 1px solid #e4e4e4;
+}
+
+.info-guide-title {
+  margin-bottom: 10px;
+
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 700;
+
+  color: #303030;
+}
+
+.info-guide-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.info-guide-item {
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 8px;
+
+  padding: 9px;
+
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+
+  background: #fafafa;
+}
+
+.info-guide-number {
+  width: 26px;
+  height: 26px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #333;
+  color: #fff;
+
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.info-guide-item strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  font-size: 10px;
+  line-height: 1.25;
+
+  color: #333;
+}
+
+.info-guide-item span {
+  display: block;
+
+  font-size: 9px;
+  line-height: 1.4;
+
+  color: #666;
+}
+
+
+/* =========================================================
+   FIRST-VISIT PRODUCT TOUR
+   ========================================================= */
+
+.product-tour {
+  position: fixed;
+  inset: 0;
+
+  z-index: 7000;
+
+  pointer-events: none;
+}
+
+.product-tour[hidden] {
+  display: none;
+}
+
+.product-tour-spotlight {
+  position: fixed;
+
+  border: 2px solid #ffffff;
+  border-radius: 9px;
+
+  box-shadow:
+    0 0 0 3px rgba(0,122,194,.72),
+    0 0 0 9999px rgba(0,0,0,.43);
+
+  transition:
+    left .22s ease,
+    top .22s ease,
+    width .22s ease,
+    height .22s ease;
+
+  pointer-events: none;
+}
+
+.product-tour-spotlight[hidden] {
+  display: none;
+}
+
+.product-tour-card {
+  position: fixed;
+
+  width: min(
+    380px,
+    calc(100vw - 32px)
+  );
+
+  padding: 16px;
+
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 10px;
+
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(0,0,0,.28);
+
+  color: #333;
+
+  pointer-events: auto;
+}
+
+.product-tour-progress {
+  margin-bottom: 7px;
+
+  font-size: 8px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: .07em;
+
+  color: #777;
+}
+
+.product-tour-card h2 {
+  margin: 0 0 7px;
+
+  font-size: 19px;
+  line-height: 1.2;
+  font-weight: 600;
+
+  color: #252525;
+}
+
+.product-tour-card p {
+  margin: 0;
+
+  font-size: 11px;
+  line-height: 1.5;
+
+  color: #555;
+}
+
+.product-tour-visual {
+  margin-top: 13px;
+  padding: 11px;
+
+  border: 1px solid #e2e2e2;
+  border-radius: 7px;
+
+  background: #f7f7f7;
+}
+
+.product-tour-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  margin-top: 14px;
+}
+
+.product-tour-nav {
+  display: flex;
+  gap: 7px;
+}
+
+.product-tour-skip,
+.product-tour-secondary,
+.product-tour-primary {
+  height: 34px;
+
+  padding: 0 12px;
+
+  border-radius: 5px;
+
+  font-family: var(--font-main);
+  font-size: 10px;
+
+  cursor: pointer;
+}
+
+.product-tour-skip {
+  padding-left: 0;
+
+  border: 0;
+  background: transparent;
+  color: #777;
+}
+
+.product-tour-skip:hover {
+  color: #333;
+}
+
+.product-tour-secondary {
+  border: 1px solid #d1d1d1;
+  background: #fff;
+  color: #444;
+}
+
+.product-tour-primary {
+  border: 1px solid #333;
+  background: #333;
+  color: #fff;
+}
+
+.product-tour-primary:hover {
+  background: #222;
+}
+
+
+/* -------------------------
+   MINI INFOGRAPHICS
+   ------------------------- */
+
+.tour-mini-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 7px;
+
+  font-size: 8px;
+}
+
+.tour-mini-filters span {
+  color: #777;
+}
+
+.tour-mini-filters strong {
+  padding: 6px 7px;
+
+  border: 1px solid #d8d8d8;
+  border-radius: 4px;
+
+  background: #fff;
+
+  font-size: 9px;
+  font-weight: 500;
+
+  color: #333;
+}
+
+.tour-mini-wide {
+  grid-column: 1 / -1;
+}
+
+.tour-mini-stop {
+  position: relative;
+
+  height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tour-mini-route-line {
+  position: absolute;
+
+  left: 8%;
+  right: 8%;
+  top: 50%;
+
+  height: 4px;
+
+  transform: translateY(-50%);
+
+  border-radius: 10px;
+
+  background: #d02127;
+}
+
+.tour-mini-marker {
+  position: relative;
+  z-index: 2;
+
+  width: 18px;
+  height: 18px;
+
+  border: 4px solid #d02127;
+  border-radius: 50%;
+
+  background: #fff;
+  box-shadow: 0 0 0 3px #fff;
+}
+
+.tour-mini-stop-label {
+  position: absolute;
+
+  top: 50%;
+  left: calc(50% + 20px);
+
+  transform: translateY(-50%);
+
+  font-size: 9px;
+  font-weight: 600;
+
+  color: #333;
+}
+
+.tour-mini-badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.tour-mini-badge {
+  width: 34px;
+  height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  color: #fff;
+
+  font-family: "PT Sans", Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.tour-mini-badge.is-red {
+  background: #d02127;
+}
+
+.tour-mini-badge.is-blue {
+  background: #294c91;
+}
+
+.tour-mini-badge.is-yellow {
+  background: #efb51b;
+}
+
+.tour-mini-badge.is-concept {
+  background: #8d28a5;
+  opacity: .38;
+
+  outline: 1px dotted #6b1f78;
+  outline-offset: 2px;
+}
+
+.tour-mini-badge-arrow {
+  margin-left: 3px;
+
+  font-size: 9px;
+  color: #666;
+}
+
+
+/* =========================================================
+   MOBILE TOUR
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  .info-guide-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-tour-card {
+    width: auto;
+
+    max-height: 42dvh;
+
+    overflow-y: auto;
+
+    padding: 14px;
+
+    border-radius: 9px;
+  }
+
+  .product-tour-card h2 {
+    font-size: 17px;
+  }
+
+  .product-tour-card p {
+    font-size: 10px;
+  }
+
+  .product-tour-visual {
+    margin-top: 10px;
+    padding: 9px;
+  }
+
+  .product-tour-footer {
+    margin-top: 11px;
+  }
+
+  .product-tour-skip,
+  .product-tour-secondary,
+  .product-tour-primary {
+    height: 36px;
+  }
+}
+
+/* =========================================================
+   MOBILE POPUP — ADAPTIVE / COMPACT
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  /*
+    Basis popup mobile dibuat lebih ramping.
+    Leaflet tetap dapat memperbesar popup kompleks sampai batasnya.
+  */
+  .leaflet-popup-content-wrapper {
+    max-width: min(
+      88vw,
+      340px
+    ) !important;
+
+    border-radius: 9px !important;
+  }
+
+  .leaflet-popup-content {
+    min-width: 0 !important;
+    max-width: min(
+      330px,
+      calc(100vw - 62px)
+    ) !important;
+
+    margin: 10px 11px 12px !important;
+    padding-right: 2px !important;
+  }
+
+  /*
+    Popup sederhana:
+    lebih pendek, lebih sempit, dan spacing dipadatkan.
+  */
+  .stop-popup.is-compact {
+    width: min(
+      72vw,
+      270px
+    ) !important;
+
+    min-width: 210px !important;
+    max-width: 270px !important;
+
+    padding: 11px 12px !important;
+  }
+
+  .stop-popup.is-compact .stop-popup-title {
+    padding-right: 22px !important;
+
+    font-size: 16px !important;
+    line-height: 1.22 !important;
+  }
+
+  .stop-popup.is-compact .stop-popup-eyebrow {
+    margin-bottom: 3px !important;
+    font-size: 8px !important;
+  }
+
+  .stop-popup.is-compact .stop-popup-status {
+    margin-top: 3px !important;
+  }
+
+  .stop-popup.is-compact .stop-popup-divider {
+    margin: 10px 0 !important;
+  }
+
+  .stop-popup.is-compact .stop-popup-section {
+    margin-top: 10px !important;
+  }
+
+  .stop-popup.is-compact .stop-popup-label {
+    margin-bottom: 8px !important;
+
+    font-size: 11px !important;
+  }
+
+  .stop-popup.is-compact .stop-popup-direct-routes {
+    gap: 6px !important;
+  }
+
+  .stop-popup.is-compact .stop-popup-route-button .brt-route-badge {
+    width: 36px !important;
+    height: 36px !important;
+    flex-basis: 36px !important;
+
+    font-size: 22px !important;
+  }
+
+  .stop-popup.is-compact .stop-popup-route-button .brt-route-badge.is-double-digit {
+    font-size: 18px !important;
+  }
+
+  .stop-popup.is-compact .stop-popup-route-button .rail-line-badge-image,
+  .stop-popup.is-compact .stop-popup-route-button .rail-line-badge-fallback {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .stop-popup.is-compact .stop-popup-route-button .rail-line-badge-fallback {
+    flex-basis: 30px !important;
+  }
+
+  .stop-popup.is-compact .stop-popup-route-hint {
+    margin-top: 5px !important;
+    font-size: 7px !important;
+  }
+
+  /*
+    Bila hanya satu rute dan tidak ada navigasi/integrasi,
+    popup tetap benar-benar mengikuti isi.
+  */
+  .stop-popup.is-compact .stop-popup-navigation {
+    margin-top: 12px !important;
+    padding-top: 10px !important;
+  }
+
+  /*
+    Popup kompleks tetap lega, tetapi tidak selebar layar.
+  */
+  .stop-popup.is-rich {
+    width: min(
+      82vw,
+      310px
+    ) !important;
+
+    min-width: 250px !important;
+    max-width: 310px !important;
+
+    padding: 13px 14px !important;
+  }
+
+  .stop-popup.is-rich .stop-popup-title {
+    font-size: 17px !important;
+  }
+
+  /*
+    Close button sedikit lebih kecil agar tidak mendominasi.
+  */
+  .leaflet-popup-close-button {
+    top: 4px !important;
+    right: 4px !important;
+
+    width: 26px !important;
+    height: 26px !important;
+
+    font-size: 18px !important;
+  }
+}
+
+
+/* Sangat kecil: tetap aman di layar 360px ke bawah */
+@media (max-width: 360px) {
+
+  .stop-popup.is-compact {
+    width: min(
+      76vw,
+      250px
+    ) !important;
+
+    min-width: 200px !important;
+  }
+
+  .stop-popup.is-rich {
+    width: min(
+      86vw,
+      290px
+    ) !important;
+
+    min-width: 235px !important;
+  }
+}
+
+/* =========================================================
+   GLOBAL SEARCH — RIGHT, BELOW TITLE
+   ========================================================= */
+
+/*
+  Dua search lama di panel kiri tetap ada di DOM untuk
+  kompatibilitas fungsi, tetapi tidak lagi ditampilkan.
+*/
+.filter-controls-card
+  .stop-search-field,
+.filter-controls-card
+  .poi-search-field {
+  display: none !important;
+}
+
+
+/* -------------------------
+   DESKTOP
+   ------------------------- */
+
+.global-search-panel {
+  position: absolute;
+  top: 103px;
+  right: 16px;
+
+  width: var(--right-panel-width, 315px);
+
+  padding: 11px 12px 10px;
+
+  background: rgba(255,255,255,.99);
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 7px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.19);
+
+  z-index: 1710;
+
+  transition:
+    transform .22s ease,
+    opacity .22s ease;
+}
+
+.global-search-panel label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 600;
+
+  color: #4f4f4f;
+}
+
+.global-search-input-wrap {
+  position: relative;
+}
+
+.global-search-input-wrap input {
+  width: 100%;
+  height: 38px;
+
+  padding:
+    0
+    34px
+    0
+    35px;
+
+  border: 1px solid #c9c9c9;
+  border-radius: 5px;
+
+  background: #fff;
+  color: #303030;
+
+  font-family: var(--font-main);
+  font-size: 11px;
+
+  outline: none;
+}
+
+.global-search-input-wrap input:focus {
+  border-color: #6fa9d7;
+  box-shadow:
+    0 0 0 1px
+    rgba(0,122,194,.15);
+}
+
+.global-search-input-wrap input::placeholder {
+  color: #858585;
+}
+
+.global-search-input-wrap
+  input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.global-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+
+  width: 17px;
+  height: 17px;
+
+  transform:
+    translateY(-50%);
+
+  color: #666;
+
+  pointer-events: none;
+}
+
+.global-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+
+  width: 27px;
+  height: 27px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  transform:
+    translateY(-50%);
+
+  border: 0;
+  border-radius: 4px;
+
+  background: transparent;
+  color: #777;
+
+  font-family: var(--font-main);
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.global-search-clear:hover {
+  background: #f0f0f0;
+  color: #444;
+}
+
+.global-search-clear[hidden] {
+  display: none;
+}
+
+.global-search-source {
+  margin-top: 5px;
+
+  font-size: 7.5px;
+  line-height: 1.35;
+
+  color: #8a8a8a;
+}
+
+
+/* Results dropdown */
+.global-search-results {
+  position: absolute;
+
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+
+  max-height: min(
+    55vh,
+    430px
+  );
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  border: 1px solid #d3d3d3;
+  border-radius: 6px;
+
+  background: #fff;
+  box-shadow: 0 7px 20px rgba(0,0,0,.18);
+
+  scrollbar-width: thin;
+
+  z-index: 5;
+}
+
+.global-search-results[hidden] {
+  display: none;
+}
+
+.global-search-group + .global-search-group {
+  border-top: 1px solid #e5e5e5;
+}
+
+.global-search-group-title {
+  padding: 8px 10px 5px;
+
+  background: #fafafa;
+
+  font-size: 8px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+
+  color: #767676;
+}
+
+.global-search-result {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns:
+    18px
+    minmax(0, 1fr);
+
+  gap: 8px;
+  align-items: flex-start;
+
+  padding: 8px 10px;
+
+  border: 0;
+  border-bottom: 1px solid #eeeeee;
+
+  background: #fff;
+  color: #303030;
+
+  font-family: var(--font-main);
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.global-search-result:last-child {
+  border-bottom: 0;
+}
+
+.global-search-result:hover,
+.global-search-result:focus-visible {
+  background: #f3f3f3;
+  outline: none;
+}
+
+.global-search-result-icon {
+  width: 18px;
+  height: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 1px;
+
+  font-size: 10px;
+  line-height: 1;
+}
+
+.global-search-result-icon.is-transport {
+  color: #c9252b;
+}
+
+.global-search-result-icon.is-place {
+  color: #4f4f4f;
+}
+
+.global-search-result-content {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.global-search-result-main {
+  min-width: 0;
+
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.global-search-result-main strong {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 10px;
+  line-height: 1.25;
+  font-weight: 600;
+
+  color: #303030;
+}
+
+.global-search-result-main span {
+  flex: 0 0 auto;
+
+  font-size: 7px;
+  line-height: 1.2;
+
+  color: #858585;
+}
+
+.global-search-result-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  font-size: 8px;
+  line-height: 1.35;
+
+  color: #6d6d6d;
+}
+
+.global-search-loading,
+.global-search-empty {
+  padding: 11px 10px;
+
+  font-size: 9px;
+  line-height: 1.4;
+
+  color: #777;
+}
+
+
+/*
+  Legenda/info dimulai lebih bawah agar tidak tertutup
+  kartu search yang berada tepat di bawah judul.
+*/
+@media (min-width: 761px) {
+
+  .right-info-body {
+    padding-top: 94px !important;
+  }
+
+  body.right-panel-collapsed
+    .global-search-panel {
+    transform:
+      translateX(
+        calc(100% + 28px)
+      );
+
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+
+/* =========================================================
+   MOBILE — SEARCH BAR GLOBAL DI ATAS MAP
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  /*
+    Di mobile search tetap global dan tidak dikubur
+    di dalam bottom sheet Rute atau Info.
+  */
+  .global-search-panel {
+    position: absolute;
+
+    top: max(
+      9px,
+      calc(
+        env(safe-area-inset-top) +
+        7px
+      )
+    );
+
+    left: 10px;
+    right: 56px;
+
+    width: auto;
+
+    padding: 0;
+
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+
+    z-index: 1770;
+  }
+
+  .global-search-panel label,
+  .global-search-source {
+    display: none;
+  }
+
+  .global-search-input-wrap input {
+    height: 42px;
+
+    padding-left: 37px;
+    padding-right: 37px;
+
+    border: 1px solid rgba(0,0,0,.11);
+    border-radius: 21px;
+
+    background: rgba(255,255,255,.97);
+    box-shadow: 0 2px 9px rgba(0,0,0,.17);
+
+    font-size: 11px;
+  }
+
+  .global-search-icon {
+    left: 12px;
+
+    width: 18px;
+    height: 18px;
+  }
+
+  .global-search-clear {
+    right: 7px;
+
+    width: 28px;
+    height: 28px;
+
+    border-radius: 14px;
+  }
+
+  .global-search-results {
+    top: calc(100% + 7px);
+
+    max-height: min(
+      48dvh,
+      360px
+    );
+
+    border-radius: 9px;
+  }
+
+  /*
+    North arrow turun sedikit agar tidak menabrak search.
+  */
+  .floating-north {
+    top: calc(
+      max(
+        8px,
+        env(safe-area-inset-top)
+      ) +
+      49px
+    ) !important;
+
+    right: 14px !important;
+  }
+}
+
+
+/* =========================================================
+   SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 390px) {
+
+  .global-search-panel {
+    left: 7px;
+    right: 50px;
+  }
+
+  .global-search-input-wrap input {
+    font-size: 10px;
+  }
+}
+
+/* =========================================================
+   RIGHT SIDE — THREE SEPARATE CARDS
+   Desktop:
+   1. Title
+   2. Global Search
+   3. Legend + Help
+   ========================================================= */
+
+@media (min-width: 761px) {
+
+  /*
+    Parent panel kanan tidak lagi menjadi sidebar penuh.
+    Ia hanya menjadi positioning container transparan.
+  */
+  .right-info-panel {
+    top: 16px !important;
+    right: 16px !important;
+    bottom: auto !important;
+
+    width: var(--right-panel-width, 315px) !important;
+    height: auto !important;
+    max-height: none !important;
+
+    display: block !important;
+
+    overflow: visible !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+
+    transition: none !important;
+  }
+
+  /*
+    CARD 1 — JUDUL
+  */
+  .right-info-header {
+    width: 100%;
+
+    padding: 14px 14px 11px !important;
+
+    background: rgba(255,255,255,.99) !important;
+    border: 1px solid rgba(0,0,0,.10) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 3px 12px rgba(0,0,0,.19) !important;
+  }
+
+  .right-info-header h1 {
+    font-size: 18px !important;
+    line-height: 1.22 !important;
+  }
+
+  .right-info-header p {
+    margin-top: 7px !important;
+  }
+
+  /*
+    CARD 2 — SEARCH
+    Tetap menjadi elemen terpisah di bawah judul.
+  */
+  .global-search-panel {
+    top: 108px !important;
+    right: 16px !important;
+
+    width: var(--right-panel-width, 315px) !important;
+
+    padding: 11px 12px 10px !important;
+
+    border-radius: 8px !important;
+  }
+
+  /*
+    CARD 3 — LEGENDA + HELP
+    right-info-body dipisahkan secara visual dari judul dan
+    ditempatkan setelah ruang yang ditempati kartu search.
+  */
+  .right-info-body {
+    width: 100%;
+
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+
+    display: block !important;
+
+    margin-top: 108px !important;
+    padding: 13px 14px 14px !important;
+
+    overflow: visible !important;
+
+    background: rgba(255,255,255,.99) !important;
+    border: 1px solid rgba(0,0,0,.10) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 3px 12px rgba(0,0,0,.19) !important;
+  }
+
+  /*
+    Override lama dari global search yang memberi padding
+    besar untuk "menyisipkan" search di dalam sidebar.
+  */
+  .right-info-body {
+    padding-top: 13px !important;
+  }
+
+  .right-info-section {
+    margin: 0 !important;
+    padding: 0 !important;
+    border-top: 0 !important;
+  }
+
+  .right-info-section + .right-info-section {
+    margin-top: 13px !important;
+    padding-top: 12px !important;
+
+    border-top: 1px solid #e3e3e3 !important;
+  }
+
+  /*
+    Tombol bantuan berhenti setelah konten.
+    Tidak lagi didorong ke bagian bawah viewport.
+  */
+  .right-info-help {
+    margin-top: 13px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  /*
+    Tidak ada lagi right-side hide/expand.
+  */
+  .right-panel-collapse,
+  .right-panel-restore {
+    display: none !important;
+  }
+
+  body.right-panel-collapsed
+    .right-info-panel,
+  body.right-panel-collapsed
+    .global-search-panel {
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  /*
+    Kontrol peta selalu ditempatkan di sebelah kiri
+    kumpulan kartu kanan.
+  */
+  .floating-north {
+    right: calc(
+      16px +
+      var(--right-panel-width, 315px) +
+      13px
+    ) !important;
+  }
+
+  .floating-zoom {
+    right: calc(
+      16px +
+      var(--right-panel-width, 315px) +
+      12px
+    ) !important;
+  }
+
+  .basemap-panel {
+    right: calc(
+      16px +
+      var(--right-panel-width, 315px) +
+      12px
+    ) !important;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  /*
+    Mobile tetap memakai pola map-first:
+    - Search global mengambang di atas peta.
+    - Info/Legenda dibuka sebagai bottom sheet.
+    Tidak ada collapse sidebar kanan.
+  */
+  .right-panel-collapse,
+  .right-panel-restore {
+    display: none !important;
+  }
+
+  .right-info-panel {
+    height: auto !important;
+  }
+
+  .right-info-body {
+    height: auto !important;
+  }
+}
+
+/* =========================================================
+   POPUP — FINAL SAFE RESPONSIVE RULES
+   ========================================================= */
+
+.leaflet-popup-content-wrapper {
+  overflow: hidden;
+}
+
+.leaflet-popup-content.leaflet-popup-scrolled {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+
+  scrollbar-width: thin;
+}
+
+.stop-popup,
+.stop-popup.is-compact,
+.stop-popup.is-rich {
+  box-sizing: border-box;
+}
+
+.integration-place-name,
+.integration-operator-name,
+.poi-popup-address,
+.route-popup-value,
+.stop-popup-nav-name {
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+@media (min-width: 761px) {
+
+  /*
+    Jangan set width pada .leaflet-popup-content.
+    Nilai inline Leaflet harus menang.
+  */
+  .stop-popup {
+    max-width: 100%;
+  }
+
+  .stop-popup.is-compact {
+    min-width: 270px;
+    max-width: 320px;
+  }
+
+  .stop-popup.is-rich {
+    min-width: 310px;
+    max-width: 430px;
+  }
+}
+
+/* =========================================================
+   STOP POPUP NAVIGATION — CLICKABILITY FIX
+   ========================================================= */
+
+.stop-popup-navigation {
+  position: relative;
+  z-index: 3;
+
+  pointer-events: auto !important;
+}
+
+.stop-popup-nav-button {
+  position: relative;
+  z-index: 4;
+
+  pointer-events: auto !important;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.stop-popup-nav-button:not(:disabled) {
+  cursor: pointer !important;
+}
+
+.stop-popup-nav-button:disabled {
+  pointer-events: none;
+}
+
+/*
+  Pastikan elemen teks/ikon di dalam tombol tidak menjadi
+  penghalang event; delegated handler tetap menemukan button
+  melalui closest().
+*/
+.stop-popup-nav-button > * {
+  pointer-events: none;
+}
+
+/* =========================================================
+   FOUR-LEVEL NETWORK STATUS
+   Eksisting · Rencana · Usulan · Konseptual
+   ========================================================= */
+
+.legend-route-swatch.is-proposed {
+  opacity: .88;
+}
+
+.legend-route-swatch.is-conceptual {
+  opacity: .78;
+}
+
+.status-definition-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.status-definition-list > div {
+  line-height: 1.45;
+}
+
+/* =========================================================
+   STOP_ROLE — FUNGSI HALTE PER KORIDOR
+   ========================================================= */
+
+/*
+  Transit dibuat netral.
+  Terminus diberi aksen berbeda agar cepat terbaca,
+  terutama pada daftar halte.
+*/
+
+.stop-role.is-transit {
+  color: #555;
+  background: #e9e9e9;
+}
+
+.stop-role.is-terminus {
+  color: #9a4300;
+  background: #fff0d9;
+  font-weight: 700;
+}
+
+.stop-popup-role.is-transit {
+  color: #444;
+  background: #ececec;
+}
+
+.stop-popup-role.is-terminus {
+  color: #914000;
+  background: #fff0d9;
+  font-weight: 700;
+}
+
+.selected-stop-role.is-transit {
+  color: inherit;
+  font-weight: 600;
+}
+
+.selected-stop-role.is-terminus {
+  color: #a34b00;
+  font-weight: 700;
+}
+
+/*
+  Di daftar halte, tulisan Terminus menjadi pembeda utama.
+  Bentuk badge tetap sama dengan metadata lain supaya layout
+  tidak menjadi terlalu ramai.
+*/
+.stop-list-badges .stop-role.is-terminus {
+  border: 1px solid rgba(163,75,0,.18);
+}
+
+.stop-role.is-regular,
+.stop-popup-role.is-regular {
+  color: #666;
+  background: #eeeeee;
+}
+
+.selected-stop-role.is-regular {
+  color: inherit;
+  font-weight: 600;
+}
+
+/* =========================================================
+   POPUP ROUTE BADGE — CLICKABILITY
+   ========================================================= */
+
+.stop-popup-direct-routes,
+.stop-popup-route-button {
+  pointer-events: auto !important;
+}
+
+.stop-popup-route-button:not(:disabled) {
+  cursor: pointer !important;
+  touch-action: manipulation;
+}
+
+/*
+  Klik pada angka/logo di dalam badge diteruskan ke button.
+*/
+.stop-popup-route-button > * {
+  pointer-events: none;
+}
+
+.stop-popup-route-button:disabled {
+  cursor: default !important;
+}
+
+/* =========================================================
+   RIGHT CARDS — CONSISTENT GAP
+   ========================================================= */
+
+@media (min-width: 761px) {
+
+  /*
+    Fallback sebelum JavaScript selesai mengukur.
+    Nilai final top/margin dihitung oleh
+    layoutDesktopRightCards().
+  */
+  :root {
+    --right-card-gap: 8px;
+  }
+
+  /*
+    Hindari transition top agar kartu tidak terlihat
+    bergeser saat layout pertama dihitung.
+  */
+  .global-search-panel {
+    transition:
+      opacity .22s ease,
+      transform .22s ease !important;
+  }
+}
+
+/* =========================================================
+   RIGHT TITLE — BIGGER + WIDER
+   ========================================================= */
+
+@media (min-width: 761px) {
+
+  /*
+    Judul menjadi kartu terlebar.
+    Search dan Legenda tetap lebih compact.
+  */
+  .right-info-panel {
+    width: 365px !important;
+  }
+
+  .right-info-header {
+    width: 365px !important;
+    padding: 15px 16px 13px !important;
+  }
+
+  .right-info-header h1 {
+    font-size: 22px !important;
+    line-height: 1.14 !important;
+    letter-spacing: -.32px !important;
+  }
+
+  .right-info-header p {
+    margin-top: 8px !important;
+    font-size: 9.5px !important;
+  }
+
+  .global-search-panel {
+    width: 315px !important;
+  }
+
+  .right-info-body {
+    width: 315px !important;
+    margin-left: auto !important;
+  }
+
+  /*
+    Map controls mengikuti kartu paling lebar.
+  */
+  .floating-north {
+    right: calc(16px + 365px + 13px) !important;
+  }
+
+  .floating-zoom,
+  .basemap-panel {
+    right: calc(16px + 365px + 12px) !important;
+  }
+}
+
+
+/* =========================================================
+   LEGEND — COLLAPSIBLE STATUS & MODE
+   ========================================================= */
+
+.legend-section-toggle {
+  width: 100%;
+  min-height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+  color: inherit;
+
+  font-family: var(--font-main);
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.legend-section-toggle:hover
+  .legend-section-title {
+  color: #222;
+}
+
+.legend-section-toggle
+  .legend-section-title {
+  margin: 0 !important;
+}
+
+.legend-section-chevron {
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 20px;
+  height: 20px;
+
+  color: #777;
+
+  font-size: 14px;
+  line-height: 1;
+
+  transition:
+    transform .16s ease;
+}
+
+.legend-section-content {
+  margin-top: 7px;
+}
+
+.legend-collapsible-section.is-collapsed
+  .legend-section-content {
+  display: none;
+}
+
+.legend-collapsible-section.is-collapsed
+  .legend-section-chevron {
+  transform: rotate(180deg);
+}
+
+/*
+  Jarak antar Status Jaringan dan Moda tetap konsisten,
+  baik salah satu maupun keduanya sedang di-hide.
+*/
+.right-info-panel
+  .legend-collapsible-section
+  + .legend-collapsible-section {
+  margin-top: 12px !important;
+  padding-top: 11px !important;
+  border-top: 1px solid #e6e6e6 !important;
+}
+
+@media (max-width: 760px) {
+
+  .legend-section-toggle {
+    min-height: 30px;
+  }
+
+  .legend-section-chevron {
+    width: 24px;
+    height: 24px;
+    font-size: 15px;
+  }
+}
+
+/* =========================================================
+   FINAL RIGHT TITLE — ONE LINE
+   ========================================================= */
+
+@media (min-width: 761px) {
+
+  /*
+    Header dibuat cukup panjang agar judul tidak membungkus.
+  */
+  .right-info-panel {
+    width: 440px !important;
+  }
+
+  .right-info-header {
+    width: 440px !important;
+    padding: 15px 17px 13px !important;
+  }
+
+  .right-info-heading {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .right-info-header h1 {
+    width: 100%;
+
+    margin: 0 !important;
+
+    font-size: 22px !important;
+    line-height: 1.12 !important;
+    letter-spacing: -.34px !important;
+
+    white-space: nowrap !important;
+  }
+
+  .right-info-header p {
+    white-space: nowrap;
+  }
+
+  /*
+    Search dan kartu legenda tetap lebih ramping serta
+    rata kanan terhadap kartu judul.
+  */
+  .global-search-panel {
+    width: 315px !important;
+  }
+
+  .right-info-body {
+    width: 315px !important;
+    margin-left: auto !important;
+  }
+}
+
+
+/* =========================================================
+   LEGEND — NATIVE DETAILS / SUMMARY
+   ========================================================= */
+
+details.legend-collapsible-section {
+  display: block;
+}
+
+details.legend-collapsible-section
+  > summary {
+  list-style: none;
+}
+
+details.legend-collapsible-section
+  > summary::-webkit-details-marker {
+  display: none;
+}
+
+.legend-section-toggle {
+  pointer-events: auto !important;
+  user-select: none;
+}
+
+.legend-section-toggle
+  .legend-section-chevron {
+  transform: rotate(0deg);
+  transition: transform .16s ease;
+}
+
+details.legend-collapsible-section:not([open])
+  .legend-section-chevron {
+  transform: rotate(180deg);
+}
+
+details.legend-collapsible-section:not([open])
+  .legend-section-content {
+  display: none !important;
+}
+
+
+/* =========================================================
+   COMPACT BOTTOM TOOLBAR
+   ========================================================= */
+
+@media (min-width: 761px) {
+
+  .bottom-toolbar {
+    right: 12px !important;
+    bottom: 12px !important;
+
+    height: 42px !important;
+
+    border-radius: 10px !important;
+  }
+
+  .toolbar-button {
+    width: 43px !important;
+    min-width: 43px !important;
+    height: 42px !important;
+  }
+
+  .toolbar-icon {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .toolbar-thumbnail {
+    width: 31px !important;
+    height: 31px !important;
+    border-radius: 6px !important;
+  }
+
+  .toolbar-scale {
+    min-width: 82px !important;
+    height: 42px !important;
+
+    padding: 0 9px !important;
+
+    font-size: 10px !important;
+  }
+
+  .gps-button.is-active::after {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  /*
+    Panel pilihan basemap mengikuti toolbar yang lebih ramping.
+  */
+  .basemap-panel {
+    right: 12px !important;
+    bottom: 62px !important;
+
+    width: 300px !important;
+  }
+}
+
+
+/* =========================================================
+   LOWER-RIGHT CONTROL STACK
+   North → Zoom → Toolbar
+   ========================================================= */
+
+@media (min-width: 761px) {
+
+  .floating-zoom {
+    right: 12px !important;
+    bottom: 62px !important;
+
+    border-radius: 7px !important;
+  }
+
+  body.basemap-panel-open
+    .floating-zoom {
+    /*
+      Saat basemap terbuka, zoom tetap di sisi kanan panel,
+      tidak meloncat ke bagian atas layar.
+    */
+    bottom: 62px !important;
+    transform: translateX(-310px);
+  }
+
+  .floating-zoom button {
+    width: 34px !important;
+    height: 34px !important;
+
+    font-size: 20px !important;
+  }
+
+  .floating-north {
+    top: auto !important;
+    right: 12px !important;
+    bottom: 138px !important;
+
+    width: 34px !important;
+    height: 44px !important;
+
+    padding: 0 !important;
+
+    border: 0 !important;
+    border-radius: 7px !important;
+
+    background: rgba(255,255,255,.88) !important;
+    box-shadow: 0 2px 7px rgba(0,0,0,.15);
+
+    color: #2f2f2f;
+
+    pointer-events: auto !important;
+    cursor: pointer;
+
+    text-shadow: none !important;
+  }
+
+  .floating-north:hover {
+    background: rgba(255,255,255,.98) !important;
+  }
+
+  .floating-north:focus-visible {
+    outline: 2px solid rgba(0,122,194,.32);
+    outline-offset: 2px;
+  }
+
+  .floating-north-n {
+    font-size: 9px !important;
+  }
+
+  .floating-north-arrow {
+    margin-top: 2px !important;
+
+    font-size: 21px !important;
+
+    transform-origin: 50% 50%;
+    transition:
+      transform .18s ease,
+      scale .18s ease;
+  }
+
+  .floating-north.is-resetting
+    .floating-north-arrow {
+    scale: 1.18;
+  }
+}
+
+
+/* =========================================================
+   MOBILE — KEEP MOBILE-FIRST CONTROL SYSTEM
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  /*
+    Di mobile title boleh kembali membungkus agar tidak keluar
+    viewport. Permintaan satu baris diterapkan pada desktop.
+  */
+  .right-info-header h1 {
+    white-space: normal !important;
+  }
+
+  .floating-north {
+    pointer-events: auto !important;
+    cursor: pointer;
+  }
+
+  details.legend-collapsible-section
+    > summary {
+    min-height: 30px;
+  }
+}
+
+/* =========================================================
+   FINAL DESKTOP ALIGNMENT — RIGHT EDGE
+   ========================================================= */
+
+@media (min-width: 761px) {
+
+  /*
+    Judul tetap satu baris tetapi tidak terlalu panjang.
+    410 px cukup untuk teks pada ukuran 20 px.
+  */
+  .right-info-panel {
+    width: 410px !important;
+  }
+
+  .right-info-header {
+    width: 410px !important;
+    padding: 14px 16px 12px !important;
+  }
+
+  .right-info-header h1 {
+    font-size: 20px !important;
+    line-height: 1.12 !important;
+    letter-spacing: -.30px !important;
+    white-space: nowrap !important;
+  }
+
+  .right-info-header p {
+    margin-top: 7px !important;
+    font-size: 9px !important;
+  }
+
+  /*
+    Search dan Legenda tetap 315 px dan rata kanan.
+  */
+  .global-search-panel {
+    width: 315px !important;
+    right: 12px !important;
+  }
+
+  .right-info-body {
+    width: 315px !important;
+    margin-left: auto !important;
+  }
+
+
+  /* -------------------------------------------------------
+     CONTROL STACK
+     Semua kontrol memakai right edge yang sama dengan toolbar.
+     ------------------------------------------------------- */
+
+  :root {
+    --map-control-right: 12px;
+    --map-toolbar-bottom: 12px;
+    --map-toolbar-height: 42px;
+    --map-control-gap: 8px;
+    --map-zoom-size: 34px;
+  }
+
+  .bottom-toolbar {
+    right: var(--map-control-right) !important;
+    bottom: var(--map-toolbar-bottom) !important;
+  }
+
+  /*
+    Zoom tepat di atas toolbar, menempel ke kanan.
+  */
+  .floating-zoom {
+    right: var(--map-control-right) !important;
+
+    bottom: calc(
+      var(--map-toolbar-bottom)
+      + var(--map-toolbar-height)
+      + var(--map-control-gap)
+    ) !important;
+
+    transform: none !important;
+  }
+
+  body.basemap-panel-open
+    .floating-zoom {
+    right: var(--map-control-right) !important;
+
+    bottom: calc(
+      var(--map-toolbar-bottom)
+      + var(--map-toolbar-height)
+      + var(--map-control-gap)
+    ) !important;
+
+    transform: none !important;
+  }
+
+  /*
+    North arrow langsung di atas zoom.
+  */
+  .floating-north {
+    top: auto !important;
+    right: var(--map-control-right) !important;
+
+    bottom: calc(
+      var(--map-toolbar-bottom)
+      + var(--map-toolbar-height)
+      + var(--map-control-gap)
+      + (var(--map-zoom-size) * 2)
+      + var(--map-control-gap)
+    ) !important;
+
+    transform: none !important;
+  }
+
+  /*
+    Basemap panel membuka ke kiri dari control stack,
+    sehingga north/zoom tidak terdorong.
+  */
+  .basemap-panel {
+    right: calc(
+      var(--map-control-right)
+      + var(--map-zoom-size)
+      + 8px
+    ) !important;
+
+    bottom: calc(
+      var(--map-toolbar-bottom)
+      + var(--map-toolbar-height)
+      + var(--map-control-gap)
+    ) !important;
+  }
+}
+
+
+/* =========================================================
+   MEDIUM DESKTOP
+   Sedikit mengecilkan header bila viewport sempit,
+   tetapi judul tetap satu baris.
+   ========================================================= */
+
+@media (min-width: 761px) and (max-width: 1100px) {
+
+  .right-info-panel,
+  .right-info-header {
+    width: 395px !important;
+  }
+
+  .right-info-header h1 {
+    font-size: 19px !important;
+    letter-spacing: -.34px !important;
+  }
+}
+
+/* =========================================================
+   LOWER-RIGHT NAV STACK
+   North + Zoom tepat di atas ujung kanan toolbar bawah.
+   ========================================================= */
+
+@media (min-width: 761px) {
+
+  /*
+    Toolbar:
+      right  = 12 px
+      bottom = 12 px
+      height = 42 px
+
+    Stack ditempatkan tepat di atas ujung kanan toolbar,
+    sejajar dengan sisi kanan tombol Full Extent.
+  */
+  .lower-right-nav-stack {
+    position: absolute;
+
+    right: 12px;
+    bottom: 62px;
+
+    z-index: 1660;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 7px;
+
+    width: 34px;
+
+    pointer-events: auto;
+  }
+
+  /*
+    North tidak lagi absolute terhadap map.
+    Ia menjadi item pertama dalam stack.
+  */
+  .lower-right-nav-stack
+    .floating-north {
+    position: relative !important;
+
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    width: 34px !important;
+    height: 44px !important;
+
+    margin: 0 !important;
+
+    transform: none !important;
+  }
+
+  /*
+    Zoom menjadi item kedua dalam stack.
+  */
+  .lower-right-nav-stack
+    .floating-zoom {
+    position: relative !important;
+
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    width: 34px !important;
+
+    margin: 0 !important;
+
+    transform: none !important;
+  }
+
+  .lower-right-nav-stack
+    .floating-zoom button {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  /*
+    Basemap dibuka ke kiri sehingga stack tetap berada di
+    area kanan yang ditandai user.
+  */
+  .basemap-panel {
+    right: 54px !important;
+    bottom: 62px !important;
+  }
+
+  body.basemap-panel-open
+    .lower-right-nav-stack,
+  body.basemap-panel-open
+    .floating-zoom {
+    transform: none !important;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  /*
+    Mobile mempertahankan sistem map-first yang sudah ada.
+    Wrapper tidak memengaruhi posisi mobile controls.
+  */
+  .lower-right-nav-stack {
+    display: contents;
+  }
+}
+
+/* =========================================================
+   FINAL NAV STACK POSITION — ALL VIEWPORTS
+   North + Zoom selalu tepat di atas ujung kanan toolbar.
+   ========================================================= */
+
+/*
+  Wrapper menjadi satu-satunya elemen yang menentukan posisi.
+  Ini sengaja diletakkan di paling akhir stylesheet agar
+  mengalahkan breakpoint lama.
+*/
+.lower-right-nav-stack {
+  position: absolute !important;
+
+  right: 10px !important;
+  bottom: calc(
+    58px +
+    env(safe-area-inset-bottom)
+  ) !important;
+
+  left: auto !important;
+  top: auto !important;
+
+  z-index: 1900 !important;
+
+  width: 34px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 7px !important;
+
+  pointer-events: auto !important;
+}
+
+
+/* NORTH */
+.lower-right-nav-stack
+  .floating-north {
+  position: relative !important;
+
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+
+  width: 34px !important;
+  height: 44px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  transform: none !important;
+
+  pointer-events: auto !important;
+}
+
+
+/* ZOOM */
+.lower-right-nav-stack
+  .floating-zoom {
+  position: relative !important;
+
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+
+  width: 34px !important;
+
+  margin: 0 !important;
+
+  transform: none !important;
+}
+
+.lower-right-nav-stack
+  .floating-zoom button {
+  width: 34px !important;
+  height: 34px !important;
+}
+
+
+/*
+  Toolbar memakai sisi kanan yang sama.
+*/
+.bottom-toolbar {
+  right: 10px !important;
+}
+
+
+/*
+  Basemap panel membuka ke kiri dari stack.
+*/
+.basemap-panel {
+  right: 52px !important;
+}
+
+
+/*
+  Jangan pernah ubah stack menjadi display:contents pada
+  breakpoint mobile/narrow.
+*/
+@media (max-width: 760px) {
+
+  .lower-right-nav-stack {
+    display: flex !important;
+
+    right: max(
+      8px,
+      env(safe-area-inset-right)
+    ) !important;
+
+    bottom: calc(
+      64px +
+      env(safe-area-inset-bottom)
+    ) !important;
+  }
+
+  .bottom-toolbar {
+    right: max(
+      8px,
+      env(safe-area-inset-right)
+    ) !important;
+  }
+
+  .lower-right-nav-stack
+    .floating-north,
+  .lower-right-nav-stack
+    .floating-zoom {
+    position: relative !important;
+
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    transform: none !important;
+  }
+
+  .basemap-panel {
+    right: 50px !important;
+  }
+}
+
+
+/*
+  Desktop mengikuti toolbar compact 42px + gap 8px.
+*/
+@media (min-width: 761px) {
+
+  .lower-right-nav-stack {
+    right: 12px !important;
+    bottom: 62px !important;
+  }
+
+  .bottom-toolbar {
+    right: 12px !important;
+  }
+
+  .basemap-panel {
+    right: 54px !important;
+    bottom: 62px !important;
+  }
+}
+
+/* =========================================================
+   UI TIDY REFINEMENT
+   Fokus: hierarchy, spacing, card consistency, cleaner panels
+   ========================================================= */
+
+:root {
+  --ui-surface: rgba(255, 255, 255, 0.96);
+  --ui-surface-soft: rgba(250, 250, 250, 0.94);
+  --ui-border: rgba(15, 23, 42, 0.08);
+  --ui-border-strong: rgba(15, 23, 42, 0.12);
+  --ui-shadow:
+    0 10px 26px rgba(15, 23, 42, 0.10),
+    0 2px 7px rgba(15, 23, 42, 0.06);
+  --ui-shadow-soft:
+    0 6px 18px rgba(15, 23, 42, 0.08),
+    0 1px 4px rgba(15, 23, 42, 0.05);
+  --ui-radius: 12px;
+  --ui-radius-sm: 8px;
+  --ui-gap: 10px;
+  --ui-text: #20242b;
+  --ui-muted: #6c7480;
+  --ui-label: #67707d;
+}
+
+/* ---------------------------------------------------------
+   Shared card language
+   --------------------------------------------------------- */
+
+.filter-controls-card,
+.route-detail-card,
+.right-info-header,
+.right-info-body,
+.global-search-panel,
+.bottom-toolbar,
+.basemap-panel,
+.lower-right-nav-stack .floating-north,
+.lower-right-nav-stack .floating-zoom {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ---------------------------------------------------------
+   LEFT SIDE — make it feel like 2 clean floating cards
+   --------------------------------------------------------- */
+
+@media (min-width: 761px) {
+
+  .filter-panel {
+    top: 16px !important;
+    left: 16px !important;
+    width: 286px !important;
+    max-height: calc(100vh - 32px) !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .filter-panel-content {
+    padding: 0 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+
+    overflow: hidden !important;
+  }
+
+  .filter-controls-card,
+  .route-detail-card {
+    width: 100% !important;
+
+    background: var(--ui-surface) !important;
+    border: 1px solid var(--ui-border) !important;
+    border-radius: var(--ui-radius) !important;
+    box-shadow: var(--ui-shadow) !important;
+  }
+
+  .filter-controls-card {
+    padding: 12px 12px 8px !important;
+  }
+
+  .route-detail-card {
+    min-height: 0 !important;
+    padding: 12px 12px 14px !important;
+  }
+
+  .filter-grid {
+    gap: 9px !important;
+  }
+
+  .form-field {
+    margin-bottom: 11px !important;
+  }
+
+  .form-field label,
+  .stop-list-heading,
+  .eyebrow {
+    margin-bottom: 6px !important;
+
+    font-size: 9.5px !important;
+    font-weight: 600 !important;
+    letter-spacing: .045em !important;
+    text-transform: uppercase !important;
+
+    color: var(--ui-label) !important;
+  }
+
+  .form-field select,
+  .stop-search-input-wrap input,
+  .poi-search-input-wrap input {
+    height: 34px !important;
+    border: 1px solid #d7dbe1 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    font-size: 11px !important;
+    color: #2d3440 !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.55);
+  }
+
+  .form-field select:focus,
+  .stop-search-input-wrap input:focus,
+  .poi-search-input-wrap input:focus {
+    border-color: rgba(59,130,246,.55) !important;
+    box-shadow:
+      0 0 0 3px rgba(59,130,246,.12),
+      inset 0 1px 0 rgba(255,255,255,.65) !important;
+  }
+
+  .stop-search-input-wrap,
+  .poi-search-input-wrap {
+    border-radius: 8px !important;
+  }
+
+  .poi-search-attribution {
+    margin-top: 5px !important;
+    font-size: 9px !important;
+    color: #7a828d !important;
+  }
+
+  .route-detail-card .route-info {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  .route-info h2 {
+    margin-bottom: 5px !important;
+    font-size: 17px !important;
+    line-height: 1.18 !important;
+    font-weight: 600 !important;
+    color: var(--ui-text) !important;
+  }
+
+  .route-info p {
+    font-size: 11px !important;
+    color: var(--ui-muted) !important;
+  }
+
+  .route-meta {
+    margin-top: 10px !important;
+  }
+
+  .route-meta-row {
+    grid-template-columns: 55px minmax(0,1fr) !important;
+    gap: 8px !important;
+    padding: 4px 0 !important;
+  }
+
+  .route-meta-label {
+    color: #7b8490 !important;
+  }
+
+  .selected-stop-card {
+    margin-top: 12px !important;
+    padding: 11px 12px !important;
+    border: 1px solid #dde2e8 !important;
+    border-radius: 8px !important;
+    background: rgba(255,255,255,.88) !important;
+    box-shadow: none !important;
+  }
+
+  .selected-stop-title {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--ui-text) !important;
+  }
+
+  .selected-stop-row {
+    font-size: 10px !important;
+    color: #616a75 !important;
+  }
+
+  .stop-list {
+    margin-top: 13px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #e4e7eb !important;
+  }
+
+  .stop-list-help {
+    margin-bottom: 9px !important;
+    font-size: 10px !important;
+    color: #6f7783 !important;
+  }
+
+  .stop-list-scroll {
+    padding-right: 2px !important;
+  }
+
+  .stop-list-item {
+    margin: 0 !important;
+    padding: 8px 7px !important;
+    border-radius: 8px !important;
+    transition:
+      background-color .16s ease,
+      box-shadow .16s ease,
+      transform .16s ease !important;
+  }
+
+  .stop-list-item:hover {
+    background: rgba(17,24,39,.045) !important;
+  }
+
+  .stop-list-item.is-active,
+  .stop-list-item[aria-selected="true"] {
+    background: rgba(17,24,39,.08) !important;
+    box-shadow: inset 0 0 0 1px rgba(17,24,39,.04) !important;
+  }
+
+  .stop-order-badge,
+  .stop-seq-badge {
+    border-radius: 5px !important;
+    background: #f1f3f6 !important;
+    color: #5d6673 !important;
+  }
+
+  .stop-role-chip,
+  .stop-tag,
+  .status-chip,
+  .route-status-chip {
+    border-radius: 5px !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   RIGHT SIDE — align header/search/legend more cleanly
+   --------------------------------------------------------- */
+
+@media (min-width: 761px) {
+
+  .right-info-panel {
+    top: 16px !important;
+    right: 16px !important;
+    bottom: auto !important;
+
+    width: 392px !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .right-info-header {
+    width: 392px !important;
+
+    padding: 14px 16px 12px !important;
+
+    background: var(--ui-surface) !important;
+    border: 1px solid var(--ui-border) !important;
+    border-radius: var(--ui-radius) !important;
+    box-shadow: var(--ui-shadow) !important;
+  }
+
+  .right-info-heading {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .right-info-header h1 {
+    margin: 0 !important;
+
+    font-size: 18px !important;
+    line-height: 1.14 !important;
+    font-weight: 650 !important;
+    letter-spacing: -.22px !important;
+    white-space: nowrap !important;
+
+    color: #1f2530 !important;
+  }
+
+  .right-info-header p {
+    margin-top: 6px !important;
+
+    font-size: 9px !important;
+    line-height: 1.32 !important;
+    white-space: nowrap !important;
+
+    color: #6e7682 !important;
+  }
+
+  .global-search-panel {
+    right: 16px !important;
+    width: 304px !important;
+
+    padding: 11px 12px 10px !important;
+
+    background: var(--ui-surface) !important;
+    border: 1px solid var(--ui-border) !important;
+    border-radius: var(--ui-radius) !important;
+    box-shadow: var(--ui-shadow-soft) !important;
+  }
+
+  .global-search-panel label {
+    margin-bottom: 6px !important;
+
+    font-size: 9.5px !important;
+    font-weight: 600 !important;
+    letter-spacing: .045em !important;
+    text-transform: uppercase !important;
+
+    color: var(--ui-label) !important;
+  }
+
+  .global-search-input-wrap {
+    min-height: 36px !important;
+    border: 1px solid #d7dbe1 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+  }
+
+  .global-search-input-wrap:focus-within {
+    border-color: rgba(59,130,246,.55) !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.12) !important;
+  }
+
+  .global-search-input-wrap input {
+    font-size: 11px !important;
+    color: #303744 !important;
+  }
+
+  .global-search-source {
+    margin-top: 5px !important;
+    font-size: 8.5px !important;
+    color: #7a828d !important;
+  }
+
+  .right-info-body {
+    width: 304px !important;
+    margin-left: auto !important;
+    padding: 13px 14px 14px !important;
+
+    background: var(--ui-surface) !important;
+    border: 1px solid var(--ui-border) !important;
+    border-radius: var(--ui-radius) !important;
+    box-shadow: var(--ui-shadow) !important;
+
+    max-height: calc(100vh - 210px) !important;
+  }
+
+  .right-info-section-title {
+    margin-bottom: 10px !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+    font-weight: 650 !important;
+    color: #303744 !important;
+  }
+
+  .right-info-panel .legend-section + .legend-section {
+    margin-top: 12px !important;
+    padding-top: 11px !important;
+    border-top: 1px solid #e6e9ee !important;
+  }
+
+  .right-info-panel .legend-section-title {
+    font-size: 9.5px !important;
+    color: var(--ui-label) !important;
+  }
+
+  .legend-section-toggle {
+    padding: 0 !important;
+  }
+
+  .legend-item {
+    min-height: 29px !important;
+    gap: 10px !important;
+    font-size: 11px !important;
+  }
+
+  .legend-note {
+    margin-top: 8px !important;
+    font-size: 9px !important;
+    color: #757d88 !important;
+  }
+
+  .legend-mode-grid {
+    gap: 6px !important;
+  }
+
+  .legend-mode-item {
+    grid-template-columns: 42px minmax(0,1fr) !important;
+    gap: 9px !important;
+  }
+
+  .legend-mode-code {
+    min-width: 38px !important;
+    height: 24px !important;
+    border: 1px solid #d6dbe2 !important;
+    border-radius: 6px !important;
+    background: #f6f8fa !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+  }
+
+  .right-info-help {
+    margin-top: 14px !important;
+  }
+
+  .right-info-action {
+    min-height: 37px !important;
+    padding: 8px 10px !important;
+
+    border: 1px solid #d9dee5 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+
+    font-size: 10px !important;
+    color: #3b4654 !important;
+
+    transition:
+      background-color .16s ease,
+      border-color .16s ease,
+      transform .16s ease !important;
+  }
+
+  .right-info-action:hover {
+    background: #f7f8fa !important;
+    border-color: #cfd6de !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   Bottom controls — compact and consistent
+   --------------------------------------------------------- */
+
+.bottom-toolbar {
+  background: var(--ui-surface) !important;
+  border: 1px solid var(--ui-border) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--ui-shadow) !important;
+}
+
+.toolbar-button,
+.toolbar-scale {
+  min-height: 42px !important;
+}
+
+.toolbar-button {
+  transition: background-color .16s ease !important;
+}
+
+.toolbar-button:hover {
+  background: rgba(17,24,39,.045) !important;
+}
+
+.lower-right-nav-stack .floating-north,
+.lower-right-nav-stack .floating-zoom {
+  background: var(--ui-surface) !important;
+  border: 1px solid var(--ui-border) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--ui-shadow-soft) !important;
+  overflow: hidden !important;
+}
+
+.lower-right-nav-stack .floating-zoom button {
+  transition: background-color .16s ease !important;
+}
+
+.lower-right-nav-stack .floating-zoom button:hover,
+.lower-right-nav-stack .floating-north:hover {
+  background: rgba(17,24,39,.045) !important;
+}
+
+/* ---------------------------------------------------------
+   Scrollbar cleanup
+   --------------------------------------------------------- */
+
+.route-detail-card::-webkit-scrollbar,
+.stop-list-scroll::-webkit-scrollbar,
+.right-info-body::-webkit-scrollbar {
+  width: 7px;
+}
+
+.route-detail-card::-webkit-scrollbar-thumb,
+.stop-list-scroll::-webkit-scrollbar-thumb,
+.right-info-body::-webkit-scrollbar-thumb {
+  background: rgba(107, 114, 128, .55);
+  border-radius: 999px;
+}
+
+.route-detail-card::-webkit-scrollbar-track,
+.stop-list-scroll::-webkit-scrollbar-track,
+.right-info-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------------------------------------------------------
+   Mobile — keep structure, only soften visual language
+   --------------------------------------------------------- */
+
+@media (max-width: 760px) {
+
+  .filter-panel,
+  .right-info-panel,
+  .global-search-panel,
+  .bottom-toolbar,
+  .basemap-panel {
+    border-radius: 12px !important;
+  }
+
+  .filter-controls-card,
+  .route-detail-card,
+  .right-info-header,
+  .right-info-body,
+  .global-search-panel {
+    border-radius: 12px !important;
+  }
+
+  .route-info h2,
+  .right-info-header h1 {
+    letter-spacing: -.16px !important;
+  }
+
+  .right-info-action,
+  .legend-mode-code,
+  .form-field select,
+  .stop-search-input-wrap input,
+  .poi-search-input-wrap input,
+  .global-search-input-wrap {
+    border-radius: 8px !important;
+  }
+
+  .stop-list-item {
+    border-radius: 8px !important;
+  }
+}
+
+/* =========================================================
+   FINAL DESKTOP LOWER-RIGHT CONTROLS
+   [ Toolbar ]   gap   [ North + Zoom ]
+   ========================================================= */
+
+@media (min-width: 761px) {
+
+  :root {
+    --lr-edge: 12px;
+    --lr-gap: 10px;
+    --lr-stack-width: 34px;
+    --lr-bottom: 12px;
+  }
+
+  /*
+    North + Zoom menempel di pojok kanan bawah.
+  */
+  .lower-right-nav-stack {
+    position: absolute !important;
+
+    right: var(--lr-edge) !important;
+    bottom: var(--lr-bottom) !important;
+
+    left: auto !important;
+    top: auto !important;
+
+    width: var(--lr-stack-width) !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 7px !important;
+
+    z-index: 1660 !important;
+
+    pointer-events: auto !important;
+  }
+
+  .lower-right-nav-stack
+    .floating-north,
+  .lower-right-nav-stack
+    .floating-zoom {
+    position: relative !important;
+
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+
+    margin: 0 !important;
+
+    transform: none !important;
+  }
+
+  .lower-right-nav-stack
+    .floating-north {
+    width: 34px !important;
+    height: 44px !important;
+  }
+
+  .lower-right-nav-stack
+    .floating-zoom {
+    width: 34px !important;
+  }
+
+  .lower-right-nav-stack
+    .floating-zoom button {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+
+  /*
+    Toolbar berada tepat di kiri stack.
+    Jarak kanan toolbar =
+      edge + lebar stack + gap
+  */
+  .bottom-toolbar {
+    right: calc(
+      var(--lr-edge)
+      + var(--lr-stack-width)
+      + var(--lr-gap)
+    ) !important;
+
+    bottom: var(--lr-bottom) !important;
+
+    transform: none !important;
+  }
+
+
+  /*
+    Basemap panel dibuka di atas toolbar agar tidak
+    menabrak North/Zoom.
+  */
+  .basemap-panel {
+    right: calc(
+      var(--lr-edge)
+      + var(--lr-stack-width)
+      + var(--lr-gap)
+    ) !important;
+
+    bottom: 64px !important;
+  }
+
+
+  /*
+    Tidak ada lagi perpindahan zoom ketika basemap terbuka.
+  */
+  body.basemap-panel-open
+    .lower-right-nav-stack,
+  body.basemap-panel-open
+    .floating-zoom,
+  body.basemap-panel-open
+    .lower-right-nav-stack
+    .floating-zoom {
+    transform: none !important;
+  }
+}
+
+
+/* =========================================================
+   MEDIUM DESKTOP
+   Sedikit rapatkan gap bila ruang horizontal sempit.
+   ========================================================= */
+
+@media (min-width: 761px) and (max-width: 1050px) {
+
+  :root {
+    --lr-gap: 8px;
+    --lr-edge: 10px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   Layout mobile sebelumnya tetap dipertahankan.
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  /*
+    Jangan paksa layout desktop pada toolbar mobile.
+  */
+  .bottom-toolbar {
+    transform: none;
+  }
+}
+
+/* =========================================================
+   DESKTOP FINAL — LOWER RIGHT CONTROLS
+   Target desktop:
+   [ Toolbar ]  10px  [ North + Zoom ]
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+  :root {
+    --desktop-map-edge: 12px;
+    --desktop-control-gap: 10px;
+    --desktop-nav-width: 36px;
+    --desktop-bottom: 12px;
+  }
+
+
+  /* -------------------------------------------------------
+     NORTH + ZOOM
+     benar-benar menempel di pojok kanan bawah viewport
+     ------------------------------------------------------- */
+
+  .lower-right-nav-stack {
+    position: fixed !important;
+
+    right: var(--desktop-map-edge) !important;
+    bottom: var(--desktop-bottom) !important;
+
+    left: auto !important;
+    top: auto !important;
+
+    width: var(--desktop-nav-width) !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 7px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    transform: none !important;
+
+    z-index: 2100 !important;
+
+    pointer-events: auto !important;
+  }
+
+
+  .lower-right-nav-stack
+    .floating-north {
+    position: relative !important;
+
+    inset: auto !important;
+
+    width: 36px !important;
+    height: 44px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    transform: none !important;
+
+    border-radius: 9px !important;
+  }
+
+
+  .lower-right-nav-stack
+    .floating-zoom {
+    position: relative !important;
+
+    inset: auto !important;
+
+    width: 36px !important;
+
+    margin: 0 !important;
+
+    transform: none !important;
+
+    border-radius: 9px !important;
+  }
+
+
+  .lower-right-nav-stack
+    .floating-zoom button {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     TOOLBAR
+     ditempatkan di kiri stack North/Zoom
+     ------------------------------------------------------- */
+
+  .bottom-toolbar {
+    position: fixed !important;
+
+    right: calc(
+      var(--desktop-map-edge)
+      + var(--desktop-nav-width)
+      + var(--desktop-control-gap)
+    ) !important;
+
+    bottom: var(--desktop-bottom) !important;
+
+    left: auto !important;
+    top: auto !important;
+
+    transform: none !important;
+
+    z-index: 2050 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     BASEMAP PANEL
+     muncul di atas toolbar, bukan menggeser North/Zoom
+     ------------------------------------------------------- */
+
+  .basemap-panel {
+    position: fixed !important;
+
+    right: calc(
+      var(--desktop-map-edge)
+      + var(--desktop-nav-width)
+      + var(--desktop-control-gap)
+    ) !important;
+
+    bottom: 64px !important;
+
+    left: auto !important;
+    top: auto !important;
+
+    transform: none !important;
+  }
+
+
+  body.basemap-panel-open
+    .lower-right-nav-stack,
+  body.basemap-panel-open
+    .floating-zoom,
+  body.basemap-panel-open
+    .lower-right-nav-stack
+    .floating-zoom {
+    right: var(--desktop-map-edge) !important;
+    bottom: var(--desktop-bottom) !important;
+    transform: none !important;
+  }
+
+
+  /*
+    Toolbar dan stack tidak boleh ikut positioning rule
+    lama yang bergantung pada right panel.
+  */
+  .right-info-panel ~ .bottom-toolbar,
+  .right-info-panel ~ .lower-right-nav-stack {
+    transform: none !important;
+  }
+}
+
+
+/* =========================================================
+   DESKTOP WIDE
+   sedikit tambah breathing room pada monitor besar
+   ========================================================= */
+
+@media (min-width: 1440px) {
+
+  :root {
+    --desktop-map-edge: 14px;
+    --desktop-control-gap: 10px;
+  }
+}
+
+/* =========================================================
+   DESKTOP UI FINAL REFINEMENT
+   Viewport target: >= 1024 px
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+  :root {
+    --desktop-card-gap: 8px;
+    --desktop-left-width: 286px;
+
+    --desktop-title-width: 360px;
+    --desktop-right-width: 330px;
+
+    --desktop-control-edge: 12px;
+    --desktop-control-gap: 10px;
+    --desktop-nav-width: 36px;
+    --desktop-control-bottom: 12px;
+  }
+
+
+  /* -------------------------------------------------------
+     LEFT PANEL
+     ------------------------------------------------------- */
+
+  .filter-panel {
+    width: var(--desktop-left-width) !important;
+  }
+
+  .filter-panel-content {
+    gap: 9px !important;
+  }
+
+  .filter-controls-card {
+    padding:
+      11px
+      12px
+      8px !important;
+  }
+
+  .filter-grid {
+    gap: 8px !important;
+  }
+
+  .filter-controls-card
+    .form-field {
+    margin-bottom: 9px !important;
+  }
+
+  .filter-controls-card
+    .route-select-field {
+    margin-bottom: 0 !important;
+  }
+
+  .form-field label {
+    margin-bottom: 5px !important;
+
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+  }
+
+  .form-field select {
+    height: 34px !important;
+
+    padding-left: 9px !important;
+
+    font-size: 11px !important;
+  }
+
+
+  /*
+    Saat Semua Lin/Koridor:
+    kartu detail hanya setinggi informasi overview.
+  */
+  .route-detail-card.is-overview {
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+
+    overflow: visible !important;
+  }
+
+  .route-detail-card.is-overview
+    .stop-list,
+  .route-detail-card.is-overview
+    .selected-stop-card {
+    display: none !important;
+  }
+
+  .route-detail-card.is-overview {
+    padding-bottom: 13px !important;
+  }
+
+
+  /*
+    Saat sebuah rute aktif, kartu kembali memanfaatkan
+    tinggi viewport untuk daftar halte.
+  */
+  .route-detail-card:not(.is-overview) {
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    max-height: calc(100vh - 252px) !important;
+
+    overflow: hidden !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .route-detail-card:not(.is-overview)
+    .route-info,
+  .route-detail-card:not(.is-overview)
+    .selected-stop-card {
+    flex: 0 0 auto !important;
+  }
+
+  .route-detail-card:not(.is-overview)
+    .stop-list {
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    overflow: hidden !important;
+  }
+
+  .route-detail-card:not(.is-overview)
+    .stop-list-scroll {
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+
+    overflow-y: auto !important;
+  }
+
+
+  /* -------------------------------------------------------
+     RIGHT CARDS — PROPORTION
+     ------------------------------------------------------- */
+
+  .right-info-panel {
+    width: var(--desktop-title-width) !important;
+  }
+
+  .right-info-header {
+    width: var(--desktop-title-width) !important;
+
+    padding:
+      13px
+      15px
+      11px !important;
+  }
+
+  .right-info-header h1 {
+    font-size: 18px !important;
+    line-height: 1.12 !important;
+    letter-spacing: -.24px !important;
+
+    white-space: nowrap !important;
+  }
+
+  .right-info-header p {
+    margin-top: 6px !important;
+
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+  }
+
+
+  .global-search-panel {
+    width: var(--desktop-right-width) !important;
+    right: 16px !important;
+
+    padding:
+      10px
+      12px
+      9px !important;
+  }
+
+  .global-search-panel label {
+    font-size: 10px !important;
+  }
+
+  .global-search-input-wrap input {
+    height: 36px !important;
+
+    font-size: 11px !important;
+  }
+
+  .global-search-source {
+    font-size: 9.5px !important;
+    line-height: 1.3 !important;
+  }
+
+
+  .right-info-body {
+    width: var(--desktop-right-width) !important;
+
+    margin-left: auto !important;
+
+    padding:
+      12px
+      13px
+      13px !important;
+
+    max-height: calc(100vh - 210px) !important;
+  }
+
+  .right-info-section-title {
+    margin-bottom: 10px !important;
+
+    font-size: 13px !important;
+  }
+
+  .right-info-panel
+    .legend-section-title {
+    font-size: 10px !important;
+  }
+
+  .legend-item {
+    min-height: 28px !important;
+
+    font-size: 11px !important;
+  }
+
+  .legend-note {
+    font-size: 9.5px !important;
+    line-height: 1.4 !important;
+  }
+
+  .legend-mode-item {
+    font-size: 10.5px !important;
+  }
+
+  .right-info-action {
+    font-size: 10.5px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     LOWER-RIGHT MAP CONTROLS
+     [ toolbar ] gap [ N/+/- ]
+     ------------------------------------------------------- */
+
+  .lower-right-nav-stack {
+    position: fixed !important;
+
+    right: var(--desktop-control-edge) !important;
+    bottom: var(--desktop-control-bottom) !important;
+
+    left: auto !important;
+    top: auto !important;
+
+    width: var(--desktop-nav-width) !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+
+    z-index: 2100 !important;
+
+    transform: none !important;
+  }
+
+  .lower-right-nav-stack
+    .floating-north,
+  .lower-right-nav-stack
+    .floating-zoom {
+    position: relative !important;
+
+    inset: auto !important;
+
+    width: var(--desktop-nav-width) !important;
+
+    margin: 0 !important;
+
+    transform: none !important;
+  }
+
+  .lower-right-nav-stack
+    .floating-north {
+    height: 42px !important;
+  }
+
+  .lower-right-nav-stack
+    .floating-zoom button {
+    width: var(--desktop-nav-width) !important;
+    height: 34px !important;
+  }
+
+
+  .bottom-toolbar {
+    position: fixed !important;
+
+    right: calc(
+      var(--desktop-control-edge)
+      + var(--desktop-nav-width)
+      + var(--desktop-control-gap)
+    ) !important;
+
+    bottom: var(--desktop-control-bottom) !important;
+
+    left: auto !important;
+    top: auto !important;
+
+    height: 42px !important;
+
+    transform: none !important;
+  }
+
+  .toolbar-button {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+  }
+
+  .toolbar-thumbnail {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .toolbar-scale {
+    min-width: 88px !important;
+    height: 42px !important;
+
+    padding:
+      0
+      10px !important;
+
+    font-size: 10.5px !important;
+  }
+
+
+  .basemap-panel {
+    position: fixed !important;
+
+    right: calc(
+      var(--desktop-control-edge)
+      + var(--desktop-nav-width)
+      + var(--desktop-control-gap)
+    ) !important;
+
+    bottom: 64px !important;
+
+    left: auto !important;
+    top: auto !important;
+
+    transform: none !important;
+  }
+
+
+  body.basemap-panel-open
+    .lower-right-nav-stack,
+  body.basemap-panel-open
+    .floating-zoom,
+  body.basemap-panel-open
+    .lower-right-nav-stack
+    .floating-zoom {
+    transform: none !important;
+  }
+}
+
+
+/* =========================================================
+   DESKTOP 1920×1080+
+   Give slightly more breathing room without inflating cards.
+   ========================================================= */
+
+@media (min-width: 1600px) {
+
+  :root {
+    --desktop-control-edge: 14px;
+  }
+
+  .filter-panel {
+    left: 18px !important;
+  }
+
+  .right-info-panel,
+  .global-search-panel {
+    right: 18px !important;
+  }
+}
+
+/* =========================================================
+   DESKTOP CONTROL POSITION — CLEAN FIX
+   Rollback-safe: hanya mengatur kontrol kanan bawah.
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+  :root {
+    --desktop-control-edge: 16px;
+    --desktop-control-bottom: 16px;
+    --desktop-nav-width: 36px;
+    --desktop-control-gap: 10px;
+  }
+
+
+  /* -------------------------------------------------------
+     NORTH + ZOOM = PALING KANAN
+     ------------------------------------------------------- */
+
+  body #lowerRightNavStack.lower-right-nav-stack {
+    position: fixed !important;
+
+    right: var(--desktop-control-edge) !important;
+    bottom: var(--desktop-control-bottom) !important;
+
+    left: auto !important;
+    top: auto !important;
+
+    width: var(--desktop-nav-width) !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    transform: none !important;
+
+    z-index: 2200 !important;
+
+    pointer-events: auto !important;
+  }
+
+
+  /*
+    Selector dengan ID sengaja dibuat lebih kuat daripada
+    rule lama:
+      body:not(.right-panel-collapsed) .floating-north
+      body:not(.right-panel-collapsed) .floating-zoom
+  */
+
+  body #lowerRightNavStack #northButton.floating-north,
+  body:not(.right-panel-collapsed)
+    #lowerRightNavStack
+    #northButton.floating-north,
+  body.right-panel-collapsed
+    #lowerRightNavStack
+    #northButton.floating-north {
+
+    position: relative !important;
+
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    width: var(--desktop-nav-width) !important;
+    height: 42px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    transform: none !important;
+  }
+
+
+  body #lowerRightNavStack #floatingZoom.floating-zoom,
+  body:not(.right-panel-collapsed)
+    #lowerRightNavStack
+    #floatingZoom.floating-zoom,
+  body.right-panel-collapsed
+    #lowerRightNavStack
+    #floatingZoom.floating-zoom,
+  body.basemap-panel-open
+    #lowerRightNavStack
+    #floatingZoom.floating-zoom {
+
+    position: relative !important;
+
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    width: var(--desktop-nav-width) !important;
+
+    margin: 0 !important;
+
+    transform: none !important;
+  }
+
+
+  body #lowerRightNavStack #floatingZoom button {
+    width: var(--desktop-nav-width) !important;
+    height: 34px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     TOOLBAR = DI KIRI NORTH/ZOOM
+     ------------------------------------------------------- */
+
+  body #bottomToolbar.bottom-toolbar {
+    position: fixed !important;
+
+    right: calc(
+      var(--desktop-control-edge)
+      + var(--desktop-nav-width)
+      + var(--desktop-control-gap)
+    ) !important;
+
+    bottom: var(--desktop-control-bottom) !important;
+
+    left: auto !important;
+    top: auto !important;
+
+    height: 42px !important;
+
+    margin: 0 !important;
+
+    transform: none !important;
+
+    z-index: 2150 !important;
+  }
+
+
+  /* Toolbar tetap compact seperti versi refined. */
+  body #bottomToolbar .toolbar-button {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+  }
+
+  body #bottomToolbar .toolbar-thumbnail {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  body #bottomToolbar .toolbar-scale {
+    min-width: 88px !important;
+    height: 42px !important;
+
+    padding: 0 10px !important;
+
+    font-size: 10.5px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     BASEMAP PANEL
+     membuka di atas toolbar, bukan mendorong North/Zoom.
+     ------------------------------------------------------- */
+
+  body #basemapPanel.basemap-panel,
+  body:not(.right-panel-collapsed)
+    #basemapPanel.basemap-panel,
+  body.right-panel-collapsed
+    #basemapPanel.basemap-panel {
+
+    position: fixed !important;
+
+    right: calc(
+      var(--desktop-control-edge)
+      + var(--desktop-nav-width)
+      + var(--desktop-control-gap)
+    ) !important;
+
+    bottom: 68px !important;
+
+    left: auto !important;
+    top: auto !important;
+
+    transform: none !important;
+  }
+}
+
+
+/* Monitor lebar 1920×1080: sedikit breathing room. */
+@media (min-width: 1600px) {
+
+  :root {
+    --desktop-control-edge: 18px;
+    --desktop-control-bottom: 18px;
+  }
+}
+
+/* =========================================================
+   DESKTOP TITLE — LARGER + ONE LINE
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+  /*
+    Judul diperbesar, sementara kartu diperpanjang secukupnya
+    agar "Jaringan Transportasi Umum Jabodetabek" tetap 1 baris.
+  */
+  .right-info-panel {
+    width: 420px !important;
+  }
+
+  .right-info-header {
+    width: 420px !important;
+
+    padding:
+      14px
+      17px
+      12px !important;
+  }
+
+  .right-info-heading {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .right-info-header h1 {
+    width: 100% !important;
+
+    margin: 0 !important;
+
+    font-size: 21px !important;
+    line-height: 1.12 !important;
+    font-weight: 650 !important;
+    letter-spacing: -.32px !important;
+
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .right-info-header p {
+    margin-top: 7px !important;
+
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+
+    white-space: nowrap !important;
+  }
+
+  /*
+    Search dan legenda tetap lebih ramping.
+    Keduanya tetap rata kanan dengan kartu judul.
+  */
+  .global-search-panel {
+    right: 18px !important;
+  }
+
+  .right-info-body {
+    margin-left: auto !important;
+  }
+}
+
+
+/*
+  Pada desktop yang sedikit lebih sempit, tetap satu baris
+  dengan penyesuaian kecil.
+*/
+@media (min-width: 1024px) and (max-width: 1350px) {
+
+  .right-info-panel,
+  .right-info-header {
+    width: 405px !important;
+  }
+
+  .right-info-header h1 {
+    font-size: 19.5px !important;
+    letter-spacing: -.34px !important;
+  }
+}
+
+/* =========================================================
+   DESKTOP TITLE — RESPONSIVE FIT, ALWAYS ONE LINE
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+  /*
+    Lebar judul menyesuaikan viewport desktop:
+    - minimum 450 px
+    - pada 1920 px sekitar 470 px
+    - maksimum 480 px
+
+    Ini memberi ruang cukup untuk Avenir/Helvetica tanpa
+    membuat kartu terlalu panjang.
+  */
+  .right-info-panel {
+    width: clamp(
+      450px,
+      24.5vw,
+      480px
+    ) !important;
+  }
+
+  .right-info-header {
+    width: 100% !important;
+
+    padding:
+      14px
+      17px
+      12px !important;
+
+    overflow: hidden !important;
+  }
+
+  .right-info-heading {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .right-info-header h1 {
+    display: block !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin: 0 !important;
+
+    /*
+      Tetap besar, tetapi sedikit responsif.
+      1920 px menghasilkan sekitar 20 px.
+    */
+    font-size: clamp(
+      19px,
+      1.05vw,
+      20.5px
+    ) !important;
+
+    line-height: 1.12 !important;
+    font-weight: 650 !important;
+    letter-spacing: -.34px !important;
+
+    white-space: nowrap !important;
+
+    /*
+      Safety net: tidak akan pernah keluar dari kartu.
+    */
+    overflow: hidden !important;
+    text-overflow: clip !important;
+  }
+
+  .right-info-header p {
+    margin-top: 7px !important;
+
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+
+    white-space: nowrap !important;
+    overflow: hidden !important;
+  }
+
+  /*
+    Search dan legenda tetap ramping dan rata kanan.
+    Tidak ikut melebar bersama kartu judul.
+  */
+  .global-search-panel {
+    width: 330px !important;
+    right: 18px !important;
+  }
+
+  .right-info-body {
+    width: 330px !important;
+    margin-left: auto !important;
+  }
+}
+
+
+/*
+  Desktop lebih sempit:
+  kurangi font sedikit daripada membiarkan teks meluber.
+*/
+@media (min-width: 1024px) and (max-width: 1350px) {
+
+  .right-info-panel {
+    width: 450px !important;
+  }
+
+  .right-info-header h1 {
+    font-size: 18.5px !important;
+    letter-spacing: -.36px !important;
+  }
+}
+
+
+/*
+  1920×1080 / desktop lebar:
+  gunakan ukuran yang paling proporsional.
+*/
+@media (min-width: 1600px) {
+
+  .right-info-panel {
+    width: 470px !important;
+  }
+
+  .right-info-header h1 {
+    font-size: 20px !important;
+  }
+}
+
+/* =========================================================
+   MODE-FIRST ROUTE DROPDOWN
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+  /*
+    Saat Semua Moda dipilih, dropdown hanya mempunyai pilihan
+    "Semua Lin / Koridor". Tetap dibuat aktif agar pola
+    interaksi konsisten, tetapi tampil sedikit lebih netral.
+  */
+  body:has(#modeSelect option[value="ALL"]:checked)
+    #routeSelect {
+    color: #5f6874;
+  }
+}
+
+/* =========================================================
+   INTEGRATION — KA BANDARA + TERMINAL BUS
+   ========================================================= */
+
+/*
+  Catatan atribusi ikon diletakkan di Informasi & Disclaimer,
+  sehingga kredit tidak memenuhi setiap popup.
+*/
+.asset-attribution-note {
+  margin-top: 8px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: #818894;
+}
+
+/*
+  Terminal Bus tidak mempunyai badge lin. Nama terminal tetap
+  sejajar natural dengan baris KAJJ yang juga tanpa badge.
+*/
+.integration-place-row:has(.integration-line-badges:empty)
+  .integration-place-name {
+  padding-left: 0;
+}
+
+/*
+  PNG terminal generik tetap mengikuti kotak logo operator,
+  tanpa dipaksa menjadi lingkaran/badge rute.
+*/
+.integration-group .integration-logo {
+  object-position: center;
+}
+
+/* =========================================================
+   HALTE / STASIUN USULAN & KONSEPTUAL — SHOW / HIDE
+   ========================================================= */
+
+.optional-stop-controls:empty {
+  display: none;
+}
+
+.optional-stop-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  margin-top: 9px;
+  padding-top: 9px;
+
+  border-top: 1px solid #e3e5e8;
+}
+
+.optional-stop-control-copy {
+  min-width: 0;
+}
+
+.optional-stop-control-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #343a42;
+}
+
+.optional-stop-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+
+  border-radius: 999px;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.optional-stop-count-proposed {
+  background: #f6e7f3;
+  color: #a0448f;
+}
+
+.optional-stop-count-conceptual {
+  background: #eee6f4;
+  color: #744a8b;
+}
+
+.optional-stop-control-hint {
+  max-width: 150px;
+  margin-top: 3px;
+
+  font-size: 9px;
+  line-height: 1.35;
+  color: #7b828c;
+}
+
+.optional-stop-switch {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.optional-stop-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.optional-stop-switch-track {
+  position: relative;
+  display: block;
+  width: 34px;
+  height: 19px;
+
+  border: 1px solid #c9cdd3;
+  border-radius: 999px;
+  background: #e5e7ea;
+
+  transition:
+    background .16s ease,
+    border-color .16s ease,
+    box-shadow .16s ease;
+}
+
+.optional-stop-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 13px;
+  height: 13px;
+
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,.22);
+  transition: transform .16s ease;
+}
+
+.optional-stop-switch
+  input:checked
+  + .optional-stop-switch-track {
+  background: #6d586f;
+  border-color: #6d586f;
+}
+
+.optional-stop-switch
+  input:checked
+  + .optional-stop-switch-track
+  .optional-stop-switch-thumb {
+  transform: translateX(15px);
+}
+
+.optional-stop-switch
+  input:focus-visible
+  + .optional-stop-switch-track {
+  box-shadow: 0 0 0 3px rgba(109,88,111,.18);
+}
+
+
+.asset-attribution-note a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.asset-attribution-note a:hover {
+  color: #4f5661;
+}
+
+/* =========================================================
+   DESKTOP BASEMAP PANEL — FULLY VISIBLE
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+  /*
+    Rule ini sengaja diletakkan paling akhir dan memakai ID
+    agar mengalahkan override lama yang sempat mengecilkan
+    panel menjadi 300 px.
+
+    Tiga kartu basemap @100 px memerlukan ruang:
+      3 x 100 + gap + padding
+    sehingga 356 px memberi breathing room dan mencegah
+    kartu Satellite terpotong oleh overflow-x:hidden.
+  */
+  body #basemapPanel.basemap-panel {
+    position: fixed !important;
+
+    width: 356px !important;
+    min-width: 356px !important;
+    max-width: min(
+      356px,
+      calc(100vw - 96px)
+    ) !important;
+
+    right: calc(
+      var(--desktop-control-edge)
+      + var(--desktop-nav-width)
+      + var(--desktop-control-gap)
+    ) !important;
+
+    bottom: calc(
+      var(--desktop-control-bottom)
+      + 50px
+    ) !important;
+
+    left: auto !important;
+    top: auto !important;
+
+    box-sizing: border-box !important;
+
+    /*
+      Pada layar dengan tinggi kecil, panel tetap berada
+      di dalam viewport dan bisa discroll secara vertikal.
+    */
+    max-height: calc(
+      100vh
+      - var(--desktop-control-bottom)
+      - 76px
+    ) !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+
+    transform: none !important;
+  }
+
+
+  body #basemapPanel .basemap-carousel {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+
+    gap: 8px !important;
+
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+
+    box-sizing: border-box !important;
+
+    /*
+      Semua tiga kartu memang harus muat; tidak perlu
+      horizontal scrolling atau clipping.
+    */
+    overflow-x: visible !important;
+  }
+
+
+  body #basemapPanel .basemap-option {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+
+    flex: 0 0 100px !important;
+
+    box-sizing: border-box !important;
+  }
+
+
+  body #basemapPanel .basemap-opacity-row {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+
+  body #basemapPanel .opacity-grid {
+    min-width: 0 !important;
+  }
+}
+
+
+/*
+  Desktop sempit: kecilkan kartu secara proporsional daripada
+  membiarkan panel keluar viewport.
+*/
+@media (min-width: 1024px) and (max-width: 1180px) {
+
+  body #basemapPanel.basemap-panel {
+    width: 330px !important;
+    min-width: 330px !important;
+    max-width: calc(100vw - 88px) !important;
+  }
+
+  body #basemapPanel .basemap-option {
+    width: 92px !important;
+    min-width: 92px !important;
+    max-width: 92px !important;
+
+    flex-basis: 92px !important;
+  }
+}
+
+/* =========================================================
+   DESKTOP — ROUTE INFO + SELECTED STOP EMPHASIS
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+  /*
+    Bagian atas kartu detail (informasi rute + titik terpilih)
+    dibuat lebih besar tanpa memperbesar daftar halte di bawah.
+  */
+
+  .route-detail-card:not(.is-overview)
+    > .route-info {
+    padding-bottom: 3px !important;
+  }
+
+
+  .route-detail-card:not(.is-overview)
+    .route-info .eyebrow {
+    margin-bottom: 7px !important;
+
+    font-size: 10.5px !important;
+    line-height: 1.25 !important;
+    font-weight: 600 !important;
+  }
+
+
+  .route-detail-card:not(.is-overview)
+    .route-info h2 {
+    margin-bottom: 8px !important;
+
+    font-size: 19px !important;
+    line-height: 1.18 !important;
+    font-weight: 650 !important;
+    letter-spacing: -0.15px !important;
+  }
+
+
+  .route-detail-card:not(.is-overview)
+    .route-meta {
+    margin-top: 11px !important;
+  }
+
+
+  .route-detail-card:not(.is-overview)
+    .route-meta-row {
+    grid-template-columns:
+      58px
+      minmax(0, 1fr) !important;
+
+    gap: 9px !important;
+
+    padding: 4.5px 0 !important;
+
+    font-size: 11.5px !important;
+    line-height: 1.4 !important;
+  }
+
+
+  /*
+    Kartu Halte/Stasiun Terpilih dibuat lebih menonjol.
+  */
+  .route-detail-card:not(.is-overview)
+    > .selected-stop-card:not([hidden]) {
+    margin-top: 14px !important;
+
+    padding:
+      13px
+      14px !important;
+
+    border-radius: 9px !important;
+
+    background:
+      rgba(255,255,255,.94) !important;
+
+    box-shadow:
+      0 1px 3px rgba(0,0,0,.045) !important;
+  }
+
+
+  .route-detail-card:not(.is-overview)
+    .selected-stop-card .eyebrow {
+    margin-bottom: 6px !important;
+
+    font-size: 10px !important;
+    font-weight: 600 !important;
+  }
+
+
+  .route-detail-card:not(.is-overview)
+    .selected-stop-title {
+    margin-bottom: 8px !important;
+
+    font-size: 15.5px !important;
+    line-height: 1.2 !important;
+    font-weight: 650 !important;
+  }
+
+
+  .route-detail-card:not(.is-overview)
+    .selected-stop-row {
+    margin-top: 4px !important;
+
+    font-size: 11px !important;
+    line-height: 1.38 !important;
+  }
+
+
+  /*
+    Beri sedikit ruang sebelum daftar halte agar dua blok
+    informasi di atas terasa sebagai satu area utama.
+  */
+  .route-detail-card:not(.is-overview)
+    > .stop-list {
+    margin-top: 16px !important;
+    padding-top: 13px !important;
+  }
+}
+
+/* =========================================================
+   ROUTE ALERT — PENGALIHAN SEMENTARA
+   ========================================================= */
+
+.route-alert-card {
+  margin-top: 12px;
+
+  border:
+    1px solid
+    rgba(185, 130, 20, .30);
+
+  border-radius: 9px;
+
+  background:
+    rgba(255, 248, 224, .78);
+
+  overflow: hidden;
+}
+
+
+.route-alert-summary {
+  display: grid;
+  grid-template-columns:
+    24px
+    minmax(0, 1fr)
+    18px;
+
+  align-items: center;
+  gap: 8px;
+
+  padding:
+    10px
+    10px;
+
+  list-style: none;
+  cursor: pointer;
+
+  user-select: none;
+}
+
+
+.route-alert-summary::-webkit-details-marker {
+  display: none;
+}
+
+
+.route-alert-summary::marker {
+  display: none;
+  content: "";
+}
+
+
+.route-alert-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 22px;
+  height: 22px;
+
+  border-radius: 50%;
+
+  background: #b77d12;
+  color: #fff;
+
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 750;
+}
+
+
+.route-alert-summary-copy {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+
+.route-alert-type {
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 700;
+
+  color: #8a6217;
+
+  text-transform: uppercase;
+  letter-spacing: .35px;
+}
+
+
+.route-alert-title {
+  font-size: 11px;
+  line-height: 1.3;
+  font-weight: 650;
+
+  color: #3d382f;
+}
+
+
+.route-alert-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18px;
+  line-height: 1;
+
+  color: #8a7a5c;
+
+  transform: rotate(90deg);
+  transition: transform .16s ease;
+}
+
+
+.route-alert-card[open]
+  .route-alert-chevron {
+  transform: rotate(-90deg);
+}
+
+
+.route-alert-body {
+  padding:
+    0
+    11px
+    11px
+    42px;
+
+  border-top:
+    1px solid
+    rgba(185, 130, 20, .16);
+
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+
+.route-alert-note {
+  margin:
+    10px
+    0
+    0;
+
+  font-size: 10.5px;
+  line-height: 1.45;
+
+  color: #565148;
+}
+
+
+.route-alert-stop-section {
+  margin-top: 10px;
+}
+
+
+.route-alert-stop-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  font-size: 10.5px;
+  line-height: 1.3;
+  font-weight: 650;
+
+  color: #403a31;
+}
+
+
+.route-alert-stop-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(183, 125, 18, .14);
+
+  color: #8a6217;
+
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+
+.route-alert-stop-note {
+  margin-top: 4px;
+
+  font-size: 9px;
+  line-height: 1.4;
+
+  color: #777064;
+}
+
+
+.route-alert-stop-list {
+  margin:
+    7px
+    0
+    0;
+
+  padding-left: 16px;
+}
+
+
+.route-alert-stop-list li {
+  margin: 4px 0;
+
+  font-size: 10.5px;
+  line-height: 1.35;
+
+  color: #474238;
+}
+
+
+.route-alert-source {
+  display: grid;
+  grid-template-columns:
+    42px
+    minmax(0, 1fr);
+
+  gap: 6px;
+
+  margin-top: 10px;
+  padding-top: 8px;
+
+  border-top:
+    1px solid
+    rgba(185, 130, 20, .16);
+
+  font-size: 9.5px;
+  line-height: 1.35;
+
+  color: #686156;
+}
+
+
+.route-alert-source span {
+  font-weight: 650;
+  color: #514b42;
+}
+
+
+/*
+  Desktop: warning tetap compact sehingga daftar halte
+  reguler di bawah masih memiliki ruang scroll yang cukup.
+*/
+@media (min-width: 1024px) {
+
+  .route-alert-card {
+    margin-top: 11px;
+  }
+
+  .route-alert-summary {
+    padding:
+      9px
+      10px;
+  }
+
+  .route-alert-body {
+    max-height: 190px;
+  }
+}
+
+/* =========================================================
+   STOP POPUP — FIXED NAVIGATION FOOTER
+   ========================================================= */
+
+/*
+  Arsitektur:
+  .stop-popup
+    ├─ .stop-popup-scroll        <-- satu-satunya area scroll
+    └─ .stop-popup-navigation    <-- selalu tetap terlihat
+
+  Jadi tombol Prev/Next bukan sticky di dalam scroll container,
+  melainkan benar-benar berada di luar scroll container.
+*/
+
+.leaflet-popup-content {
+  /*
+    Leaflet tidak lagi menjadi area scroll untuk stop popup.
+    Ketinggian dikendalikan oleh .stop-popup.
+  */
+  overflow: visible !important;
+}
+
+
+/*
+  Kalau Leaflet sempat menambahkan class leaflet-popup-scrolled
+  karena maxHeight, paksa container luarnya tetap tidak scroll.
+*/
+.leaflet-popup-content.leaflet-popup-scrolled {
+  overflow: visible !important;
+  border-bottom: 0 !important;
+  border-top: 0 !important;
+}
+
+
+.stop-popup {
+  display: flex !important;
+  flex-direction: column !important;
+
+  min-height: 0 !important;
+
+  /*
+    Padding lama dipindah ke scroll area dan footer supaya
+    keduanya bisa memiliki batas yang independen.
+  */
+  padding: 0 !important;
+
+  overflow: hidden !important;
+
+  background: #ffffff;
+}
+
+
+/*
+  Semua isi informasi berada di sini.
+*/
+.stop-popup-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+
+  padding:
+    16px
+    16px
+    8px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+
+/*
+  Footer benar-benar bukan bagian dari scroll.
+*/
+.stop-popup-navigation {
+  position: relative !important;
+  inset: auto !important;
+
+  flex: 0 0 auto !important;
+
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr) !important;
+
+  gap: 8px !important;
+
+  margin: 0 !important;
+
+  padding:
+    11px
+    16px
+    16px !important;
+
+  border-top:
+    1px solid #e1e1e1 !important;
+
+  background: #ffffff !important;
+
+  box-shadow:
+    0 -5px 10px
+    rgba(0, 0, 0, .035) !important;
+
+  z-index: 5;
+}
+
+
+/*
+  Karena footer sudah mempunyai border sendiri,
+  hilangkan margin/border legacy pada selector yang sama.
+*/
+.stop-popup-navigation::before,
+.stop-popup-navigation::after {
+  content: none !important;
+}
+
+
+/* =========================================================
+   DESKTOP POPUP HEIGHT
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+  .stop-popup {
+    /*
+      Sengaja sedikit di bawah maxHeight Leaflet desktop
+      (maks. 680px), sehingga Leaflet tidak perlu membuat
+      seluruh .leaflet-popup-content menjadi scrollable.
+    */
+    max-height:
+      min(
+        620px,
+        calc(100vh - 190px)
+      ) !important;
+  }
+
+
+  .stop-popup-scroll {
+    /*
+      Scrollbar hanya muncul di area informasi bila memang
+      dibutuhkan.
+    */
+    scrollbar-width: thin;
+  }
+
+
+  /*
+    Popup sederhana tidak perlu dipaksa tinggi;
+    ia hanya mengambil tinggi kontennya.
+  */
+  .stop-popup.is-compact {
+    max-height:
+      min(
+        520px,
+        calc(100vh - 190px)
+      ) !important;
+  }
+}
+
+
+/* =========================================================
+   MOBILE SAFETY
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  .stop-popup {
+    max-height:
+      min(
+        68dvh,
+        540px
+      ) !important;
+  }
+
+
+  .stop-popup-scroll {
+    padding:
+      14px
+      14px
+      7px;
+  }
+
+
+  .stop-popup-navigation {
+    gap: 6px !important;
+
+    padding:
+      9px
+      14px
+      14px !important;
+  }
+}
+
+/* =========================================================
+   ROUTE ALERT — MRT JAKARTA FASE 2A DETAIL
+   ========================================================= */
+
+.route-alert-terminus {
+  display: grid;
+  grid-template-columns:
+    1fr;
+  gap: 2px;
+
+  margin-top: 10px;
+  padding: 8px 9px;
+
+  border-radius: 6px;
+
+  background:
+    rgba(183, 125, 18, .09);
+}
+
+
+.route-alert-detail-label {
+  font-size: 8.5px;
+  line-height: 1.25;
+  font-weight: 650;
+
+  color: #77684f;
+
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+
+
+.route-alert-terminus strong {
+  font-size: 10.5px;
+  line-height: 1.35;
+  font-weight: 650;
+
+  color: #40382b;
+}
+
+
+/*
+  Bedakan sedikit halte yang tidak dilayani dan halte yang
+  muncul khusus selama pengalihan tanpa memakai warna terlalu
+  keras.
+*/
+.route-alert-stop-section.is-not-served
+  .route-alert-stop-count {
+  background:
+    rgba(126, 126, 126, .12);
+
+  color: #646464;
+}
+
+
+.route-alert-stop-section.is-not-served
+  .route-alert-stop-list li {
+  color: #595959;
+}
+
+
+.route-alert-stop-section.is-temporary-served
+  .route-alert-stop-count {
+  background:
+    rgba(183, 125, 18, .14);
+
+  color: #8a6217;
+}
+
+
+.route-alert-stop-section
+  + .route-alert-stop-section {
+  margin-top: 12px;
+  padding-top: 10px;
+
+  border-top:
+    1px solid
+    rgba(185, 130, 20, .12);
+}
+
+/* =========================================================
+   DESKTOP LEFT PANEL — EXTEND TO LOWER TOOLBAR BASELINE
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+  /*
+    Bagian atas tetap di posisi sekarang.
+
+    Bagian bawah panel kiri ditarik sampai memiliki inset
+    bawah yang sama dengan toolbar kanan bawah:
+      bottom = --desktop-control-bottom
+
+    Karena parent .filter-panel transparan, ketika mode
+    overview aktif ruang kosong tidak terlihat sebagai kartu.
+  */
+  body .filter-panel {
+    top: 16px !important;
+    bottom: var(--desktop-control-bottom) !important;
+
+    height: auto !important;
+    max-height: none !important;
+  }
+
+
+  /*
+    Isi panel harus benar-benar memakai seluruh tinggi antara
+    top dan bottom di atas.
+  */
+  body .filter-panel-content {
+    height: 100% !important;
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+
+  /*
+    Saat rute aktif, hapus batas max-height lama
+    calc(100vh - 252px). Kartu detail sekarang mengisi seluruh
+    ruang sisa setelah kartu kontrol atas.
+
+    Stop list tetap menjadi bagian yang scroll.
+  */
+  body .route-detail-card:not(.is-overview) {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+
+    flex: 1 1 0 !important;
+  }
+
+
+  body .route-detail-card:not(.is-overview)
+    .stop-list {
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+
+  body .route-detail-card:not(.is-overview)
+    .stop-list-scroll {
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+
+    overflow-y: auto !important;
+  }
+}
+
+
+/*
+  Pada layar >=1600 px, toolbar memakai bottom 18 px.
+  Panel otomatis mengikuti variabel yang sama, sehingga garis
+  bawah keduanya tetap sejajar.
+*/
+@media (min-width: 1600px) {
+
+  body .filter-panel {
+    bottom: var(--desktop-control-bottom) !important;
+  }
+}
+
+/* =========================================================
+   OPERATIONAL DIVERSION — STOP LIST
+   ========================================================= */
+
+/*
+  Halte reguler yang sementara tidak dilayani tetap terlihat
+  sebagai referensi pola normal, tetapi sengaja dibuat redup
+  dan tidak interaktif.
+*/
+.stop-list-item.is-operational-not-served {
+  opacity: .52;
+  cursor: default !important;
+
+  background:
+    rgba(120, 120, 120, .045);
+}
+
+
+.stop-list-item.is-operational-not-served
+  .stop-list-name {
+  color: #666b72;
+}
+
+
+.stop-list-item.is-operational-not-served:hover {
+  background:
+    rgba(120, 120, 120, .045) !important;
+}
+
+
+/*
+  Halte tambahan selama pengalihan.
+*/
+.stop-list-item.is-operational-temporary {
+  background:
+    rgba(183, 125, 18, .045);
+}
+
+
+.stop-list-item.is-operational-temp-terminus {
+  background:
+    rgba(183, 125, 18, .075);
+}
+
+
+/*
+  Badge + menggantikan sequence yang memang tidak tersimpan
+  dalam SEQ_MAP rute dasar.
+*/
+.stop-seq-badge.is-temporary {
+  border:
+    1px solid
+    rgba(183, 125, 18, .32);
+
+  background:
+    rgba(183, 125, 18, .10);
+
+  color: #8a6217;
+}
+
+
+/*
+  Badge status operasional pada sisi kanan daftar.
+*/
+.stop-operational-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 17px;
+  padding: 2px 5px;
+
+  border-radius: 3px;
+
+  font-size: 8px;
+  line-height: 1.15;
+  font-weight: 650;
+
+  white-space: nowrap;
+}
+
+
+.stop-operational-badge.is-not-served {
+  background: #eceeef;
+  color: #676d73;
+}
+
+
+.stop-operational-badge.is-temporary {
+  background: #fff0cf;
+  color: #8a6217;
+}
+
+
+.stop-operational-badge.is-temp-terminus {
+  border:
+    1px solid
+    rgba(183, 125, 18, .34);
+
+  background: #fff3d6;
+  color: #815a10;
+}
+
+
+/*
+  Role operasional pada popup / kartu Halte Terpilih.
+*/
+.stop-popup-role.is-temporary,
+.selected-stop-role.is-temporary {
+  color: #8a6217;
+}
+
+
+.stop-popup-role.is-temp-terminus,
+.selected-stop-role.is-temp-terminus {
+  color: #8a6217;
+  font-weight: 700;
+}
+
+
+.stop-popup-role.is-not-served,
+.selected-stop-role.is-not-served {
+  color: #6d7278;
+}
+
+
+/* =========================================================
+   ROUTE ALERT — MAP GEOMETRY NOTE
+   ========================================================= */
+
+.route-alert-map-note {
+  margin-top: 10px;
+  padding-top: 8px;
+
+  border-top:
+    1px solid
+    rgba(185, 130, 20, .16);
+
+  font-size: 9px;
+  line-height: 1.4;
+
+  color: #756e62;
+}
+
+
+.route-alert-map-note strong {
+  color: #5f574b;
+}
+
+
+
+/* =========================================================
+   ABOUT MAP — STATUS EXPLANATION
+   ========================================================= */
+
+.info-status-notice p {
+  margin: 0 0 8px;
+}
+
+.info-status-notice p:last-child {
+  margin-bottom: 0;
+}
+
+/* =========================================================
+   PRODUCT TOUR TIP 2 — STOP LABEL VISIBILITY
+   ========================================================= */
+
+.tour-mini-stop {
+  position: relative;
+  overflow: visible;
+}
+
+
+/*
+  Route line tetap berada di belakang marker dan label.
+*/
+.tour-mini-route-line {
+  z-index: 1;
+}
+
+
+/*
+  Marker menjadi anchor visual utama.
+*/
+.tour-mini-marker {
+  z-index: 3;
+}
+
+
+/*
+  Label sebelumnya berada tepat di atas garis rute sehingga
+  teks sulit terbaca. Sekarang label ditempatkan di atas
+  marker sebagai callout kecil dengan background solid.
+*/
+.tour-mini-stop-label {
+  top: 8px !important;
+  left: 50% !important;
+
+  transform: translateX(-50%) !important;
+
+  z-index: 4 !important;
+
+  padding: 3px 7px !important;
+
+  border:
+    1px solid #d9d9d9 !important;
+
+  border-radius: 5px !important;
+
+  background: #ffffff !important;
+
+  box-shadow:
+    0 1px 3px rgba(0,0,0,.08) !important;
+
+  color: #303030 !important;
+
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+  font-weight: 650 !important;
+
+  white-space: nowrap !important;
+}
+
+
+/*
+  Sedikit turunkan garis/marker agar terdapat ruang cukup
+  untuk callout di atas.
+*/
+.tour-mini-route-line {
+  top: 62% !important;
+}
+
+.tour-mini-marker {
+  transform: translateY(8px);
+}
+
+
+@media (max-width: 760px) {
+
+  .tour-mini-stop-label {
+    top: 6px !important;
+    font-size: 9.5px !important;
+  }
+
+  .tour-mini-route-line {
+    top: 64% !important;
+  }
+
+  .tour-mini-marker {
+    transform: translateY(7px);
+  }
+}
+
+/* =========================================================
+   INFORMATION MODAL — VISUAL ASSET CREDITS
+   ========================================================= */
+
+.visual-asset-credits {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e3e5e8;
+}
+
+.visual-asset-credits-title {
+  margin-bottom: 8px;
+  font-size: 11px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: #3e444c;
+}
+
+.visual-asset-credits p {
+  margin: 0 0 8px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #656c76;
+}
+
+.visual-asset-credits p:last-child {
+  margin-bottom: 0;
+}
+
+.visual-asset-credits a,
+.visual-asset-details a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.visual-asset-credits a:hover,
+.visual-asset-details a:hover {
+  color: #414851;
+}
+
+.visual-asset-trademark-note {
+  margin-top: 10px !important;
+  padding-top: 9px;
+  border-top: 1px dashed #dfe2e6;
+}
+
+.visual-asset-details {
+  margin-top: 9px;
+  border: 1px solid #e1e4e8;
+  border-radius: 7px;
+  background: #fafbfc;
+}
+
+.visual-asset-details summary {
+  padding: 8px 10px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 9.5px;
+  line-height: 1.35;
+  font-weight: 650;
+  color: #555d67;
+}
+
+.visual-asset-details-body {
+  padding: 0 11px 10px;
+  border-top: 1px solid #e6e8eb;
+}
+
+.visual-asset-source-group {
+  margin-top: 9px;
+  font-size: 9.5px;
+  line-height: 1.45;
+  color: #666d76;
+}
+
+.visual-asset-source-group strong {
+  color: #4b525b;
+}
+
+.visual-asset-source-group ul {
+  margin: 5px 0 0;
+  padding-left: 17px;
+}
+
+.visual-asset-source-group li {
+  margin: 2px 0;
+}
+
