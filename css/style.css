@@ -1,1536 +1,2369 @@
-/* ============================================================
-   JARINGAN TRANSPORTASI UMUM JAKARTA & JABODETABEK
-   PUBLIC WEBGIS
-   ArcGIS / Calcite inspired
-============================================================ */
 
+/* =========================================================
+   TYPOGRAPHY
+   ========================================================= */
 
-/* ============================================================
-   GLOBAL
-============================================================ */
-
-* {
-    box-sizing: border-box;
+/*
+  WebGIS menggunakan Avenir Next dari font yang terpasang
+  pada sistem pengguna. Tidak ada file font yang dibundel.
+*/
+@font-face {
+  font-family: "Avenir Next Local";
+  src:
+    local("Avenir Next"),
+    local("AvenirNext-Regular"),
+    local("Avenir Next Regular");
+  font-style: normal;
+  font-weight: 400;
 }
 
+@font-face {
+  font-family: "Avenir Next Local";
+  src:
+    local("Avenir Next Medium"),
+    local("AvenirNext-Medium"),
+    local("Avenir Next Demi Bold"),
+    local("AvenirNext-DemiBold");
+  font-style: normal;
+  font-weight: 500 700;
+}
+
+:root {
+  --font-main:
+    "Avenir Next Local",
+    "Avenir Next",
+    Avenir,
+    "Helvetica Neue",
+    sans-serif;
+}
+
+/*
+  Seluruh UI memakai Avenir Next.
+  Badge nomor koridor TransJakarta tetap PT Sans Bold.
+*/
+html,
+body,
+button,
+input,
+select,
+textarea,
+.leaflet-container,
+.leaflet-popup-content,
+.leaflet-tooltip {
+  font-family: var(--font-main) !important;
+}
+
+
+:root {
+  --font-main: "Avenir Next", "Avenir", "Helvetica Neue", Arial, sans-serif;
+  --text: #202020;
+  --muted: #666666;
+  --panel-width: 285px;
+}
+
+* { box-sizing: border-box; }
 
 html,
 body {
-    margin: 0;
-
-    width: 100%;
-    height: 100%;
-
-    font-family:
-        "Avenir Next",
-        Avenir,
-        "Helvetica Neue",
-        Arial,
-        sans-serif;
-
-    font-size: 14px;
-
-    font-weight: 400;
-
-    color: #151515;
-
-    background: #ffffff;
-
-    -webkit-font-smoothing:
-        antialiased;
-
-    -moz-osx-font-smoothing:
-        grayscale;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-main);
+  color: var(--text);
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-
 
 button,
 select,
-input {
-    font-family:
-        inherit;
+input,
+.leaflet-container,
+.leaflet-popup,
+.leaflet-control {
+  font-family: var(--font-main);
 }
-
-
-
-/* ============================================================
-   APP
-============================================================ */
-
-.app {
-    display: grid;
-
-    grid-template-columns:
-        340px
-        minmax(0, 1fr);
-
-    width: 100%;
-
-    height: 100vh;
-
-    overflow: hidden;
-}
-
-
-
-/* ============================================================
-   SIDEBAR
-============================================================ */
-
-.sidebar {
-    position: relative;
-
-    z-index: 1000;
-
-    width: 100%;
-
-    height: 100%;
-
-    padding:
-        24px
-        22px;
-
-    background: #ffffff;
-
-    border-right:
-        1px solid #dedede;
-
-    overflow-y: auto;
-
-    overflow-x: hidden;
-
-    scrollbar-width: thin;
-
-    scrollbar-color:
-        #c8c8c8
-        transparent;
-}
-
-
-.sidebar::-webkit-scrollbar {
-    width: 7px;
-}
-
-
-.sidebar::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-
-.sidebar::-webkit-scrollbar-thumb {
-    background: #c8c8c8;
-
-    border-radius: 5px;
-}
-
-
-
-/* ============================================================
-   HEADER
-============================================================ */
-
-.sidebar-header {
-    margin-bottom: 22px;
-}
-
-
-.sidebar h1 {
-    margin:
-        0
-        0
-        4px;
-
-    font-size: 21px;
-
-    line-height: 1.25;
-
-    font-weight: 500;
-
-    color: #151515;
-}
-
-
-.subtitle {
-    margin: 0;
-
-    font-size: 13px;
-
-    line-height: 1.4;
-
-    font-weight: 400;
-
-    color: #6a6a6a;
-}
-
-
-
-/* ============================================================
-   SECTION
-============================================================ */
-
-.section {
-    margin-top: 17px;
-
-    padding-top: 17px;
-
-    border-top:
-        1px solid #eeeeee;
-}
-
-
-.section > label,
-.section-title {
-    display: block;
-
-    margin-bottom: 8px;
-
-    font-size: 12px;
-
-    line-height: 1.3;
-
-    font-weight: 500;
-
-    color: #4a4a4a;
-}
-
-
-
-/* ============================================================
-   SELECT
-============================================================ */
-
-select {
-    width: 100%;
-
-    min-height: 42px;
-
-    padding:
-        0
-        38px
-        0
-        12px;
-
-    background: #ffffff;
-
-    border:
-        1px solid #bfbfbf;
-
-    border-radius: 4px;
-
-    outline: none;
-
-    font-size: 13px;
-
-    line-height: 1.4;
-
-    font-weight: 400;
-
-    color: #151515;
-
-    cursor: pointer;
-
-    transition:
-        border-color 0.12s ease,
-        box-shadow 0.12s ease;
-}
-
-
-select:hover:not(:disabled) {
-    border-color: #888888;
-}
-
-
-select:focus {
-    border-color: #007ac2;
-
-    box-shadow:
-        0 0 0 1px #007ac2;
-}
-
-
-select:disabled {
-    opacity: 0.55;
-
-    cursor: default;
-}
-
-
-
-/* ============================================================
-   STATUS FILTER
-============================================================ */
-
-.status-filter {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 8px;
-}
-
-
-.status-option {
-    position: relative;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 9px;
-
-    min-height: 28px;
-
-    margin: 0 !important;
-
-    font-size: 13px !important;
-
-    font-weight: 400 !important;
-
-    color: #353535 !important;
-
-    cursor: pointer;
-}
-
-
-.status-option input {
-    position: absolute;
-
-    opacity: 0;
-
-    pointer-events: none;
-}
-
-
-.status-check-ui {
-    position: relative;
-
-    display: block;
-
-    width: 16px;
-
-    height: 16px;
-
-    flex:
-        0 0 16px;
-
-    background: #ffffff;
-
-    border:
-        1px solid #8a8a8a;
-
-    border-radius: 2px;
-}
-
-
-.status-option
-input:checked
-+
-.status-check-ui {
-    background: #007ac2;
-
-    border-color: #007ac2;
-}
-
-
-.status-option
-input:checked
-+
-.status-check-ui::after {
-    content: "";
-
-    position: absolute;
-
-    left: 4px;
-
-    top: 1px;
-
-    width: 5px;
-
-    height: 9px;
-
-    border:
-        solid #ffffff;
-
-    border-width:
-        0
-        2px
-        2px
-        0;
-
-    transform:
-        rotate(45deg);
-}
-
-
-
-/* ============================================================
-   STATUS LEGEND
-============================================================ */
-
-.status-legend {
-    margin-top: 13px;
-
-    padding-top: 11px;
-
-    border-top:
-        1px solid #eeeeee;
-}
-
-
-.legend-row {
-    display: flex;
-
-    align-items: center;
-
-    gap: 9px;
-
-    margin-top: 6px;
-
-    font-size: 11px;
-
-    line-height: 1.3;
-
-    color: #6a6a6a;
-}
-
-
-.legend-line {
-    display: block;
-
-    width: 30px;
-
-    height: 0;
-
-    border-top:
-        2px solid #555555;
-}
-
-
-.legend-plan {
-    border-top-style: dashed;
-}
-
-
-
-/* ============================================================
-   ROUTE INFO
-============================================================ */
-
-.route-info {
-    margin-top: 20px;
-
-    padding: 16px;
-
-    background: #ffffff;
-
-    border:
-        1px solid #dedede;
-
-    border-radius: 4px;
-}
-
-
-.small-title {
-    display: block;
-
-    margin-bottom: 4px;
-
-    font-size: 12px;
-
-    line-height: 1.3;
-
-    font-weight: 500;
-
-    color: #6a6a6a;
-}
-
-
-.route-info h2 {
-    margin:
-        4px
-        0
-        8px;
-
-    font-size: 17px;
-
-    line-height: 1.4;
-
-    font-weight: 500;
-
-    color: #151515;
-}
-
-
-.route-info p {
-    margin:
-        4px
-        0;
-
-    font-size: 13px;
-
-    line-height: 1.5;
-
-    font-weight: 400;
-
-    color: #4a4a4a;
-}
-
-
-.route-info-row {
-    margin-top: 12px;
-
-    padding-top: 11px;
-
-    border-top:
-        1px solid #eeeeee;
-}
-
-
-.route-info-row p {
-    color: #151515;
-}
-
-
-
-/* ============================================================
-   MODE CHIP
-============================================================ */
-
-.route-mode-chip {
-    display: inline-flex;
-
-    align-items: center;
-
-    min-height: 23px;
-
-    margin-top: 2px;
-
-    padding:
-        2px
-        8px;
-
-    background: #f2f2f2;
-
-    border-radius: 3px;
-
-    font-size: 11px;
-
-    line-height: 1.3;
-
-    font-weight: 500;
-
-    color: #4a4a4a;
-}
-
-
-
-/* ============================================================
-   SOURCE LINKS
-============================================================ */
-
-.sidebar-source-link,
-.popup-source-link a {
-    display: inline-block;
-
-    margin-top: 5px;
-
-    font-size: 12px;
-
-    line-height: 1.4;
-
-    text-decoration: none;
-
-    color: #007ac2;
-}
-
-
-.sidebar-source-link:hover,
-.popup-source-link a:hover {
-    text-decoration: underline;
-}
-
-
-
-/* ============================================================
-   PUBLIC NOTE
-============================================================ */
-
-.public-note {
-    margin-top: 22px;
-
-    padding:
-        14px
-        0
-        0;
-
-    border-top:
-        1px solid #eeeeee;
-
-    font-size: 11px;
-
-    line-height: 1.5;
-
-    color: #6a6a6a;
-}
-
-
-.public-note strong {
-    display: block;
-
-    margin-bottom: 6px;
-
-    font-size: 12px;
-
-    font-weight: 500;
-
-    color: #4a4a4a;
-}
-
-
-.public-note p {
-    margin:
-        0
-        0
-        7px;
-}
-
-
-
-/* ============================================================
-   MAP
-============================================================ */
 
 #map {
-    width: 100%;
-
-    height: 100vh;
-
-    background: #eeeeee;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
 
-
-.leaflet-container {
-    width: 100%;
-
-    height: 100%;
-
-    font-family:
-        "Avenir Next",
-        Avenir,
-        "Helvetica Neue",
-        Arial,
-        sans-serif;
-
-    background: #eeeeee;
-
-    outline: none;
+/* TITLE */
+.webgis-title-card {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: var(--panel-width);
+  padding: 0;
+  background: rgba(255,255,255,.98);
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 6px;
+  box-shadow: 0 2px 9px rgba(0,0,0,.18);
+  overflow: hidden;
+  z-index: 1200;
 }
 
-
-
-/* ============================================================
-   ZOOM
-============================================================ */
-
-.leaflet-control-zoom {
-    border: none !important;
-
-    border-radius:
-        4px !important;
-
-    box-shadow:
-        0 1px 4px
-        rgba(0, 0, 0, 0.22)
-        !important;
-
-    overflow: hidden;
+.webgis-title-main {
+  padding: 14px 14px 12px;
 }
 
-
-.leaflet-control-zoom a {
-    width:
-        34px !important;
-
-    height:
-        34px !important;
-
-    line-height:
-        34px !important;
-
-    background:
-        #ffffff !important;
-
-    border:
-        none !important;
-
-    border-bottom:
-        1px solid #eeeeee
-        !important;
-
-    color:
-        #4a4a4a !important;
-
-    font-size:
-        19px !important;
-
-    font-weight:
-        400 !important;
+.webgis-title-card h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.24;
+  font-weight: 600;
+  letter-spacing: -.20px;
+  color: #242424;
 }
 
-
-.leaflet-control-zoom a:hover {
-    background:
-        #f3f3f3 !important;
-
-    color:
-        #151515 !important;
+.webgis-title-sub {
+  padding: 8px 14px 9px;
+  border-top: 1px solid #e2e2e2;
+  background: rgba(248,248,248,.98);
 }
 
-
-
-/* ============================================================
-   TOOLBAR
-============================================================ */
-
-.map-toolbar {
-    position: relative;
-
-    display: flex;
-
-    align-items: center;
-
-    min-height: 48px;
-
-    margin:
-        0
-        0
-        8px
-        8px;
-
-    padding: 5px;
-
-    background:
-        rgba(255, 255, 255, 0.97);
-
-    border:
-        1px solid
-        rgba(0, 0, 0, 0.10);
-
-    border-radius: 10px;
-
-    box-shadow:
-        0 2px 10px
-        rgba(0, 0, 0, 0.18);
-
-    backdrop-filter:
-        blur(5px);
+.webgis-title-card p {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.3;
+  color: #686868;
 }
 
+/* FILTER */
+.filter-panel {
+  position: absolute;
+  top: 116px;
+  left: 16px;
+  width: var(--panel-width);
+  max-height: calc(100vh - 134px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(244,244,244,.97);
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 5px;
+  box-shadow: 0 2px 9px rgba(0,0,0,.20);
+  overflow: hidden;
+  z-index: 1100;
+}
 
+.filter-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 13px 14px 16px;
+}
 
-/* ============================================================
-   TOOLBAR BUTTON
-============================================================ */
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.form-field {
+  margin-bottom: 12px;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 10px;
+  color: #4a4a4a;
+}
+
+.form-field select {
+  width: 100%;
+  height: 32px;
+  padding: 0 28px 0 8px;
+  border: 1px solid #c9c9c9;
+  border-radius: 3px;
+  background: #fff;
+  font-size: 11px;
+  color: #303030;
+  outline: none;
+  cursor: pointer;
+}
+
+.form-field select:focus {
+  border-color: #6fa9d7;
+  box-shadow: 0 0 0 1px rgba(0,122,194,.15);
+}
+
+/* ROUTE INFO */
+.route-info {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid #dbdbdb;
+}
+
+.eyebrow {
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .04em;
+  color: #666;
+}
+
+.route-info h2 {
+  margin: 0 0 5px;
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.route-info p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #555;
+}
+
+.route-meta {
+  margin-top: 10px;
+}
+
+.route-meta-row {
+  display: grid;
+  grid-template-columns: 62px minmax(0,1fr);
+  gap: 7px;
+  padding: 3px 0;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.route-meta-label {
+  color: #707070;
+}
+
+/* SELECTED STOP */
+.selected-stop-card {
+  margin-top: 13px;
+  padding: 11px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.selected-stop-card[hidden] { display: none; }
+
+.selected-stop-title {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.selected-stop-row {
+  margin-top: 3px;
+  font-size: 10px;
+  color: #555;
+}
+
+/* STOP LIST */
+.stop-list {
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid #ddd;
+}
+
+.stop-list:empty { display: none; }
+
+.stop-list-heading {
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #5d5d5d;
+  letter-spacing: .04em;
+}
+
+.stop-list-help {
+  margin-bottom: 8px;
+  font-size: 10px;
+  line-height: 1.35;
+  color: #666;
+}
+
+.stop-list-item {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  gap: 8px;
+  align-items: center;
+  margin: 0 -5px;
+  padding: 7px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.stop-list-item:hover {
+  background: rgba(0,0,0,.05);
+}
+
+.stop-list-item.is-selected {
+  background: #dedede;
+}
+
+.stop-list-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.stop-list-route-badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  flex: 0 0 auto;
+}
+
+.stop-list-route-badge {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  font-family: "PT Sans", Arial, sans-serif;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -.2px;
+}
+
+.stop-list-route-badge.is-double-digit {
+  font-size: 9px;
+}
+
+.stop-list-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stop-list-badges {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.stop-direction,
+.stop-role {
+  display: inline-block;
+  padding: 2px 4px;
+  background: #e9e9e9;
+  border-radius: 2px;
+  font-size: 8px;
+  line-height: 1.2;
+  color: #444;
+  white-space: nowrap;
+}
+
+/* TOOLBAR */
+.bottom-toolbar {
+  position: absolute;
+  right: 16px;
+  bottom: 18px;
+  height: 52px;
+  display: flex;
+  align-items: stretch;
+  background: rgba(255,255,255,.98);
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 13px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.23);
+  overflow: hidden;
+  z-index: 1500;
+}
 
 .toolbar-button {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    width: 44px;
-
-    height: 38px;
-
-    padding: 0;
-
-    background: transparent;
-
-    border: none;
-
-    border-right:
-        1px solid #eeeeee;
-
-    color: #4a4a4a;
-
-    cursor: pointer;
+  width: 55px;
+  min-width: 55px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid #e0e0e0;
+  background: transparent;
+  color: #4b4b4b;
+  cursor: pointer;
 }
-
 
 .toolbar-button:hover {
-    background: #f3f3f3;
-
-    color: #151515;
+  background: #f3f3f3;
 }
 
-
-
-/* ============================================================
-   BASEMAP PREVIEW
-============================================================ */
-
-.basemap-preview {
-    display: block;
-
-    width: 32px;
-
-    height: 32px;
-
-    border:
-        1px solid
-        rgba(0, 0, 0, 0.15);
-
-    border-radius: 4px;
-
-    overflow: hidden;
-
-    background-position: center;
-
-    background-size: cover;
-
-    background-repeat: no-repeat;
-
-    background-color: #eeeeee;
+.toolbar-icon {
+  width: 25px;
+  height: 25px;
 }
 
-
-
-/* ============================================================
-   GPS
-============================================================ */
-
-.gps-icon {
-    position: relative;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    width: 23px;
-
-    height: 23px;
+.toolbar-thumbnail {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #d6d6d6;
 }
 
-
-.gps-ring {
-    position: absolute;
-
-    width: 15px;
-
-    height: 15px;
-
-    border:
-        1.7px solid #353535;
-
-    border-radius: 50%;
+.gps-button {
+  position: relative;
+  color: #777;
 }
 
+.gps-button.is-pending { color: #1481d6; }
 
-.gps-dot {
-    position: absolute;
-
-    width: 5px;
-
-    height: 5px;
-
-    background: #353535;
-
-    border-radius: 50%;
+.gps-button.is-active {
+  color: #0877d1;
+  background: #eff7ff;
 }
 
-
-.gps-button:hover
-.gps-ring,
-.gps-button.gps-active
-.gps-ring {
-    border-color: #007ac2;
+.gps-button.is-active::after {
+  content: "";
+  position: absolute;
+  width: 37px;
+  height: 37px;
+  border: 2px solid rgba(0,120,220,.18);
+  border-radius: 50%;
+  animation: gpsPulse 1.8s infinite;
 }
 
-
-.gps-button:hover
-.gps-dot,
-.gps-button.gps-active
-.gps-dot {
-    background: #007ac2;
-}
-
-
-.gps-button.gps-loading
-.gps-icon {
-    animation:
-        gpsPulse
-        1s
-        ease-in-out
-        infinite;
-}
-
+.gps-button.is-error { color: #bb4040; }
 
 @keyframes gpsPulse {
-
-    0%,
-    100% {
-        opacity: 0.35;
-    }
-
-    50% {
-        opacity: 1;
-    }
-
+  from { transform: scale(.72); opacity: 1; }
+  to { transform: scale(1.18); opacity: 0; }
 }
-
-
-
-/* ============================================================
-   SCALE
-============================================================ */
 
 .toolbar-scale {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    min-width: 94px;
-
-    height: 38px;
-
-    padding:
-        0
-        12px;
-
-    border-right:
-        1px solid #eeeeee;
-
-    white-space: nowrap;
-
-    font-size: 12px;
-
-    font-weight: 500;
-
-    color: #353535;
+  min-width: 96px;
+  height: 52px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #e0e0e0;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 
+/* =========================================================
+   FLOATING NORTH ARROW
+   ========================================================= */
 
-/* ============================================================
-   NORTH
-============================================================ */
+.floating-north {
+  position: absolute;
+  top: 38px;
+  right: 22px;
+  z-index: 1550;
+  width: 30px;
+  height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: #2f2f2f;
+  text-shadow: 0 1px 3px rgba(255,255,255,.95);
+}
 
-.toolbar-north {
-    display: flex;
+.floating-north-n {
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+}
 
-    flex-direction: column;
-
-    align-items: center;
-
-    justify-content: center;
-
-    width: 44px;
-
-    height: 38px;
-
-    cursor: default;
+.floating-north-arrow {
+  margin-top: 3px;
+  font-size: 25px;
+  line-height: .85;
 }
 
 
-.north-letter {
-    display: block;
+/* =========================================================
+   FLOATING ZOOM
+   ========================================================= */
 
-    height: 9px;
+.floating-zoom {
+  position: absolute;
+  right: 16px;
+  bottom: 82px;
+  z-index: 1650;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgba(255,255,255,.98);
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 7px;
+  box-shadow: 0 2px 9px rgba(0,0,0,.20);
+  transition: bottom .16s ease;
+}
 
-    font-size: 9px;
+body.basemap-panel-open .floating-zoom {
+  bottom: calc(
+    82px +
+    var(--basemap-panel-height, 190px) +
+    10px
+  );
+}
 
-    line-height: 9px;
+.floating-zoom button {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  background: #fff;
+  color: #303030;
+  font-family: var(--font-main);
+  font-size: 23px;
+  line-height: 1;
+  cursor: pointer;
+}
 
-    font-weight: 600;
+.floating-zoom button + button {
+  border-top: 1px solid #e2e2e2;
+}
 
-    color: #151515;
+.floating-zoom button:hover {
+  background: #f3f3f3;
+}
+
+.floating-zoom button:disabled {
+  color: #b7b7b7;
+  cursor: default;
 }
 
 
-.north-arrow {
-    display: block;
+/* =========================================================
+   BASEMAP PANEL
+   ========================================================= */
 
-    font-size: 19px;
+.basemap-panel {
+  position: absolute;
+  right: 16px;
+  bottom: 82px;
+  width: 350px;
+  padding: 13px 12px 12px;
+  background: rgba(255,255,255,.99);
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 7px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.24);
+  z-index: 1600;
+}
 
-    line-height: 19px;
+.basemap-panel[hidden] {
+  display: none;
+}
 
-    color: #353535;
+.basemap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 9px;
+}
+
+.basemap-header h2 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 500;
+  color: #262626;
+}
+
+.basemap-close {
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #666;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.basemap-close:hover {
+  background: #f0f0f0;
+}
+
+/*
+  Horizontal gallery. Bisa di-scroll / drag ke samping
+  jika jumlah basemap bertambah.
+*/
+.basemap-carousel {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1px 1px 5px;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+  cursor: grab;
+  user-select: none;
+}
+
+.basemap-carousel.is-dragging {
+  cursor: grabbing;
+}
+
+.basemap-carousel::-webkit-scrollbar {
+  height: 5px;
+}
+
+.basemap-carousel::-webkit-scrollbar-thumb {
+  background: #c9c9c9;
+  border-radius: 10px;
+}
+
+.basemap-option {
+  width: 92px;
+  min-width: 92px;
+  padding: 5px 5px 4px;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.basemap-option:hover {
+  background: #f7f7f7;
+}
+
+.basemap-option.active {
+  border-color: #007ac2;
+  box-shadow: none;
+}
+
+.basemap-preview-map {
+  width: 78px;
+  height: 66px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid #d2d2d2;
+  border-radius: 3px;
+  background: #ececec;
+  pointer-events: none;
+}
+
+.basemap-preview-map .leaflet-control-container {
+  display: none;
+}
+
+.basemap-option-label {
+  display: block;
+  margin-top: 5px;
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 400;
+  text-align: center;
+  color: #222;
+}
+
+.basemap-opacity-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 9px;
+  border-top: 1px solid #e4e4e4;
+}
+
+.basemap-opacity-row > span {
+  flex: 0 0 auto;
+  font-size: 10px;
+  color: #666;
+}
+
+.opacity-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 5px;
+}
+
+.opacity-grid button {
+  height: 26px;
+  padding: 0 4px;
+  border: 1px solid #d6d6d6;
+  border-radius: 3px;
+  background: #fff;
+  color: #444;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.opacity-grid button.active {
+  color: #006da8;
+  border-color: #007ac2;
+  background: #f3faff;
 }
 
 
-
-/* ============================================================
-   BASEMAP GALLERY
-============================================================ */
-
-.basemap-gallery {
-    display: none;
-
-    position: absolute;
-
-    left: 0;
-
-    bottom: 58px;
-
-    width: 320px;
-
-    padding: 14px;
-
-    background:
-        rgba(255, 255, 255, 0.98);
-
-    border:
-        1px solid
-        rgba(0, 0, 0, 0.12);
-
-    border-radius: 6px;
-
-    box-shadow:
-        0 4px 14px
-        rgba(0, 0, 0, 0.20);
-
-    z-index: 5000;
-}
-
-
-.basemap-gallery.show {
-    display: block;
-}
-
-
-.basemap-gallery-title {
-    margin-bottom: 12px;
-
-    font-size: 14px;
-
-    line-height: 1.3;
-
-    font-weight: 500;
-
-    color: #151515;
-}
-
-
-
-/* ============================================================
-   BASEMAP GRID
-============================================================ */
-
-.basemap-gallery-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
-    gap: 8px;
-}
-
-
-.basemap-card {
-    width: 100%;
-
-    padding: 5px;
-
-    background: transparent;
-
-    border:
-        2px solid transparent;
-
-    border-radius: 5px;
-
-    cursor: pointer;
-}
-
-
-.basemap-card:hover {
-    background: #f4f4f4;
-}
-
-
-.basemap-card.active {
-    background: #f3f8fb;
-
-    border-color: #007ac2;
-}
-
-
-.basemap-card span {
-    display: block;
-
-    margin-top: 5px;
-
-    font-size: 11px;
-
-    text-align: center;
-
-    color: #353535;
-}
-
-
-.basemap-card-preview {
-    width: 100%;
-
-    height: 68px;
-
-    border:
-        1px solid
-        rgba(0, 0, 0, 0.12);
-
-    border-radius: 4px;
-
-    background-position: center;
-
-    background-size: cover;
-
-    background-repeat: no-repeat;
-
-    background-color: #eeeeee;
-}
-
-
-.preview-light,
-.preview-osm,
-.preview-satellite {
-    background-position: center;
-
-    background-size: cover;
-
-    background-repeat: no-repeat;
-}
-
-
-
-/* ============================================================
-   BASEMAP OPACITY
-============================================================ */
-
-.basemap-opacity {
-    margin-top: 14px;
-
-    padding-top: 13px;
-
-    border-top:
-        1px solid #e6e6e6;
-}
-
-
-.basemap-opacity-header {
-    display: flex;
-
-    justify-content: space-between;
-
-    margin-bottom: 9px;
-
-    font-size: 12px;
-
-    color: #4a4a4a;
-}
-
-
-.basemap-opacity
-input[type="range"] {
-    width: 100%;
-
-    height: 4px;
-
-    margin: 0;
-
-    appearance: none;
-
-    -webkit-appearance: none;
-
-    background: #c7c7c7;
-
-    border-radius: 2px;
-
-    cursor: pointer;
-}
-
-
-.basemap-opacity
-input[type="range"]
-::-webkit-slider-thumb {
-    appearance: none;
-
-    -webkit-appearance: none;
-
-    width: 16px;
-
-    height: 16px;
-
-    background: #ffffff;
-
-    border:
-        2px solid #007ac2;
-
-    border-radius: 50%;
-}
-
-
-
-/* ============================================================
-   POPUP SHELL
-============================================================ */
+/* POPUP */
+.leaflet-container { font-family: var(--font-main); }
 
 .leaflet-popup-content-wrapper {
-    padding: 0;
-
-    background: #ffffff;
-
-    border:
-        1px solid
-        rgba(0, 0, 0, 0.10);
-
-    border-radius: 4px;
-
-    box-shadow:
-        0 2px 8px
-        rgba(0, 0, 0, 0.13);
+  padding: 0;
+  border-radius: 5px;
+  border: 1px solid rgba(0,0,0,.10);
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
 }
-
 
 .leaflet-popup-content {
-    margin: 0;
-
-    min-width: 220px;
-
-    font-family:
-        "Avenir Next",
-        Avenir,
-        "Helvetica Neue",
-        Arial,
-        sans-serif;
-
-    color: #151515;
+  margin: 0;
+  min-width: 245px;
 }
 
-
-.leaflet-popup-tip {
-    background: #ffffff;
+.leaflet-popup-close-button {
+  top: 6px !important;
+  right: 6px !important;
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 20px !important;
+  color: #777 !important;
 }
-
-
-.leaflet-container
-a.leaflet-popup-close-button {
-    top: 7px;
-
-    right: 7px;
-
-    width: 28px;
-
-    height: 28px;
-
-    line-height: 27px;
-
-    font-size: 20px;
-
-    font-weight: 300;
-
-    color: #6a6a6a;
-}
-
-
-
-/* ============================================================
-   ROUTE POPUP
-============================================================ */
-
-.route-popup {
-    min-width: 235px;
-
-    max-width: 330px;
-
-    padding:
-        16px
-        16px
-        15px;
-}
-
-
-.popup-route-title {
-    padding-right: 30px;
-
-    font-size: 17px;
-
-    line-height: 1.4;
-
-    font-weight: 500;
-}
-
-
-.popup-mode {
-    margin-top: 3px;
-
-    font-size: 11px;
-
-    color: #6a6a6a;
-}
-
-
-.popup-divider {
-    margin:
-        14px
-        0
-        12px;
-
-    border-top:
-        1px solid #e3e3e3;
-}
-
-
-.popup-section {
-    margin-top: 11px;
-}
-
-
-.popup-label {
-    margin-bottom: 2px;
-
-    font-size: 12px;
-
-    font-weight: 500;
-
-    color: #6a6a6a;
-}
-
-
-.popup-value {
-    font-size: 13px;
-
-    line-height: 1.45;
-
-    color: #151515;
-}
-
-
-.popup-note {
-    color: #4a4a4a;
-
-    line-height: 1.5;
-}
-
-
-
-/* ============================================================
-   STOP POPUP
-============================================================ */
 
 .stop-popup {
-    min-width: 215px;
+  min-width: 245px;
+  max-width: 350px;
+  padding: 16px;
+}
 
-    max-width: 300px;
+.stop-popup-title {
+  padding-right: 28px;
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 500;
+}
 
-    padding:
-        16px
-        16px
-        15px;
+.stop-popup-role {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: #ececec;
+  font-size: 9px;
+  color: #444;
+}
+
+.stop-popup-divider {
+  margin: 13px 0;
+  border-top: 1px solid #e1e1e1;
+}
+
+.stop-popup-section {
+  margin-top: 14px;
+}
+
+.stop-popup-label {
+  margin-bottom: 10px;
+  font-size: 10px;
+  color: #555;
+}
+
+/* BRT BADGE POPUP */
+.brt-route-badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.brt-route-badge {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--route-color,#D02127);
+  color: #fff;
+  font-family: "PT Sans", Arial, sans-serif;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -.8px;
+}
+
+.brt-route-badge.is-double-digit {
+  font-size: 20px;
+}
+
+/* INTEGRATION */
+.integration-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.integration-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.integration-symbol {
+  width: 42px;
+  min-width: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.integration-logo {
+  display: block;
+  max-width: 38px;
+  max-height: 32px;
+  object-fit: contain;
+}
+
+.integration-operator {
+  font-size: 10px;
+  line-height: 1.2;
+  color: #707070;
+}
+
+.integration-route {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+/* ROUTE POPUP */
+.route-popup {
+  min-width: 220px;
+  padding: 15px;
+}
+
+.route-popup-title {
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.route-popup-name {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #555;
+}
+
+.route-popup-divider {
+  margin: 12px 0;
+  border-top: 1px solid #e1e1e1;
+}
+
+.route-popup-row {
+  margin-top: 8px;
+}
+
+.route-popup-label {
+  margin-bottom: 1px;
+  font-size: 9px;
+  color: #707070;
+}
+
+.route-popup-value {
+  font-size: 11px;
+}
+
+/* GPS */
+.gps-dot {
+  width: 14px;
+  height: 14px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #1686e5;
+  box-shadow: 0 0 0 2px rgba(0,110,220,.50);
+}
+
+/* Leaflet zoom default disembunyikan; memakai floating zoom custom. */
+.leaflet-control-zoom {
+  display: none !important;
+}
+
+/* MOBILE */
+@media (max-width: 760px) {
+  :root { --panel-width: calc(100vw - 20px); }
+
+  .webgis-title-card {
+    top: 10px;
+    left: 10px;
+  }
+
+  .filter-panel {
+    top: 110px;
+    left: 10px;
+    max-height: 44vh;
+  }
+
+  .filter-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .bottom-toolbar {
+    right: 10px;
+    bottom: 10px;
+    max-width: calc(100vw - 20px);
+  }
+
+  .toolbar-button {
+    width: 48px;
+    min-width: 48px;
+  }
+
+  .toolbar-scale {
+    min-width: 77px;
+    padding: 0 7px;
+    font-size: 10px;
+  }
+
+  .basemap-panel {
+    left: 10px;
+    right: 10px;
+    bottom: 72px;
+    width: auto;
+  }
+
+  .floating-zoom {
+    right: 10px;
+    bottom: 72px;
+  }
+
+  body.basemap-panel-open .floating-zoom {
+    bottom: calc(
+      72px +
+      var(--basemap-panel-height, 190px) +
+      9px
+    );
+  }
+
+  .floating-north {
+    top: 32px;
+    right: 15px;
+  }
+
+  .basemap-option {
+    width: 100px;
+    min-width: 100px;
+  }
+
+  .basemap-preview-map {
+    width: 86px;
+    height: 62px;
+  }
 }
 
 
-.popup-stop-label {
-    padding-right: 30px;
+/* =========================================================
+   STOP TYPE + RAIL LINE BADGES
+   ========================================================= */
 
-    margin-bottom: 2px;
+.stop-popup-eyebrow {
+  margin-bottom: 4px;
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: #6b6b6b;
+}
 
-    font-size: 12px;
+.integration-content {
+  min-width: 0;
+  flex: 1;
+}
 
-    color: #6a6a6a;
+.integration-route-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 3px;
+  min-width: 0;
+}
+
+.rail-line-badge-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.rail-line-badge-image {
+  display: block;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.rail-line-badge-fallback {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #555;
+  border-radius: 50%;
+  background: #fff;
+  color: #222;
+  font-family: "PT Sans", Arial, sans-serif;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -.15px;
+}
+
+.integration-route {
+  min-width: 0;
 }
 
 
-.popup-stop-name {
-    padding-right: 30px;
+/* =========================================================
+   GROUPED INTEGRATION LAYOUT
+   Operator yang sama ditampilkan sekali,
+   layanan/lin-nya berjejer ke samping.
+   ========================================================= */
 
-    font-size: 18px;
+.integration-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
-    line-height: 1.3;
+.integration-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
 
-    font-weight: 500;
+.integration-group-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
 
-    color: #151515;
+.integration-group .integration-symbol {
+  width: 38px;
+  min-width: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.integration-group .integration-logo {
+  display: block;
+  max-width: 36px;
+  max-height: 28px;
+  object-fit: contain;
+}
+
+.integration-group .integration-operator {
+  font-size: 10px;
+  line-height: 1.2;
+  color: #666;
+  font-weight: 500;
+}
+
+.integration-services {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding-left: 47px;
+}
+
+.integration-service {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.integration-service-name {
+  font-size: 11px;
+  line-height: 1.2;
+  color: #303030;
+}
+
+.integration-service .brt-route-badge {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  font-size: 17px;
+}
+
+.integration-service .brt-route-badge.is-double-digit {
+  font-size: 14px;
+}
+
+.integration-service .rail-line-badge-image {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.integration-service .rail-line-badge-fallback {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #555;
+  border-radius: 50%;
+  background: #fff;
+  color: #222;
+  font-family: "PT Sans", Arial, sans-serif;
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+/*
+  Pada popup sempit, grup tetap bisa turun ke baris berikutnya
+  tanpa mengulang operator.
+*/
+@media (max-width: 520px) {
+  .integration-services {
+    gap: 7px 10px;
+    padding-left: 0;
+  }
 }
 
 
-
-/* ============================================================
-   ROUTE BADGES
-============================================================ */
-
-.stop-lines {
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 5px;
-
-    margin-top: 6px;
+/* Empty state daftar halte/stasiun */
+.stop-list-empty {
+  padding: 8px 5px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: #777;
 }
 
 
-.stop-line-badge {
+/* brt_stop(6) compatibility */
+.stop-list-empty {
+  padding: 8px 5px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: #777;
+}
+
+
+/* =========================================================
+   STATUS HALTE / STASIUN
+   ========================================================= */
+
+.stop-popup-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+.stop-popup-status.is-existing,
+.selected-stop-status.is-existing {
+  color: #555;
+  background: #f0f0f0;
+}
+
+.stop-popup-status.is-planned,
+.selected-stop-status.is-planned,
+.stop-status-badge.is-planned {
+  color: #725600;
+  background: #fff3c4;
+}
+
+.stop-popup-status.is-proposal,
+.selected-stop-status.is-proposal,
+.stop-status-badge.is-proposal {
+  color: #6b1f78;
+  background: #f2dcf6;
+}
+
+.stop-popup-status.is-other,
+.selected-stop-status.is-other,
+.stop-status-badge.is-other {
+  color: #555;
+  background: #eeeeee;
+}
+
+.selected-stop-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 9px;
+}
+
+.stop-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 8px;
+  line-height: 1.25;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   SEQ_MAP — URUTAN HALTE PER KORIDOR
+   ========================================================= */
+
+.stop-seq-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: #ececec;
+  color: #444;
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.stop-seq-badge.is-missing {
+  background: #f3f3f3;
+  color: #999;
+  border: 1px dashed #aaa;
+}
+
+
+/* =========================================================
+   SEQUENCE DI KIRI DAFTAR HALTE
+   ========================================================= */
+
+.stop-list-sequence {
+  width: 24px;
+  min-width: 24px;
+  flex: 0 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stop-list-sequence .stop-seq-badge {
+  min-width: 22px;
+  height: 18px;
+  padding: 0 3px;
+}
+
+/*
+  Jarak antar sequence -> badge koridor dibuat lebih rapat.
+*/
+.stop-list-item-left {
+  gap: 6px;
+}
+
+.stop-list-sequence + .stop-list-route-badges {
+  margin-left: 0;
+}
+
+
+/* Nomor koridor TransJakarta tetap PT Sans Bold */
+.brt-route-badge,
+.stop-route-badge,
+.stop-list-route-badge,
+.integration-service .brt-route-badge {
+  font-family: "PT Sans", "PT Sans Narrow", sans-serif !important;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   BASEMAP CARDS — PERFECT SQUARE
+   ========================================================= */
+
+/*
+  Tiga pilihan basemap: Light, OSM, Satellite.
+  Kartu dibuat persegi sempurna.
+*/
+.basemap-carousel {
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.basemap-option {
+  width: 88px;
+  min-width: 88px;
+  height: 100px;
+  min-height: 100px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+.basemap-preview-map {
+  width: 74px;
+  height: 70px;
+  min-width: 86px;
+  min-height: 70px;
+  flex: 0 0 70px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.basemap-option-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 3px;
+  min-height: 15px;
+  line-height: 1;
+}
+
+.basemap-panel {
+  width: 315px;
+}
+
+@media (max-width: 760px) {
+  .basemap-option {
+    width: 84px;
+    min-width: 84px;
+    height: 84px;
+    min-height: 84px;
+  }
+
+  .basemap-preview-map {
+    width: 70px;
+    min-width: 70px;
+    height: 57px;
+    min-height: 57px;
+    flex: 0 0 57px;
+  }
+}
+
+
+/* =========================================================
+   INT_NM — NAMA HALTE / STASIUN INTEGRASI
+   ========================================================= */
+
+.integration-related-places {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+  padding-left: 47px;
+  margin-top: -1px;
+}
+
+.integration-related-place {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-size: 9px;
+  line-height: 1.3;
+  font-weight: 400;
+  color: #777;
+}
+
+.integration-related-place + .integration-related-place::before {
+  content: "·";
+  margin-right: 8px;
+  color: #aaa;
+}
+
+@media (max-width: 520px) {
+  .integration-related-places {
+    padding-left: 0;
+  }
+}
+
+
+/* =========================================================
+   LONG POPUP — UNTUK INTEGRASI + INT_NM
+   ========================================================= */
+
+/*
+  Popup dibuat lebih panjang untuk menampung:
+  - status / fungsi halte
+  - koridor yang dilayani
+  - integrasi per operator
+  - nama halte/stasiun integrasi dari INT_NM
+*/
+.leaflet-popup-content-wrapper {
+  max-height: min(78vh, 720px);
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  width: auto !important;
+  min-width: 280px;
+  max-width: 400px;
+  max-height: min(72vh, 650px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin: 13px 14px 15px;
+  padding-right: 4px;
+}
+
+/*
+  Scrollbar tipis agar popup tetap terasa ringan.
+*/
+.leaflet-popup-content {
+  scrollbar-width: thin;
+  scrollbar-color: #b9b9b9 transparent;
+}
+
+.leaflet-popup-content::-webkit-scrollbar {
+  width: 5px;
+}
+
+.leaflet-popup-content::-webkit-scrollbar-thumb {
+  background: #b9b9b9;
+  border-radius: 10px;
+}
+
+.leaflet-popup-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/*
+  Beri ruang vertikal sedikit lebih banyak antar grup operator.
+*/
+.integration-list {
+  gap: 16px;
+}
+
+.integration-group {
+  gap: 8px;
+}
+
+.integration-related-places {
+  margin-top: 2px;
+}
+
+/*
+  Nama titik integrasi boleh membungkus bila cukup panjang.
+*/
+.integration-related-place {
+  white-space: normal;
+}
+
+/*
+  Pada layar kecil popup tetap aman.
+*/
+@media (max-width: 760px) {
+  .leaflet-popup-content {
+    min-width: 250px;
+    max-width: min(360px, calc(100vw - 56px));
+    max-height: 68vh;
+  }
+
+  .leaflet-popup-content-wrapper {
+    max-height: 74vh;
+  }
+}
+
+
+/* =========================================================
+   FINAL POPUP — LABEL BESAR + OPERATOR BESAR
+   BADGE LIN LANGSUNG KE NAMA HALTE/STASIUN
+   ========================================================= */
+
+.stop-popup-label {
+  margin-bottom: 11px !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+  color: #303030 !important;
+}
+
+.integration-list {
+  gap: 17px !important;
+}
+
+.integration-group {
+  gap: 9px !important;
+}
+
+.integration-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.integration-group .integration-symbol {
+  width: 43px;
+  min-width: 43px;
+}
+
+.integration-group .integration-logo {
+  max-width: 40px;
+  max-height: 31px;
+  object-fit: contain;
+}
+
+.integration-group .integration-operator {
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  color: #444 !important;
+}
+
+
+/*
+  Nama lin tidak lagi ditampilkan.
+  Contoh:
+  [4] [6] Halte Galunggung
+  [CK] Stasiun Sudirman
+  [M] Stasiun Dukuh Atas
+  [CB] [BK] Stasiun Dukuh Atas
+*/
+.integration-place-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 52px;
+}
+
+.integration-place-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 31px;
+}
+
+.integration-line-badges {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  flex: 0 0 auto;
+}
+
+.integration-place-name {
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.3;
+  font-weight: 500;
+  color: #2e2e2e;
+}
+
+.integration-place-name.is-missing {
+  font-size: 11px;
+  font-weight: 400;
+  color: #999;
+}
+
+.integration-line-badges .brt-route-badge {
+  width: 31px;
+  height: 31px;
+  flex: 0 0 31px;
+  font-size: 18px;
+}
+
+.integration-line-badges .brt-route-badge.is-double-digit {
+  font-size: 14px;
+}
+
+.integration-line-badges .rail-line-badge-image {
+  width: 29px;
+  height: 29px;
+  object-fit: contain;
+}
+
+.integration-line-badges .rail-line-badge-fallback {
+  width: 29px;
+  height: 29px;
+  flex: 0 0 29px;
+  font-size: 9px;
+}
+
+
+/* Koridor yang dilayani tetap paling besar */
+.stop-popup-section .brt-route-badges .brt-route-badge {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  font-size: 25px;
+}
+
+.stop-popup-section .brt-route-badges .brt-route-badge.is-double-digit {
+  font-size: 20px;
+}
+
+
+/* Layout lama tidak dipakai lagi */
+.integration-services,
+.integration-related-places {
+  display: none !important;
+}
+
+
+/* Popup lebih lega */
+.leaflet-popup-content {
+  min-width: 300px !important;
+  max-width: 440px !important;
+  max-height: min(74vh, 680px) !important;
+}
+
+
+@media (max-width: 520px) {
+  .integration-place-list {
+    padding-left: 0;
+  }
+
+  .integration-place-name {
+    font-size: 13px;
+  }
+
+  .leaflet-popup-content {
+    min-width: 250px !important;
+    max-width: min(
+      380px,
+      calc(100vw - 56px)
+    ) !important;
+  }
+}
+
+
+/* =========================================================
+   BASEMAP FIX — CLICKABLE 3-CARD PANEL
+   ========================================================= */
+
+/*
+  Tiga basemap saja: Light, OSM, Satellite.
+  Karena semuanya sudah muat dalam panel, carousel tidak
+  perlu pointer-drag yang sebelumnya dapat menghalangi click.
+*/
+.basemap-carousel {
+  overflow-x: hidden !important;
+  cursor: default !important;
+  user-select: none;
+}
+
+.basemap-carousel.is-dragging {
+  cursor: default !important;
+}
+
+.basemap-option {
+  width: 100px !important;
+  min-width: 100px !important;
+  height: 100px !important;
+  min-height: 100px !important;
+  cursor: pointer !important;
+}
+
+.basemap-option,
+.basemap-option * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.basemap-preview-map {
+  pointer-events: none !important;
+}
+
+.basemap-panel {
+  width: 350px !important;
+}
+
+
+/* KAJJ tidak mempunyai badge lin, jadi nama stasiun
+   boleh mulai dari posisi yang lebih natural. */
+.integration-place-row:has(.integration-line-badges:empty) {
+  gap: 0;
+}
+
+.integration-line-badges:empty {
+  display: none;
+}
+
+
+/* =========================================================
+   BASEMAP PANEL — FINAL 3 SQUARE CARDS
+   ========================================================= */
+
+/*
+  Panel hanya berisi Light, OSM, Satellite.
+  Karena hanya 3 kartu, scrollbar horizontal dihilangkan.
+*/
+.basemap-panel {
+  width: 350px !important;
+  padding: 13px 12px 12px !important;
+  box-sizing: border-box;
+}
+
+.basemap-carousel {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+
+  padding: 1px 0 3px !important;
+  margin: 0 !important;
+
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+
+  cursor: default !important;
+}
+
+.basemap-carousel::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+
+/*
+  Kartu basemap persegi sempurna.
+*/
+.basemap-option {
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+
+  height: 100px !important;
+  min-height: 100px !important;
+  max-height: 100px !important;
+
+  flex: 0 0 100px !important;
+
+  padding: 5px !important;
+  box-sizing: border-box !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+
+  border-radius: 5px !important;
+}
+
+
+/*
+  Thumbnail preview juga dibuat persegi sempurna.
+*/
+.basemap-preview-map {
+  width: 76px !important;
+  min-width: 76px !important;
+  max-width: 76px !important;
+
+  height: 76px !important;
+  min-height: 76px !important;
+  max-height: 76px !important;
+
+  flex: 0 0 76px !important;
+
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+
+  border-radius: 3px !important;
+  overflow: hidden !important;
+}
+
+
+/*
+  Label berada tepat di bawah preview.
+*/
+.basemap-option-label {
+  width: 100% !important;
+  min-height: 14px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  margin-top: 3px !important;
+
+  font-size: 10px !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+
+/*
+  Opacity tetap memenuhi lebar panel.
+*/
+.basemap-opacity-row {
+  margin-top: 10px !important;
+}
+
+.opacity-grid {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+
+
+/*
+  Mobile: kartu tetap persegi, sedikit lebih kecil agar muat.
+*/
+@media (max-width: 760px) {
+
+  .basemap-panel {
+    width: auto !important;
+  }
+
+  .basemap-carousel {
+    justify-content: space-between !important;
+    gap: 6px !important;
+  }
+
+  .basemap-option {
+    width: 90px !important;
+    min-width: 90px !important;
+    max-width: 90px !important;
+
+    height: 90px !important;
+    min-height: 90px !important;
+    max-height: 90px !important;
+
+    flex-basis: 90px !important;
+  }
+
+  .basemap-preview-map {
+    width: 68px !important;
+    min-width: 68px !important;
+    max-width: 68px !important;
+
+    height: 68px !important;
+    min-height: 68px !important;
+    max-height: 68px !important;
+
+    flex-basis: 68px !important;
+  }
+}
+
+
+/* =========================================================
+   MOBILE RESPONSIVE WEBGIS
+   ========================================================= */
+
+#map {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Desktop: mobile-only controls hidden. */
+.mobile-filter-toggle,
+.mobile-filter-close {
+  display: none;
+}
+
+/* Touch devices: prevent accidental text selection on controls. */
+button,
+select {
+  touch-action: manipulation;
+}
+
+
+/* =========================================================
+   TABLET / PHONE
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  :root {
+    --mobile-edge: 8px;
+    --mobile-toolbar-height: 46px;
+  }
+
+  html,
+  body {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  /* -------------------------
+     TITLE
+     ------------------------- */
+
+  .webgis-title-card {
+    top: max(8px, env(safe-area-inset-top)) !important;
+    left: var(--mobile-edge) !important;
+    right: var(--mobile-edge) !important;
+    width: auto !important;
+    border-radius: 9px !important;
+    z-index: 1700 !important;
+  }
+
+  .webgis-title-main {
+    padding: 10px 12px 9px !important;
+  }
+
+  .webgis-title-card h1 {
+    font-size: 16px !important;
+    line-height: 1.2 !important;
+    letter-spacing: -.15px !important;
+  }
+
+  .webgis-title-sub {
+    padding: 6px 12px 7px !important;
+  }
+
+  .webgis-title-card p {
+    font-size: 9px !important;
+  }
+
+
+  /* -------------------------
+     MOBILE ROUTE BUTTON
+     ------------------------- */
+
+  .mobile-filter-toggle {
+    position: absolute;
+    top: calc(max(8px, env(safe-area-inset-top)) + 78px);
+    left: 10px;
+    z-index: 1690;
+
+    min-width: 78px;
+    height: 40px;
+    padding: 0 13px;
+
     display: inline-flex;
-
     align-items: center;
+    justify-content: center;
+    gap: 7px;
 
+    border: 1px solid rgba(0,0,0,.10);
+    border-radius: 20px;
+
+    background: rgba(255,255,255,.97);
+    box-shadow: 0 2px 9px rgba(0,0,0,.18);
+
+    color: #303030;
+    font-family: var(--font-main);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .mobile-filter-toggle-icon {
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  body.mobile-filter-open .mobile-filter-toggle {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+
+  /* -------------------------
+     FILTER AS BOTTOM SHEET
+     ------------------------- */
+
+  .filter-panel {
+    top: auto !important;
+    left: var(--mobile-edge) !important;
+    right: var(--mobile-edge) !important;
+    bottom: calc(
+      64px +
+      env(safe-area-inset-bottom)
+    ) !important;
+
+    width: auto !important;
+    max-height: min(60dvh, 560px) !important;
+
+    border-radius: 12px !important;
+    z-index: 1800 !important;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transform: translateY(14px);
+    transition:
+      opacity .18s ease,
+      transform .18s ease,
+      visibility .18s linear;
+  }
+
+  body.mobile-filter-open .filter-panel {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .mobile-filter-close {
+    position: absolute;
+    top: 7px;
+    right: 8px;
+    z-index: 5;
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
     justify-content: center;
 
-    min-width: 26px;
+    border: 0;
+    border-radius: 17px;
+    background: #f1f1f1;
 
-    min-height: 26px;
-
-    padding:
-        3px
-        7px;
-
-    background: #ffffff;
-
-    border:
-        2px solid;
-
-    border-radius: 13px;
-
-    font-size: 11px;
-
+    color: #555;
+    font-family: var(--font-main);
+    font-size: 21px;
     line-height: 1;
+    cursor: pointer;
+  }
 
-    font-weight: 600;
+  .filter-panel-content {
+    padding: 46px 12px 14px !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
 
+  .filter-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .form-field {
+    margin-bottom: 10px !important;
+  }
+
+  .form-field label {
+    font-size: 9px !important;
+  }
+
+  .form-field select {
+    height: 42px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
+  }
+
+  .route-info {
+    padding-top: 12px !important;
+  }
+
+  .route-info h2 {
+    font-size: 17px !important;
+    line-height: 1.25 !important;
+  }
+
+  .selected-stop-card {
+    padding: 10px !important;
+  }
+
+  .stop-list-item {
+    min-height: 38px !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+  }
+
+  .stop-list-name {
+    font-size: 11px !important;
+  }
+
+
+  /* -------------------------
+     TOOLBAR
+     ------------------------- */
+
+  .bottom-toolbar {
+    right: 8px !important;
+    bottom: calc(
+      8px +
+      env(safe-area-inset-bottom)
+    ) !important;
+
+    height: var(--mobile-toolbar-height) !important;
+    max-width: calc(100vw - 16px) !important;
+
+    border-radius: 9px !important;
+    z-index: 1650 !important;
+  }
+
+  .toolbar-button {
+    width: 46px !important;
+    min-width: 46px !important;
+    height: 46px !important;
+  }
+
+  .toolbar-thumbnail {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .toolbar-scale {
+    height: 46px !important;
+    min-width: 74px !important;
+    padding: 0 7px !important;
+    font-size: 9px !important;
+  }
+
+  .toolbar-icon {
+    width: 21px !important;
+    height: 21px !important;
+  }
+
+
+  /* -------------------------
+     FLOATING ZOOM + NORTH
+     ------------------------- */
+
+  .floating-zoom {
+    right: 8px !important;
+    bottom: calc(
+      62px +
+      env(safe-area-inset-bottom)
+    ) !important;
+    z-index: 1640 !important;
+  }
+
+  .floating-zoom button {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  body.basemap-panel-open .floating-zoom {
+    bottom: calc(
+      70px +
+      env(safe-area-inset-bottom) +
+      var(--basemap-panel-height, 260px)
+    ) !important;
+  }
+
+  .floating-north {
+    top: calc(
+      max(8px, env(safe-area-inset-top)) + 84px
+    ) !important;
+    right: 14px !important;
+    z-index: 1600 !important;
+  }
+
+
+  /* -------------------------
+     BASEMAP PANEL
+     ------------------------- */
+
+  .basemap-panel {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: calc(
+      64px +
+      env(safe-area-inset-bottom)
+    ) !important;
+
+    width: auto !important;
+    max-width: none !important;
+
+    padding: 12px 10px !important;
+    border-radius: 11px !important;
+    z-index: 1810 !important;
+  }
+
+  .basemap-header h2 {
+    font-size: 13px !important;
+  }
+
+  .basemap-carousel {
+    justify-content: space-around !important;
+    gap: 5px !important;
+  }
+
+  .basemap-option {
+    width: 90px !important;
+    min-width: 90px !important;
+    max-width: 90px !important;
+
+    height: 90px !important;
+    min-height: 90px !important;
+    max-height: 90px !important;
+
+    flex: 0 0 90px !important;
+  }
+
+  .basemap-preview-map {
+    width: 68px !important;
+    min-width: 68px !important;
+    max-width: 68px !important;
+
+    height: 68px !important;
+    min-height: 68px !important;
+    max-height: 68px !important;
+
+    flex: 0 0 68px !important;
+  }
+
+  .basemap-option-label {
+    font-size: 9px !important;
+  }
+
+  .basemap-opacity-row {
+    gap: 7px !important;
+  }
+
+  .opacity-grid button {
+    height: 32px !important;
+    font-size: 9px !important;
+  }
+
+
+  /* -------------------------
+     POPUP
+     ------------------------- */
+
+  .leaflet-popup {
+    margin-bottom: 14px !important;
+  }
+
+  .leaflet-popup-content-wrapper {
+    max-width: calc(100vw - 24px) !important;
+    max-height: 66dvh !important;
+    border-radius: 10px !important;
+  }
+
+  .leaflet-popup-content {
+    min-width: 0 !important;
+    width: min(340px, calc(100vw - 56px)) !important;
+    max-width: calc(100vw - 56px) !important;
+    max-height: 60dvh !important;
+    margin: 12px 13px 14px !important;
+  }
+
+  .stop-popup-title {
+    font-size: 17px !important;
+  }
+
+  .stop-popup-label {
+    font-size: 12px !important;
+  }
+
+  .integration-group .integration-operator {
+    font-size: 12px !important;
+  }
+
+  .integration-place-list {
+    padding-left: 0 !important;
+  }
+
+  .integration-place-name {
+    font-size: 13px !important;
+  }
+
+  .integration-place-row {
+    align-items: flex-start !important;
+  }
+
+
+  /* Hide default attribution a little more compactly on phone. */
+  .leaflet-control-attribution {
+    font-size: 8px !important;
+    max-width: 70vw;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 
+/* =========================================================
+   SMALL PHONES
+   ========================================================= */
 
-/* ============================================================
-   GPS POPUP
-============================================================ */
+@media (max-width: 430px) {
 
-.gps-popup {
-    min-width: 150px;
+  .filter-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
 
-    padding:
-        14px
-        15px;
+  .filter-panel {
+    max-height: min(64dvh, 590px) !important;
+  }
+
+  .toolbar-scale {
+    display: none !important;
+  }
+
+  .basemap-option {
+    width: 84px !important;
+    min-width: 84px !important;
+    max-width: 84px !important;
+
+    height: 84px !important;
+    min-height: 84px !important;
+    max-height: 84px !important;
+
+    flex-basis: 84px !important;
+  }
+
+  .basemap-preview-map {
+    width: 62px !important;
+    min-width: 62px !important;
+    max-width: 62px !important;
+
+    height: 62px !important;
+    min-height: 62px !important;
+    max-height: 62px !important;
+
+    flex-basis: 62px !important;
+  }
+
+  .stop-list-route-badges {
+    gap: 2px !important;
+  }
 }
 
 
-.gps-popup-title {
-    margin-bottom: 3px;
+@media (max-width: 350px) {
 
-    font-size: 16px;
+  .webgis-title-card h1 {
+    font-size: 15px !important;
+  }
 
-    font-weight: 500;
-}
+  .mobile-filter-toggle {
+    top: calc(max(8px, env(safe-area-inset-top)) + 75px);
+  }
 
+  .basemap-option {
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
 
-.gps-popup-accuracy {
-    font-size: 12px;
+    height: 78px !important;
+    min-height: 78px !important;
+    max-height: 78px !important;
 
-    color: #6a6a6a;
-}
+    flex-basis: 78px !important;
+  }
 
+  .basemap-preview-map {
+    width: 57px !important;
+    min-width: 57px !important;
+    max-width: 57px !important;
 
+    height: 57px !important;
+    min-height: 57px !important;
+    max-height: 57px !important;
 
-/* ============================================================
-   ATTRIBUTION
-============================================================ */
-
-.leaflet-control-attribution {
-    padding:
-        2px
-        6px !important;
-
-    background:
-        rgba(255, 255, 255, 0.85)
-        !important;
-
-    font-size:
-        10px !important;
-
-    color: #6a6a6a;
-}
-
-
-
-/* ============================================================
-   MOBILE
-============================================================ */
-
-@media
-(max-width: 700px) {
-
-    .app {
-        display: block;
-
-        height: auto;
-
-        overflow: visible;
-    }
-
-
-    .sidebar {
-        width: 100%;
-
-        height: auto;
-
-        padding:
-            18px
-            16px;
-
-        border-right: none;
-
-        border-bottom:
-            1px solid #dedede;
-    }
-
-
-    .sidebar h1 {
-        font-size: 18px;
-    }
-
-
-    #map {
-        height: 70vh;
-
-        min-height: 450px;
-    }
-
-
-    .toolbar-button {
-        width: 40px;
-    }
-
-
-    .toolbar-north {
-        width: 40px;
-    }
-
-
-    .toolbar-scale {
-        min-width: 80px;
-
-        padding:
-            0
-            8px;
-
-        font-size: 11px;
-    }
-
-
-    .basemap-gallery {
-        width: 290px;
-
-        max-width:
-            calc(100vw - 32px);
-    }
-
-
-    .basemap-card-preview {
-        height: 58px;
-    }
-
+    flex-basis: 57px !important;
+  }
 }

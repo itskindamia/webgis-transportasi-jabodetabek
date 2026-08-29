@@ -1,309 +1,227 @@
 <!DOCTYPE html>
-
 <html lang="id">
-
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Jaringan Transportasi Umum Jabodetabek</title>
 
-    <meta charset="UTF-8">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+  <!-- PT Sans hanya untuk badge nomor koridor -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
 
-    <title>
-        Jaringan Transportasi Umum Jakarta & Jabodetabek
-    </title>
-
-
-    <!-- LEAFLET -->
-
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    >
-
-
-    <!-- STYLE -->
-
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
-
+  <link rel="stylesheet" href="css/style.css?v=20260829-mobile1" />
 </head>
 
-
 <body>
+  <div id="map"></div>
 
+  <!-- Judul -->
+  <header class="webgis-title-card">
+    <div class="webgis-title-main">
+      <h1>Jaringan Transportasi Umum Jabodetabek</h1>
+    </div>
 
-<div class="app">
+    <div class="webgis-title-sub">
+      <p>Eksisting · Rencana · Usulan Personal</p>
+    </div>
+  </header>
 
+  <!-- Tombol panel rute khusus ponsel -->
+  <button
+    type="button"
+    class="mobile-filter-toggle"
+    id="mobileFilterToggle"
+    aria-label="Buka panel rute"
+    aria-expanded="false"
+  >
+    <span class="mobile-filter-toggle-icon" aria-hidden="true">☰</span>
+    <span>Rute</span>
+  </button>
 
-    <!-- ======================================================
-         SIDEBAR
-    ======================================================= -->
+  <!-- Filter -->
+  <aside class="filter-panel" id="filterPanel">
+    <button
+      type="button"
+      class="mobile-filter-close"
+      id="mobileFilterClose"
+      aria-label="Tutup panel rute"
+    >×</button>
 
-    <aside class="sidebar">
+    <div class="filter-panel-content">
 
-
-        <div class="sidebar-header">
-
-            <h1>
-                Jaringan Transportasi Umum
-            </h1>
-
-            <p class="subtitle">
-                Jakarta & Jabodetabek
-            </p>
-
+      <div class="filter-grid">
+        <div class="form-field">
+          <label for="modeSelect">Moda</label>
+          <select id="modeSelect">
+            <option value="ALL" selected>Semua Moda</option>
+            <option value="BRT">BRT</option>
+            <option value="MRT">MRT</option>
+            <option value="LRT">LRT</option>
+            <option value="KRL">KRL</option>
+          </select>
         </div>
 
-
-
-        <!-- ==================================================
-             MODA
-        =================================================== -->
-
-        <div class="section">
-
-            <label for="modeSelect">
-                Moda
-            </label>
-
-            <select
-                id="modeSelect"
-                disabled
-            >
-
-                <option value="ALL">
-                    Semua Moda
-                </option>
-
-            </select>
-
+        <div class="form-field">
+          <label for="statusSelect">Status</label>
+          <select id="statusSelect">
+            <option value="ALL" selected>Semua Status</option>
+            <option value="Eksisting">Eksisting</option>
+            <option value="Rencana">Rencana</option>
+            <option value="Usulan Personal">Usulan Personal</option>
+          </select>
         </div>
-
-
-
-        <!-- ==================================================
-             RUTE
-        =================================================== -->
-
-        <div class="section">
-
-            <label for="routeSelect">
-                Rute
-            </label>
-
-            <select
-                id="routeSelect"
-                disabled
-            >
-
-                <option value="ALL">
-                    Semua Rute
-                </option>
-
-            </select>
-
-        </div>
-
-
-
-        <!-- ==================================================
-             STATUS
-        =================================================== -->
-
-        <div class="section">
-
-            <div class="section-title">
-                Status
-            </div>
-
-
-            <div class="status-filter">
-
-
-                <label class="status-option">
-
-                    <input
-                        type="checkbox"
-                        class="status-checkbox"
-                        value="Eksisting"
-                        checked
-                    >
-
-                    <span class="status-check-ui"></span>
-
-                    <span>
-                        Eksisting
-                    </span>
-
-                </label>
-
-
-
-                <label class="status-option">
-
-                    <input
-                        type="checkbox"
-                        class="status-checkbox"
-                        value="Rencana Resmi"
-                        checked
-                    >
-
-                    <span class="status-check-ui"></span>
-
-                    <span>
-                        Rencana Resmi
-                    </span>
-
-                </label>
-
-
-
-                <label class="status-option">
-
-                    <input
-                        type="checkbox"
-                        class="status-checkbox"
-                        value="Usulan Pemerintah"
-                        checked
-                    >
-
-                    <span class="status-check-ui"></span>
-
-                    <span>
-                        Usulan Pemerintah
-                    </span>
-
-                </label>
-
-
-            </div>
-
-
-
-            <div class="status-legend">
-
-
-                <div class="legend-row">
-
-                    <span
-                        class="
-                            legend-line
-                            legend-existing
-                        "
-                    ></span>
-
-                    <span>
-                        Jaringan eksisting
-                    </span>
-
-                </div>
-
-
-
-                <div class="legend-row">
-
-                    <span
-                        class="
-                            legend-line
-                            legend-plan
-                        "
-                    ></span>
-
-                    <span>
-                        Rencana / usulan
-                    </span>
-
-                </div>
-
-
-            </div>
-
-        </div>
-
-
-
-        <!-- ==================================================
-             INFORMASI RUTE
-        =================================================== -->
-
-        <div
-            id="routeInfo"
-            class="route-info"
-        >
-
-            <span class="small-title">
-                Tampilan
-            </span>
-
-            <h2>
-                Memuat jaringan...
-            </h2>
-
-            <p>
-                Data transportasi sedang dimuat.
-            </p>
-
-        </div>
-
-
-
-        <!-- ==================================================
-             CATATAN PUBLIK
-        =================================================== -->
-
-        <div class="public-note">
-
-            <strong>
-                Tentang peta
-            </strong>
-
-            <p>
-                Peta menampilkan jaringan eksisting serta
-                rencana atau usulan pemerintah yang memiliki
-                sumber publik.
-            </p>
-
-            <p>
-                Trase yang belum ditetapkan secara rinci dapat
-                ditampilkan secara indikatif dan diberi
-                keterangan pada informasi rute.
-            </p>
-
-        </div>
-
-
-    </aside>
-
-
-
-    <!-- ======================================================
-         MAP
-    ======================================================= -->
-
-    <main id="map"></main>
-
-
-</div>
-
-
-
-<!-- LEAFLET -->
-
-<script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-</script>
-
-
-<!-- MAP SCRIPT -->
-
-<script src="js/map.js"></script>
-
-
+      </div>
+
+      <div class="form-field">
+        <label for="routeSelect">Pilih Lin / Koridor</label>
+        <select id="routeSelect">
+          <option value="ALL">Semua Lin / Koridor</option>
+        </select>
+      </div>
+
+      <section id="routeInfo" class="route-info">
+        <div class="eyebrow">TAMPILAN</div>
+        <h2>Semua Lin / Koridor</h2>
+        <p>Semua Moda · Semua Status</p>
+      </section>
+
+      <section id="selectedStopInfo" class="selected-stop-card" hidden></section>
+      <section id="stopList" class="stop-list"></section>
+    </div>
+  </aside>
+
+  <!-- Toolbar kanan bawah -->
+  <div class="bottom-toolbar" id="bottomToolbar">
+    <button
+      type="button"
+      class="toolbar-button basemap-main-button"
+      id="basemapButton"
+      title="Peta Dasar"
+    >
+      <img id="currentBasemapThumb" class="toolbar-thumbnail" alt="Peta dasar" />
+    </button>
+
+    <button
+      type="button"
+      class="toolbar-button gps-button is-pending"
+      id="gpsButton"
+      title="Lokasi saya"
+    >
+      <svg viewBox="0 0 24 24" class="toolbar-icon" aria-hidden="true">
+        <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+        <circle cx="12" cy="12" r="2.2" fill="currentColor"/>
+        <path
+          d="M12 2v3 M12 19v3 M2 12h3 M19 12h3"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      </svg>
+    </button>
+
+    <div class="toolbar-scale" id="numericScale">1 : -</div>
+
+    <button
+      type="button"
+      class="toolbar-button"
+      id="homeButton"
+      title="Full Extent"
+    >
+      <svg viewBox="0 0 24 24" class="toolbar-icon" aria-hidden="true">
+        <path
+          d="M5 8V5h3 M16 5h3v3 M19 16v3h-3 M8 19H5v-3"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+      </svg>
+    </button>
+
+  </div>
+
+  <!-- North arrow melayang -->
+  <div class="floating-north" title="Utara" aria-label="Utara">
+    <span class="floating-north-n">N</span>
+    <span class="floating-north-arrow">▲</span>
+  </div>
+
+  <!-- Zoom melayang di atas panel basemap -->
+  <div class="floating-zoom" id="floatingZoom" aria-label="Kontrol zoom">
+    <button type="button" id="zoomInButton" title="Perbesar" aria-label="Perbesar">+</button>
+    <button type="button" id="zoomOutButton" title="Perkecil" aria-label="Perkecil">−</button>
+  </div>
+
+  <!-- Basemap panel -->
+  <section class="basemap-panel" id="basemapPanel" hidden>
+    <div class="basemap-header">
+      <h2>Pilih Basemap</h2>
+      <button
+        type="button"
+        class="basemap-close"
+        id="basemapClose"
+        aria-label="Tutup"
+      >×</button>
+    </div>
+
+    <div
+      class="basemap-carousel"
+      id="basemapCarousel"
+      aria-label="Pilihan basemap"
+    >
+      <button
+        type="button"
+        class="basemap-option active"
+        data-basemap="light"
+        title="Light"
+      >
+        <div class="basemap-preview-map" id="previewLight"></div>
+        <span class="basemap-option-label">Light</span>
+      </button>
+
+      <button
+        type="button"
+        class="basemap-option"
+        data-basemap="osm"
+        title="OpenStreetMap"
+      >
+        <div class="basemap-preview-map" id="previewOsm"></div>
+        <span class="basemap-option-label">OSM</span>
+      </button>
+      <button
+        type="button"
+        class="basemap-option"
+        data-basemap="satellite"
+        title="Satellite"
+      >
+        <div class="basemap-preview-map" id="previewSatellite"></div>
+        <span class="basemap-option-label">Satellite</span>
+      </button>
+    </div>
+
+    <div class="basemap-opacity-row">
+      <span>Opacity</span>
+
+      <div class="opacity-grid">
+        <button type="button" data-opacity="25">25%</button>
+        <button type="button" data-opacity="50">50%</button>
+        <button type="button" data-opacity="75">75%</button>
+        <button type="button" class="active" data-opacity="100">100%</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/map.js?v=20260829-mobile1"></script>
 </body>
-
 </html>
