@@ -454,6 +454,42 @@ const rightInfoGuideButton =
     "rightInfoGuideButton"
   );
 
+
+const routePlanIntroEl =
+  document.getElementById(
+    "routePlanIntro"
+  );
+
+const routePlanIntroCloseEl =
+  document.getElementById(
+    "routePlanIntroClose"
+  );
+
+const routePlanIntroTitleEl =
+  document.getElementById(
+    "routePlanIntroTitle"
+  );
+
+const routePlanIntroTextEl =
+  document.getElementById(
+    "routePlanIntroText"
+  );
+
+const routePlanIntroExtraEl =
+  document.getElementById(
+    "routePlanIntroExtra"
+  );
+
+const routePlanIntroSourceEl =
+  document.getElementById(
+    "routePlanIntroSource"
+  );
+
+const routePlanIntroDismissEl =
+  document.getElementById(
+    "routePlanIntroDismiss"
+  );
+
 const productTour =
   document.getElementById(
     "productTour"
@@ -626,6 +662,19 @@ let lastFocusedBeforeInfoModal = null;
 */
 let startupExperienceActive = false;
 let startupTourTimerId = null;
+
+/*
+  Route intro BRT 15–19 hanya diingat selama page load aktif.
+  Reload / buka ulang tab akan mengosongkan Set ini.
+*/
+const shownRoutePlanIntros =
+  new Set();
+
+let activeRoutePlanIntroRouteId =
+  null;
+
+let routePlanIntroTimerId =
+  null;
 
 const DISCLAIMER_STORAGE_KEY =
   "webgisTransportDisclaimerAcceptedV1";
@@ -3448,6 +3497,8 @@ function startProductTour(
     manual = false
   } = {}
 ) {
+  closeRoutePlanIntro();
+
   if (!productTour) {
     return;
   }
@@ -4386,6 +4437,57 @@ function setInfoModalOpen(
 }
 
 
+
+routePlanIntroCloseEl
+  ?.addEventListener(
+    "click",
+    () => {
+      closeRoutePlanIntro();
+    }
+  );
+
+
+routePlanIntroDismissEl
+  ?.addEventListener(
+    "click",
+    () => {
+      closeRoutePlanIntro();
+    }
+  );
+
+
+routePlanIntroSourceEl
+  ?.addEventListener(
+    "click",
+    () => {
+      const routeId =
+        activeRoutePlanIntroRouteId;
+
+      if (!routeId) {
+        return;
+      }
+
+      openRoutePlanSourceCard(
+        routeId
+      );
+    }
+  );
+
+
+document.addEventListener(
+  "keydown",
+  event => {
+    if (
+      event.key === "Escape" &&
+      routePlanIntroEl &&
+      !routePlanIntroEl.hidden
+    ) {
+      closeRoutePlanIntro();
+    }
+  }
+);
+
+
 infoButton
   ?.addEventListener(
     "click",
@@ -4406,6 +4508,8 @@ infoButton
 
       startupExperienceActive = false;
 
+      closeRoutePlanIntro();
+
       setInfoModalOpen(
         true
       );
@@ -4420,6 +4524,8 @@ rightInfoAboutButton
       event.stopPropagation();
 
       startupExperienceActive = false;
+
+      closeRoutePlanIntro();
 
       setInfoModalOpen(
         true
@@ -5125,6 +5231,320 @@ const ROUTE_PLAN_INFO = {
 };
 
 
+
+function getRoutePlanIntroTitle(
+  routeId
+) {
+  const route =
+    getRouteById(
+      routeId
+    );
+
+  if (!route) {
+    return "Koridor Rencana";
+  }
+
+  const line =
+    cleanText(
+      route.properties.LINE
+    );
+
+  if (line) {
+    return `Koridor ${line}`;
+  }
+
+  return (
+    cleanText(
+      route.properties.OBJECTNAME
+    )
+    ||
+    "Koridor Rencana"
+  );
+}
+
+
+function getRoutePlanIntroExtraText(
+  routeId
+) {
+  const info =
+    getRoutePlanInfo(
+      routeId
+    );
+
+  if (!info) {
+    return "";
+  }
+
+  if (
+    routeId === "BRT_15" ||
+    routeId === "BRT_18" ||
+    routeId === "BRT_19"
+  ) {
+    return (
+      info.note ||
+      ""
+    );
+  }
+
+  return "";
+}
+
+
+function closeRoutePlanIntro() {
+  if (
+    routePlanIntroTimerId
+  ) {
+    clearTimeout(
+      routePlanIntroTimerId
+    );
+
+    routePlanIntroTimerId =
+      null;
+  }
+
+  if (!routePlanIntroEl) {
+    return;
+  }
+
+  routePlanIntroEl.classList.remove(
+    "is-visible"
+  );
+
+  /*
+    Beri waktu transisi singkat sebelum hidden.
+  */
+  setTimeout(
+    () => {
+      if (
+        !routePlanIntroEl
+          .classList
+          .contains(
+            "is-visible"
+          )
+      ) {
+        routePlanIntroEl.hidden =
+          true;
+      }
+    },
+    170
+  );
+
+  activeRoutePlanIntroRouteId =
+    null;
+}
+
+
+function showRoutePlanIntro(
+  routeId
+) {
+  const normalizedRouteId =
+    String(
+      routeId ||
+      ""
+    );
+
+  const planInfo =
+    getRoutePlanInfo(
+      normalizedRouteId
+    );
+
+  if (
+    !planInfo ||
+    shownRoutePlanIntros.has(
+      normalizedRouteId
+    )
+  ) {
+    return;
+  }
+
+  /*
+    Jangan menumpuk route intro di atas Disclaimer atau
+    Cara Menggunakan.
+  */
+  const infoIsOpen =
+    Boolean(
+      infoModalBackdrop &&
+      !infoModalBackdrop.hidden
+    );
+
+  const tourIsOpen =
+    Boolean(
+      productTour &&
+      !productTour.hidden
+    );
+
+  if (
+    startupExperienceActive ||
+    infoIsOpen ||
+    tourIsOpen
+  ) {
+    return;
+  }
+
+  shownRoutePlanIntros.add(
+    normalizedRouteId
+  );
+
+  activeRoutePlanIntroRouteId =
+    normalizedRouteId;
+
+  if (
+    routePlanIntroTitleEl
+  ) {
+    routePlanIntroTitleEl.textContent =
+      getRoutePlanIntroTitle(
+        normalizedRouteId
+      );
+  }
+
+  if (
+    routePlanIntroTextEl
+  ) {
+    routePlanIntroTextEl.innerHTML = `
+      Koridor ini tercantum dalam dokumen rencana resmi
+      DKI Jakarta. <strong>Trase dan lokasi halte pada peta
+      merupakan skenario visualisasi WebGIS</strong> dan
+      bukan trase maupun daftar halte resmi yang telah
+      ditetapkan pemerintah atau operator transportasi.
+    `;
+  }
+
+  const extraText =
+    getRoutePlanIntroExtraText(
+      normalizedRouteId
+    );
+
+  if (
+    routePlanIntroExtraEl
+  ) {
+    routePlanIntroExtraEl.hidden =
+      !extraText;
+
+    routePlanIntroExtraEl.textContent =
+      extraText;
+  }
+
+  if (!routePlanIntroEl) {
+    return;
+  }
+
+  routePlanIntroEl.hidden =
+    false;
+
+  requestAnimationFrame(
+    () => {
+      requestAnimationFrame(
+        () => {
+          routePlanIntroEl
+            .classList
+            .add(
+              "is-visible"
+            );
+        }
+      );
+    }
+  );
+}
+
+
+function queueRoutePlanIntro(
+  routeId
+) {
+  const normalizedRouteId =
+    String(
+      routeId ||
+      ""
+    );
+
+  if (
+    !getRoutePlanInfo(
+      normalizedRouteId
+    ) ||
+    shownRoutePlanIntros.has(
+      normalizedRouteId
+    )
+  ) {
+    return;
+  }
+
+  if (
+    routePlanIntroTimerId
+  ) {
+    clearTimeout(
+      routePlanIntroTimerId
+    );
+  }
+
+  routePlanIntroTimerId =
+    setTimeout(
+      () => {
+        routePlanIntroTimerId =
+          null;
+
+        /*
+          Pastikan user masih berada pada koridor yang sama.
+        */
+        if (
+          String(
+            currentSelectedRouteId ||
+            ""
+          ) !==
+          normalizedRouteId
+        ) {
+          return;
+        }
+
+        showRoutePlanIntro(
+          normalizedRouteId
+        );
+      },
+      220
+    );
+}
+
+
+function openRoutePlanSourceCard(
+  routeId
+) {
+  const normalizedRouteId =
+    String(
+      routeId ||
+      ""
+    );
+
+  /*
+    Simpan ID terlebih dahulu karena closeRoutePlanIntro()
+    mengosongkan activeRoutePlanIntroRouteId.
+  */
+  closeRoutePlanIntro();
+
+  const planCard =
+    document.querySelector(
+      `.route-plan-card[data-route-id="${normalizedRouteId}"]`
+    );
+
+  if (!planCard) {
+    return;
+  }
+
+  planCard.open =
+    true;
+
+  planCard.scrollIntoView({
+    behavior: "smooth",
+    block: "nearest"
+  });
+
+  planCard
+    .querySelector(
+      ".route-plan-summary"
+    )
+    ?.focus({
+      preventScroll: true
+    });
+}
+
+
 function getRoutePlanInfo(
   routeId
 ) {
@@ -5164,7 +5584,10 @@ function buildRoutePlanInfoHTML(
       : "";
 
   return `
-    <details class="route-plan-card">
+    <details
+      class="route-plan-card"
+      data-route-id="${escapeHTML(routeId)}"
+    >
 
       <summary class="route-plan-summary">
 
@@ -10079,6 +10502,8 @@ function fitRouteToScreen(
 function showAllRoutes(
   fit = false
 ) {
+  closeRoutePlanIntro();
+
   currentSelectedRouteId = null;
 
   clearSelectedStop();
@@ -10177,6 +10602,14 @@ function showSingleRoute(
     zoom rute agar pas dengan area layar yang terlihat.
   */
   fitRouteToScreen();
+
+  /*
+    Untuk BRT 15–19, tampilkan pengantar compact satu kali
+    per koridor dalam page load ini.
+  */
+  queueRoutePlanIntro(
+    routeId
+  );
 }
 
 /* =========================================================

@@ -18,7 +18,7 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="css/style.css?v=20260830-brt15-19-plan-onboarding1" />
+  <link rel="stylesheet" href="css/style.css?v=20260830-brt15-19-route-intro-fixed1" />
 </head>
 
 <body>
@@ -889,7 +889,76 @@
     </section>
   </div>
 
+  <!-- =====================================================
+       BRT 15–19 — ROUTE INTRO
+       ===================================================== -->
+  <div
+    id="routePlanIntro"
+    class="route-plan-intro-overlay"
+    hidden
+    role="dialog"
+    aria-modal="false"
+    aria-labelledby="routePlanIntroTitle"
+  >
+    <div class="route-plan-intro-card">
+
+      <button
+        id="routePlanIntroClose"
+        class="route-plan-intro-close"
+        type="button"
+        aria-label="Tutup pengantar koridor"
+        title="Tutup"
+      >
+        ×
+      </button>
+
+      <div class="route-plan-intro-kicker">
+        Rencana
+      </div>
+
+      <div
+        id="routePlanIntroTitle"
+        class="route-plan-intro-title"
+      >
+        Koridor
+      </div>
+
+      <div
+        id="routePlanIntroText"
+        class="route-plan-intro-text"
+      ></div>
+
+      <div
+        id="routePlanIntroExtra"
+        class="route-plan-intro-extra"
+        hidden
+      ></div>
+
+      <div class="route-plan-intro-actions">
+
+        <button
+          id="routePlanIntroSource"
+          class="route-plan-intro-source"
+          type="button"
+        >
+          Lihat Dasar Rencana
+        </button>
+
+        <button
+          id="routePlanIntroDismiss"
+          class="route-plan-intro-dismiss"
+          type="button"
+        >
+          Tutup
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/map.js?v=20260830-brt15-19-plan-onboarding1"></script>
+  <script src="js/map.js?v=20260830-brt15-19-route-intro-fixed1"></script>
+
 </body>
 </html>
