@@ -616,6 +616,17 @@ let globalSearchPoiLoading = false;
 
 let lastFocusedBeforeInfoModal = null;
 
+/*
+  Startup experience selalu dijalankan setiap page load:
+  Informasi & Disclaimer -> Cara Menggunakan.
+
+  Nilai localStorage lama tetap dipertahankan untuk
+  kompatibilitas, tetapi tidak lagi dipakai untuk menentukan
+  apakah startup popup/tour muncul.
+*/
+let startupExperienceActive = false;
+let startupTourTimerId = null;
+
 const DISCLAIMER_STORAGE_KEY =
   "webgisTransportDisclaimerAcceptedV1";
 
@@ -3088,7 +3099,7 @@ function buildProductTourVisual(type) {
         <span>Moda</span>
         <strong>BRT</strong>
         <span>Status</span>
-        <strong>Existing</strong>
+        <strong>Eksisting</strong>
         <span class="tour-mini-wide">Pilih Koridor</span>
         <strong class="tour-mini-wide">Koridor 1 (Blok M - Kota)</strong>
       </div>
@@ -4222,6 +4233,72 @@ document.addEventListener(
    INFORMATION / DISCLAIMER
    ========================================================= */
 
+/*
+  Memulai pengalaman pembuka setiap kali halaman dimuat.
+  Tidak bergantung localStorage: reload, buka ulang tab, atau
+  hard refresh tetap akan menampilkan informasi lalu tour.
+*/
+function startStartupExperience() {
+  startupExperienceActive = true;
+
+  if (startupTourTimerId) {
+    clearTimeout(
+      startupTourTimerId
+    );
+
+    startupTourTimerId = null;
+  }
+
+  setInfoModalOpen(
+    true
+  );
+}
+
+
+/*
+  Dipakai khusus ketika modal informasi yang muncul sebagai
+  bagian startup ditutup. Setelah modal hilang, walkthrough
+  selalu dimulai dari langkah pertama.
+
+  Jika modal dibuka manual dari tombol Informasi, penutupan
+  modal tidak otomatis memulai walkthrough.
+*/
+function closeInfoModalAndContinueStartup() {
+  const continueToTour =
+    Boolean(
+      startupExperienceActive
+    );
+
+  startupExperienceActive = false;
+
+  setInfoModalOpen(
+    false
+  );
+
+  if (!continueToTour) {
+    return;
+  }
+
+  if (startupTourTimerId) {
+    clearTimeout(
+      startupTourTimerId
+    );
+  }
+
+  startupTourTimerId =
+    setTimeout(
+      () => {
+        startupTourTimerId = null;
+
+        startProductTour({
+          manual: false
+        });
+      },
+      180
+    );
+}
+
+
 function hasAcceptedDisclaimer() {
   try {
     return (
@@ -4327,6 +4404,8 @@ infoButton
         return;
       }
 
+      startupExperienceActive = false;
+
       setInfoModalOpen(
         true
       );
@@ -4340,6 +4419,8 @@ rightInfoAboutButton
     event => {
       event.stopPropagation();
 
+      startupExperienceActive = false;
+
       setInfoModalOpen(
         true
       );
@@ -4351,9 +4432,7 @@ infoModalClose
   ?.addEventListener(
     "click",
     () => {
-      setInfoModalOpen(
-        false
-      );
+      closeInfoModalAndContinueStartup();
     }
   );
 
@@ -4364,20 +4443,7 @@ infoModalAccept
     () => {
       saveDisclaimerAccepted();
 
-      setInfoModalOpen(
-        false
-      );
-
-      if (
-        !hasCompletedProductTour()
-      ) {
-        setTimeout(
-          () => {
-            startProductTour();
-          },
-          180
-        );
-      }
+      closeInfoModalAndContinueStartup();
     }
   );
 
@@ -4390,9 +4456,7 @@ infoModalBackdrop
         event.target ===
         infoModalBackdrop
       ) {
-        setInfoModalOpen(
-          false
-        );
+        closeInfoModalAndContinueStartup();
       }
     }
   );
@@ -4418,9 +4482,7 @@ document.addEventListener(
       infoModalBackdrop &&
       !infoModalBackdrop.hidden
     ) {
-      setInfoModalOpen(
-        false
-      );
+      closeInfoModalAndContinueStartup();
     }
   }
 );
@@ -4981,6 +5043,231 @@ function drawRoutes(features) {
    ROUTE INFO
    ========================================================= */
 
+/*
+  DASAR RENCANA BRT KORIDOR 15–19
+  --------------------------------
+
+  Keberadaan Koridor 15–19 memiliki dasar pada dokumen
+  rencana resmi DKI Jakarta.
+
+  Pergub DKI Jakarta No. 31 Tahun 2022 tentang RDTR:
+  Pasal 20 ayat (2).
+
+  Perda DKI Jakarta No. 7 Tahun 2024 tentang RTRW
+  Tahun 2024–2044:
+  Pasal 25 ayat (2).
+
+  PENTING:
+  Konfigurasi ini hanya menjelaskan ASAL RENCANA.
+  Geometri trase dan lokasi halte yang tampil pada WebGIS
+  tetap merupakan skenario visualisasi, bukan trase/halte
+  resmi pemerintah atau operator.
+*/
+const ROUTE_PLAN_INFO = {
+
+  BRT_15: {
+    rdtr:
+      "Jakarta International Stadium – Pulo Gebang",
+
+    rtrw:
+      "Danau Sunter Barat – Pulo Gebang",
+
+    note:
+      "Terdapat perbedaan titik asal yang disebutkan antara RDTR 2022 dan RTRW 2024."
+  },
+
+
+  BRT_16: {
+    rdtr:
+      "Kampung Melayu – Tanah Abang – Harmoni",
+
+    rtrw:
+      "Kampung Melayu – Tanah Abang – Harmoni",
+
+    note: ""
+  },
+
+
+  BRT_17: {
+    rdtr:
+      "Kota – Ancol – Tanjung Priok",
+
+    rtrw:
+      "Kota – Ancol – Tanjung Priok",
+
+    note: ""
+  },
+
+
+  BRT_18: {
+    rdtr:
+      "Puri Kembangan – Pluit",
+
+    rtrw:
+      "Puri Kembangan – Pantai Indah Kapuk",
+
+    note:
+      "Terdapat perbedaan titik tujuan yang disebutkan antara RDTR 2022 dan RTRW 2024."
+  },
+
+
+  BRT_19: {
+    rdtr:
+      "Manggarai – UI",
+
+    rtrw:
+      "Manggarai – Universitas Indonesia (Elevated)",
+
+    note:
+      "RTRW Jakarta 2024–2044 mencantumkan Koridor 19 sebagai jaringan elevated."
+  }
+
+};
+
+
+function getRoutePlanInfo(
+  routeId
+) {
+  return (
+    ROUTE_PLAN_INFO[
+      String(routeId || "")
+    ] ||
+    null
+  );
+}
+
+
+function buildRoutePlanInfoHTML(
+  feature
+) {
+  const routeId =
+    getRouteId(
+      feature
+    );
+
+  const info =
+    getRoutePlanInfo(
+      routeId
+    );
+
+  if (!info) {
+    return "";
+  }
+
+  const differenceNoteHTML =
+    info.note
+      ? `
+        <div class="route-plan-difference-note">
+          ${escapeHTML(info.note)}
+        </div>
+      `
+      : "";
+
+  return `
+    <details class="route-plan-card">
+
+      <summary class="route-plan-summary">
+
+        <span
+          class="route-plan-icon"
+          aria-hidden="true"
+        >
+          i
+        </span>
+
+        <span class="route-plan-summary-copy">
+
+          <span class="route-plan-type">
+            Rencana Resmi
+          </span>
+
+          <span class="route-plan-title">
+            Dasar Rencana
+          </span>
+
+        </span>
+
+        <span
+          class="route-plan-chevron"
+          aria-hidden="true"
+        >
+          ›
+        </span>
+
+      </summary>
+
+
+      <div class="route-plan-body">
+
+        <p class="route-plan-intro">
+          Koridor ini tercantum dalam dokumen rencana resmi
+          DKI Jakarta sebagai bagian dari pengembangan
+          jaringan BRT.
+        </p>
+
+
+        <div class="route-plan-source">
+
+          <div class="route-plan-source-heading">
+            RDTR DKI Jakarta 2022
+          </div>
+
+          <div class="route-plan-source-doc">
+            Pergub DKI Jakarta Nomor 31 Tahun 2022
+            · Pasal 20 ayat (2)
+          </div>
+
+          <div class="route-plan-source-route">
+            ${escapeHTML(info.rdtr)}
+          </div>
+
+        </div>
+
+
+        <div class="route-plan-source">
+
+          <div class="route-plan-source-heading">
+            RTRW Jakarta 2024–2044
+          </div>
+
+          <div class="route-plan-source-doc">
+            Perda DKI Jakarta Nomor 7 Tahun 2024
+            · Pasal 25 ayat (2)
+          </div>
+
+          <div class="route-plan-source-route">
+            ${escapeHTML(info.rtrw)}
+          </div>
+
+        </div>
+
+
+        ${differenceNoteHTML}
+
+
+        <div class="route-plan-visualization-note">
+
+          <strong>
+            Catatan visualisasi
+          </strong>
+
+          <span>
+            Trase dan lokasi halte yang ditampilkan pada
+            WebGIS merupakan skenario visualisasi berdasarkan
+            interpretasi jaringan dan bukan trase maupun
+            daftar halte resmi yang telah ditetapkan
+            pemerintah atau operator transportasi.
+          </span>
+
+        </div>
+
+      </div>
+
+    </details>
+  `;
+}
+
+
 function renderAllRouteInfo() {
   const modeLabel =
     modeSelect.options[
@@ -5073,7 +5360,14 @@ const ROUTE_ALERTS = {
       "Pasar Baru"
     ],
 
-    temporaryServed: []
+    /*
+      Monumen Nasional bukan halte reguler Koridor 3 pada
+      data dasar, tetapi menjadi titik pelayanan sekaligus
+      terminus selama pengalihan MRT Jakarta Fase 2A.
+    */
+    temporaryServed: [
+      "Monumen Nasional"
+    ]
   },
 
 
@@ -5409,6 +5703,48 @@ function getActiveOperationalStopsForRoute(
         entry.state !==
         "not-served"
     )
+    .map(
+      entry =>
+        entry.feature
+    )
+    .filter(
+      feature => {
+        const key =
+          getStopKey(feature);
+
+        if (
+          !key ||
+          seen.has(key)
+        ) {
+          return false;
+        }
+
+        seen.add(key);
+        return true;
+      }
+    );
+}
+
+
+/*
+  Semua titik operasional untuk marker peta.
+
+  Berbeda dengan getActiveOperationalStopsForRoute():
+  fungsi ini TETAP memasukkan halte yang sementara tidak
+  dilayani agar user dapat mengkliknya dan membaca konteks
+  operasionalnya.
+
+  Previous/Next tetap memakai active-only list.
+*/
+function getMapOperationalStopsForRoute(
+  routeId
+) {
+  const seen =
+    new Set();
+
+  return getOperationalStopListEntries(
+    routeId
+  )
     .map(
       entry =>
         entry.feature
@@ -5943,6 +6279,11 @@ function renderRouteInfo(feature) {
       objectName
     );
 
+  const routePlanInfoHTML =
+    buildRoutePlanInfoHTML(
+      feature
+    );
+
   const alignmentHTML = hasText(p.ALIGNMENT)
     ? `
       <div class="route-meta-row">
@@ -6046,6 +6387,8 @@ function renderRouteInfo(feature) {
 
       ${alignmentHTML}
     </div>
+
+    ${routePlanInfoHTML}
 
     ${routeAlertHTML}
 
@@ -7514,10 +7857,131 @@ function getStopStatusShort(feature) {
    STOP POPUP
    ========================================================= */
 
+/*
+  Keterangan khusus untuk titik yang terdampak perubahan
+  operasional sementara.
+*/
+function getOperationalRouteShortLabel(
+  routeId
+) {
+  const route =
+    getRouteById(
+      routeId
+    );
+
+  if (!route) {
+    return String(routeId || "");
+  }
+
+  const mode =
+    getRouteMode(route);
+
+  const line =
+    cleanText(
+      route.properties.LINE
+    );
+
+  if (
+    mode === "BRT" &&
+    line
+  ) {
+    return `Koridor ${line}`;
+  }
+
+  return (
+    line
+      ? `${mode} ${line}`
+      : getRouteTitle(route)
+  );
+}
+
+
+function buildOperationalStopNoticeHTML(
+  feature,
+  routeId
+) {
+  const operational =
+    getOperationalStopState(
+      feature,
+      routeId
+    );
+
+  const routeLabel =
+    getOperationalRouteShortLabel(
+      routeId
+    );
+
+  if (
+    operational.state ===
+    "not-served"
+  ) {
+    return `
+      <div class="stop-operational-notice is-not-served">
+        <div class="stop-operational-notice-title">
+          Tidak dilayani sementara
+        </div>
+
+        <div class="stop-operational-notice-text">
+          ${escapeHTML(routeLabel)}
+          sementara tidak melayani halte/stasiun ini selama
+          pengalihan operasional. Titik ini tetap ditampilkan
+          untuk menunjukkan pola pelayanan normal.
+        </div>
+      </div>
+    `;
+  }
+
+  if (
+    operational.temporaryTerminus
+  ) {
+    return `
+      <div class="stop-operational-notice is-temporary">
+        <div class="stop-operational-notice-title">
+          Terminus sementara
+        </div>
+
+        <div class="stop-operational-notice-text">
+          Titik ini menjadi terminus sementara
+          ${escapeHTML(routeLabel)}
+          selama pengalihan operasional.
+        </div>
+      </div>
+    `;
+  }
+
+  if (
+    operational.state ===
+    "temporary-served"
+  ) {
+    return `
+      <div class="stop-operational-notice is-temporary">
+        <div class="stop-operational-notice-title">
+          Pelayanan sementara
+        </div>
+
+        <div class="stop-operational-notice-text">
+          ${escapeHTML(routeLabel)}
+          melayani halte/stasiun ini selama pengalihan
+          operasional.
+        </div>
+      </div>
+    `;
+  }
+
+  return "";
+}
+
+
 function buildStopPopup(feature, routeId) {
   const p = feature.properties;
 
-  const directRoutes =
+  const operationalState =
+    getOperationalStopState(
+      feature,
+      routeId
+    );
+
+  let directRoutes =
     getStopRoutes(feature)
       .filter(
         directRouteId =>
@@ -7527,6 +7991,23 @@ function buildStopPopup(feature, routeId) {
             )
           )
       );
+
+  /*
+    Jika rute aktif sedang TIDAK melayani titik ini, jangan
+    masukkan rute tersebut ke bagian "Koridor/Lin yang
+    dilayani". Rute lain yang memang melayani tetap tampil.
+  */
+  if (
+    operationalState.state ===
+    "not-served"
+  ) {
+    directRoutes =
+      directRoutes.filter(
+        directRouteId =>
+          String(directRouteId) !==
+          String(routeId)
+      );
+  }
 
   /*
     Saat halte dilayani hanya karena pengalihan sementara,
@@ -7572,6 +8053,12 @@ function buildStopPopup(feature, routeId) {
         </div>
       `
       : "";
+
+  const operationalNoticeHTML =
+    buildOperationalStopNoticeHTML(
+      feature,
+      routeId
+    );
 
   const directServiceHTML =
     directRoutes.length
@@ -7812,6 +8299,8 @@ function buildStopPopup(feature, routeId) {
 
         ${roleHTML}
 
+        ${operationalNoticeHTML}
+
         <div class="stop-popup-divider"></div>
 
         ${directServiceHTML}
@@ -7874,32 +8363,65 @@ function normalStopStyle(
       isConceptualStop(feature)
     );
 
+  const operationalState =
+    feature
+      ? getOperationalStopState(
+          feature,
+          routeId
+        )
+      : {
+          state: "regular"
+        };
+
+  const notServed =
+    operationalState.state ===
+    "not-served";
+
+  const temporaryServed =
+    operationalState.state ===
+    "temporary-served";
+
   return {
     pane: "stopPane",
+
     radius:
       conceptual
         ? 5.5
         : 5,
+
     color:
-      getRouteColor(routeId),
-    weight: 2,
+      notServed
+        ? "#838991"
+        : getRouteColor(routeId),
+
+    weight:
+      notServed
+        ? 1.8
+        : 2,
+
     fillColor: "#ffffff",
+
     fillOpacity:
-      conceptual
-        ? 0.58
-        : (
-            proposed
+      notServed
+        ? 0.42
+        : conceptual
+          ? 0.58
+          : temporaryServed
+            ? 0.82
+            : proposed
               ? 0.76
-              : 1
-          ),
+              : 1,
+
     dashArray:
-      conceptual
-        ? "3 2"
-        : (
-            proposed
+      notServed
+        ? "2 2"
+        : conceptual
+          ? "3 2"
+          : temporaryServed
+            ? "7 2"
+            : proposed
               ? "6 2"
               : null
-          )
   };
 }
 
@@ -7920,29 +8442,61 @@ function selectedStopStyle(
       isConceptualStop(feature)
     );
 
+  const operationalState =
+    feature
+      ? getOperationalStopState(
+          feature,
+          routeId
+        )
+      : {
+          state: "regular"
+        };
+
+  const notServed =
+    operationalState.state ===
+    "not-served";
+
+  const temporaryServed =
+    operationalState.state ===
+    "temporary-served";
+
   return {
     pane: "stopPane",
     radius: 8,
-    color: "#151515",
+
+    color:
+      notServed
+        ? "#50555c"
+        : "#151515",
+
     weight: 2.5,
+
     fillColor:
-      getRouteColor(routeId),
+      notServed
+        ? "#f0f1f2"
+        : getRouteColor(routeId),
+
     fillOpacity:
-      conceptual
-        ? 0.76
-        : (
-            proposed
+      notServed
+        ? 0.90
+        : conceptual
+          ? 0.76
+          : temporaryServed
+            ? 0.92
+            : proposed
               ? 0.88
-              : 1
-          ),
+              : 1,
+
     dashArray:
-      conceptual
-        ? "4 2"
-        : (
-            proposed
+      notServed
+        ? "3 2"
+        : conceptual
+          ? "4 2"
+          : temporaryServed
+            ? "8 2"
+            : proposed
               ? "7 2"
               : null
-          )
   };
 }
 
@@ -8153,7 +8707,7 @@ function drawStops(routeId) {
   removeStops();
 
   const features =
-    getActiveOperationalStopsForRoute(
+    getMapOperationalStopsForRoute(
       routeId
     );
 
@@ -8471,8 +9025,9 @@ function renderStopList(routeId) {
             ${isTemporaryTerminus ? "is-operational-temp-terminus" : ""}
           "
           data-stop-key="${escapeHTML(stopKey)}"
-          data-operational-disabled="${isNotServed ? "true" : "false"}"
-          ${isNotServed ? 'aria-disabled="true"' : 'tabindex="0" role="button"'}
+          tabindex="0"
+          role="button"
+          ${isNotServed ? 'aria-label="Buka informasi halte yang sementara tidak dilayani"' : ""}
         >
 
           <div class="stop-list-item-left">
@@ -8536,14 +9091,6 @@ function renderStopList(routeId) {
     )
     .forEach(element => {
       const action = () => {
-        if (
-          element.dataset
-            .operationalDisabled ===
-          "true"
-        ) {
-          return;
-        }
-
         selectStop(
           element.dataset.stopKey,
           routeId,
@@ -8790,6 +9337,46 @@ function selectStop(
       routeId
     );
 
+  const selectedOperationalNotice =
+    operationalState.state === "not-served"
+      ? `
+        <div class="selected-stop-operational-note is-not-served">
+          <strong>Tidak dilayani sementara.</strong>
+          ${escapeHTML(
+            getOperationalRouteShortLabel(
+              routeId
+            )
+          )}
+          sementara tidak melayani titik ini selama
+          pengalihan operasional.
+        </div>
+      `
+      : operationalState.temporaryTerminus
+        ? `
+          <div class="selected-stop-operational-note is-temporary">
+            <strong>Terminus sementara.</strong>
+            Titik ini menjadi terminus sementara
+            ${escapeHTML(
+              getOperationalRouteShortLabel(
+                routeId
+              )
+            )}.
+          </div>
+        `
+        : operationalState.state === "temporary-served"
+          ? `
+            <div class="selected-stop-operational-note is-temporary">
+              <strong>Pelayanan sementara.</strong>
+              ${escapeHTML(
+                getOperationalRouteShortLabel(
+                  routeId
+                )
+              )}
+              melayani titik ini selama pengalihan operasional.
+            </div>
+          `
+          : "";
+
   selectedStopInfoEl.hidden =
     false;
 
@@ -8869,6 +9456,8 @@ function selectStop(
         `
         : ""
     }
+
+    ${selectedOperationalNotice}
   `;
 
   stopListEl
@@ -10633,36 +11222,16 @@ async function loadData() {
     );
 
     /*
-      Disclaimer otomatis hanya pada kunjungan pertama.
-      Setelah user menekan "Saya Mengerti", status disimpan
-      di localStorage browser.
+      Informasi & Disclaimer dan Cara Menggunakan selalu
+      muncul lagi pada setiap page load / reload / buka ulang
+      tab. Tidak bergantung pada localStorage.
     */
-    if (
-      !hasAcceptedDisclaimer()
-    ) {
-      setTimeout(
-        () => {
-          setInfoModalOpen(
-            true
-          );
-        },
-        250
-      );
-    }
-    else if (
-      !hasCompletedProductTour()
-    ) {
-      /*
-        Jika disclaimer sudah pernah diterima tetapi
-        walkthrough belum pernah selesai, mulai tour.
-      */
-      setTimeout(
-        () => {
-          startProductTour();
-        },
-        450
-      );
-    }
+    setTimeout(
+      () => {
+        startStartupExperience();
+      },
+      250
+    );
 
     console.log(
       "Rute:",
