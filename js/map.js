@@ -274,6 +274,14 @@ map.getPane("routePane").style.zIndex = 460;
 map.createPane("stopPane");
 map.getPane("stopPane").style.zIndex = 470;
 
+/*
+  Hit-area transparan diletakkan sedikit di atas marker visual.
+  Tujuannya memperbesar area klik tanpa memperbesar simbol
+  halte secara berlebihan.
+*/
+map.createPane("stopHitPane");
+map.getPane("stopHitPane").style.zIndex = 475;
+
 map.createPane("poiPane");
 map.getPane("poiPane").style.zIndex = 480;
 
@@ -615,6 +623,7 @@ let stopData = null;
 let routeHaloLayer = null;
 let routeLayer = null;
 let stopLayer = null;
+let stopHitLayer = null;
 
 let currentSelectedRouteId = null;
 let currentSelectedStopKey = null;
@@ -1006,20 +1015,45 @@ function getRouteOrder(feature) {
     : 9999;
 }
 
+const ROUTE_DISPLAY_NAME_OVERRIDES = {
+  BRT_17: "Kota - Tanjung Priok"
+};
+
+
+function getRouteDisplayName(feature) {
+  const routeId =
+    getRouteId(feature);
+
+  return (
+    ROUTE_DISPLAY_NAME_OVERRIDES[
+      String(routeId ?? "")
+    ]
+    ||
+    cleanText(
+      feature?.properties?.NAME
+    )
+    ||
+    ""
+  );
+}
+
+
 function getRouteTitle(feature) {
   const p = feature.properties;
   const mode = getRouteMode(feature);
+  const routeName =
+    getRouteDisplayName(feature);
 
   if (mode === "BRT") {
-    return `Koridor ${p.LINE} (${p.NAME})`;
+    return `Koridor ${p.LINE} (${routeName})`;
   }
 
   if (hasText(p.LINE)) {
-    return `${mode} ${p.LINE} (${p.NAME})`;
+    return `${mode} ${p.LINE} (${routeName})`;
   }
 
   return (
-    p.NAME ||
+    routeName ||
     mode ||
     "Lin"
   );
@@ -1290,6 +1324,46 @@ function getDirectionLabel(direction) {
 
   return `Arah ${pretty}`;
 }
+
+
+function getStopDirectionInfo(
+  feature,
+  routeId
+) {
+  const rawDirection =
+    getStopDirection(
+      feature,
+      routeId
+    );
+
+  const code =
+    normalizeDirectionCode(
+      rawDirection
+    );
+
+  if (
+    !code ||
+    code === "BOTH"
+  ) {
+    return {
+      isOneWay: false,
+      symbol: "↔",
+      title: "Dua arah",
+      detail: ""
+    };
+  }
+
+  return {
+    isOneWay: true,
+    symbol: "→",
+    title: "Satu arah",
+    detail:
+      getDirectionLabel(
+        rawDirection
+      )
+  };
+}
+
 
 /*
   Fungsi halte/stasiun per rute.
@@ -2902,7 +2976,11 @@ function openPoiResult(
         radius: 7,
         color: "#1f1f1f",
         weight: 2,
-        fillColor: "#ffffff",
+        fillColor:
+      getStopMarkerRoleFill(
+        feature,
+        routeId
+      ),
         fillOpacity: 1
       }
     )
@@ -5035,28 +5113,44 @@ function bindRoutePopup(feature, layer) {
     `
     : "";
 
-  const remarkHTML = hasText(p.REMARK)
-    ? `
-      <div class="route-popup-row">
-        <div class="route-popup-label">Catatan</div>
-        <div class="route-popup-value">
-          ${escapeHTML(cleanText(p.REMARK))}
-        </div>
-      </div>
-    `
-    : "";
-
-  const routeScenarioNoteHTML =
+  const genericVisualizationRemark =
     isPlannedBRTVisualizationRoute(
       getRouteId(feature)
     )
+    &&
+    /interpret|visualisasi/i.test(
+      cleanText(
+        p.REMARK
+      )
+    );
+
+  const remarkHTML =
+    hasText(p.REMARK) &&
+    !genericVisualizationRemark
+      ? `
+        <div class="route-popup-row">
+          <div class="route-popup-label">Catatan</div>
+          <div class="route-popup-value">
+            ${escapeHTML(cleanText(p.REMARK))}
+          </div>
+        </div>
+      `
+      : "";
+
+  const isVisualizationRoute =
+    isPlannedBRTVisualizationRoute(
+      getRouteId(feature)
+    );
+
+  const routeScenarioNoteHTML =
+    isVisualizationRoute
       ? `
         <div class="route-popup-scenario-note">
           <span class="route-popup-scenario-note-icon" aria-hidden="true">i</span>
           <span>
-            Trase dan lokasi halte Koridor 15–19 yang ditampilkan
-            merupakan skenario visualisasi WebGIS, bukan trase
-            maupun halte resmi.
+            <strong>Skenario visualisasi.</strong>
+            Trase ini disusun berdasarkan analisis penyusun WebGIS
+            dan bukan trase resmi.
           </span>
         </div>
       `
@@ -5159,6 +5253,21 @@ function bindRoutePopup(feature, layer) {
     const clickedRoutePopupHTML =
       routePopupHTML;
 
+    const shouldShowPlanIntroFirst =
+      isPlannedBRTVisualizationRoute(
+        routeId
+      )
+      &&
+      !shownRoutePlanIntros.has(
+        String(routeId)
+      );
+
+    if (
+      shouldShowPlanIntroFirst
+    ) {
+      map.closePopup();
+    }
+
     showSingleRoute(
       routeId
     );
@@ -5178,6 +5287,7 @@ function bindRoutePopup(feature, layer) {
         fitRouteToScreen();
 
         if (
+          !shouldShowPlanIntroFirst &&
           clickedLatLng &&
           clickedRoutePopupHTML
         ) {
@@ -5548,9 +5658,10 @@ function showRoutePlanIntro(
   ) {
     routePlanIntroTextEl.innerHTML = `
       Koridor ini tercantum dalam Rencana Tata Ruang DKI Jakarta
-      (RTRW dan RDTR). Trase dan lokasi halte yang ditampilkan
-      pada peta merupakan skenario visualisasi di WebGIS, bukan
-      trase maupun halte resmi yang telah ditetapkan oleh
+      (RTRW dan RDTR). Trase, lokasi, dan penamaan halte yang
+      ditampilkan merupakan skenario visualisasi yang disusun
+      berdasarkan analisis penyusun WebGIS. Informasi tersebut
+      bukan trase maupun halte resmi yang telah ditetapkan oleh
       pemerintah atau operator transportasi.
     `;
   }
@@ -5820,8 +5931,9 @@ function buildRoutePlanInfoHTML(
           </strong>
 
           <span>
-            Trase dan lokasi halte yang ditampilkan pada peta
-            merupakan skenario visualisasi di WebGIS, bukan trase
+            Trase, lokasi, dan penamaan halte yang ditampilkan
+            merupakan skenario visualisasi yang disusun berdasarkan
+            analisis penyusun WebGIS. Informasi tersebut bukan trase
             maupun halte resmi yang telah ditetapkan oleh pemerintah
             atau operator transportasi.
           </span>
@@ -8510,7 +8622,7 @@ function buildOperationalStopNoticeHTML(
     return `
       <div class="stop-operational-notice is-not-served">
         <div class="stop-operational-notice-title">
-          Tidak dilayani sementara
+          Terdampak pengalihan · Tidak dilayani sementara
         </div>
 
         <div class="stop-operational-notice-text">
@@ -8529,7 +8641,7 @@ function buildOperationalStopNoticeHTML(
     return `
       <div class="stop-operational-notice is-temporary">
         <div class="stop-operational-notice-title">
-          Terminus sementara
+          Terdampak pengalihan · Terminus sementara
         </div>
 
         <div class="stop-operational-notice-text">
@@ -8548,7 +8660,7 @@ function buildOperationalStopNoticeHTML(
     return `
       <div class="stop-operational-notice is-temporary">
         <div class="stop-operational-notice-title">
-          Pelayanan sementara
+          Terdampak pengalihan · Pelayanan sementara
         </div>
 
         <div class="stop-operational-notice-text">
@@ -8646,11 +8758,49 @@ function buildStopPopup(feature, routeId) {
       `
       : "";
 
-  const diversionAffectedNoteHTML =
-    buildDiversionAffectedNoteHTML(
-      feature,
-      routeId
-    );
+  const directionInfo =
+    routeId
+      ? getStopDirectionInfo(
+          feature,
+          routeId
+        )
+      : null;
+
+  const directionHTML =
+    directionInfo
+      ? `
+        <div class="stop-popup-direction">
+          <div class="stop-popup-direction-label">
+            Arah Pelayanan
+          </div>
+
+          <div
+            class="stop-popup-direction-value ${directionInfo.isOneWay ? "is-one-way" : "is-two-way"}"
+          >
+            <span
+              class="stop-popup-direction-symbol"
+              aria-hidden="true"
+            >
+              ${escapeHTML(directionInfo.symbol)}
+            </span>
+
+            <strong>
+              ${escapeHTML(directionInfo.title)}
+            </strong>
+
+            ${
+              directionInfo.detail
+                ? `
+                  <span class="stop-popup-direction-detail">
+                    · ${escapeHTML(directionInfo.detail)}
+                  </span>
+                `
+                : ""
+            }
+          </div>
+        </div>
+      `
+      : "";
 
   const operationalNoticeHTML =
     buildOperationalStopNoticeHTML(
@@ -8666,9 +8816,10 @@ function buildStopPopup(feature, routeId) {
         <div class="stop-popup-scenario-note">
           <span class="stop-popup-scenario-note-icon" aria-hidden="true">i</span>
           <span>
-            Lokasi halte pada Koridor 15–19 merupakan skenario
-            visualisasi WebGIS dan bukan halte resmi yang telah
-            ditetapkan pemerintah atau operator transportasi.
+            <strong>Halte skenario.</strong>
+            Lokasi dan penamaan halte ini disusun berdasarkan
+            analisis penyusun WebGIS dan belum merupakan
+            penetapan resmi.
           </span>
         </div>
       `
@@ -8752,7 +8903,8 @@ function buildStopPopup(feature, routeId) {
           <span class="stop-popup-integration-note-icon" aria-hidden="true">i</span>
           <span>
             Hubungan integrasi yang melibatkan Koridor 15–19 merupakan
-            skenario visualisasi WebGIS dan belum merupakan penetapan resmi.
+            skenario visualisasi berdasarkan analisis penyusun WebGIS
+            dan belum merupakan penetapan resmi.
           </span>
         </div>
       `
@@ -8894,7 +9046,7 @@ function buildStopPopup(feature, routeId) {
 
         ${roleHTML}
 
-        ${diversionAffectedNoteHTML}
+        ${directionHTML}
 
         ${operationalNoticeHTML}
 
@@ -8946,6 +9098,50 @@ function safeBuildStopPopup(feature, routeId) {
    STOP STYLE
    ========================================================= */
 
+function getStopMarkerRoleFill(
+  feature,
+  routeId
+) {
+  const operational =
+    feature
+      ? getOperationalStopState(
+          feature,
+          routeId
+        )
+      : {
+          temporaryTerminus: false
+        };
+
+  if (
+    operational.temporaryTerminus
+  ) {
+    return "#20242a";
+  }
+
+  const role =
+    feature
+      ? getStopRoleForRoute(
+          feature,
+          routeId
+        )
+      : "";
+
+  if (role === "Terminus") {
+    return "#20242a";
+  }
+
+  if (role === "Transit") {
+    return "#8a9098";
+  }
+
+  /*
+    Regular / Reguler / role kosong:
+    isi putih.
+  */
+  return "#ffffff";
+}
+
+
 function normalStopStyle(
   routeId,
   feature = null
@@ -8985,8 +9181,8 @@ function normalStopStyle(
 
     radius:
       conceptual
-        ? 5.5
-        : 5,
+        ? 6.3
+        : 6,
 
     color:
       notServed
@@ -8998,7 +9194,14 @@ function normalStopStyle(
         ? 1.8
         : 2,
 
-    fillColor: "#ffffff",
+    fillColor:
+      getStopMarkerRoleFill(
+        feature,
+        routeId
+      ),
+
+    interactive: true,
+    bubblingMouseEvents: false,
 
     fillOpacity:
       notServed
@@ -9061,23 +9264,27 @@ function selectedStopStyle(
 
   return {
     pane: "stopPane",
-    radius: 8,
+    radius: 8.7,
 
     color:
       notServed
         ? "#50555c"
-        : "#151515",
+        : getRouteColor(routeId),
 
-    weight: 2.5,
+    weight: 3.2,
 
     fillColor:
-      notServed
-        ? "#f0f1f2"
-        : getRouteColor(routeId),
+      getStopMarkerRoleFill(
+        feature,
+        routeId
+      ),
+
+    interactive: true,
+    bubblingMouseEvents: false,
 
     fillOpacity:
       notServed
-        ? 0.90
+        ? 0.62
         : conceptual
           ? 0.76
           : temporaryServed
@@ -9299,6 +9506,11 @@ function removeStops() {
     stopLayer = null;
   }
 
+  if (stopHitLayer) {
+    map.removeLayer(stopHitLayer);
+    stopHitLayer = null;
+  }
+
   stopMarkerByKey.clear();
 }
 
@@ -9317,6 +9529,13 @@ function drawStops(routeId) {
 
     return;
   }
+
+  /*
+    Layer khusus hit-area transparan.
+    Radius 12 px memberi target klik yang nyaman, tetapi tidak
+    mengubah ukuran visual marker.
+  */
+  stopHitLayer = L.layerGroup().addTo(map);
 
   stopLayer = L.geoJSON(
     featureCollection(features),
@@ -9340,12 +9559,98 @@ function drawStops(routeId) {
           layer
         );
 
+        /*
+          Transparent click target.
+          fillOpacity sangat kecil (bukan 0) agar SVG tetap
+          menerima pointer event di semua browser.
+        */
+        const hitMarker = L.circleMarker(
+          layer.getLatLng(),
+          {
+            pane: "stopHitPane",
+            radius: 12,
+            stroke: false,
+            fill: true,
+            fillColor: "#000000",
+            fillOpacity: 0.001,
+            interactive: true,
+            bubblingMouseEvents: false
+          }
+        ).addTo(stopHitLayer);
+
+        hitMarker.on(
+          "click",
+          event => {
+            if (event) {
+              L.DomEvent.stopPropagation(
+                event
+              );
+            }
+
+            selectStop(
+              stopKey,
+              routeId,
+              false
+            );
+          }
+        );
+
         layer.bindPopup(
           safeBuildStopPopup(
             feature,
             routeId
           ),
           getStopPopupOptions()
+        );
+
+        const labelOperationalState =
+          getOperationalStopState(
+            feature,
+            routeId
+          );
+
+        const labelRole =
+          getOperationalStopRole(
+            feature,
+            routeId
+          );
+
+        const labelClasses = [
+          "route-stop-name-label",
+          labelOperationalState.state === "not-served"
+            ? "is-not-served"
+            : "",
+          labelOperationalState.temporaryTerminus
+            ? "is-terminus"
+            : (
+                labelRole === "Terminus"
+                  ? "is-terminus"
+                  : ""
+              ),
+          labelRole === "Transit"
+            ? "is-transit"
+            : ""
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        layer.bindTooltip(
+          escapeHTML(
+            getStopDisplayName(
+              feature
+            )
+          ),
+          {
+            permanent: true,
+            direction: "right",
+            offset: [8, 0],
+            opacity:
+              labelOperationalState.state === "not-served"
+                ? 0.55
+                : 0.96,
+            interactive: false,
+            className: labelClasses
+          }
         );
 
         /*
@@ -9393,7 +9698,7 @@ function drawStops(routeId) {
             selectStop(
               stopKey,
               routeId,
-              true
+              false
             );
           }
         );
@@ -9916,12 +10221,10 @@ function selectStop(
 
   const p = feature.properties;
 
-  const direction =
-    getDirectionLabel(
-      getStopDirection(
-        feature,
-        routeId
-      )
+  const directionInfo =
+    getStopDirectionInfo(
+      feature,
+      routeId
     );
 
   const operationalState =
@@ -9936,37 +10239,11 @@ function selectStop(
       routeId
     );
 
-  const selectedDiversionAffectedNote =
-    isDiversionAffectedStop(
-      feature,
-      routeId
-    )
-      ? `
-        <div class="selected-stop-diversion-note">
-          <span
-            class="selected-stop-diversion-note-icon"
-            aria-hidden="true"
-          >
-            !
-          </span>
-
-          <span>
-            Halte ini terdampak pengalihan sementara
-            ${escapeHTML(
-              getOperationalRouteShortLabel(
-                routeId
-              )
-            )}.
-          </span>
-        </div>
-      `
-      : "";
-
   const selectedOperationalNotice =
     operationalState.state === "not-served"
       ? `
         <div class="selected-stop-operational-note is-not-served">
-          <strong>Tidak dilayani sementara.</strong>
+          <strong>Terdampak pengalihan · Tidak dilayani sementara.</strong>
           ${escapeHTML(
             getOperationalRouteShortLabel(
               routeId
@@ -9979,7 +10256,7 @@ function selectStop(
       : operationalState.temporaryTerminus
         ? `
           <div class="selected-stop-operational-note is-temporary">
-            <strong>Terminus sementara.</strong>
+            <strong>Terdampak pengalihan · Terminus sementara.</strong>
             Titik ini menjadi terminus sementara
             ${escapeHTML(
               getOperationalRouteShortLabel(
@@ -9991,7 +10268,7 @@ function selectStop(
         : operationalState.state === "temporary-served"
           ? `
             <div class="selected-stop-operational-note is-temporary">
-              <strong>Pelayanan sementara.</strong>
+              <strong>Terdampak pengalihan · Pelayanan sementara.</strong>
               ${escapeHTML(
                 getOperationalRouteShortLabel(
                   routeId
@@ -10053,18 +10330,18 @@ function selectStop(
       </strong>
     </div>
 
-    ${
-      direction
-        ? `
-          <div class="selected-stop-row">
-            Pelayanan:
-            <strong>
-              ${escapeHTML(direction)}
-            </strong>
-          </div>
-        `
-        : ""
-    }
+    <div class="selected-stop-row">
+      Arah Pelayanan:
+      <strong>
+        ${escapeHTML(directionInfo.symbol)}
+        ${escapeHTML(directionInfo.title)}
+        ${
+          directionInfo.detail
+            ? ` · ${escapeHTML(directionInfo.detail)}`
+            : ""
+        }
+      </strong>
+    </div>
 
     ${
       role &&
@@ -10081,8 +10358,6 @@ function selectStop(
         `
         : ""
     }
-
-    ${selectedDiversionAffectedNote}
 
     ${selectedOperationalNotice}
   `;
