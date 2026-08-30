@@ -1050,6 +1050,32 @@ body.basemap-panel-open .floating-zoom {
   font-size: 11px;
 }
 
+.route-popup-operational-note,
+.route-popup-regular-note {
+  margin-top: 10px;
+  padding: 8px 9px;
+  border-radius: 7px;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.route-popup-operational-note {
+  border: 1px solid #dfd3b7;
+  background: #faf7ef;
+  color: #5f5848;
+}
+
+.route-popup-regular-note {
+  border: 1px solid #dedede;
+  background: #f7f7f7;
+  color: #626262;
+}
+
+.route-popup-operational-note strong,
+.route-popup-regular-note strong {
+  font-weight: 700;
+}
+
 .route-popup-scenario-note {
   display: flex;
   align-items: flex-start;
@@ -9198,6 +9224,11 @@ details.legend-collapsible-section:not([open])
 
 .optional-stop-controls:empty {
   display: none;
+}
+
+.route-regular-control {
+  border-color: #ded4bf;
+  background: #faf8f3;
 }
 
 .optional-stop-control {

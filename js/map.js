@@ -625,6 +625,13 @@ let routeLayer = null;
 let stopLayer = null;
 let stopHitLayer = null;
 
+/*
+  Untuk koridor yang sedang mengalami pengalihan:
+  false = hanya kondisi operasional/pengalihan
+  true  = tampilkan juga trase reguler sebagai pembanding
+*/
+let showRegularRouteComparison = false;
+
 let currentSelectedRouteId = null;
 let currentSelectedStopKey = null;
 
@@ -1063,16 +1070,133 @@ function getRouteOptionText(feature) {
   return getRouteTitle(feature);
 }
 
-function getRouteById(routeId) {
-  if (!routeData) return null;
 
-  return (
-    routeData.features.find(
+function normalizeRouteVariant(
+  featureOrValue
+) {
+  const raw =
+    typeof featureOrValue === "object"
+      ? (
+          featureOrValue
+            ?.properties
+            ?.ROUTE_VAR
+          ??
+          featureOrValue
+            ?.properties
+            ?.ROUTE_VARIANT
+          ??
+          ""
+        )
+      : featureOrValue;
+
+  const value =
+    cleanText(raw)
+      .toUpperCase()
+      .replace(/[\s-]+/g, "_");
+
+  if (
+    value === "DIVERSION" ||
+    value === "DIVERTED" ||
+    value === "PENGALIHAN"
+  ) {
+    return "DIVERSION";
+  }
+
+  /*
+    Backward compatibility:
+    data lama yang belum punya ROUTE_VAR dianggap trase reguler.
+  */
+  return "REGULAR";
+}
+
+
+function getRouteFeaturesById(routeId) {
+  if (!routeData) {
+    return [];
+  }
+
+  const target =
+    String(routeId ?? "");
+
+  return routeData.features
+    .filter(
       feature =>
-        getRouteId(feature) === String(routeId)
-    ) ?? null
+        getRouteId(feature) === target
+    );
+}
+
+
+function getRegularRouteFeature(routeId) {
+  return (
+    getRouteFeaturesById(routeId)
+      .find(
+        feature =>
+          normalizeRouteVariant(
+            feature
+          ) === "REGULAR"
+      )
+    ??
+    null
   );
 }
+
+
+function getDiversionRouteFeature(routeId) {
+  return (
+    getRouteFeaturesById(routeId)
+      .find(
+        feature =>
+          normalizeRouteVariant(
+            feature
+          ) === "DIVERSION"
+      )
+    ??
+    null
+  );
+}
+
+
+function hasRouteDiversion(routeId) {
+  return Boolean(
+    getDiversionRouteFeature(
+      routeId
+    )
+  );
+}
+
+
+/*
+  Saat satu ROUTE_ID memiliki REGULAR + DIVERSION,
+  WebGIS menganggap DIVERSION sebagai kondisi operasional aktif.
+
+  Dengan demikian:
+  - dropdown tetap hanya satu koridor;
+  - overview menampilkan kondisi pengalihan;
+  - route info memakai nama/metadata pengalihan;
+  - REGULAR hanya menjadi layer pembanding opsional.
+*/
+function getRouteById(routeId) {
+  if (!routeData) {
+    return null;
+  }
+
+  return (
+    getDiversionRouteFeature(
+      routeId
+    )
+    ||
+    getRegularRouteFeature(
+      routeId
+    )
+    ||
+    getRouteFeaturesById(
+      routeId
+    )[0]
+    ||
+    null
+  );
+}
+
 
 function getRouteColor(routeId) {
   return (
@@ -4938,17 +5062,35 @@ function validateStopData() {
    ========================================================= */
 
 function getFilteredRoutes() {
-  if (!routeData) return [];
+  if (!routeData) {
+    return [];
+  }
 
-  const selectedMode = modeSelect.value;
-  const selectedStatus = statusSelect.value;
+  const selectedMode =
+    modeSelect.value;
 
-  return routeData.features
+  const selectedStatus =
+    statusSelect.value;
+
+  /*
+    Saring dulu berdasarkan moda/status, kemudian kelompokkan
+    berdasarkan ROUTE_ID.
+
+    Jika sebuah koridor punya REGULAR + DIVERSION, hanya
+    DIVERSION yang tampil pada overview/dropdown.
+  */
+  const grouped =
+    new Map();
+
+  routeData.features
     .filter(feature => {
-      const mode = getRouteMode(feature);
-      const status = normalizeStatus(
-        feature.properties.STATUS
-      );
+      const mode =
+        getRouteMode(feature);
+
+      const status =
+        normalizeStatus(
+          feature.properties.STATUS
+        );
 
       const modeMatch =
         selectedMode === "ALL" ||
@@ -4958,10 +5100,51 @@ function getFilteredRoutes() {
         selectedStatus === "ALL" ||
         status === selectedStatus;
 
-      return modeMatch && statusMatch;
+      return (
+        modeMatch &&
+        statusMatch
+      );
     })
-    .sort((a, b) =>
-      getRouteOrder(a) - getRouteOrder(b)
+    .forEach(feature => {
+      const routeId =
+        getRouteId(feature);
+
+      if (!routeId) {
+        return;
+      }
+
+      const current =
+        grouped.get(routeId);
+
+      /*
+        DIVERSION menang atas REGULAR.
+      */
+      if (
+        !current ||
+        (
+          normalizeRouteVariant(
+            feature
+          ) === "DIVERSION"
+          &&
+          normalizeRouteVariant(
+            current
+          ) !== "DIVERSION"
+        )
+      ) {
+        grouped.set(
+          routeId,
+          feature
+        );
+      }
+    });
+
+  return Array.from(
+    grouped.values()
+  )
+    .sort(
+      (a, b) =>
+        getRouteOrder(a) -
+        getRouteOrder(b)
     );
 }
 
@@ -5025,9 +5208,25 @@ function getRouteStatusStyle(feature) {
 }
 
 
+function isRuntimeRegularComparison(
+  feature
+) {
+  return Boolean(
+    feature
+      ?.properties
+      ?._RUNTIME_REGULAR_COMPARISON
+  );
+}
+
+
 function routeStyle(feature) {
   const statusStyle =
     getRouteStatusStyle(feature);
+
+  const comparison =
+    isRuntimeRegularComparison(
+      feature
+    );
 
   return {
     pane: "routePane",
@@ -5036,10 +5235,20 @@ function routeStyle(feature) {
       feature?.properties?.COLOR ||
       "#555555",
 
-    weight: 4,
+    weight:
+      comparison
+        ? 3.2
+        : 4,
 
+    /*
+      Trase reguler pembanding sengaja diredupkan.
+      Pola dash STATUS tidak diubah agar grammar
+      Eksisting/Rencana/Usulan/Konseptual tetap konsisten.
+    */
     opacity:
-      statusStyle.opacity,
+      comparison
+        ? 0.34
+        : statusStyle.opacity,
 
     dashArray:
       statusStyle.dashArray,
@@ -5054,6 +5263,11 @@ function haloStyle(feature) {
   const statusStyle =
     getRouteStatusStyle(feature);
 
+  const comparison =
+    isRuntimeRegularComparison(
+      feature
+    );
+
   return {
     pane: "routeHaloPane",
 
@@ -5062,12 +5276,19 @@ function haloStyle(feature) {
         ? "#ffffff"
         : "#222222",
 
-    weight: 7,
+    weight:
+      comparison
+        ? 5.5
+        : 7,
 
     opacity:
-      currentBasemapType === "satellite"
-        ? 0.90
-        : 0.55,
+      comparison
+        ? 0.12
+        : (
+            currentBasemapType === "satellite"
+              ? 0.90
+              : 0.55
+          ),
 
     /*
       Halo mengikuti pola garis utama agar rute Planned
@@ -5156,6 +5377,37 @@ function bindRoutePopup(feature, layer) {
       `
       : "";
 
+  const routeVariant =
+    normalizeRouteVariant(
+      feature
+    );
+
+  const isRegularComparison =
+    isRuntimeRegularComparison(
+      feature
+    );
+
+  const routeVariantHTML =
+    routeVariant === "DIVERSION"
+      ? `
+        <div class="route-popup-operational-note">
+          <strong>Pengalihan sementara.</strong>
+          Trase ini merupakan kondisi operasional yang sedang
+          ditampilkan untuk koridor ini.
+        </div>
+      `
+      : (
+          isRegularComparison
+            ? `
+              <div class="route-popup-regular-note">
+                <strong>Trase reguler.</strong>
+                Ditampilkan sebagai pembanding terhadap
+                pengalihan sementara.
+              </div>
+            `
+            : ""
+        );
+
   const routePopupHTML = `
     <div class="route-popup">
 
@@ -5182,6 +5434,7 @@ function bindRoutePopup(feature, layer) {
         </div>
       </div>
 
+      ${routeVariantHTML}
       ${routeScenarioNoteHTML}
       ${alignmentHTML}
       ${remarkHTML}
@@ -5252,6 +5505,21 @@ function bindRoutePopup(feature, layer) {
 
     const clickedRoutePopupHTML =
       routePopupHTML;
+
+    /*
+      Klik koridor lain memulai konteks baru sehingga
+      pembanding trase reguler kembali OFF.
+      Jika user mengklik salah satu geometri koridor yang sama,
+      keadaan toggle tetap dipertahankan.
+    */
+    if (
+      String(
+        currentSelectedRouteId ?? ""
+      ) !== String(routeId)
+    ) {
+      showRegularRouteComparison =
+        false;
+    }
 
     const shouldShowPlanIntroFirst =
       isPlannedBRTVisualizationRoute(
@@ -5350,6 +5618,83 @@ function drawRoutes(features) {
       onEachFeature: bindRoutePopup
     }
   ).addTo(map);
+}
+
+
+function cloneRouteFeatureForRuntime(
+  feature,
+  extraProperties = {}
+) {
+  return {
+    type: "Feature",
+
+    geometry:
+      feature?.geometry ?? null,
+
+    properties: {
+      ...(
+        feature?.properties ??
+        {}
+      ),
+      ...extraProperties
+    }
+  };
+}
+
+
+function getSelectedRouteGeometryFeatures(
+  routeId
+) {
+  const active =
+    getRouteById(routeId);
+
+  if (!active) {
+    return [];
+  }
+
+  const result = [];
+
+  /*
+    Jika pengalihan aktif dan user meminta pembanding,
+    gambar REGULAR lebih dulu agar DIVERSION tetap berada
+    di lapisan visual paling atas.
+  */
+  if (
+    hasRouteDiversion(routeId) &&
+    showRegularRouteComparison
+  ) {
+    const regular =
+      getRegularRouteFeature(
+        routeId
+      );
+
+    if (regular) {
+      result.push(
+        cloneRouteFeatureForRuntime(
+          regular,
+          {
+            _RUNTIME_REGULAR_COMPARISON:
+              true
+          }
+        )
+      );
+    }
+  }
+
+  result.push(active);
+
+  return result;
+}
+
+
+function drawSelectedRouteGeometry(
+  routeId
+) {
+  drawRoutes(
+    getSelectedRouteGeometryFeatures(
+      routeId
+    )
+  );
 }
 
 /* =========================================================
@@ -6628,6 +6973,10 @@ function getRouteAlertData(feature) {
       geometryUnchanged:
         Boolean(
           configured.geometryUnchanged
+        )
+        &&
+        !hasRouteDiversion(
+          routeId
         ),
 
       temporaryTerminus:
@@ -6975,6 +7324,48 @@ function renderRouteInfo(feature) {
   const nonExistingCount =
     proposedCount + conceptualCount;
 
+  const regularRouteToggleHTML =
+    hasRouteDiversion(
+      routeId
+    )
+      ? `
+        <div
+          class="optional-stop-control route-regular-control"
+          data-route-regular-control
+        >
+          <div class="optional-stop-control-copy">
+            <div class="optional-stop-control-title">
+              Tampilkan trase reguler
+            </div>
+
+            <div class="optional-stop-control-hint">
+              Tampilkan trase normal sebagai pembanding
+              terhadap pengalihan sementara.
+            </div>
+          </div>
+
+          <label
+            class="optional-stop-switch"
+            title="Tampilkan atau sembunyikan trase reguler"
+          >
+            <input
+              type="checkbox"
+              data-route-regular-toggle
+              ${showRegularRouteComparison ? "checked" : ""}
+              aria-label="Tampilkan trase reguler"
+            />
+
+            <span
+              class="optional-stop-switch-track"
+              aria-hidden="true"
+            >
+              <span class="optional-stop-switch-thumb"></span>
+            </span>
+          </label>
+        </div>
+      `
+      : "";
+
   const optionalStopsHTML =
     nonExistingCount
       ? `
@@ -7049,6 +7440,7 @@ function renderRouteInfo(feature) {
     ${routeAlertHTML}
 
     <div class="optional-stop-controls">
+      ${regularRouteToggleHTML}
       ${optionalStopsHTML}
     </div>
   `;
@@ -7063,6 +7455,58 @@ routeInfoEl
   ?.addEventListener(
     "change",
     event => {
+
+      const regularToggle =
+        event.target
+          ?.closest?.(
+            "[data-route-regular-toggle]"
+          );
+
+      if (regularToggle) {
+        const routeId =
+          currentSelectedRouteId
+          ||
+          (
+            routeSelect?.value !== "ALL"
+              ? routeSelect?.value
+              : ""
+          );
+
+        if (
+          !routeId ||
+          !hasRouteDiversion(
+            routeId
+          )
+        ) {
+          regularToggle.checked =
+            false;
+
+          showRegularRouteComparison =
+            false;
+
+          return;
+        }
+
+        showRegularRouteComparison =
+          Boolean(
+            regularToggle.checked
+          );
+
+        /*
+          Hanya geometri yang digambar ulang.
+          Daftar halte, popup stop, dan status operasional
+          tetap mengikuti pelayanan aktif/pengalihan.
+        */
+        drawSelectedRouteGeometry(
+          routeId
+        );
+
+        fitRouteToScreen();
+
+        return;
+      }
+
+
       const toggle =
         event.target
           ?.closest?.(
@@ -7109,29 +7553,47 @@ routeInfoEl
         const hiddenNow =
           selectedFeature &&
           (
-            isProposedStop(selectedFeature) ||
-            isConceptualStop(selectedFeature)
-          ) &&
-          !areNonExistingStopsVisible();
+            (
+              isProposedStopFeature(
+                selectedFeature
+              )
+              &&
+              !isOptionalStopVisible(
+                "Proposed"
+              )
+            )
+            ||
+            (
+              isConceptualStopFeature(
+                selectedFeature
+              )
+              &&
+              !isOptionalStopVisible(
+                "Conceptual"
+              )
+            )
+          );
 
         if (hiddenNow) {
-          map.closePopup();
           clearSelectedStop();
         }
       }
 
-      drawStops(routeId);
-      renderStopList(routeId);
+      renderRouteInfo(
+        getRouteById(
+          routeId
+        )
+      );
 
-      const route =
-        getRouteById(routeId);
+      renderStopList(
+        routeId
+      );
 
-      if (route) {
-        renderRouteInfo(route);
-      }
+      drawStops(
+        routeId
+      );
     }
   );
-
 
 /* =========================================================
    DROPDOWN ROUTE
@@ -10984,6 +11446,7 @@ function showAllRoutes(
   closeRoutePlanIntro();
 
   currentSelectedRouteId = null;
+  showRegularRouteComparison = false;
 
   clearSelectedStop();
   removeStops();
@@ -11018,6 +11481,19 @@ function showSingleRoute(
   routeId,
   resetOptionalStops = true
 ) {
+  const previousRouteId =
+    String(
+      currentSelectedRouteId ?? ""
+    );
+
+  if (
+    previousRouteId !==
+    String(routeId)
+  ) {
+    showRegularRouteComparison =
+      false;
+  }
+
   const feature =
     getRouteById(routeId);
 
@@ -11056,7 +11532,10 @@ function showSingleRoute(
 
   clearSelectedStop();
 
-  drawRoutes([feature]);
+  drawSelectedRouteGeometry(
+    routeId
+  );
+
   renderRouteInfo(feature);
 
   /*
