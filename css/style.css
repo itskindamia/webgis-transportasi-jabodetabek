@@ -803,6 +803,89 @@ body.basemap-panel-open .floating-zoom {
   font-size: 20px;
 }
 
+/* Penanda halte yang terdampak pengalihan sementara */
+.stop-diversion-affected-note,
+.selected-stop-diversion-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 8px 9px;
+  border: 1px solid #dfd3b7;
+  border-radius: 7px;
+  background: #faf7ef;
+  color: #5f5848;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.stop-diversion-affected-note-icon,
+.selected-stop-diversion-note-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  border: 1px solid #9e8c62;
+  border-radius: 50%;
+  color: #746541;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.selected-stop-diversion-note {
+  margin-bottom: 8px;
+}
+
+/* Catatan titik halte skenario Koridor 15–19 */
+.stop-popup-scenario-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 8px 9px;
+  border: 1px solid #e2e2e2;
+  border-radius: 7px;
+  background: #f7f7f7;
+  color: #626262;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* Catatan integrasi skenario Koridor 15–19 */
+.stop-popup-integration-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: -2px 0 12px;
+  padding: 8px 9px;
+  border: 1px solid #e2e2e2;
+  border-radius: 7px;
+  background: #f7f7f7;
+  color: #626262;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.stop-popup-integration-note-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  border: 1px solid #9a9a9a;
+  border-radius: 50%;
+  color: #666;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 /* INTEGRATION */
 .integration-list {
   display: flex;
@@ -879,6 +962,37 @@ body.basemap-panel-open .floating-zoom {
 
 .route-popup-value {
   font-size: 11px;
+}
+
+.route-popup-scenario-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 11px;
+  padding: 8px 9px;
+  border: 1px solid #e2e2e2;
+  border-radius: 7px;
+  background: #f7f7f7;
+  color: #626262;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.route-popup-scenario-note-icon,
+.stop-popup-scenario-note-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  border: 1px solid #9a9a9a;
+  border-radius: 50%;
+  color: #666;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 /* GPS */
@@ -2582,6 +2696,11 @@ select {
   margin-top: 16px;
   padding-top: 13px;
   border-top: 1px solid #e1e1e1;
+}
+
+.stop-popup-nav-spacer {
+  min-width: 0;
+  min-height: 48px;
 }
 
 .stop-popup-nav-button {
@@ -5233,6 +5352,32 @@ body.info-modal-open {
   color: #333;
 }
 
+.tour-mini-search {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #d8dce2;
+  border-radius: 7px;
+  background: #fff;
+  color: #6d737c;
+}
+
+.tour-mini-search-icon {
+  flex: 0 0 auto;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.tour-mini-search-placeholder {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
 .tour-mini-badges {
   display: flex;
   align-items: center;
@@ -5508,8 +5653,9 @@ body.info-modal-open {
    ========================================================= */
 
 /*
-  Dua search lama di panel kiri tetap ada di DOM untuk
-  kompatibilitas fungsi, tetapi tidak lagi ditampilkan.
+  Pencarian utama desktop memakai Cari Lokasi global.
+  Dua field lama tetap tersembunyi hanya untuk kompatibilitas
+  kode lama dan tidak menjadi bagian dari UI pengguna.
 */
 .filter-controls-card
   .stop-search-field,
@@ -9018,6 +9164,11 @@ details.legend-collapsible-section:not([open])
 .optional-stop-count-conceptual {
   background: #eee6f4;
   color: #744a8b;
+}
+
+.optional-stop-count-nonexisting {
+  background: #eeeaf2;
+  color: #66536f;
 }
 
 .optional-stop-control-hint {

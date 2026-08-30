@@ -633,6 +633,21 @@ let currentSelectedStopKey = null;
 let showProposedStops = false;
 let showConceptualStops = false;
 
+/*
+  Satu kontrol UI mengatur seluruh titik non-eksisting.
+  Variabel lama tetap dipakai oleh filter internal supaya
+  logika status Usulan/Konseptual yang sudah ada tetap stabil.
+*/
+function setNonExistingStopsVisible(visible) {
+  const nextValue = Boolean(visible);
+  showProposedStops = nextValue;
+  showConceptualStops = nextValue;
+}
+
+function areNonExistingStopsVisible() {
+  return showProposedStops && showConceptualStops;
+}
+
 const stopMarkerByKey = new Map();
 
 let gpsWatchId = null;
@@ -2333,23 +2348,14 @@ function openStopFromSearch(
   }
 
   /*
-    Jika hasil pencarian merupakan titik Usulan/Konseptual,
-    aktifkan hanya kategori yang diperlukan.
+    Jika hasil pencarian merupakan titik non-eksisting,
+    aktifkan kontrol gabungan Usulan + Konseptual.
   */
   if (
-    isProposedStop(
-      feature
-    )
+    isProposedStop(feature) ||
+    isConceptualStop(feature)
   ) {
-    showProposedStops = true;
-  }
-
-  if (
-    isConceptualStop(
-      feature
-    )
-  ) {
-    showConceptualStops = true;
+    setNonExistingStopsVisible(true);
   }
 
   /*
@@ -3107,6 +3113,13 @@ const PRODUCT_TOUR_STEPS = [
       "Badge Lin/Koridor pada popup dapat diklik. Rute akan berganti, tetapi kamu tetap berada di halte atau stasiun yang sama.",
     target: "none",
     visual: "badges"
+  },
+  {
+    title: "Cari tujuan",
+    text:
+      "Gunakan Cari Lokasi untuk menemukan halte, stasiun, atau tempat dari satu kotak pencarian.",
+    target: "global-search",
+    visual: "search"
   }
 ];
 
@@ -3165,6 +3178,15 @@ function buildProductTourVisual(type) {
     `;
   }
 
+  if (type === "search") {
+    return `
+      <div class="tour-mini-search">
+        <span class="tour-mini-search-icon" aria-hidden="true">⌕</span>
+        <span class="tour-mini-search-placeholder">Halte, stasiun, atau tempat…</span>
+      </div>
+    `;
+  }
+
   return `
     <div class="tour-mini-badges">
       <span class="tour-mini-badge is-red">1</span>
@@ -3186,6 +3208,27 @@ function getProductTourTargetRect(step) {
     const element =
       document.querySelector(
         ".filter-controls-card"
+      );
+
+    if (!element) {
+      return null;
+    }
+
+    const rect =
+      element.getBoundingClientRect();
+
+    return {
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height
+    };
+  }
+
+  if (step.target === "global-search") {
+    const element =
+      document.getElementById(
+        "globalSearchPanel"
       );
 
     if (!element) {
@@ -5003,38 +5046,57 @@ function bindRoutePopup(feature, layer) {
     `
     : "";
 
-  layer.bindPopup(
-    `
-      <div class="route-popup">
-
-        <div
-          class="route-popup-title"
-          style="color:${escapeHTML(p.COLOR || "#151515")}"
-        >
-          ${escapeHTML(getRouteTitle(feature))}
+  const routeScenarioNoteHTML =
+    isPlannedBRTVisualizationRoute(
+      getRouteId(feature)
+    )
+      ? `
+        <div class="route-popup-scenario-note">
+          <span class="route-popup-scenario-note-icon" aria-hidden="true">i</span>
+          <span>
+            Trase dan lokasi halte Koridor 15–19 yang ditampilkan
+            merupakan skenario visualisasi WebGIS, bukan trase
+            maupun halte resmi.
+          </span>
         </div>
+      `
+      : "";
 
-        <div class="route-popup-divider"></div>
+  const routePopupHTML = `
+    <div class="route-popup">
 
-        <div class="route-popup-row">
-          <div class="route-popup-label">Moda</div>
-          <div class="route-popup-value">
-            ${escapeHTML(getRouteMode(feature))}
-          </div>
-        </div>
-
-        <div class="route-popup-row">
-          <div class="route-popup-label">Status</div>
-          <div class="route-popup-value">
-            ${escapeHTML(getStatusLabel(p.STATUS))}
-          </div>
-        </div>
-
-        ${alignmentHTML}
-        ${remarkHTML}
-
+      <div
+        class="route-popup-title"
+        style="color:${escapeHTML(p.COLOR || "#151515")}"
+      >
+        ${escapeHTML(getRouteTitle(feature))}
       </div>
-    `,
+
+      <div class="route-popup-divider"></div>
+
+      <div class="route-popup-row">
+        <div class="route-popup-label">Moda</div>
+        <div class="route-popup-value">
+          ${escapeHTML(getRouteMode(feature))}
+        </div>
+      </div>
+
+      <div class="route-popup-row">
+        <div class="route-popup-label">Status</div>
+        <div class="route-popup-value">
+          ${escapeHTML(getStatusLabel(p.STATUS))}
+        </div>
+      </div>
+
+      ${routeScenarioNoteHTML}
+      ${alignmentHTML}
+      ${remarkHTML}
+
+    </div>
+  `;
+
+  layer.bindPopup(
+    routePopupHTML,
     {
       maxWidth: 320
     }
@@ -5091,18 +5153,53 @@ function bindRoutePopup(feature, layer) {
 
     }
 
+    const clickedLatLng =
+      event?.latlng || null;
+
+    const clickedRoutePopupHTML =
+      routePopupHTML;
+
     showSingleRoute(
       routeId
     );
 
     /*
       route layer digambar ulang oleh showSingleRoute().
-      Jalankan fit sekali lagi setelah frame baru agar
-      klik garis selalu menghasilkan zoom yang pas.
+      Popup bawaan layer lama ikut terhapus. Karena itu,
+      setelah redraw selesai:
+      1. fit rute;
+      2. buka kembali popup rute pada lokasi klik.
+
+      Dengan demikian klik trase selalu benar-benar
+      menghasilkan popup, termasuk Koridor 15–19.
     */
     requestAnimationFrame(
       () => {
         fitRouteToScreen();
+
+        if (
+          clickedLatLng &&
+          clickedRoutePopupHTML
+        ) {
+          requestAnimationFrame(
+            () => {
+              L.popup({
+                maxWidth: 320,
+                autoPan: true,
+                keepInView: true
+              })
+                .setLatLng(
+                  clickedLatLng
+                )
+                .setContent(
+                  clickedRoutePopupHTML
+                )
+                .openOn(
+                  map
+                );
+            }
+          );
+        }
       }
     );
   });
@@ -5230,6 +5327,55 @@ const ROUTE_PLAN_INFO = {
 
 };
 
+
+
+function isPlannedBRTVisualizationRoute(
+  routeId
+) {
+  return Boolean(
+    ROUTE_PLAN_INFO[
+      String(routeId ?? "").trim()
+    ]
+  );
+}
+
+
+/*
+  Catatan integrasi skenario muncul jika:
+  1. popup sedang dilihat dalam konteks Koridor 15–19; atau
+  2. salah satu integrasi pada halte adalah Koridor 15–19.
+
+  Dengan demikian:
+  - Koridor 9 -> integrasi Koridor 19 mendapat catatan;
+  - Koridor 19 -> integrasi Koridor 9 juga mendapat catatan.
+
+  Badge/logo tetap tampil normal karena moda/rute terkait dapat
+  merupakan jaringan eksisting. Yang belum resmi adalah hubungan
+  integrasinya pada skenario Koridor 15–19.
+*/
+function shouldShowPlannedIntegrationNote(
+  routeId,
+  integrations
+) {
+  if (
+    isPlannedBRTVisualizationRoute(
+      routeId
+    )
+  ) {
+    return true;
+  }
+
+  return (
+    Array.isArray(integrations)
+    &&
+    integrations.some(
+      integrationId =>
+        isPlannedBRTVisualizationRoute(
+          integrationId
+        )
+    )
+  );
+}
 
 
 function getRoutePlanIntroTitle(
@@ -5401,11 +5547,11 @@ function showRoutePlanIntro(
     routePlanIntroTextEl
   ) {
     routePlanIntroTextEl.innerHTML = `
-      Koridor ini tercantum dalam dokumen rencana resmi
-      DKI Jakarta. <strong>Trase dan lokasi halte pada peta
-      merupakan skenario visualisasi WebGIS</strong> dan
-      bukan trase maupun daftar halte resmi yang telah
-      ditetapkan pemerintah atau operator transportasi.
+      Koridor ini tercantum dalam Rencana Tata Ruang DKI Jakarta
+      (RTRW dan RDTR). Trase dan lokasi halte yang ditampilkan
+      pada peta merupakan skenario visualisasi di WebGIS, bukan
+      trase maupun halte resmi yang telah ditetapkan oleh
+      pemerintah atau operator transportasi.
     `;
   }
 
@@ -5623,9 +5769,8 @@ function buildRoutePlanInfoHTML(
       <div class="route-plan-body">
 
         <p class="route-plan-intro">
-          Koridor ini tercantum dalam dokumen rencana resmi
-          DKI Jakarta sebagai bagian dari pengembangan
-          jaringan BRT.
+          Koridor ini tercantum dalam Rencana Tata Ruang DKI Jakarta
+          (RTRW dan RDTR).
         </p>
 
 
@@ -5675,11 +5820,10 @@ function buildRoutePlanInfoHTML(
           </strong>
 
           <span>
-            Trase dan lokasi halte yang ditampilkan pada
-            WebGIS merupakan skenario visualisasi berdasarkan
-            interpretasi jaringan dan bukan trase maupun
-            daftar halte resmi yang telah ditetapkan
-            pemerintah atau operator transportasi.
+            Trase dan lokasi halte yang ditampilkan pada peta
+            merupakan skenario visualisasi di WebGIS, bukan trase
+            maupun halte resmi yang telah ditetapkan oleh pemerintah
+            atau operator transportasi.
           </span>
 
         </div>
@@ -6716,75 +6860,52 @@ function renderRouteInfo(feature) {
     `
     : "";
 
-  function optionalStopToggleHTML(
-    statusKey,
-    statusLabel,
-    count,
-    checked
-  ) {
-    if (!count) {
-      return "";
-    }
+  const nonExistingCount =
+    proposedCount + conceptualCount;
 
-    return `
-      <div
-        class="optional-stop-control"
-        data-optional-stop-status="${escapeHTML(statusKey)}"
-      >
-        <div class="optional-stop-control-copy">
-          <div class="optional-stop-control-title">
-            ${escapeHTML(objectName)} ${escapeHTML(statusLabel)}
-            <span
-              class="optional-stop-count optional-stop-count-${escapeHTML(statusKey.toLowerCase())}"
-            >
-              ${count}
-            </span>
-          </div>
-
-          <div class="optional-stop-control-hint">
-            Nyalakan untuk menampilkan
-            ${escapeHTML(objectName.toLowerCase())}
-            ${escapeHTML(statusLabel.toLowerCase())}.
-          </div>
-        </div>
-
-        <label
-          class="optional-stop-switch"
-          title="Tampilkan atau sembunyikan ${escapeHTML(objectName.toLowerCase())} ${escapeHTML(statusLabel.toLowerCase())}"
+  const optionalStopsHTML =
+    nonExistingCount
+      ? `
+        <div
+          class="optional-stop-control"
+          data-optional-stop-status="NonExisting"
         >
-          <input
-            type="checkbox"
-            data-optional-stop-toggle="${escapeHTML(statusKey)}"
-            ${checked ? "checked" : ""}
-            aria-label="Tampilkan ${escapeHTML(objectName.toLowerCase())} ${escapeHTML(statusLabel.toLowerCase())}"
-          />
+          <div class="optional-stop-control-copy">
+            <div class="optional-stop-control-title">
+              Tampilkan ${escapeHTML(objectName.toLowerCase())} non-eksisting
+              <span
+                class="optional-stop-count optional-stop-count-nonexisting"
+              >
+                ${nonExistingCount}
+              </span>
+            </div>
 
-          <span
-            class="optional-stop-switch-track"
-            aria-hidden="true"
+            <div class="optional-stop-control-hint">
+              Mencakup status Usulan dan Konseptual.
+            </div>
+          </div>
+
+          <label
+            class="optional-stop-switch"
+            title="Tampilkan atau sembunyikan ${escapeHTML(objectName.toLowerCase())} non-eksisting"
           >
-            <span class="optional-stop-switch-thumb"></span>
-          </span>
-        </label>
-      </div>
-    `;
-  }
+            <input
+              type="checkbox"
+              data-optional-stop-toggle="NonExisting"
+              ${areNonExistingStopsVisible() ? "checked" : ""}
+              aria-label="Tampilkan ${escapeHTML(objectName.toLowerCase())} non-eksisting"
+            />
 
-  const optionalStopsHTML = `
-    ${optionalStopToggleHTML(
-      "Proposed",
-      "Usulan",
-      proposedCount,
-      showProposedStops
-    )}
-
-    ${optionalStopToggleHTML(
-      "Conceptual",
-      "Konseptual",
-      conceptualCount,
-      showConceptualStops
-    )}
-  `;
+            <span
+              class="optional-stop-switch-track"
+              aria-hidden="true"
+            >
+              <span class="optional-stop-switch-thumb"></span>
+            </span>
+          </label>
+        </div>
+      `
+      : "";
 
   routeInfoEl.innerHTML = `
     <div class="eyebrow">
@@ -6846,15 +6967,13 @@ routeInfoEl
           ""
         );
 
-      if (status === "Proposed") {
-        showProposedStops =
-          Boolean(toggle.checked);
+      if (status !== "NonExisting") {
+        return;
       }
 
-      if (status === "Conceptual") {
-        showConceptualStops =
-          Boolean(toggle.checked);
-      }
+      setNonExistingStopsVisible(
+        Boolean(toggle.checked)
+      );
 
       const routeId =
         currentSelectedRouteId
@@ -6876,17 +6995,12 @@ routeInfoEl
           );
 
         const hiddenNow =
+          selectedFeature &&
           (
-            selectedFeature &&
-            isProposedStop(selectedFeature) &&
-            !showProposedStops
-          )
-          ||
-          (
-            selectedFeature &&
-            isConceptualStop(selectedFeature) &&
-            !showConceptualStops
-          );
+            isProposedStop(selectedFeature) ||
+            isConceptualStop(selectedFeature)
+          ) &&
+          !areNonExistingStopsVisible();
 
         if (hiddenNow) {
           map.closePopup();
@@ -8319,6 +8433,61 @@ function getOperationalRouteShortLabel(
 }
 
 
+function isDiversionAffectedStop(
+  feature,
+  routeId
+) {
+  const operational =
+    getOperationalStopState(
+      feature,
+      routeId
+    );
+
+  return Boolean(
+    operational.state === "not-served"
+    ||
+    operational.state === "temporary-served"
+    ||
+    operational.temporaryTerminus
+  );
+}
+
+
+function buildDiversionAffectedNoteHTML(
+  feature,
+  routeId
+) {
+  if (
+    !isDiversionAffectedStop(
+      feature,
+      routeId
+    )
+  ) {
+    return "";
+  }
+
+  return `
+    <div class="stop-diversion-affected-note">
+      <span
+        class="stop-diversion-affected-note-icon"
+        aria-hidden="true"
+      >
+        !
+      </span>
+
+      <span>
+        Halte ini terdampak pengalihan sementara
+        ${escapeHTML(
+          getOperationalRouteShortLabel(
+            routeId
+          )
+        )}.
+      </span>
+    </div>
+  `;
+}
+
+
 function buildOperationalStopNoticeHTML(
   feature,
   routeId
@@ -8477,11 +8646,33 @@ function buildStopPopup(feature, routeId) {
       `
       : "";
 
+  const diversionAffectedNoteHTML =
+    buildDiversionAffectedNoteHTML(
+      feature,
+      routeId
+    );
+
   const operationalNoticeHTML =
     buildOperationalStopNoticeHTML(
       feature,
       routeId
     );
+
+  const stopScenarioNoteHTML =
+    isPlannedBRTVisualizationRoute(
+      routeId
+    )
+      ? `
+        <div class="stop-popup-scenario-note">
+          <span class="stop-popup-scenario-note-icon" aria-hidden="true">i</span>
+          <span>
+            Lokasi halte pada Koridor 15–19 merupakan skenario
+            visualisasi WebGIS dan bukan halte resmi yang telah
+            ditetapkan pemerintah atau operator transportasi.
+          </span>
+        </div>
+      `
+      : "";
 
   const directServiceHTML =
     directRoutes.length
@@ -8551,6 +8742,22 @@ function buildStopPopup(feature, routeId) {
     );
 
 
+  const integrationScenarioNoteHTML =
+    shouldShowPlannedIntegrationNote(
+      routeId,
+      integrations
+    )
+      ? `
+        <div class="stop-popup-integration-note">
+          <span class="stop-popup-integration-note-icon" aria-hidden="true">i</span>
+          <span>
+            Hubungan integrasi yang melibatkan Koridor 15–19 merupakan
+            skenario visualisasi WebGIS dan belum merupakan penetapan resmi.
+          </span>
+        </div>
+      `
+      : "";
+
   const integrationHTML =
     integrationGroups.length
       ?
@@ -8560,6 +8767,8 @@ function buildStopPopup(feature, routeId) {
           <div class="stop-popup-label">
             Integrasi
           </div>
+
+          ${integrationScenarioNoteHTML}
 
           <div class="integration-list">
 
@@ -8609,92 +8818,55 @@ function buildStopPopup(feature, routeId) {
         )
       : "";
 
+  const previousNavigationHTML =
+    previousStop
+      ? `
+        <button
+          type="button"
+          class="stop-popup-nav-button stop-popup-nav-prev"
+          data-stop-nav="previous"
+          data-stop-key="${escapeHTML(getStopKey(previousStop))}"
+          data-route-id="${escapeHTML(routeId)}"
+          title="Halte/stasiun sebelumnya: ${escapeHTML(previousName)}"
+        >
+          <span class="stop-popup-nav-arrow" aria-hidden="true">‹</span>
+          <span class="stop-popup-nav-text">
+            <span class="stop-popup-nav-label">Sebelumnya</span>
+            <span class="stop-popup-nav-name">${escapeHTML(previousName)}</span>
+          </span>
+        </button>
+      `
+      : `<div class="stop-popup-nav-spacer" aria-hidden="true"></div>`;
+
+  const nextNavigationHTML =
+    nextStop
+      ? `
+        <button
+          type="button"
+          class="stop-popup-nav-button stop-popup-nav-next"
+          data-stop-nav="next"
+          data-stop-key="${escapeHTML(getStopKey(nextStop))}"
+          data-route-id="${escapeHTML(routeId)}"
+          title="Halte/stasiun berikutnya: ${escapeHTML(nextName)}"
+        >
+          <span class="stop-popup-nav-text">
+            <span class="stop-popup-nav-label">Berikutnya</span>
+            <span class="stop-popup-nav-name">${escapeHTML(nextName)}</span>
+          </span>
+          <span class="stop-popup-nav-arrow" aria-hidden="true">›</span>
+        </button>
+      `
+      : `<div class="stop-popup-nav-spacer" aria-hidden="true"></div>`;
+
   const navigationHTML =
     routeId
-      ?
-      `
+      ? `
         <div class="stop-popup-navigation">
-
-          <button
-            type="button"
-            class="stop-popup-nav-button stop-popup-nav-prev"
-            data-stop-nav="previous"
-            data-stop-key="${
-              previousStop
-                ? escapeHTML(
-                    getStopKey(
-                      previousStop
-                    )
-                  )
-                : ""
-            }"
-            data-route-id="${escapeHTML(routeId)}"
-            ${
-              previousStop
-                ? ""
-                : "disabled"
-            }
-            title="${
-              previousStop
-                ? `Halte/stasiun sebelumnya: ${escapeHTML(previousName)}`
-                : "Tidak ada halte/stasiun sebelumnya"
-            }"
-          >
-            <span class="stop-popup-nav-arrow" aria-hidden="true">‹</span>
-            <span class="stop-popup-nav-text">
-              <span class="stop-popup-nav-label">Sebelumnya</span>
-              <span class="stop-popup-nav-name">
-                ${
-                  previousStop
-                    ? escapeHTML(previousName)
-                    : "Awal rute"
-                }
-              </span>
-            </span>
-          </button>
-
-          <button
-            type="button"
-            class="stop-popup-nav-button stop-popup-nav-next"
-            data-stop-nav="next"
-            data-stop-key="${
-              nextStop
-                ? escapeHTML(
-                    getStopKey(
-                      nextStop
-                    )
-                  )
-                : ""
-            }"
-            data-route-id="${escapeHTML(routeId)}"
-            ${
-              nextStop
-                ? ""
-                : "disabled"
-            }
-            title="${
-              nextStop
-                ? `Halte/stasiun berikutnya: ${escapeHTML(nextName)}`
-                : "Tidak ada halte/stasiun berikutnya"
-            }"
-          >
-            <span class="stop-popup-nav-text">
-              <span class="stop-popup-nav-label">Berikutnya</span>
-              <span class="stop-popup-nav-name">
-                ${
-                  nextStop
-                    ? escapeHTML(nextName)
-                    : "Akhir rute"
-                }
-              </span>
-            </span>
-            <span class="stop-popup-nav-arrow" aria-hidden="true">›</span>
-          </button>
-
+          ${previousNavigationHTML}
+          ${nextNavigationHTML}
         </div>
       `
-      :
-      "";
+      : "";
 
   return `
     <div
@@ -8722,7 +8894,11 @@ function buildStopPopup(feature, routeId) {
 
         ${roleHTML}
 
+        ${diversionAffectedNoteHTML}
+
         ${operationalNoticeHTML}
+
+        ${stopScenarioNoteHTML}
 
         <div class="stop-popup-divider"></div>
 
@@ -9287,7 +9463,7 @@ function renderStopList(routeId) {
       <div class="stop-list-empty">
         ${
           hiddenOptionalCount
-            ? "Titik Usulan/Konseptual pada rute ini sedang disembunyikan."
+            ? "Halte/stasiun non-eksisting pada rute ini sedang disembunyikan."
             : "Belum ada halte / stasiun yang terhubung ke koridor ini."
         }
       </div>
@@ -9760,6 +9936,32 @@ function selectStop(
       routeId
     );
 
+  const selectedDiversionAffectedNote =
+    isDiversionAffectedStop(
+      feature,
+      routeId
+    )
+      ? `
+        <div class="selected-stop-diversion-note">
+          <span
+            class="selected-stop-diversion-note-icon"
+            aria-hidden="true"
+          >
+            !
+          </span>
+
+          <span>
+            Halte ini terdampak pengalihan sementara
+            ${escapeHTML(
+              getOperationalRouteShortLabel(
+                routeId
+              )
+            )}.
+          </span>
+        </div>
+      `
+      : "";
+
   const selectedOperationalNotice =
     operationalState.state === "not-served"
       ? `
@@ -9879,6 +10081,8 @@ function selectStop(
         `
         : ""
     }
+
+    ${selectedDiversionAffectedNote}
 
     ${selectedOperationalNotice}
   `;
@@ -10567,11 +10771,9 @@ function showSingleRoute(
     const showOptionalByDefault =
       routeStatus !== "Existing";
 
-    showProposedStops =
-      showOptionalByDefault;
-
-    showConceptualStops =
-      showOptionalByDefault;
+    setNonExistingStopsVisible(
+      showOptionalByDefault
+    );
   }
 
   currentSelectedRouteId =
@@ -11582,6 +11784,12 @@ document
 async function loadData() {
   try {
 
+    routeInfoEl.innerHTML = `
+      <div class="eyebrow">MEMUAT</div>
+      <h2>Memuat data jaringan…</h2>
+      <p>Menyiapkan rute dan halte/stasiun.</p>
+    `;
+
     if (isMobileLayout()) {
       setMobileFilterOpen(
         false
@@ -11681,23 +11889,9 @@ async function loadData() {
     console.error(error);
 
     routeInfoEl.innerHTML = `
-      <div class="eyebrow">
-        ERROR
-      </div>
-
-      <h2>
-        Data gagal dimuat
-      </h2>
-
-      <p>
-        Pastikan file
-        <strong>brt_route.geojson</strong>
-        dan
-        <strong>brt_stop.geojson</strong>
-        ada di folder
-        <strong>data</strong>,
-        lalu jalankan dengan Live Server.
-      </p>
+      <div class="eyebrow">GAGAL MEMUAT</div>
+      <h2>Data jaringan gagal dimuat</h2>
+      <p>Muat ulang halaman untuk mencoba kembali.</p>
     `;
   }
 }

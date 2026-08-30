@@ -18,7 +18,7 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="css/style.css?v=20260830-brt15-19-route-intro-fixed1" />
+  <link rel="stylesheet" href="css/style.css?v=20260830-diversion-affected-stop-note1" />
 </head>
 
 <body>
@@ -157,9 +157,9 @@
       <section class="route-detail-card">
 
         <section id="routeInfo" class="route-info">
-        <div class="eyebrow">TAMPILAN</div>
-        <h2>Semua Lin / Koridor</h2>
-        <p>Semua Moda · Existing</p>
+        <div class="eyebrow">MEMUAT</div>
+        <h2>Memuat data jaringan…</h2>
+        <p>Menyiapkan rute dan halte/stasiun.</p>
       </section>
 
         <section id="selectedStopInfo" class="selected-stop-card" hidden></section>
@@ -219,6 +219,7 @@
       class="toolbar-button basemap-main-button"
       id="basemapButton"
       title="Peta Dasar"
+      aria-label="Buka pilihan peta dasar"
     >
       <img id="currentBasemapThumb" class="toolbar-thumbnail" alt="Peta dasar" />
       <span class="mobile-toolbar-label">Basemap</span>
@@ -262,6 +263,7 @@
       class="toolbar-button gps-button is-pending"
       id="gpsButton"
       title="Lokasi saya"
+      aria-label="Tampilkan lokasi saya"
     >
       <svg viewBox="0 0 24 24" class="toolbar-icon" aria-hidden="true">
         <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
@@ -283,7 +285,8 @@
       type="button"
       class="toolbar-button"
       id="homeButton"
-      title="Full Extent"
+      title="Tampilkan seluruh jaringan"
+      aria-label="Tampilkan seluruh jaringan"
     >
       <svg viewBox="0 0 24 24" class="toolbar-icon" aria-hidden="true">
         <path
@@ -630,13 +633,9 @@
 
       <div class="info-modal-body" id="infoModalDescription">
         <p>
-          WebGIS ini dibuat sebagai infografis mengenai jaringan transportasi
-          umum di Jabodetabek. Peta di dalam WebGIS ini menggunakan empat
-          tingkat status jaringan:
-          <strong>Eksisting</strong>,
-          <strong>Rencana</strong>,
-          <strong>Usulan</strong>, dan
-          <strong>Konseptual</strong>.
+          WebGIS jaringan transportasi umum Jabodetabek yang menampilkan
+          jaringan <strong>Eksisting</strong>, <strong>Rencana</strong>,
+          <strong>Usulan</strong>, dan <strong>Konseptual</strong>.
         </p>
 
         <div class="info-modal-notice info-status-notice">
@@ -645,31 +644,29 @@
           </p>
 
           <p>
-            <strong>Rencana</strong> — jaringan yang telah tercantum dalam
-            rencana resmi, kebijakan, atau program/proyek resmi.
+            <strong>Rencana</strong> — jaringan yang tercantum dalam rencana,
+            kebijakan, atau program/proyek resmi.
           </p>
 
           <p>
-            <strong>Usulan</strong> — proposal atau skenario jaringan dari
-            studi/institusi, tetapi tidak otomatis berarti telah menjadi
-            rencana resmi, termasuk usulan reaktivasi halte/stasiun.
+            <strong>Usulan</strong> — proposal atau skenario dari studi atau
+            institusi, termasuk usulan reaktivasi halte/stasiun.
           </p>
 
           <p>
             <strong>Konseptual</strong> — skenario pengembangan yang disusun
-            untuk WebGIS ini dan bukan rencana resmi pemerintah maupun
-            operator transportasi.
+            untuk WebGIS dan bukan rencana resmi pemerintah atau operator
+            transportasi.
           </p>
         </div>
 
         <div class="info-modal-notice info-plan-notice">
           <p>
-            <strong>Catatan Koridor BRT 15–19</strong> — keberadaan koridor
-            mengacu pada dokumen rencana resmi DKI Jakarta. Namun,
-            <strong>trase dan lokasi halte yang ditampilkan pada WebGIS
-            merupakan skenario visualisasi</strong> berdasarkan interpretasi
-            jaringan, sehingga bukan trase maupun daftar halte resmi yang
-            telah ditetapkan pemerintah atau operator transportasi.
+            <strong>Catatan Koridor BRT 15–19</strong> — koridor ini tercantum
+            dalam Rencana Tata Ruang DKI Jakarta (RTRW dan RDTR). Trase dan
+            lokasi halte yang ditampilkan pada peta merupakan skenario
+            visualisasi di WebGIS, bukan trase maupun halte resmi yang telah
+            ditetapkan oleh pemerintah atau operator transportasi.
           </p>
         </div>
 
@@ -805,7 +802,7 @@
               <div class="info-guide-number">4</div>
               <div>
                 <strong>Cari tujuan</strong>
-                <span>Gunakan pencarian Halte/Stasiun atau Tempat/POI.</span>
+                <span>Gunakan Cari Lokasi untuk menemukan halte, stasiun, atau tempat.</span>
               </div>
             </div>
           </div>
@@ -845,7 +842,7 @@
       aria-labelledby="productTourTitle"
     >
       <div class="product-tour-progress" id="productTourProgress">
-        TIP 1 DARI 3
+        TIP 1 DARI 4
       </div>
 
       <h2 id="productTourTitle">Pilih jaringan</h2>
@@ -958,7 +955,7 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/map.js?v=20260830-brt15-19-route-intro-fixed1"></script>
+  <script src="js/map.js?v=20260830-diversion-affected-stop-note1"></script>
 
 </body>
 </html>
