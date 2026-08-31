@@ -1462,6 +1462,11 @@ body.basemap-panel-open .floating-zoom {
   tanpa mengulang operator.
 */
 @media (max-width: 520px) {
+  .integration-place-list > .integration-place-row:has(.integration-line-badges:empty),
+  .integration-place-list > .integration-place-row-button:has(.integration-line-badges:empty) {
+    margin-left: -36px !important;
+  }
+
   .integration-services {
     gap: 7px 10px;
     padding-left: 0;
@@ -1902,6 +1907,18 @@ body.basemap-panel-open .floating-zoom {
   color: #2e2e2e;
 }
 
+
+
+/*
+  Untuk integrasi tanpa badge lin (mis. KAJJ dan kasus serupa),
+  nama stasiun disejajarkan dengan nama operator,
+  bukan mengikuti indent area badge.
+*/
+.integration-place-list > .integration-place-row:has(.integration-line-badges:empty),
+.integration-place-list > .integration-place-row-button:has(.integration-line-badges:empty) {
+  margin-left: -42px !important;
+  gap: 0 !important;
+}
 .integration-place-name.is-missing {
   font-size: 11px;
   font-weight: 400;
@@ -12282,5 +12299,954 @@ details.legend-collapsible-section:not([open])
   .stop-popup-route-state-note,
   .stop-popup-affected-route-note {
     font-size: 8px;
+  }
+}
+
+
+/* =========================================================
+   DESKTOP V1 PREP
+   ========================================================= */
+
+.info-release-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+
+  margin: 8px 0 14px;
+  padding: 8px 10px;
+
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 7px;
+
+  background: rgba(0,0,0,.025);
+
+  font-size: 11px;
+  line-height: 1.35;
+  color: #646a70;
+}
+
+.info-release-meta-label {
+  font-weight: 700;
+  color: #343a40;
+}
+
+.info-methodology-details,
+.info-changelog-details {
+  margin-top: 12px;
+
+  border: 1px solid rgba(0,0,0,.09);
+  border-radius: 8px;
+
+  background: #fff;
+}
+
+.info-methodology-details summary,
+.info-changelog-details summary {
+  padding: 10px 12px;
+
+  cursor: pointer;
+
+  font-size: 12px;
+  font-weight: 700;
+  color: #33383d;
+}
+
+.info-methodology-body,
+.info-changelog-body {
+  padding: 0 12px 12px;
+
+  font-size: 11px;
+  line-height: 1.5;
+  color: #5e646a;
+}
+
+.info-methodology-body ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.info-changelog-entry {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 10px;
+
+  padding: 8px 0;
+
+  border-top: 1px solid rgba(0,0,0,.06);
+}
+
+.info-changelog-entry:first-child {
+  border-top: 0;
+}
+
+
+/* Route summary */
+.route-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+
+  margin-top: 11px;
+}
+
+.route-summary-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+
+  min-width: 0;
+
+  padding: 7px 8px;
+
+  border: 1px solid rgba(0,0,0,.075);
+  border-radius: 6px;
+
+  background: rgba(0,0,0,.018);
+}
+
+.route-summary-item span {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 9.5px;
+  color: #737a80;
+}
+
+.route-summary-item strong {
+  flex: 0 0 auto;
+
+  font-size: 10.5px;
+  color: #33383d;
+}
+
+
+/* Operational legend */
+.legend-operational-grid {
+  display: grid;
+  gap: 9px;
+}
+
+.legend-operational-item {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+  gap: 9px;
+
+  font-size: 10px;
+  color: #4c5258;
+}
+
+.legend-operational-item > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.legend-operational-item strong {
+  font-weight: 650;
+}
+
+.legend-operational-item small {
+  font-size: 8.5px;
+  color: #858b90;
+}
+
+.legend-operational-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 25px;
+  height: 25px;
+
+  border-radius: 50%;
+
+  background: #f2b51d;
+
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.legend-operational-badge.is-temp-terminus {
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 4px rgba(190,132,25,.95);
+}
+
+.legend-operational-badge.is-temporary {
+  outline: 2px dashed rgba(190,132,25,.92);
+  outline-offset: 2px;
+}
+
+.legend-operational-badge.is-not-served {
+  opacity: .38;
+  filter: grayscale(.3);
+  text-decoration: line-through;
+}
+
+
+/* Route result in global search */
+.global-search-result-icon.is-route {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #33383d;
+  color: #fff;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+
+/* Accessibility focus */
+.global-search-result:focus-visible,
+.stop-popup-route-button:focus-visible,
+.stop-popup-split-action:focus-visible,
+.integration-place-row-button:focus-visible,
+.basemap-option:focus-visible {
+  outline: 2px solid rgba(0,122,194,.7);
+  outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+  .info-changelog-entry {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+
+
+/* =========================================================
+   POPUP STATUS + ROLE INLINE
+   ========================================================= */
+
+.stop-popup-meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  margin-top: 4px;
+}
+
+.stop-popup-meta-row:empty {
+  display: none;
+}
+
+.stop-popup-meta-row .stop-popup-status,
+.stop-popup-meta-row .stop-popup-role {
+  margin-top: 0;
+  vertical-align: middle;
+}
+
+.stop-popup-role {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  line-height: 1.25;
+}
+
+.stop-popup-status {
+  margin-top: 0;
+}
+
+
+/* =========================================================
+   ROUTE SUMMARY — LENGTH NOTE
+   ========================================================= */
+
+.route-summary-length-note {
+  margin-top: 6px;
+  padding: 0 2px;
+
+  font-size: 8.5px;
+  line-height: 1.35;
+  color: #858b90;
+}
+
+
+/* =========================================================
+   PATCH — label halte tidak bold + layout lebih rapi
+   ========================================================= */
+.leaflet-tooltip.route-stop-name-label {
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  padding: 2px 5px !important;
+  font-size: 10px !important;
+  line-height: 1.15 !important;
+}
+
+.leaflet-tooltip.route-stop-name-label.is-transit,
+.leaflet-tooltip.route-stop-name-label.is-terminus,
+.leaflet-tooltip.route-stop-name-label.is-not-served {
+  font-weight: 400 !important;
+}
+
+
+/* =========================================================
+   STOP LABEL — ADAPTIVE FONT BY MAP ZOOM
+   ========================================================= */
+
+/*
+  Label tetap regular / non-bold.
+  data-stop-zoom-band diperbarui oleh updateStopZoomVisualState()
+  setiap selesai zoom.
+*/
+
+#map[data-stop-zoom-band="far"]
+  .leaflet-tooltip.route-stop-name-label {
+  font-size: 10.5px !important;
+  padding: 2px 5px !important;
+  line-height: 1.15 !important;
+}
+
+#map[data-stop-zoom-band="mid"]
+  .leaflet-tooltip.route-stop-name-label {
+  font-size: 12px !important;
+  padding: 2.5px 6px !important;
+  line-height: 1.16 !important;
+}
+
+#map[data-stop-zoom-band="near"]
+  .leaflet-tooltip.route-stop-name-label {
+  font-size: 13.5px !important;
+  padding: 3px 7px !important;
+  line-height: 1.18 !important;
+}
+
+#map[data-stop-zoom-band="far"]
+  .leaflet-tooltip.route-stop-name-label,
+#map[data-stop-zoom-band="mid"]
+  .leaflet-tooltip.route-stop-name-label,
+#map[data-stop-zoom-band="near"]
+  .leaflet-tooltip.route-stop-name-label {
+  font-weight: 400 !important;
+}
+
+
+/* =========================================================
+   STOP CLICK TARGET — LABEL MUST NEVER BLOCK CLICK
+   ========================================================= */
+
+.stop-hit-target {
+  width: 36px !important;
+  height: 36px !important;
+
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/*
+  Semua tooltip halte tetap murni visual.
+*/
+.leaflet-tooltip-pane,
+.leaflet-tooltip.route-stop-name-label {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+
+/*
+  Hilangkan penekanan bold pada jenis halte tertentu.
+*/
+.leaflet-tooltip.route-stop-name-label.is-transit,
+.leaflet-tooltip.route-stop-name-label.is-terminus,
+.leaflet-tooltip.route-stop-name-label.is-not-served {
+  font-weight: 400 !important;
+}
+
+
+/* =========================================================
+   INTEGRATION TYPOGRAPHY BALANCE
+   Logo operator dan nama tempat dibuat lebih seimbang.
+   ========================================================= */
+
+.integration-group-header {
+  gap: 8px !important;
+  min-height: 24px;
+}
+
+.integration-group .integration-symbol {
+  width: 34px !important;
+  min-width: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.integration-group .integration-logo {
+  width: auto !important;
+  max-width: 30px !important;
+  height: 20px !important;
+  max-height: 20px !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+.integration-group .integration-operator {
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+  font-weight: 600 !important;
+  color: #444 !important;
+}
+
+.integration-place-list {
+  padding-left: 42px !important;
+  gap: 7px !important;
+}
+
+.integration-place-row,
+.integration-place-row-button {
+  min-height: 28px !important;
+}
+
+.integration-line-badges {
+  gap: 6px !important;
+}
+
+.integration-line-badges .brt-route-badge {
+  width: 28px !important;
+  height: 28px !important;
+  flex: 0 0 28px !important;
+  font-size: 16px !important;
+}
+
+.integration-line-badges .brt-route-badge.is-double-digit {
+  font-size: 12px !important;
+}
+
+.integration-line-badges .rail-line-badge-image {
+  width: 24px !important;
+  height: 24px !important;
+  object-fit: contain !important;
+}
+
+.integration-line-badges .rail-line-badge-fallback {
+  width: 24px !important;
+  height: 24px !important;
+  flex: 0 0 24px !important;
+  font-size: 8px !important;
+}
+
+.integration-place-name {
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+  color: #2e2e2e !important;
+}
+
+.integration-place-name.is-missing {
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+}
+
+@media (max-width: 520px) {
+  .integration-group .integration-symbol {
+    width: 30px !important;
+    min-width: 30px !important;
+  }
+
+  .integration-group .integration-logo {
+    max-width: 27px !important;
+    height: 18px !important;
+    max-height: 18px !important;
+  }
+
+  .integration-group .integration-operator,
+  .integration-place-name {
+    font-size: 14px !important;
+  }
+
+  .integration-line-badges .brt-route-badge {
+    width: 26px !important;
+    height: 26px !important;
+    flex: 0 0 26px !important;
+    font-size: 15px !important;
+  }
+
+  .integration-line-badges .brt-route-badge.is-double-digit {
+    font-size: 11px !important;
+  }
+
+  .integration-line-badges .rail-line-badge-image,
+  .integration-line-badges .rail-line-badge-fallback {
+    width: 22px !important;
+    height: 22px !important;
+    flex: 0 0 22px !important;
+  }
+
+  .integration-place-list {
+    padding-left: 36px !important;
+  }
+}
+
+
+/* =========================================================
+   INTEGRATION — COMPACT SPACING + CLEARER SECTION HIERARCHY
+   ========================================================= */
+
+/*
+  Judul utama informasi rute dibuat sedikit lebih kuat,
+  tanpa membesarkan semua label kecil di popup.
+*/
+.stop-popup-section--service > .stop-popup-label,
+.stop-popup-section--integration > .stop-popup-label {
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+  color: #333 !important;
+}
+
+/*
+  Antar-operator sebelumnya terlalu renggang pada popup dengan
+  banyak moda (Manggarai, Dukuh Atas, dll.).
+*/
+.stop-popup-section--integration .integration-list {
+  gap: 11px !important;
+}
+
+/* Header operator -> daftar stasiun dibuat lebih dekat. */
+.stop-popup-section--integration .integration-group {
+  gap: 4px !important;
+}
+
+.stop-popup-section--integration .integration-place-list {
+  gap: 5px !important;
+}
+
+/* Sedikit kurangi tinggi kosong tanpa mengecilkan ikon atau teks. */
+.stop-popup-section--integration .integration-place-row,
+.stop-popup-section--integration .integration-place-row-button {
+  min-height: 27px !important;
+}
+
+/*
+  Pertahankan ukuran operator dan nama tempat yang sudah
+  diseimbangkan pada revisi sebelumnya.
+*/
+.stop-popup-section--integration .integration-group .integration-operator {
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+}
+
+.stop-popup-section--integration .integration-place-name {
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+}
+
+@media (max-width: 520px) {
+  .stop-popup-section--service > .stop-popup-label,
+  .stop-popup-section--integration > .stop-popup-label {
+    font-size: 13.5px !important;
+  }
+
+  .stop-popup-section--integration .integration-list {
+    gap: 10px !important;
+  }
+}
+
+
+/* =========================================================
+   INTEGRATION STATUS — EXISTING / PLANNED / PROPOSED / CONCEPTUAL
+   ========================================================= */
+
+.integration-place-name-wrap {
+  min-width: 0;
+
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.integration-place-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 auto;
+
+  padding: 2px 5px;
+  border-radius: 3px;
+
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.integration-place-status.is-planned {
+  color: #725600;
+  background: #fff3c4;
+}
+
+.integration-place-status.is-proposed {
+  color: #245d87;
+  background: #e2f0fb;
+}
+
+.integration-place-status.is-conceptual {
+  color: #6b1f78;
+  background: #f2dcf6;
+}
+
+/*
+  Nama stasiun tetap terbaca normal.
+  Yang diredupkan hanya badge/ikon lin untuk memperlihatkan
+  bahwa layanan/titik integrasinya belum eksisting.
+*/
+.integration-badge-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.integration-badge-state.is-planned,
+.integration-badge-state.is-proposed,
+.integration-badge-state.is-conceptual {
+  opacity: .68;
+}
+
+.integration-badge-state.is-existing {
+  opacity: 1;
+}
+
+/*
+  Jaga nama stasiun non-eksisting tetap jelas; status dibaca
+  dari pill, bukan dari opacity teks.
+*/
+.integration-place-row.is-planned .integration-place-name,
+.integration-place-row.is-proposed .integration-place-name,
+.integration-place-row.is-conceptual .integration-place-name {
+  opacity: 1;
+  color: #2e2e2e !important;
+}
+
+/* Pill tidak mengganggu tombol integrasi TransJakarta. */
+.integration-place-row-button .integration-place-status {
+  pointer-events: none;
+}
+
+@media (max-width: 520px) {
+  .integration-place-status {
+    font-size: 8.5px;
+    padding: 2px 4px;
+  }
+}
+
+
+/* =========================================================
+   BRT 15–19 ROUTE INTRO — LARGER DESKTOP CARD
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+  .route-plan-intro-overlay {
+    width:
+      min(
+        520px,
+        calc(100vw - 72px)
+      ) !important;
+  }
+
+  .route-plan-intro-card {
+    padding:
+      20px
+      20px
+      17px !important;
+
+    border-radius:
+      12px !important;
+  }
+
+  .route-plan-intro-close {
+    top:
+      9px !important;
+
+    right:
+      10px !important;
+
+    width:
+      31px !important;
+
+    height:
+      31px !important;
+
+    font-size:
+      21px !important;
+  }
+
+  .route-plan-intro-kicker {
+    margin-bottom:
+      5px !important;
+
+    font-size:
+      9.5px !important;
+
+    line-height:
+      1.2 !important;
+  }
+
+  .route-plan-intro-title {
+    padding-right:
+      38px !important;
+
+    font-size:
+      17px !important;
+
+    line-height:
+      1.28 !important;
+  }
+
+  .route-plan-intro-text {
+    margin-top:
+      10px !important;
+
+    font-size:
+      11.5px !important;
+
+    line-height:
+      1.55 !important;
+  }
+
+  .route-plan-intro-extra {
+    margin-top:
+      11px !important;
+
+    padding:
+      9px
+      10px !important;
+
+    border-radius:
+      7px !important;
+
+    font-size:
+      10.5px !important;
+
+    line-height:
+      1.45 !important;
+  }
+
+  .route-plan-intro-actions {
+    margin-top:
+      15px !important;
+
+    gap:
+      9px !important;
+  }
+
+  .route-plan-intro-source,
+  .route-plan-intro-dismiss {
+    min-height:
+      36px !important;
+
+    padding:
+      8px
+      13px !important;
+
+    border-radius:
+      7px !important;
+
+    font-size:
+      10.5px !important;
+
+    line-height:
+      1.2 !important;
+  }
+}
+
+
+/* =========================================================
+   ROUTE DETAIL CARD — INDEPENDENT COLLAPSE
+   ========================================================= */
+
+.route-detail-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  margin: 0 0 10px;
+  padding: 0;
+
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+
+  color: inherit;
+  text-align: left;
+}
+
+.route-detail-toggle-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.route-detail-toggle-chevron {
+  flex: 0 0 auto;
+  font-size: 14px;
+  line-height: 1;
+  color: #777;
+  transition: transform .18s ease;
+}
+
+.route-detail-body {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.route-detail-card.is-collapsed {
+  flex: 0 0 auto !important;
+}
+
+.route-detail-card.is-collapsed .route-detail-toggle {
+  margin-bottom: 0;
+}
+
+.route-detail-card.is-collapsed .route-detail-toggle-chevron {
+  transform: rotate(180deg);
+}
+
+.route-detail-card.is-collapsed .route-detail-body {
+  display: none !important;
+}
+
+@media (min-width: 761px) {
+  .route-detail-card {
+    padding-top: 10px !important;
+  }
+
+  .route-detail-card.is-collapsed {
+    padding-bottom: 10px !important;
+    overflow: hidden !important;
+  }
+
+  .route-detail-card:not(.is-collapsed) .route-detail-body {
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+
+  .route-detail-card:not(.is-collapsed) .route-detail-body > .route-info,
+  .route-detail-card:not(.is-collapsed) .route-detail-body > .selected-stop-card {
+    flex: 0 0 auto;
+  }
+
+  .route-detail-card:not(.is-collapsed) .route-detail-body > .stop-list {
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .route-detail-toggle-label {
+    font-size: 10.5px;
+  }
+
+  .route-detail-card.is-collapsed {
+    padding-bottom: 10px !important;
+  }
+}
+
+
+/* =========================================================
+   ROUTE DETAIL CARD — TRUE COMPACT COLLAPSE FIX
+   ========================================================= */
+
+/*
+  Override aturan desktop lama:
+  body .route-detail-card:not(.is-overview) { flex: 1 1 0 !important; }
+
+  Saat collapse, kartu benar-benar hanya setinggi header.
+*/
+body .route-detail-card.is-collapsed,
+body .route-detail-card.is-collapsed:not(.is-overview) {
+  flex:
+    0 0 auto !important;
+
+  min-height:
+    0 !important;
+
+  height:
+    auto !important;
+
+  max-height:
+    42px !important;
+
+  padding:
+    10px 12px !important;
+
+  overflow:
+    hidden !important;
+
+  box-sizing:
+    border-box !important;
+}
+
+body .route-detail-card.is-collapsed
+  .route-detail-toggle {
+  min-height:
+    20px !important;
+
+  margin:
+    0 !important;
+
+  padding:
+    0 !important;
+}
+
+body .route-detail-card.is-collapsed
+  .route-detail-body,
+body .route-detail-card.is-collapsed
+  #routeDetailBody {
+  display:
+    none !important;
+
+  height:
+    0 !important;
+
+  min-height:
+    0 !important;
+
+  max-height:
+    0 !important;
+
+  overflow:
+    hidden !important;
+}
+
+
+/*
+  Ketika dibuka kembali, kembalikan perilaku mengisi
+  ruang vertikal seperti desain sebelumnya.
+*/
+@media (min-width: 1024px) {
+  body .route-detail-card:not(.is-collapsed):not(.is-overview) {
+    flex:
+      1 1 0 !important;
+
+    min-height:
+      0 !important;
+
+    height:
+      auto !important;
+
+    max-height:
+      none !important;
   }
 }

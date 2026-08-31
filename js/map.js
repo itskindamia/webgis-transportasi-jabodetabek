@@ -9,6 +9,17 @@
    SEQ_MAP    = urutan halte per rute
    DIR_MAP    = arah khusus per rute
    INTEGRASI  = transfer ke moda/rute lain
+   INT_NM     = nama titik fisik integrasi
+   INT_STATUS = status titik integrasi non-eksisting
+
+   INT_STATUS format:
+   KODE:Nama=Status;KODE:Nama=Status
+
+   Contoh:
+   MRT_NS:Monumen Nasional=Rencana
+
+   Jika INT_STATUS kosong / pasangan tidak ditemukan,
+   integrasi dianggap Eksisting.
    ========================================================= */
 
 const STOP_ZOOM = 18;
@@ -282,14 +293,22 @@ map.getPane("stopPane").style.zIndex = 470;
 map.createPane("stopHitPane");
 
 /*
-  Hit target harus berada di atas:
-  - trase
-  - marker visual
-  - POI/GPS helper
-
-  tetapi tetap di bawah tooltip/popup Leaflet.
+  stopHitPane tetap dipakai untuk overlay visual non-interaktif,
+  misalnya angka pada marker Terminus.
 */
 map.getPane("stopHitPane").style.zIndex = 525;
+
+
+/*
+  Pane khusus area klik halte.
+
+  Dibuat DI ATAS tooltip Leaflet agar label nama halte tidak
+  dapat menghalangi klik, tetapi tetap DI BAWAH popup Leaflet.
+  Default tooltipPane Leaflet ≈ 650 dan popupPane ≈ 700.
+*/
+map.createPane("stopClickPane");
+map.getPane("stopClickPane").style.zIndex = 680;
+
 
 map.createPane("poiPane");
 map.getPane("poiPane").style.zIndex = 480;
@@ -596,6 +615,21 @@ const filterPanel =
 const selectedStopInfoEl = document.getElementById("selectedStopInfo");
 const stopListEl = document.getElementById("stopList");
 
+const routeDetailCard =
+  document.getElementById(
+    "routeDetailCard"
+  );
+
+const routeDetailToggle =
+  document.getElementById(
+    "routeDetailToggle"
+  );
+
+const routeDetailBody =
+  document.getElementById(
+    "routeDetailBody"
+  );
+
 const basemapButton = document.getElementById("basemapButton");
 const basemapPanel = document.getElementById("basemapPanel");
 const basemapClose = document.getElementById("basemapClose");
@@ -605,6 +639,10 @@ const opacityButtons = document.querySelectorAll(".opacity-grid button");
 const basemapCarousel = document.getElementById("basemapCarousel");
 
 const legendPanel = document.getElementById("legendPanel");
+const operationalLegendSection =
+  document.getElementById(
+    "operationalLegendSection"
+  );
 
 const zoomInButton = document.getElementById("zoomInButton");
 const zoomOutButton = document.getElementById("zoomOutButton");
@@ -625,6 +663,9 @@ const homeButton = document.getElementById("homeButton");
 /* =========================================================
    DATA / STATE
    ========================================================= */
+
+const ROUTE_DETAIL_COLLAPSED_STORAGE_KEY =
+  "webgis_route_detail_collapsed";
 
 let routeData = null;
 let stopData = null;
@@ -687,8 +728,11 @@ let poiSearchDebounceId = null;
 let globalSearchAbortController = null;
 let globalSearchDebounceId = null;
 let globalSearchLocalResults = [];
+let globalSearchRouteResults = [];
 let globalSearchPoiResults = [];
 let globalSearchPoiLoading = false;
+
+let suppressUrlStateSync = false;
 
 let lastFocusedBeforeInfoModal = null;
 
@@ -1329,6 +1373,219 @@ function getRouteColor(routeId) {
     "#555555"
   );
 }
+
+/* =========================================================
+   ROUTE SUMMARY
+   ========================================================= */
+
+function haversineDistanceMeters(a, b) {
+  if (
+    !Array.isArray(a) ||
+    !Array.isArray(b)
+  ) {
+    return 0;
+  }
+
+  const lng1 = Number(a[0]);
+  const lat1 = Number(a[1]);
+  const lng2 = Number(b[0]);
+  const lat2 = Number(b[1]);
+
+  if (
+    !Number.isFinite(lng1) ||
+    !Number.isFinite(lat1) ||
+    !Number.isFinite(lng2) ||
+    !Number.isFinite(lat2)
+  ) {
+    return 0;
+  }
+
+  const toRad =
+    value =>
+      value * Math.PI / 180;
+
+  const radius =
+    6371008.8;
+
+  const dLat =
+    toRad(lat2 - lat1);
+
+  const dLng =
+    toRad(lng2 - lng1);
+
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) *
+    Math.cos(toRad(lat2)) *
+    Math.sin(dLng / 2) ** 2;
+
+  return (
+    2 *
+    radius *
+    Math.asin(
+      Math.min(
+        1,
+        Math.sqrt(h)
+      )
+    )
+  );
+}
+
+
+function getGeometryLengthKm(geometry) {
+  if (!geometry) {
+    return null;
+  }
+
+  let lines = [];
+
+  if (geometry.type === "LineString") {
+    lines = [geometry.coordinates];
+  }
+  else if (geometry.type === "MultiLineString") {
+    lines = geometry.coordinates;
+  }
+  else {
+    return null;
+  }
+
+  let meters = 0;
+
+  lines.forEach(
+    line => {
+      if (!Array.isArray(line)) {
+        return;
+      }
+
+      for (
+        let i = 1;
+        i < line.length;
+        i += 1
+      ) {
+        meters +=
+          haversineDistanceMeters(
+            line[i - 1],
+            line[i]
+          );
+      }
+    }
+  );
+
+  return meters > 0
+    ? meters / 1000
+    : null;
+}
+
+
+function getRouteSummaryStats(feature) {
+  const routeId =
+    getRouteId(feature);
+
+  const entries =
+    getLogicalOperationalStopEntries(
+      routeId,
+      {
+        includeNotServed: false
+      }
+    );
+
+  const transitCount =
+    entries.filter(
+      entry =>
+        getOperationalStopRole(
+          entry.feature,
+          routeId
+        ) === "Transit"
+    ).length;
+
+  const terminusCount =
+    entries.filter(
+      entry => {
+        const role =
+          getOperationalStopRole(
+            entry.feature,
+            routeId
+          );
+
+        return (
+          role === "Terminus" ||
+          role === "Terminus Sementara"
+        );
+      }
+    ).length;
+
+  return {
+    stopCount: entries.length,
+    transitCount,
+    terminusCount,
+    lengthKm:
+      getGeometryLengthKm(
+        feature.geometry
+      )
+  };
+}
+
+
+function buildRouteSummaryHTML(
+  feature,
+  objectName
+) {
+  const stats =
+    getRouteSummaryStats(
+      feature
+    );
+
+  const lengthText =
+    Number.isFinite(
+      stats.lengthKm
+    )
+      ? `± ${stats.lengthKm.toLocaleString(
+          "id-ID",
+          {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+          }
+        )} km`
+      : "—";
+
+  return `
+    <div class="route-summary-grid">
+      <div class="route-summary-item">
+        <span>${escapeHTML(objectName)}</span>
+        <strong>${stats.stopCount}</strong>
+      </div>
+
+      <div class="route-summary-item">
+        <span>Transit</span>
+        <strong>${stats.transitCount}</strong>
+      </div>
+
+      <div class="route-summary-item">
+        <span>Terminus</span>
+        <strong>${stats.terminusCount}</strong>
+      </div>
+
+      <div class="route-summary-item">
+        <span>Panjang</span>
+        <strong>${escapeHTML(lengthText)}</strong>
+      </div>
+    </div>
+
+    ${
+      Number.isFinite(
+        stats.lengthKm
+      )
+        ? `
+          <div class="route-summary-length-note">
+            * Panjang merupakan estimasi total trase dua arah
+            (pergi–kembali), bukan panjang satu arah.
+          </div>
+        `
+        : ""
+    }
+  `;
+}
+
 
 /* =========================================================
    STOP HELPERS
@@ -2462,6 +2719,285 @@ function getStopIntegrationNameMap(feature) {
     p.INTEGRASI_NM ??
     ""
   );
+}
+
+
+
+/*
+  =========================================================
+  INTEGRATION STATUS
+  =========================================================
+
+  INT_STATUS hanya perlu diisi untuk integrasi non-eksisting.
+
+  Format utama:
+    KODE:Nama=Status
+
+  Contoh:
+    MRT_NS:Monumen Nasional=Rencana;
+    LRT_JKT_S:Velodrome=Usulan
+
+  Fallback opsional yang juga diterima:
+    KODE=Status
+
+  Jika tidak ada pasangan yang cocok, status dianggap Existing.
+*/
+function normalizeIntegrationStatus(value) {
+  const status =
+    normalizeStatus(value);
+
+  return [
+    "Existing",
+    "Planned",
+    "Proposed",
+    "Conceptual"
+  ].includes(status)
+    ? status
+    : "";
+}
+
+
+function normalizeIntegrationStatusName(value) {
+  return String(value ?? "")
+    .trim()
+    .toLocaleLowerCase("id-ID")
+    .replace(/\s+/g, " ");
+}
+
+
+function getIntegrationStatusExactKey(
+  code,
+  relatedName
+) {
+  return `${String(code ?? "")
+    .trim()
+    .toUpperCase()}::${normalizeIntegrationStatusName(
+      relatedName
+    )}`;
+}
+
+
+function parseIntegrationStatusMap(value) {
+  const result = {
+    exact: {},
+    byCode: {},
+    entries: []
+  };
+
+  splitIds(value)
+    .forEach(item => {
+      const equalsIndex =
+        item.lastIndexOf("=");
+
+      if (equalsIndex === -1) {
+        result.entries.push({
+          raw: item,
+          code: "",
+          relatedName: "",
+          statusRaw: "",
+          status: "",
+          valid: false
+        });
+
+        return;
+      }
+
+      const left =
+        item
+          .slice(0, equalsIndex)
+          .trim();
+
+      const statusRaw =
+        item
+          .slice(equalsIndex + 1)
+          .trim();
+
+      const status =
+        normalizeIntegrationStatus(
+          statusRaw
+        );
+
+      const colonIndex =
+        left.indexOf(":");
+
+      const code =
+        String(
+          colonIndex === -1
+            ? left
+            : left.slice(0, colonIndex)
+        )
+          .trim()
+          .toUpperCase();
+
+      const relatedName =
+        colonIndex === -1
+          ? ""
+          : left
+              .slice(colonIndex + 1)
+              .trim();
+
+      const entry = {
+        raw: item,
+        code,
+        relatedName,
+        statusRaw,
+        status,
+        valid:
+          Boolean(code && status)
+      };
+
+      result.entries.push(entry);
+
+      if (!entry.valid) {
+        return;
+      }
+
+      if (relatedName) {
+        result.exact[
+          getIntegrationStatusExactKey(
+            code,
+            relatedName
+          )
+        ] = status;
+      }
+      else {
+        result.byCode[code] =
+          status;
+      }
+    });
+
+  return result;
+}
+
+
+function getStopIntegrationStatusMap(feature) {
+  const p =
+    feature?.properties ?? {};
+
+  return parseIntegrationStatusMap(
+    p.INT_STATUS ??
+    p.INTEGRASI_STATUS ??
+    ""
+  );
+}
+
+
+function getIntegrationStatusFromMap(
+  integrationStatusMap,
+  code,
+  relatedName = ""
+) {
+  const normalizedCode =
+    String(code ?? "")
+      .trim()
+      .toUpperCase();
+
+  const exactKey =
+    getIntegrationStatusExactKey(
+      normalizedCode,
+      relatedName
+    );
+
+  const exactStatus =
+    integrationStatusMap
+      ?.exact
+      ?.[exactKey];
+
+  if (exactStatus) {
+    return exactStatus;
+  }
+
+  const codeStatus =
+    integrationStatusMap
+      ?.byCode
+      ?.[normalizedCode];
+
+  return codeStatus || "Existing";
+}
+
+
+function getIntegrationStatusPriority(value) {
+  const status =
+    normalizeIntegrationStatus(value)
+    || "Existing";
+
+  return {
+    Existing: 10,
+    Planned: 20,
+    Proposed: 30,
+    Conceptual: 40
+  }[status] ?? 99;
+}
+
+
+function getIntegrationStatusClass(value) {
+  const status =
+    normalizeIntegrationStatus(value)
+    || "Existing";
+
+  return {
+    Existing: "is-existing",
+    Planned: "is-planned",
+    Proposed: "is-proposed",
+    Conceptual: "is-conceptual"
+  }[status] || "is-existing";
+}
+
+
+function getIntegrationPlaceStatus(services) {
+  const statuses =
+    Array.from(
+      new Set(
+        (services || [])
+          .map(
+            service =>
+              normalizeIntegrationStatus(
+                service?.integrationStatus
+              ) || "Existing"
+          )
+      )
+    );
+
+  if (!statuses.length) {
+    return "Existing";
+  }
+
+  /*
+    Dalam kondisi normal seluruh lin yang menunjuk stasiun
+    fisik yang sama sebaiknya mempunyai status yang sama.
+
+    Jika datanya campuran, status non-eksisting dengan tingkat
+    paling lanjut tetap ditampilkan agar user tidak salah
+    membaca titik tersebut sebagai seluruhnya eksisting.
+  */
+  return statuses
+    .slice()
+    .sort(
+      (a, b) =>
+        getIntegrationStatusPriority(b)
+        -
+        getIntegrationStatusPriority(a)
+    )[0];
+}
+
+
+function buildIntegrationStatusPill(status) {
+  const normalized =
+    normalizeIntegrationStatus(status)
+    || "Existing";
+
+  if (normalized === "Existing") {
+    return "";
+  }
+
+  return `
+    <span
+      class="integration-place-status ${getIntegrationStatusClass(normalized)}"
+      title="Status integrasi: ${escapeHTML(getStatusLabel(normalized))}"
+    >
+      ${escapeHTML(getStatusLabel(normalized))}
+    </span>
+  `;
 }
 
 
@@ -5542,6 +6078,7 @@ function clearGlobalSearch(
   globalSearchInput.value = "";
 
   globalSearchLocalResults = [];
+  globalSearchRouteResults = [];
   globalSearchPoiResults = [];
   globalSearchPoiLoading = false;
 
@@ -5565,6 +6102,185 @@ function clearGlobalSearch(
   if (focusInput) {
     globalSearchInput.focus();
   }
+}
+
+
+function getGlobalRouteSearchMatches(
+  query,
+  limit = 5
+) {
+  if (!routeData?.features) {
+    return [];
+  }
+
+  const normalizedQuery =
+    normalizeSearchText(
+      query
+    );
+
+  if (normalizedQuery.length < 2) {
+    return [];
+  }
+
+  const unique =
+    new Map();
+
+  routeData.features.forEach(
+    feature => {
+      const routeId =
+        getRouteId(feature);
+
+      if (
+        routeId &&
+        !unique.has(routeId)
+      ) {
+        unique.set(
+          routeId,
+          getRouteById(routeId) || feature
+        );
+      }
+    }
+  );
+
+  return Array.from(
+    unique.values()
+  )
+    .map(
+      feature => {
+        const routeId =
+          getRouteId(feature);
+
+        const line =
+          String(
+            feature?.properties?.LINE
+            ?? ""
+          ).trim();
+
+        const mode =
+          getRouteMode(feature);
+
+        const haystack =
+          normalizeSearchText(
+            [
+              getRouteTitle(feature),
+              getRouteDisplayName(feature),
+              routeId,
+              line,
+              mode,
+              mode === "BRT"
+                ? `Koridor ${line}`
+                : `Lin ${line}`
+            ].join(" ")
+          );
+
+        const index =
+          haystack.indexOf(
+            normalizedQuery
+          );
+
+        return {
+          feature,
+          score:
+            index < 0
+              ? Number.POSITIVE_INFINITY
+              : index
+        };
+      }
+    )
+    .filter(
+      item =>
+        Number.isFinite(item.score)
+    )
+    .sort(
+      (a, b) =>
+        a.score - b.score
+    )
+    .slice(0, limit)
+    .map(
+      item =>
+        item.feature
+    );
+}
+
+
+function buildGlobalRouteResult(feature) {
+  const routeId =
+    getRouteId(feature);
+
+  const mode =
+    getRouteMode(feature);
+
+  return `
+    <button
+      type="button"
+      class="global-search-result"
+      data-global-type="route"
+      data-route-id="${escapeHTML(routeId)}"
+      role="option"
+    >
+      <span class="global-search-result-icon is-route" aria-hidden="true">
+        ${
+          mode === "BRT"
+            ? escapeHTML(
+                routeNumberFromId(routeId)
+              )
+            : "↔"
+        }
+      </span>
+
+      <span class="global-search-result-content">
+        <span class="global-search-result-main">
+          <strong>${escapeHTML(getRouteTitle(feature))}</strong>
+          <span>${escapeHTML(mode)}</span>
+        </span>
+
+        <span class="global-search-result-meta">
+          ${escapeHTML(
+            getStatusLabel(
+              feature.properties.STATUS
+            )
+          )}
+        </span>
+      </span>
+    </button>
+  `;
+}
+
+
+function openRouteFromGlobalSearch(routeId) {
+  const route =
+    getRouteById(routeId);
+
+  if (!route) {
+    return;
+  }
+
+  modeSelect.value =
+    getRouteMode(route);
+
+  statusSelect.value =
+    normalizeStatus(
+      route.properties.STATUS
+    );
+
+  populateRouteDropdown();
+
+  routeSelect.value =
+    String(routeId);
+
+  showSingleRoute(
+    routeId
+  );
+
+  updateRouteDetailCardState();
+
+  globalSearchInput.value =
+    getRouteTitle(route);
+
+  updateGlobalSearchClearButton();
+  closeGlobalSearchResults();
+
+  globalSearchInput.blur();
 }
 
 
@@ -5704,6 +6420,27 @@ function renderGlobalSearchResults() {
     return;
   }
 
+  const routeHTML =
+    globalSearchRouteResults.length
+      ?
+      `
+        <section class="global-search-group">
+          <div class="global-search-group-title">
+            Lin / Koridor
+          </div>
+
+          ${
+            globalSearchRouteResults
+              .map(
+                buildGlobalRouteResult
+              )
+              .join("")
+          }
+        </section>
+      `
+      :
+      "";
+
   const transportHTML =
     globalSearchLocalResults.length
       ?
@@ -5764,6 +6501,7 @@ function renderGlobalSearchResults() {
   }
 
   if (
+    !routeHTML &&
     !transportHTML &&
     !poiHTML
   ) {
@@ -5775,6 +6513,7 @@ function renderGlobalSearchResults() {
   }
   else {
     globalSearchResults.innerHTML =
+      routeHTML +
       transportHTML +
       poiHTML;
   }
@@ -5786,6 +6525,23 @@ function renderGlobalSearchResults() {
     "aria-expanded",
     "true"
   );
+
+  globalSearchResults
+    .querySelectorAll(
+      '[data-global-type="route"]'
+    )
+    .forEach(
+      button => {
+        button.addEventListener(
+          "click",
+          () => {
+            openRouteFromGlobalSearch(
+              button.dataset.routeId
+            );
+          }
+        );
+      }
+    );
 
   globalSearchResults
     .querySelectorAll(
@@ -6004,6 +6760,12 @@ function updateGlobalSearch(
       cleanQuery
     ).length >= 2
   ) {
+    globalSearchRouteResults =
+      getGlobalRouteSearchMatches(
+        cleanQuery,
+        5
+      );
+
     globalSearchLocalResults =
       getStopSearchMatches(
         cleanQuery,
@@ -6011,6 +6773,7 @@ function updateGlobalSearch(
       );
   }
   else {
+    globalSearchRouteResults = [];
     globalSearchLocalResults = [];
   }
 
@@ -6123,6 +6886,293 @@ document.addEventListener(
     }
   }
 );
+
+
+/* =========================================================
+   SHAREABLE URL STATE
+   ========================================================= */
+
+function getShareableStopId(stopKey) {
+  const feature =
+    getStopByKey(stopKey);
+
+  if (!feature) {
+    return "";
+  }
+
+  return String(
+    feature?.properties?.STOP_ID
+    ||
+    getStopKey(feature)
+    ||
+    ""
+  ).trim();
+}
+
+
+function findStopFromShareableId(stopId) {
+  if (
+    !stopData?.features ||
+    !stopId
+  ) {
+    return null;
+  }
+
+  const target =
+    String(stopId).trim();
+
+  return (
+    stopData.features.find(
+      feature =>
+        String(
+          feature?.properties?.STOP_ID
+          ?? ""
+        ).trim() === target
+    )
+    ||
+    getStopByKey(target)
+    ||
+    null
+  );
+}
+
+
+function syncUrlState() {
+  if (suppressUrlStateSync) {
+    return;
+  }
+
+  const params =
+    new URLSearchParams();
+
+  const mode =
+    String(
+      modeSelect?.value ?? "ALL"
+    );
+
+  const status =
+    String(
+      statusSelect?.value ?? "Existing"
+    );
+
+  const routeId =
+    currentSelectedRouteId
+    ||
+    (
+      routeSelect?.value !== "ALL"
+        ? routeSelect?.value
+        : ""
+    );
+
+  if (mode !== "ALL") {
+    params.set("mode", mode);
+  }
+
+  if (status !== "Existing") {
+    params.set("status", status);
+  }
+
+  if (routeId) {
+    params.set(
+      "route",
+      routeId
+    );
+  }
+
+  if (currentSelectedStopKey) {
+    const stopId =
+      getShareableStopId(
+        currentSelectedStopKey
+      );
+
+    if (stopId) {
+      params.set(
+        "stop",
+        stopId
+      );
+    }
+  }
+
+  if (
+    currentBasemapType &&
+    currentBasemapType !== "light"
+  ) {
+    params.set(
+      "basemap",
+      currentBasemapType
+    );
+  }
+
+  const opacity =
+    Math.round(
+      basemapOpacity * 100
+    );
+
+  if (opacity !== 100) {
+    params.set(
+      "opacity",
+      String(opacity)
+    );
+  }
+
+  const query =
+    params.toString();
+
+  const nextUrl =
+    `${window.location.pathname}${
+      query
+        ? `?${query}`
+        : ""
+    }${window.location.hash || ""}`;
+
+  window.history.replaceState(
+    null,
+    "",
+    nextUrl
+  );
+}
+
+
+function applyUrlStateAfterDataLoad() {
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  suppressUrlStateSync =
+    true;
+
+  try {
+    const routeId =
+      params.get("route");
+
+    const stopId =
+      params.get("stop");
+
+    const basemap =
+      params.get("basemap");
+
+    const opacity =
+      Number(
+        params.get("opacity")
+      );
+
+    const mode =
+      params.get("mode");
+
+    const status =
+      params.get("status");
+
+    if (
+      mode &&
+      Array.from(
+        modeSelect.options
+      ).some(
+        option =>
+          option.value === mode
+      )
+    ) {
+      modeSelect.value = mode;
+    }
+
+    if (
+      status &&
+      Array.from(
+        statusSelect.options
+      ).some(
+        option =>
+          option.value === status
+      )
+    ) {
+      statusSelect.value =
+        status;
+    }
+
+    if (
+      basemap &&
+      BASEMAPS[basemap]
+    ) {
+      setBasemap(
+        basemap
+      );
+    }
+
+    if (
+      Number.isFinite(opacity) &&
+      [25, 50, 75, 100]
+        .includes(opacity)
+    ) {
+      setBasemapOpacity(
+        opacity
+      );
+    }
+
+    if (
+      routeId &&
+      getRouteById(routeId)
+    ) {
+      const route =
+        getRouteById(routeId);
+
+      modeSelect.value =
+        getRouteMode(route);
+
+      statusSelect.value =
+        normalizeStatus(
+          route.properties.STATUS
+        );
+
+      populateRouteDropdown();
+
+      routeSelect.value =
+        routeId;
+
+      showSingleRoute(
+        routeId
+      );
+
+      updateRouteDetailCardState();
+
+      if (stopId) {
+        const feature =
+          findStopFromShareableId(
+            stopId
+          );
+
+        if (feature) {
+          requestAnimationFrame(
+            () => {
+              selectStop(
+                getStopKey(feature),
+                routeId,
+                true
+              );
+            }
+          );
+        }
+      }
+
+      return;
+    }
+
+    populateRouteDropdown();
+
+    routeSelect.value =
+      "ALL";
+
+    showAllRoutes(true);
+    updateRouteDetailCardState();
+  }
+  finally {
+    suppressUrlStateSync =
+      false;
+
+    setTimeout(
+      syncUrlState,
+      0
+    );
+  }
+}
 
 
 /* =========================================================
@@ -6443,6 +7493,124 @@ document.addEventListener(
    DATA VALIDATION
    ========================================================= */
 
+function validateRouteData() {
+  if (!routeData?.features) {
+    return;
+  }
+
+  const missingIds = [];
+  const invalidGeometry = [];
+  const variantsByRoute =
+    new Map();
+
+  routeData.features.forEach(
+    (feature, index) => {
+      const routeId =
+        getRouteId(feature);
+
+      if (!routeId) {
+        missingIds.push(
+          index + 1
+        );
+
+        return;
+      }
+
+      if (
+        !feature.geometry ||
+        ![
+          "LineString",
+          "MultiLineString"
+        ].includes(
+          feature.geometry.type
+        )
+      ) {
+        invalidGeometry.push(
+          routeId
+        );
+      }
+
+      if (
+        !variantsByRoute.has(
+          routeId
+        )
+      ) {
+        variantsByRoute.set(
+          routeId,
+          []
+        );
+      }
+
+      variantsByRoute
+        .get(routeId)
+        .push(
+          normalizeRouteVariant(
+            feature
+          )
+        );
+    }
+  );
+
+  const duplicateVariants = [];
+
+  variantsByRoute.forEach(
+    (variants, routeId) => {
+      const counts = {};
+
+      variants.forEach(
+        variant => {
+          counts[variant] =
+            (counts[variant] || 0) + 1;
+        }
+      );
+
+      Object.entries(counts)
+        .forEach(
+          ([variant, count]) => {
+            if (count > 1) {
+              duplicateVariants.push(
+                `${routeId} → ${variant} (${count})`
+              );
+            }
+          }
+        );
+    }
+  );
+
+  console.groupCollapsed(
+    "Validasi brt_route.geojson"
+  );
+
+  console.log(
+    "Jumlah fitur rute:",
+    routeData.features.length
+  );
+
+  if (missingIds.length) {
+    console.warn(
+      "Fitur rute tanpa ID:",
+      missingIds
+    );
+  }
+
+  if (invalidGeometry.length) {
+    console.warn(
+      "Geometri rute tidak valid:",
+      invalidGeometry
+    );
+  }
+
+  if (duplicateVariants.length) {
+    console.warn(
+      "Duplikasi ROUTE_VAR:",
+      duplicateVariants
+    );
+  }
+
+  console.groupEnd();
+}
+
+
 function validateStopData() {
   if (!stopData?.features) {
     return;
@@ -6454,6 +7622,9 @@ function validateStopData() {
   const invalidPoints = [];
   const integrationNameWithoutService = [];
   const integrationWithoutName = [];
+  const invalidIntegrationStatuses = [];
+  const integrationStatusWithoutService = [];
+  const integrationStatusWithoutNameMatch = [];
 
   stopData.features.forEach(
     (feature, index) => {
@@ -6551,6 +7722,62 @@ function validateStopData() {
         });
 
 
+      const integrationStatusMap =
+        getStopIntegrationStatusMap(
+          feature
+        );
+
+      integrationStatusMap.entries
+        .forEach(entry => {
+          if (!entry.valid) {
+            invalidIntegrationStatuses.push(
+              `${stopName} → ${entry.raw}`
+            );
+
+            return;
+          }
+
+          if (
+            !integrations.includes(
+              entry.code
+            )
+          ) {
+            integrationStatusWithoutService.push(
+              `${stopName} → ${entry.code}`
+            );
+          }
+
+          if (entry.relatedName) {
+            const names =
+              integrationNameMap[
+                entry.code
+              ] ?? [];
+
+            const normalizedNames =
+              (
+                Array.isArray(names)
+                  ? names
+                  : [names]
+              )
+                .map(
+                  normalizeIntegrationStatusName
+                );
+
+            if (
+              !normalizedNames.includes(
+                normalizeIntegrationStatusName(
+                  entry.relatedName
+                )
+              )
+            ) {
+              integrationStatusWithoutNameMatch.push(
+                `${stopName} → ${entry.code}:${entry.relatedName}`
+              );
+            }
+          }
+        });
+
+
       integrations.forEach(code => {
 
         const integrationNames =
@@ -6644,6 +7871,27 @@ function validateStopData() {
     console.warn(
       "Sebagian kode INTEGRASI belum memiliki nama titik pada INT_NM:",
       integrationWithoutName
+    );
+  }
+
+  if (invalidIntegrationStatuses.length) {
+    console.warn(
+      "INT_STATUS tidak valid. Gunakan KODE:Nama=Eksisting/Rencana/Usulan/Konseptual:",
+      invalidIntegrationStatuses
+    );
+  }
+
+  if (integrationStatusWithoutService.length) {
+    console.warn(
+      "INT_STATUS memiliki kode yang tidak ada di INTEGRASI:",
+      integrationStatusWithoutService
+    );
+  }
+
+  if (integrationStatusWithoutNameMatch.length) {
+    console.warn(
+      "INT_STATUS tidak menemukan pasangan nama yang sama di INT_NM:",
+      integrationStatusWithoutNameMatch
     );
   }
 
@@ -9314,6 +10562,12 @@ function renderRouteInfo(feature) {
       ? "Halte"
       : "Stasiun";
 
+  const routeSummaryHTML =
+    buildRouteSummaryHTML(
+      feature,
+      objectName
+    );
+
   const routeAlertHTML =
     buildRouteAlertHTML(
       feature,
@@ -9447,6 +10701,8 @@ function renderRouteInfo(feature) {
 
       ${alignmentHTML}
     </div>
+
+    ${routeSummaryHTML}
 
     ${routePlanInfoHTML}
 
@@ -10228,7 +11484,12 @@ function getIntegrationOperatorPriority(
 
 function groupIntegrationsByOperator(
   ids,
-  integrationNameMap = {}
+  integrationNameMap = {},
+  integrationStatusMap = {
+    exact: {},
+    byCode: {},
+    entries: []
+  }
 ) {
 
   const groups =
@@ -10307,7 +11568,13 @@ function groupIntegrationsByOperator(
             .services
             .push({
               ...info,
-              relatedName
+              relatedName,
+              integrationStatus:
+                getIntegrationStatusFromMap(
+                  integrationStatusMap,
+                  info.code || id,
+                  relatedName
+                )
             });
 
         }
@@ -10324,7 +11591,13 @@ function groupIntegrationsByOperator(
         .services
         .push({
           ...info,
-          relatedName: ""
+          relatedName: "",
+          integrationStatus:
+            getIntegrationStatusFromMap(
+              integrationStatusMap,
+              info.code || id,
+              ""
+            )
         });
 
     }
@@ -10403,15 +11676,32 @@ function buildIntegrationBadge(service) {
     return "";
   }
 
-  if (service.brt) {
-    return buildBrtBadge(
-      service.routeId
-    );
+  const badgeHTML =
+    service.brt
+      ? buildBrtBadge(
+          service.routeId
+        )
+      : buildLineBadge(
+          service.code
+        );
+
+  if (!badgeHTML) {
+    return "";
   }
 
-  return buildLineBadge(
-    service.code
-  );
+  const status =
+    normalizeIntegrationStatus(
+      service.integrationStatus
+    ) || "Existing";
+
+  return `
+    <span
+      class="integration-badge-state ${getIntegrationStatusClass(status)}"
+      data-integration-status="${escapeHTML(status)}"
+    >
+      ${badgeHTML}
+    </span>
+  `;
 }
 
 
@@ -10457,7 +11747,41 @@ function groupServicesByRelatedPlace(services) {
 
   return Array.from(
     groups.values()
-  );
+  )
+    .map(
+      group => ({
+        ...group,
+        integrationStatus:
+          getIntegrationPlaceStatus(
+            group.services
+          )
+      })
+    )
+    .sort(
+      (a, b) => {
+        const statusDiff =
+          getIntegrationStatusPriority(
+            a.integrationStatus
+          )
+          -
+          getIntegrationStatusPriority(
+            b.integrationStatus
+          );
+
+        if (statusDiff !== 0) {
+          return statusDiff;
+        }
+
+        return String(
+          a.placeLabel || ""
+        ).localeCompare(
+          String(
+            b.placeLabel || ""
+          ),
+          "id"
+        );
+      }
+    );
 }
 
 
@@ -10720,6 +12044,21 @@ function openTransJakartaIntegrationStop(
 
 function buildIntegrationPlaceRow(placeGroup) {
 
+  const placeStatus =
+    normalizeIntegrationStatus(
+      placeGroup.integrationStatus
+    ) || "Existing";
+
+  const placeStatusClass =
+    getIntegrationStatusClass(
+      placeStatus
+    );
+
+  const statusPillHTML =
+    buildIntegrationStatusPill(
+      placeStatus
+    );
+
   const badgesHTML =
     placeGroup.services
       .map(
@@ -10732,16 +12071,24 @@ function buildIntegrationPlaceRow(placeGroup) {
     placeGroup.placeLabel
       ?
       `
-        <span class="integration-place-name">
-          ${escapeHTML(
-            placeGroup.placeLabel
-          )}
+        <span class="integration-place-name-wrap">
+          <span class="integration-place-name">
+            ${escapeHTML(
+              placeGroup.placeLabel
+            )}
+          </span>
+
+          ${statusPillHTML}
         </span>
       `
       :
       `
-        <span class="integration-place-name is-missing">
-          Titik integrasi belum diisi
+        <span class="integration-place-name-wrap">
+          <span class="integration-place-name is-missing">
+            Titik integrasi belum diisi
+          </span>
+
+          ${statusPillHTML}
         </span>
       `;
 
@@ -10845,6 +12192,7 @@ function buildIntegrationPlaceRow(placeGroup) {
           integration-place-row
           integration-place-row-button
           is-transjakarta
+          ${placeStatusClass}
         "
         data-integration-stop-key="${escapeHTML(targetStopKey)}"
         data-integration-route-id="${escapeHTML(targetRouteId)}"
@@ -10871,7 +12219,7 @@ function buildIntegrationPlaceRow(placeGroup) {
 
 
   return `
-    <div class="integration-place-row">
+    <div class="integration-place-row ${placeStatusClass}">
 
       <div class="integration-line-badges">
         ${badgesHTML}
@@ -11804,6 +13152,11 @@ function buildStopPopup(feature, routeId) {
       feature
     );
 
+  const integrationStatusMap =
+    getStopIntegrationStatusMap(
+      feature
+    );
+
   const role =
     getOperationalStopRole(
       feature,
@@ -12037,7 +13390,7 @@ function buildStopPopup(feature, routeId) {
   const directServiceHTML =
     directRoutes.length
       ? `
-        <div class="stop-popup-section">
+        <div class="stop-popup-section stop-popup-section--service">
 
           <div class="stop-popup-label">
             ${escapeHTML(
@@ -12084,7 +13437,8 @@ function buildStopPopup(feature, routeId) {
   const integrationGroups =
     groupIntegrationsByOperator(
       integrations,
-      integrationNameMap
+      integrationNameMap,
+      integrationStatusMap
     );
 
   /*
@@ -12246,11 +13600,13 @@ function buildStopPopup(feature, routeId) {
           ${escapeHTML(getStopDisplayName(feature))}
         </div>
 
-        <div class="stop-popup-status ${getStopStatusClass(feature)}">
-          ${escapeHTML(getStopStatusLabel(feature))}
-        </div>
+        <div class="stop-popup-meta-row">
+          <div class="stop-popup-status ${getStopStatusClass(feature)}">
+            ${escapeHTML(getStopStatusLabel(feature))}
+          </div>
 
-        ${roleHTML}
+          ${roleHTML}
+        </div>
 
         ${directionHTML}
 
@@ -12959,6 +14315,217 @@ function removeStops() {
   stopMarkerByKey.clear();
 }
 
+
+function getPointLatLngFromFeature(
+  feature
+) {
+  const geometry =
+    feature?.geometry;
+
+  if (
+    !geometry ||
+    geometry.type !== "Point" ||
+    !Array.isArray(
+      geometry.coordinates
+    ) ||
+    geometry.coordinates.length < 2
+  ) {
+    return null;
+  }
+
+  const [
+    lng,
+    lat
+  ] = geometry.coordinates;
+
+  if (
+    !Number.isFinite(
+      Number(lat)
+    ) ||
+    !Number.isFinite(
+      Number(lng)
+    )
+  ) {
+    return null;
+  }
+
+  return L.latLng(
+    Number(lat),
+    Number(lng)
+  );
+}
+
+function getStopLabelPlacement(
+  feature,
+  routeId
+) {
+  const stops =
+    getActiveOperationalStopsForRoute(
+      routeId
+    );
+
+  const currentKey =
+    getLogicalStopKey(
+      feature
+    );
+
+  const currentIndex =
+    stops.findIndex(
+      item =>
+        getLogicalStopKey(
+          item
+        ) === currentKey
+    );
+
+  const fallback = {
+    direction: "right",
+    offset: [8, 0]
+  };
+
+  if (currentIndex === -1) {
+    return fallback;
+  }
+
+  const currentLatLng =
+    getPointLatLngFromFeature(
+      feature
+    );
+
+  const prevLatLng =
+    currentIndex > 0
+      ? getPointLatLngFromFeature(
+          stops[
+            currentIndex - 1
+          ]
+        )
+      : null;
+
+  const nextLatLng =
+    currentIndex <
+    stops.length - 1
+      ? getPointLatLngFromFeature(
+          stops[
+            currentIndex + 1
+          ]
+        )
+      : null;
+
+  if (!currentLatLng) {
+    return fallback;
+  }
+
+  const currentPoint =
+    map?.latLngToContainerPoint
+      ? map.latLngToContainerPoint(
+          currentLatLng
+        )
+      : null;
+
+  const prevPoint =
+    prevLatLng &&
+    map?.latLngToContainerPoint
+      ? map.latLngToContainerPoint(
+          prevLatLng
+        )
+      : null;
+
+  const nextPoint =
+    nextLatLng &&
+    map?.latLngToContainerPoint
+      ? map.latLngToContainerPoint(
+          nextLatLng
+        )
+      : null;
+
+  let dx = 0;
+  let dy = 0;
+
+  if (
+    prevPoint &&
+    nextPoint
+  ) {
+    dx =
+      nextPoint.x -
+      prevPoint.x;
+    dy =
+      nextPoint.y -
+      prevPoint.y;
+  } else if (
+    currentPoint &&
+    nextPoint
+  ) {
+    dx =
+      nextPoint.x -
+      currentPoint.x;
+    dy =
+      nextPoint.y -
+      currentPoint.y;
+  } else if (
+    prevPoint &&
+    currentPoint
+  ) {
+    dx =
+      currentPoint.x -
+      prevPoint.x;
+    dy =
+      currentPoint.y -
+      prevPoint.y;
+  }
+
+  const isMostlyHorizontal =
+    Math.abs(dx) >=
+    Math.abs(dy);
+
+  /*
+    Stagger label antar-halte supaya tidak saling menimpa.
+    Tier memberi jarak tambahan setiap beberapa halte.
+  */
+  const tier =
+    Math.floor(
+      currentIndex / 2
+    ) % 3;
+
+  const distance =
+    12 + tier * 8;
+
+  if (
+    isMostlyHorizontal
+  ) {
+    const placeTop =
+      currentIndex % 2 === 0;
+
+    return {
+      direction:
+        placeTop
+          ? "top"
+          : "bottom",
+      offset: [
+        0,
+        placeTop
+          ? -distance
+          : distance
+      ]
+    };
+  }
+
+  const placeLeft =
+    currentIndex % 2 === 0;
+
+  return {
+    direction:
+      placeLeft
+        ? "left"
+        : "right",
+    offset: [
+      placeLeft
+        ? -distance
+        : distance,
+      0
+    ]
+  };
+}
+
+
 function drawStops(routeId) {
   removeStops();
 
@@ -13018,7 +14585,7 @@ function drawStops(routeId) {
           L.marker(
             layer.getLatLng(),
             {
-              pane: "stopHitPane",
+              pane: "stopClickPane",
 
               icon:
                 L.divIcon({
@@ -13028,10 +14595,10 @@ function drawStops(routeId) {
                   html: "",
 
                   iconSize:
-                    [30, 30],
+                    [36, 36],
 
                   iconAnchor:
-                    [15, 15]
+                    [18, 18]
                 }),
 
               interactive: true,
@@ -13144,6 +14711,12 @@ function drawStops(routeId) {
           .filter(Boolean)
           .join(" ");
 
+        const labelPlacement =
+          getStopLabelPlacement(
+            feature,
+            routeId
+          );
+
         layer.bindTooltip(
           escapeHTML(
             getStopDisplayName(
@@ -13152,8 +14725,10 @@ function drawStops(routeId) {
           ),
           {
             permanent: true,
-            direction: "right",
-            offset: [8, 0],
+            direction:
+              labelPlacement.direction,
+            offset:
+              labelPlacement.offset,
             opacity:
               labelOperationalState.state === "not-served"
                 ? 0.55
@@ -14009,6 +15584,8 @@ function selectStop(
         getLogicalStopKey(feature)
       );
     });
+
+  syncUrlState();
 }
 
 /* =========================================================
@@ -14231,6 +15808,98 @@ function setDesktopPanelCollapsed(
 }
 
 
+function setRouteDetailCollapsed(
+  collapsed,
+  options = {}
+) {
+  if (
+    !routeDetailCard ||
+    !routeDetailToggle ||
+    !routeDetailBody
+  ) {
+    return;
+  }
+
+  const {
+    persist = true
+  } = options;
+
+  const isCollapsed =
+    Boolean(collapsed);
+
+  routeDetailCard
+    .classList
+    .toggle(
+      "is-collapsed",
+      isCollapsed
+    );
+
+  routeDetailBody.hidden =
+    isCollapsed;
+
+  routeDetailToggle
+    .setAttribute(
+      "aria-expanded",
+      String(!isCollapsed)
+    );
+
+  const label = isCollapsed
+    ? "Tampilkan bagian koridor"
+    : "Sembunyikan bagian koridor";
+
+  routeDetailToggle
+    .setAttribute(
+      "title",
+      label
+    );
+
+  routeDetailToggle
+    .setAttribute(
+      "aria-label",
+      label
+    );
+
+  if (persist) {
+    try {
+      localStorage.setItem(
+        ROUTE_DETAIL_COLLAPSED_STORAGE_KEY,
+        isCollapsed ? "1" : "0"
+      );
+    } catch (error) {
+      /* no-op */
+    }
+  }
+
+  setTimeout(
+    () => {
+      map.invalidateSize();
+    },
+    120
+  );
+}
+
+
+function restoreRouteDetailCollapseState() {
+  try {
+    const saved =
+      localStorage.getItem(
+        ROUTE_DETAIL_COLLAPSED_STORAGE_KEY
+      );
+
+    setRouteDetailCollapsed(
+      saved === "1",
+      { persist: false }
+    );
+  } catch (error) {
+    setRouteDetailCollapsed(
+      false,
+      { persist: false }
+    );
+  }
+}
+
+
+
 function setMobileInfoOpen(open) {
   if (!isMobileLayout()) {
     document.body
@@ -14339,6 +16008,24 @@ leftPanelRestore
       setDesktopPanelCollapsed(
         "left",
         false
+      );
+    }
+  );
+
+
+routeDetailToggle
+  ?.addEventListener(
+    "click",
+    event => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      setRouteDetailCollapsed(
+        !routeDetailCard
+          ?.classList
+          .contains(
+            "is-collapsed"
+          )
       );
     }
   );
@@ -14610,6 +16297,31 @@ function fitRouteToScreen(
 }
 
 
+function updateOperationalLegend(
+  routeId = ""
+) {
+  if (!operationalLegendSection) {
+    return;
+  }
+
+  const show =
+    Boolean(
+      routeId &&
+      hasRouteDiversion(
+        routeId
+      )
+    );
+
+  operationalLegendSection.hidden =
+    !show;
+
+  if (!show) {
+    operationalLegendSection.open =
+      false;
+  }
+}
+
+
 /* =========================================================
    SHOW ROUTES
    ========================================================= */
@@ -14632,6 +16344,10 @@ function showAllRoutes(
 
   drawRoutes(features);
   renderAllRouteInfo();
+
+  updateOperationalLegend("");
+
+  syncUrlState();
 
   if (
     fit &&
@@ -14706,6 +16422,10 @@ function showSingleRoute(
 
   clearSelectedStop();
 
+  updateOperationalLegend(
+    routeId
+  );
+
   drawSelectedRouteGeometry(
     routeId
   );
@@ -14740,6 +16460,8 @@ function showSingleRoute(
   queueRoutePlanIntro(
     routeId
   );
+
+  syncUrlState();
 }
 
 /*
@@ -15014,6 +16736,8 @@ function setBasemap(type) {
 
   updateHalo();
   syncBasemapPreviews();
+
+  syncUrlState();
 }
 function updateBasemapPanelState() {
   const isOpen =
@@ -15151,6 +16875,8 @@ function setBasemapOpacity(percent) {
       );
     }
   );
+
+  syncUrlState();
 }
 
 opacityButtons.forEach(
@@ -15778,14 +17504,13 @@ async function loadData() {
       await stopResponse.json();
 
     assignRuntimeStopKeys();
+    validateRouteData();
     validateStopData();
 
     modeSelect.value = "ALL";
     statusSelect.value = "Existing";
 
-    populateRouteDropdown();
-    showAllRoutes(true);
-    updateRouteDetailCardState();
+    applyUrlStateAfterDataLoad();
     updateScale();
 
     /*
@@ -15848,6 +17573,8 @@ window.addEventListener(
     map.invalidateSize();
 
     syncPanelModeAfterResize();
+
+restoreRouteDetailCollapseState();
 
     layoutDesktopRightCards();
 

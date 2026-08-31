@@ -18,7 +18,7 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="css/style.css?v=20260831-k8-diversion-order1" />
+  <link rel="stylesheet" href="css/style.css?v=20260831-route-detail-compact-collapse2" />
 </head>
 
 <body>
@@ -154,16 +154,31 @@
 
       </section>
 
-      <section class="route-detail-card">
+      <section class="route-detail-card" id="routeDetailCard">
 
-        <section id="routeInfo" class="route-info">
-        <div class="eyebrow">MEMUAT</div>
-        <h2>Memuat data jaringan…</h2>
-        <p>Menyiapkan rute dan halte/stasiun.</p>
-      </section>
+        <button
+          type="button"
+          class="route-detail-toggle"
+          id="routeDetailToggle"
+          aria-expanded="true"
+          aria-controls="routeDetailBody"
+          title="Sembunyikan bagian koridor"
+          aria-label="Sembunyikan bagian koridor"
+        >
+          <span class="route-detail-toggle-label">Koridor</span>
+          <span class="route-detail-toggle-chevron" aria-hidden="true">⌃</span>
+        </button>
 
-        <section id="selectedStopInfo" class="selected-stop-card" hidden></section>
-        <section id="stopList" class="stop-list"></section>
+        <div class="route-detail-body" id="routeDetailBody">
+          <section id="routeInfo" class="route-info">
+            <div class="eyebrow">MEMUAT</div>
+            <h2>Memuat data jaringan…</h2>
+            <p>Menyiapkan rute dan halte/stasiun.</p>
+          </section>
+
+          <section id="selectedStopInfo" class="selected-stop-card" hidden></section>
+          <section id="stopList" class="stop-list"></section>
+        </div>
 
       </section>
 
@@ -423,6 +438,50 @@
         </details>
 
         <details
+          class="legend-section legend-operational-section legend-collapsible-section"
+          id="operationalLegendSection"
+          data-legend-section="operational"
+          hidden
+        >
+          <summary class="legend-section-toggle">
+            <span class="legend-section-title">Kondisi Operasional</span>
+            <span class="legend-section-chevron" aria-hidden="true">⌃</span>
+          </summary>
+
+          <div class="legend-section-content">
+            <div class="legend-operational-grid">
+              <div class="legend-operational-item">
+                <span class="legend-operational-badge is-temp-terminus">2</span>
+                <span>
+                  <strong>Terminus sementara</strong>
+                  <small>Ring amber penuh</small>
+                </span>
+              </div>
+
+              <div class="legend-operational-item">
+                <span class="legend-operational-badge is-temporary">8</span>
+                <span>
+                  <strong>Pelayanan sementara</strong>
+                  <small>Ring amber putus-putus</small>
+                </span>
+              </div>
+
+              <div class="legend-operational-item">
+                <span class="legend-operational-badge is-not-served">3</span>
+                <span>
+                  <strong>Tidak dilayani sementara</strong>
+                  <small>Badge diredupkan</small>
+                </span>
+              </div>
+            </div>
+
+            <p class="legend-note">
+              Ditampilkan ketika koridor yang dipilih memiliki pengalihan operasional.
+            </p>
+          </div>
+        </details>
+
+        <details
           class="legend-section legend-mode-section legend-collapsible-section"
           data-legend-section="mode"
         >
@@ -638,6 +697,13 @@
           <strong>Usulan</strong>, dan <strong>Konseptual</strong>.
         </p>
 
+        <div class="info-release-meta" aria-label="Informasi pembaruan WebGIS">
+          <span class="info-release-meta-label">Pembaruan WebGIS</span>
+          <strong>31 Agustus 2026</strong>
+          <span>·</span>
+          <span>Desktop development build</span>
+        </div>
+
         <div class="info-modal-notice info-status-notice">
           <p>
             <strong>Eksisting</strong> — jaringan yang telah beroperasi.
@@ -768,6 +834,66 @@
               </ul>
             </div>
 
+          </div>
+        </details>
+
+        <details class="info-methodology-details">
+          <summary>Metodologi &amp; struktur informasi</summary>
+
+          <div class="info-methodology-body">
+            <p>
+              WebGIS membedakan <strong>status jaringan</strong>,
+              <strong>kondisi operasional sementara</strong>, dan
+              <strong>skenario visualisasi</strong> agar ketiganya tidak
+              dibaca sebagai informasi yang sama.
+            </p>
+
+            <ul>
+              <li>
+                <strong>Eksisting/Rencana/Usulan/Konseptual</strong>
+                menunjukkan tingkat status jaringan.
+              </li>
+              <li>
+                <strong>Pengalihan sementara</strong> menunjukkan kondisi
+                pelayanan ketika rute reguler mengalami penyesuaian.
+              </li>
+              <li>
+                Beberapa titik fisik dapat direpresentasikan sebagai
+                <strong>satu halte logis</strong> jika merupakan bagian
+                dari halte yang sama.
+              </li>
+              <li>
+                Arah pelayanan dan aktivitas penaikan/penurunan dapat
+                berbeda pada masing-masing titik fisik.
+              </li>
+            </ul>
+
+            <p>
+              Struktur tersebut digunakan untuk penyajian WebGIS dan tidak
+              dimaksudkan sebagai nomenklatur resmi operator.
+            </p>
+          </div>
+        </details>
+
+        <details class="info-changelog-details">
+          <summary>Riwayat pembaruan</summary>
+
+          <div class="info-changelog-body">
+            <div class="info-changelog-entry">
+              <strong>31 Agustus 2026</strong>
+              <span>
+                Penyempurnaan pengalihan Koridor 2, 3, dan 8; halte terpisah;
+                badge kondisi operasional; popup integrasi; dan tutorial.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>Agustus 2026</strong>
+              <span>
+                Penambahan Koridor BRT 15–19 sebagai jaringan berstatus
+                Rencana dengan trase dan halte sebagai skenario visualisasi.
+              </span>
+            </div>
           </div>
         </details>
 
@@ -956,7 +1082,7 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/map.js?v=20260831-k8-diversion-order1"></script>
+  <script src="js/map.js?v=20260831-route-detail-compact-collapse2"></script>
 
 </body>
 </html>
