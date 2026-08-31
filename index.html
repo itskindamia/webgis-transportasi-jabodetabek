@@ -18,7 +18,7 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="css/style.css?v=20260831-mobile-v09-beta1" />
+  <link rel="stylesheet" href="css/style.css?v=20260831-popupclose-deselect1" />
 </head>
 
 <body>
@@ -150,6 +150,57 @@
         <select id="routeSelect">
           <option value="ALL">Semua Lin / Koridor</option>
         </select>
+      </div>
+
+      <div
+        class="route-compare-control"
+        id="routeCompareControl"
+        hidden
+      >
+        <button
+          type="button"
+          class="route-compare-add"
+          id="routeCompareAdd"
+          aria-expanded="false"
+          aria-controls="routeComparePicker"
+        >
+          <span aria-hidden="true">＋</span>
+          Bandingkan rute
+        </button>
+
+        <div
+          class="route-compare-picker"
+          id="routeComparePicker"
+          hidden
+        >
+          <label for="comparisonRouteSelect">
+            Rute pembanding
+          </label>
+
+          <div class="route-compare-picker-row">
+            <span
+              class="route-compare-inline-swatch"
+              id="routeCompareInlineSwatch"
+              aria-hidden="true"
+              hidden
+            ></span>
+
+            <select id="comparisonRouteSelect">
+              <option value="">Pilih rute…</option>
+            </select>
+
+            <button
+              type="button"
+              class="route-compare-clear"
+              id="routeCompareClear"
+              title="Hapus rute pembanding"
+              aria-label="Hapus rute pembanding"
+              hidden
+            >
+              ×
+            </button>
+          </div>
+        </div>
       </div>
 
       </section>
@@ -300,8 +351,8 @@
       type="button"
       class="toolbar-button"
       id="homeButton"
-      title="Tampilkan seluruh jaringan"
-      aria-label="Tampilkan seluruh jaringan"
+      title="Pusatkan kembali peta"
+      aria-label="Pusatkan kembali peta"
     >
       <svg viewBox="0 0 24 24" class="toolbar-icon" aria-hidden="true">
         <path
@@ -572,10 +623,10 @@
       <input
         type="search"
         id="globalSearchInput"
-        placeholder="Halte, stasiun, atau tempat…"
+        placeholder="Halte, stasiun, koridor, atau tempat…"
         autocomplete="off"
         spellcheck="false"
-        aria-label="Cari halte, stasiun, atau tempat"
+        aria-label="Cari halte, stasiun, koridor, atau tempat"
         aria-controls="globalSearchResults"
         aria-expanded="false"
       />
@@ -599,7 +650,7 @@
     ></div>
 
     <div class="global-search-source">
-      Halte/stasiun dari data WebGIS · tempat dari OpenStreetMap
+      Rute dan halte/stasiun dari data WebGIS · tempat dari OpenStreetMap
     </div>
   </section>
 
@@ -888,8 +939,12 @@
               <span>
                 Penyempurnaan pengalihan Koridor 2, 3, dan 8; halte terpisah;
                 badge kondisi operasional; popup integrasi; tutorial;
-                ringkasan rute; shareable URL; status integrasi; dan
-                penyempurnaan antarmuka desktop.
+                ringkasan rute; shareable URL; status integrasi;
+                metadata sumber/dasar data; pencarian POI langsung ke lokasi;
+                recenter kontekstual; perbandingan dua rute dengan
+                kontrol pembanding ringkas; decluttering label halte adaptif;
+                lifecycle marker POI; compact polish desktop untuk browser
+                zoom 100%; dan penyempurnaan antarmuka desktop.
               </span>
             </div>
 
@@ -1092,7 +1147,7 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/map.js?v=20260831-mobile-v09-beta1"></script>
+  <script src="js/map.js?v=20260831-popupclose-deselect1"></script>
 
 </body>
 </html>

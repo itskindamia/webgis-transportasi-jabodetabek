@@ -12,6 +12,14 @@
    INT_NM     = nama titik fisik integrasi
    INT_STATUS = status titik integrasi non-eksisting
 
+   ROUTE SOURCE METADATA
+   SOURCE   = nama sumber / dokumen / institusi
+   SRC_URL  = tautan sumber (opsional)
+   SRC_NOTE = catatan sumber (opsional)
+
+   SOURCE dan SRC_URL dapat berisi beberapa item
+   yang dipisahkan dengan titik koma (;).
+
    INT_STATUS format:
    KODE:Nama=Status;KODE:Nama=Status
 
@@ -400,6 +408,36 @@ const statusSelect = document.getElementById("statusSelect");
 const routeSelect = document.getElementById("routeSelect");
 const routeSelectLabel = document.getElementById("routeSelectLabel");
 
+const routeCompareControl =
+  document.getElementById(
+    "routeCompareControl"
+  );
+
+const routeCompareAdd =
+  document.getElementById(
+    "routeCompareAdd"
+  );
+
+const routeComparePicker =
+  document.getElementById(
+    "routeComparePicker"
+  );
+
+const comparisonRouteSelect =
+  document.getElementById(
+    "comparisonRouteSelect"
+  );
+
+const routeCompareClear =
+  document.getElementById(
+    "routeCompareClear"
+  );
+
+const routeCompareInlineSwatch =
+  document.getElementById(
+    "routeCompareInlineSwatch"
+  );
+
 const stopSearchInput =
   document.getElementById(
     "stopSearchInput"
@@ -684,6 +722,30 @@ let showRegularRouteComparison = false;
 
 let currentSelectedRouteId = null;
 let currentSelectedStopKey = null;
+
+/*
+  Jika popup halte ditutup, label halte tersebut ikut
+  disembunyikan sampai user memilih halte lagi / mengganti rute.
+*/
+let dismissedStopLogicalKey = "";
+
+/*
+  MULTI-ROUTE COMPARE
+  -------------------
+  Maksimal dua rute:
+  - currentSelectedRouteId = rute utama
+  - comparisonRouteId      = rute pembanding
+
+  Rute utama tetap menjadi sumber:
+  - route info
+  - stop list
+  - stop markers
+  - operational controls
+
+  Rute pembanding hanya ditampilkan sebagai trase tambahan
+  agar UI tidak menjadi ambigu.
+*/
+let comparisonRouteId = null;
 
 /*
   Halte/stasiun Usulan dan Konseptual bersifat opsional.
@@ -1372,6 +1434,372 @@ function getRouteColor(routeId) {
     ||
     "#555555"
   );
+}
+
+
+function getAllLogicalRoutes() {
+  if (!routeData?.features) {
+    return [];
+  }
+
+  const ids =
+    Array.from(
+      new Set(
+        routeData.features
+          .map(
+            getRouteId
+          )
+          .filter(Boolean)
+      )
+    );
+
+  return ids
+    .map(
+      getRouteById
+    )
+    .filter(Boolean)
+    .sort(
+      (a, b) => {
+        const modeCompare =
+          getRouteMode(a)
+            .localeCompare(
+              getRouteMode(b),
+              "id"
+            );
+
+        if (modeCompare !== 0) {
+          return modeCompare;
+        }
+
+        const orderCompare =
+          getRouteOrder(a) -
+          getRouteOrder(b);
+
+        if (orderCompare !== 0) {
+          return orderCompare;
+        }
+
+        return getRouteTitle(a)
+          .localeCompare(
+            getRouteTitle(b),
+            "id"
+          );
+      }
+    );
+}
+
+
+function populateComparisonRouteDropdown() {
+  if (!comparisonRouteSelect) {
+    return;
+  }
+
+  const primaryId =
+    String(
+      currentSelectedRouteId ?? ""
+    );
+
+  comparisonRouteSelect.innerHTML =
+    '<option value="">Pilih rute…</option>';
+
+  const routes =
+    getAllLogicalRoutes()
+      .filter(
+        feature =>
+          getRouteId(feature) !==
+          primaryId
+      );
+
+  const grouped =
+    new Map();
+
+  routes.forEach(feature => {
+    const mode =
+      getRouteMode(feature) ||
+      "LAINNYA";
+
+    if (!grouped.has(mode)) {
+      grouped.set(
+        mode,
+        []
+      );
+    }
+
+    grouped
+      .get(mode)
+      .push(feature);
+  });
+
+  grouped.forEach(
+    (features, mode) => {
+      const optgroup =
+        document.createElement(
+          "optgroup"
+        );
+
+      optgroup.label =
+        mode;
+
+      features.forEach(feature => {
+        const option =
+          document.createElement(
+            "option"
+          );
+
+        option.value =
+          getRouteId(feature);
+
+        option.textContent =
+          `${getRouteTitle(feature)} · ${getStatusLabel(feature.properties.STATUS)}`;
+
+        optgroup.appendChild(
+          option
+        );
+      });
+
+      comparisonRouteSelect
+        .appendChild(
+          optgroup
+        );
+    }
+  );
+
+  comparisonRouteSelect.value =
+    (
+      comparisonRouteId &&
+      comparisonRouteId !== primaryId &&
+      getRouteById(comparisonRouteId)
+    )
+      ? comparisonRouteId
+      : "";
+}
+
+
+function getComparisonRouteFeature() {
+  if (!comparisonRouteId) {
+    return null;
+  }
+
+  if (
+    String(comparisonRouteId) ===
+    String(currentSelectedRouteId)
+  ) {
+    return null;
+  }
+
+  return getRouteById(
+    comparisonRouteId
+  );
+}
+
+
+function updateRouteCompareUI() {
+  if (
+    !routeCompareControl ||
+    !routeComparePicker ||
+    !routeCompareAdd
+  ) {
+    return;
+  }
+
+  const hasPrimary =
+    Boolean(
+      currentSelectedRouteId &&
+      getRouteById(
+        currentSelectedRouteId
+      )
+    );
+
+  routeCompareControl.hidden =
+    !hasPrimary;
+
+  if (!hasPrimary) {
+    routeComparePicker.hidden =
+      true;
+
+    routeCompareAdd.hidden =
+      false;
+
+    routeCompareAdd
+      .setAttribute(
+        "aria-expanded",
+        "false"
+      );
+
+    if (comparisonRouteSelect) {
+      comparisonRouteSelect.value =
+        "";
+    }
+
+    if (routeCompareClear) {
+      routeCompareClear.hidden =
+        true;
+    }
+
+    if (routeCompareInlineSwatch) {
+      routeCompareInlineSwatch.hidden =
+        true;
+
+      routeCompareInlineSwatch.style
+        .removeProperty(
+          "--compare-route-color"
+        );
+    }
+
+    return;
+  }
+
+  populateComparisonRouteDropdown();
+
+  const comparisonFeature =
+    getComparisonRouteFeature();
+
+  /*
+    Picker terbuka jika:
+    - user baru menekan "Bandingkan rute", atau
+    - rute pembanding sudah aktif.
+
+    Begitu pembanding aktif, tombol tambah harus benar-benar
+    hilang; CSS [hidden] memastikan display:flex lama tidak
+    menimpa atribut hidden.
+  */
+  const pickerOpen =
+    !routeComparePicker.hidden ||
+    Boolean(comparisonFeature);
+
+  routeComparePicker.hidden =
+    !pickerOpen;
+
+  routeCompareAdd.hidden =
+    pickerOpen;
+
+  routeCompareAdd
+    .setAttribute(
+      "aria-expanded",
+      String(pickerOpen)
+    );
+
+  if (routeCompareClear) {
+    routeCompareClear.hidden =
+      !comparisonFeature;
+  }
+
+  if (routeCompareInlineSwatch) {
+    if (!comparisonFeature) {
+      routeCompareInlineSwatch.hidden =
+        true;
+
+      routeCompareInlineSwatch.style
+        .removeProperty(
+          "--compare-route-color"
+        );
+    }
+    else {
+      const color =
+        comparisonFeature
+          ?.properties
+          ?.COLOR ||
+        "#555555";
+
+      routeCompareInlineSwatch.hidden =
+        false;
+
+      routeCompareInlineSwatch.style
+        .setProperty(
+          "--compare-route-color",
+          color
+        );
+    }
+  }
+}
+
+function clearComparisonRoute(
+  {
+    redraw = true,
+    syncUrl = true
+  } = {}
+) {
+  comparisonRouteId =
+    null;
+
+  if (comparisonRouteSelect) {
+    comparisonRouteSelect.value =
+      "";
+  }
+
+  if (
+    redraw &&
+    currentSelectedRouteId
+  ) {
+    drawSelectedRouteGeometry(
+      currentSelectedRouteId
+    );
+
+    fitRouteToScreen();
+  }
+
+  updateRouteCompareUI();
+
+  if (syncUrl) {
+    syncUrlState();
+  }
+}
+
+
+function setComparisonRoute(
+  routeId,
+  {
+    fit = true,
+    syncUrl = true
+  } = {}
+) {
+  clearPoiMarker();
+
+  const nextId =
+    String(
+      routeId ?? ""
+    ).trim();
+
+  if (!nextId) {
+    clearComparisonRoute({
+      redraw: true,
+      syncUrl
+    });
+
+    return;
+  }
+
+  if (
+    !currentSelectedRouteId ||
+    nextId ===
+      String(currentSelectedRouteId)
+  ) {
+    return;
+  }
+
+  const feature =
+    getRouteById(nextId);
+
+  if (!feature) {
+    return;
+  }
+
+  comparisonRouteId =
+    nextId;
+
+  drawSelectedRouteGeometry(
+    currentSelectedRouteId
+  );
+
+  updateRouteCompareUI();
+
+  if (fit) {
+    fitRouteToScreen();
+  }
+
+  if (syncUrl) {
+    syncUrlState();
+  }
 }
 
 /* =========================================================
@@ -4502,18 +4930,21 @@ function openPoiResult(
       latlng,
       {
         pane: "poiPane",
-        radius: 7,
-        color: "#1f1f1f",
-        weight: 2,
-        fillColor:
-      getStopMarkerRoleFill(
-        feature,
-        routeId
-      ),
+        radius: 8,
+        color: "#ffffff",
+        weight: 2.5,
+        fillColor: "#007ac2",
         fillOpacity: 1
       }
     )
       .addTo(map);
+
+  /*
+    POI ditempatkan pada pane khusus di atas rute/halte.
+    Tidak memakai fungsi style halte karena POI bukan fitur
+    stop dan sebelumnya menyebabkan ReferenceError.
+  */
+  poiMarker.bringToFront();
 
   const title =
     getPoiResultTitle(result);
@@ -4557,15 +4988,42 @@ function openPoiResult(
     }
   );
 
-  map.flyTo(
-    latlng,
+  const targetZoom =
     Math.max(
       15,
       Math.min(
         17,
         map.getZoom()
       )
-    ),
+    );
+
+  /*
+    Klik hasil POI harus langsung membawa pengguna ke lokasi.
+    Popup dibuka setelah kamera selesai bergerak; fallback timer
+    menjaga popup tetap muncul bila moveend tidak terpanggil.
+  */
+  let poiPopupOpened = false;
+
+  const openPoiPopupAfterMove =
+    () => {
+      if (poiPopupOpened) {
+        return;
+      }
+
+      poiPopupOpened = true;
+
+      poiMarker
+        ?.openPopup();
+    };
+
+  map.once(
+    "moveend",
+    openPoiPopupAfterMove
+  );
+
+  map.flyTo(
+    latlng,
+    targetZoom,
     {
       animate: true,
       duration: 0.65
@@ -4573,11 +5031,8 @@ function openPoiResult(
   );
 
   setTimeout(
-    () => {
-      poiMarker
-        ?.openPopup();
-    },
-    380
+    openPoiPopupAfterMove,
+    850
   );
 
   poiSearchInput.value =
@@ -6979,6 +7434,16 @@ function syncUrlState() {
     );
   }
 
+  if (
+    comparisonRouteId &&
+    comparisonRouteId !== routeId
+  ) {
+    params.set(
+      "compare",
+      comparisonRouteId
+    );
+  }
+
   if (currentSelectedStopKey) {
     const stopId =
       getShareableStopId(
@@ -7045,6 +7510,9 @@ function applyUrlStateAfterDataLoad() {
   try {
     const routeId =
       params.get("route");
+
+    const comparisonId =
+      params.get("compare");
 
     const stopId =
       params.get("stop");
@@ -7130,6 +7598,22 @@ function applyUrlStateAfterDataLoad() {
       showSingleRoute(
         routeId
       );
+
+      if (
+        comparisonId &&
+        comparisonId !== routeId &&
+        getRouteById(
+          comparisonId
+        )
+      ) {
+        setComparisonRoute(
+          comparisonId,
+          {
+            fit: true,
+            syncUrl: false
+          }
+        );
+      }
 
       updateRouteDetailCardState();
 
@@ -8067,12 +8551,28 @@ function isRuntimeRegularComparison(
 }
 
 
+function isRuntimeRouteComparison(
+  feature
+) {
+  return Boolean(
+    feature
+      ?.properties
+      ?._RUNTIME_ROUTE_COMPARISON
+  );
+}
+
+
 function routeStyle(feature) {
   const statusStyle =
     getRouteStatusStyle(feature);
 
   const comparison =
     isRuntimeRegularComparison(
+      feature
+    );
+
+  const routeComparison =
+    isRuntimeRouteComparison(
       feature
     );
 
@@ -8086,17 +8586,28 @@ function routeStyle(feature) {
     weight:
       comparison
         ? 3.2
-        : 4,
+        : (
+            routeComparison
+              ? 3.6
+              : 4.4
+          ),
 
     /*
-      Trase reguler pembanding sengaja diredupkan.
-      Pola dash STATUS tidak diubah agar grammar
-      Eksisting/Rencana/Usulan/Konseptual tetap konsisten.
+      - Trase REGULAR pembanding pengalihan dibuat sangat redup.
+      - Rute kedua tetap cukup kuat untuk dibandingkan, tetapi
+        sedikit lebih ringan dari rute utama.
     */
     opacity:
       comparison
         ? 0.34
-        : statusStyle.opacity,
+        : (
+            routeComparison
+              ? Math.max(
+                  0.62,
+                  statusStyle.opacity * 0.82
+                )
+              : statusStyle.opacity
+          ),
 
     dashArray:
       statusStyle.dashArray,
@@ -8116,6 +8627,11 @@ function haloStyle(feature) {
       feature
     );
 
+  const routeComparison =
+    isRuntimeRouteComparison(
+      feature
+    );
+
   return {
     pane: "routeHaloPane",
 
@@ -8127,15 +8643,27 @@ function haloStyle(feature) {
     weight:
       comparison
         ? 5.5
-        : 7,
+        : (
+            routeComparison
+              ? 6.2
+              : 7.4
+          ),
 
     opacity:
       comparison
         ? 0.12
         : (
-            currentBasemapType === "satellite"
-              ? 0.90
-              : 0.55
+            routeComparison
+              ? (
+                  currentBasemapType === "satellite"
+                    ? 0.66
+                    : 0.34
+                )
+              : (
+                  currentBasemapType === "satellite"
+                    ? 0.90
+                    : 0.55
+                )
           ),
 
     /*
@@ -8235,6 +8763,21 @@ function bindRoutePopup(feature, layer) {
       feature
     );
 
+  const isRouteComparison =
+    isRuntimeRouteComparison(
+      feature
+    );
+
+  const comparisonRouteNoteHTML =
+    isRouteComparison
+      ? `
+        <div class="route-popup-comparison-note">
+          <strong>Rute pembanding.</strong>
+          Ditampilkan bersama rute utama untuk perbandingan trase.
+        </div>
+      `
+      : "";
+
   const routeVariantHTML =
     routeVariant === "DIVERSION"
       ? `
@@ -8282,6 +8825,7 @@ function bindRoutePopup(feature, layer) {
         </div>
       </div>
 
+      ${comparisonRouteNoteHTML}
       ${routeVariantHTML}
       ${routeScenarioNoteHTML}
       ${alignmentHTML}
@@ -8538,11 +9082,53 @@ function getSelectedRouteGeometryFeatures(
 function drawSelectedRouteGeometry(
   routeId
 ) {
-  drawRoutes(
+  const primaryFeatures =
     getSelectedRouteGeometryFeatures(
       routeId
-    )
-  );
+    );
+
+  const primaryActive =
+    primaryFeatures.filter(
+      feature =>
+        !isRuntimeRegularComparison(
+          feature
+        )
+    );
+
+  const primaryRegularComparison =
+    primaryFeatures.filter(
+      isRuntimeRegularComparison
+    );
+
+  const comparisonFeature =
+    getComparisonRouteFeature();
+
+  const comparisonFeatures =
+    comparisonFeature
+      ? [
+          cloneRouteFeatureForRuntime(
+            comparisonFeature,
+            {
+              _RUNTIME_ROUTE_COMPARISON:
+                true
+            }
+          )
+        ]
+      : [];
+
+  /*
+    Urutan gambar:
+    1. trase reguler pembanding pengalihan (paling bawah)
+    2. rute kedua
+    3. rute utama (paling atas)
+
+    Rute utama dengan demikian tetap dominan secara visual.
+  */
+  drawRoutes([
+    ...primaryRegularComparison,
+    ...comparisonFeatures,
+    ...primaryActive
+  ]);
 }
 
 /* =========================================================
@@ -9063,6 +9649,273 @@ function getRoutePlanInfo(
     ] ||
     null
   );
+}
+
+
+function splitRouteSourceValues(value) {
+  return String(value ?? "")
+    .split(
+      /(?:\r?\n|;)+/
+    )
+    .map(
+      item =>
+        item.trim()
+    )
+    .filter(Boolean);
+}
+
+
+function sanitizeRouteSourceUrl(value) {
+  const raw =
+    String(value ?? "")
+      .trim();
+
+  if (!raw) {
+    return "";
+  }
+
+  try {
+    const parsed =
+      new URL(raw);
+
+    if (
+      parsed.protocol !== "http:" &&
+      parsed.protocol !== "https:"
+    ) {
+      return "";
+    }
+
+    return parsed.href;
+  }
+  catch (error) {
+    return "";
+  }
+}
+
+
+function getRouteSourceTypeLabel(feature) {
+  const status =
+    normalizeStatus(
+      feature
+        ?.properties
+        ?.STATUS
+    );
+
+  return {
+    Existing:
+      "Sumber Data",
+
+    Planned:
+      "Sumber Rencana",
+
+    Proposed:
+      "Sumber Usulan",
+
+    Conceptual:
+      "Dasar Analisis"
+  }[status] || "Sumber Data";
+}
+
+
+function buildRouteSourceMetadataHTML(
+  feature
+) {
+  const p =
+    feature?.properties ?? {};
+
+  const sourceRaw =
+    String(
+      p.SOURCE ??
+      p.SRC_NAME ??
+      p.SOURCE_NAME ??
+      ""
+    ).trim();
+
+  const urlRaw =
+    String(
+      p.SRC_URL ??
+      p.SOURCE_URL ??
+      ""
+    ).trim();
+
+  const note =
+    String(
+      p.SRC_NOTE ??
+      p.SOURCE_NOTE ??
+      ""
+    ).trim();
+
+  const sources =
+    splitRouteSourceValues(
+      sourceRaw
+    );
+
+  const urls =
+    splitRouteSourceValues(
+      urlRaw
+    )
+      .map(
+        sanitizeRouteSourceUrl
+      )
+      .filter(Boolean);
+
+  if (
+    !sources.length &&
+    !urls.length &&
+    !note
+  ) {
+    return "";
+  }
+
+  const sourceType =
+    getRouteSourceTypeLabel(
+      feature
+    );
+
+  const sourceRows = [];
+
+  if (sources.length) {
+    sources.forEach(
+      (source, index) => {
+        const pairedUrl =
+          urls.length === sources.length
+            ? urls[index]
+            : "";
+
+        sourceRows.push(`
+          <div class="route-source-item">
+            <div class="route-source-name">
+              ${escapeHTML(source)}
+            </div>
+
+            ${
+              pairedUrl
+                ? `
+                  <a
+                    class="route-source-link"
+                    href="${escapeHTML(pairedUrl)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Buka sumber
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                `
+                : ""
+            }
+          </div>
+        `);
+      }
+    );
+  }
+  else {
+    sourceRows.push(`
+      <div class="route-source-item">
+        <div class="route-source-name is-generic">
+          Sumber daring
+        </div>
+      </div>
+    `);
+  }
+
+  /*
+    Bila jumlah URL tidak sama dengan jumlah SOURCE,
+    jangan menebak pasangan antar-item.
+    Tampilkan tautan sebagai daftar terpisah.
+  */
+  const unpairedLinksHTML =
+    urls.length &&
+    urls.length !== sources.length
+      ? `
+        <div class="route-source-links">
+          ${
+            urls
+              .map(
+                (url, index) => `
+                  <a
+                    class="route-source-link"
+                    href="${escapeHTML(url)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    ${
+                      urls.length > 1
+                        ? `Buka sumber ${index + 1}`
+                        : "Buka sumber"
+                    }
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                `
+              )
+              .join("")
+          }
+        </div>
+      `
+      : "";
+
+  const noteHTML =
+    note
+      ? `
+        <div class="route-source-note">
+          <div class="route-source-note-label">
+            Keterangan
+          </div>
+
+          <div class="route-source-note-text">
+            ${escapeHTML(note)}
+          </div>
+        </div>
+      `
+      : "";
+
+  return `
+    <details class="route-source-card">
+
+      <summary class="route-source-summary">
+
+        <span
+          class="route-source-icon"
+          aria-hidden="true"
+        >
+          ↗
+        </span>
+
+        <span class="route-source-summary-copy">
+
+          <span class="route-source-type">
+            ${escapeHTML(sourceType)}
+          </span>
+
+          <span class="route-source-title">
+            Sumber &amp; Dasar Data
+          </span>
+
+        </span>
+
+        <span
+          class="route-source-chevron"
+          aria-hidden="true"
+        >
+          ›
+        </span>
+
+      </summary>
+
+
+      <div class="route-source-body">
+
+        <div class="route-source-list">
+          ${sourceRows.join("")}
+        </div>
+
+        ${unpairedLinksHTML}
+
+        ${noteHTML}
+
+      </div>
+
+    </details>
+  `;
 }
 
 
@@ -10579,6 +11432,11 @@ function renderRouteInfo(feature) {
       feature
     );
 
+  const routeSourceMetadataHTML =
+    buildRouteSourceMetadataHTML(
+      feature
+    );
+
   const alignmentHTML = hasText(p.ALIGNMENT)
     ? `
       <div class="route-meta-row">
@@ -10703,6 +11561,8 @@ function renderRouteInfo(feature) {
     </div>
 
     ${routeSummaryHTML}
+
+    ${routeSourceMetadataHTML}
 
     ${routePlanInfoHTML}
 
@@ -13872,6 +14732,388 @@ function getStopMarkerWeight(
 }
 
 
+function getStopLabelDeclutterConfig() {
+  const zoomBand =
+    getStopZoomBand();
+
+  if (zoomBand === "near") {
+    return {
+      stride: 1,
+      minDistance: 0
+    };
+  }
+
+  if (zoomBand === "mid") {
+    return {
+      stride: 2,
+      minDistance: 56
+    };
+  }
+
+  return {
+    stride: 4,
+    minDistance: 82
+  };
+}
+
+
+function getVisibleStopLabelMarkerKeys(
+  routeId
+) {
+  const visibleKeys =
+    new Set();
+
+  if (
+    !routeId ||
+    !stopMarkerByKey.size
+  ) {
+    return visibleKeys;
+  }
+
+  /*
+    Satu halte logis cukup satu label, walaupun memiliki
+    dua titik fisik untuk dua arah.
+  */
+  const markerGroups =
+    new Map();
+
+  stopMarkerByKey.forEach(
+    (marker, stopKey) => {
+      const feature =
+        getStopByKey(
+          stopKey
+        );
+
+      if (
+        !marker ||
+        !feature
+      ) {
+        return;
+      }
+
+      const logicalKey =
+        getLogicalStopKey(
+          feature
+        );
+
+      if (
+        !markerGroups.has(
+          logicalKey
+        )
+      ) {
+        markerGroups.set(
+          logicalKey,
+          []
+        );
+      }
+
+      markerGroups
+        .get(logicalKey)
+        .push({
+          marker,
+          stopKey:
+            String(stopKey),
+          feature
+        });
+    }
+  );
+
+  const logicalEntries =
+    getLogicalOperationalStopEntries(
+      routeId
+    );
+
+  const orderMap =
+    new Map();
+
+  logicalEntries.forEach(
+    (entry, index) => {
+      orderMap.set(
+        entry.logicalKey ||
+          getLogicalStopKey(
+            entry.feature
+          ),
+        {
+          index,
+          entry
+        }
+      );
+    }
+  );
+
+  const total =
+    logicalEntries.length;
+
+  const selectedKey =
+    String(
+      currentSelectedStopKey ?? ""
+    );
+
+  const selectedFeature =
+    selectedKey
+      ? getStopByKey(
+          selectedKey
+        )
+      : null;
+
+  const selectedLogicalKey =
+    selectedFeature
+      ? getLogicalStopKey(
+          selectedFeature
+        )
+      : "";
+
+  const config =
+    getStopLabelDeclutterConfig();
+
+  const zoomBand =
+    getStopZoomBand();
+
+  const candidates = [];
+
+  markerGroups.forEach(
+    (
+      group,
+      logicalKey
+    ) => {
+      if (!group.length) {
+        return;
+      }
+
+      const representative =
+        group.find(
+          item =>
+            item.stopKey ===
+            selectedKey
+        )
+        ||
+        group[0];
+
+      const feature =
+        representative.feature;
+
+      const orderData =
+        orderMap.get(
+          logicalKey
+        );
+
+      const index =
+        Number.isFinite(
+          orderData?.index
+        )
+          ? orderData.index
+          : candidates.length;
+
+      const operationalState =
+        getOperationalStopState(
+          feature,
+          routeId
+        );
+
+      const role =
+        getOperationalStopRole(
+          feature,
+          routeId
+        );
+
+      const isSelected =
+        logicalKey ===
+        selectedLogicalKey;
+
+      const isDismissed =
+        Boolean(
+          dismissedStopLogicalKey
+        )
+        &&
+        logicalKey ===
+          dismissedStopLogicalKey
+        &&
+        !isSelected;
+
+      /*
+        Popup sudah ditutup oleh user:
+        jangan buka kembali tooltip permanennya hanya karena
+        zoom band dekat menampilkan semua label.
+      */
+      if (isDismissed) {
+        return;
+      }
+
+      const isTerminus =
+        role === "Terminus" ||
+        Boolean(
+          operationalState
+            .temporaryTerminus
+        );
+
+      const isTransit =
+        role === "Transit";
+
+      const isEndpoint =
+        index === 0 ||
+        index === total - 1;
+
+      const isTemporaryServed =
+        operationalState.state ===
+        "temporary-served";
+
+      const sampled =
+        config.stride <= 1 ||
+        index %
+          config.stride === 0;
+
+      const eligible =
+        zoomBand === "near" ||
+        isSelected ||
+        isTerminus ||
+        isTransit ||
+        isEndpoint ||
+        isTemporaryServed ||
+        sampled;
+
+      if (!eligible) {
+        return;
+      }
+
+      let priority = 100;
+
+      if (sampled) {
+        priority += 80;
+      }
+
+      if (isTemporaryServed) {
+        priority += 180;
+      }
+
+      if (isTransit) {
+        priority += 300;
+      }
+
+      if (isEndpoint) {
+        priority += 360;
+      }
+
+      if (isTerminus) {
+        priority += 430;
+      }
+
+      if (isSelected) {
+        priority += 10000;
+      }
+
+      candidates.push({
+        ...representative,
+        logicalKey,
+        index,
+        priority,
+        isSelected,
+        point:
+          map.latLngToContainerPoint(
+            representative.marker
+              .getLatLng()
+          )
+      });
+    }
+  );
+
+  candidates.sort(
+    (a, b) =>
+      (
+        b.priority -
+        a.priority
+      )
+      ||
+      (
+        a.index -
+        b.index
+      )
+  );
+
+  const accepted = [];
+
+  candidates.forEach(
+    candidate => {
+      if (
+        zoomBand === "near" ||
+        candidate.isSelected
+      ) {
+        visibleKeys.add(
+          candidate.stopKey
+        );
+
+        accepted.push(
+          candidate
+        );
+
+        return;
+      }
+
+      const collision =
+        accepted.some(
+          acceptedItem =>
+            candidate.point
+              .distanceTo(
+                acceptedItem.point
+              )
+            <
+            config.minDistance
+        );
+
+      if (collision) {
+        return;
+      }
+
+      visibleKeys.add(
+        candidate.stopKey
+      );
+
+      accepted.push(
+        candidate
+      );
+    }
+  );
+
+  return visibleKeys;
+}
+
+
+function updateStopLabelVisibility() {
+  if (
+    !currentSelectedRouteId ||
+    !stopMarkerByKey.size
+  ) {
+    return;
+  }
+
+  const visibleKeys =
+    getVisibleStopLabelMarkerKeys(
+      currentSelectedRouteId
+    );
+
+  stopMarkerByKey.forEach(
+    (marker, stopKey) => {
+      if (
+        !marker ||
+        !marker.getTooltip?.()
+      ) {
+        return;
+      }
+
+      if (
+        visibleKeys.has(
+          String(stopKey)
+        )
+      ) {
+        marker.openTooltip();
+      }
+      else {
+        marker.closeTooltip();
+      }
+    }
+  );
+}
+
+
 function updateStopZoomVisualState() {
   const mapElement =
     map.getContainer();
@@ -13925,6 +15167,8 @@ function updateStopZoomVisualState() {
       }
     }
   );
+
+  updateStopLabelVisibility();
 }
 
 
@@ -14630,7 +15874,7 @@ function drawStops(routeId) {
             selectStop(
               stopKey,
               routeId,
-              false
+              true
             );
           }
         );
@@ -14773,6 +16017,60 @@ function drawStops(routeId) {
           }
         );
 
+
+        /*
+          Menutup popup halte = keluar dari state "halte terpilih".
+
+          Guard stopKey + routeId penting:
+          ketika user berpindah lewat Sebelumnya/Berikutnya,
+          Leaflet otomatis menutup popup lama saat membuka popup
+          baru. Popup lama tidak boleh membersihkan halte baru.
+        */
+        layer.on(
+          "popupclose",
+          () => {
+            const isCurrentSelectedStop =
+              String(
+                currentSelectedStopKey ?? ""
+              ) ===
+              String(stopKey);
+
+            const isCurrentSelectedRoute =
+              String(
+                currentSelectedRouteId ?? ""
+              ) ===
+              String(routeId);
+
+            if (
+              !isCurrentSelectedStop ||
+              !isCurrentSelectedRoute
+            ) {
+              return;
+            }
+
+            dismissedStopLogicalKey =
+              getLogicalStopKey(
+                feature
+              );
+
+            clearSelectedStop();
+
+            /*
+              clearSelectedStop menghapus card kiri dan style
+              selected marker. Refresh ini sekaligus menutup
+              tooltip nama halte yang tadi dipaksa tampil.
+            */
+            updateStopLabelVisibility();
+
+            /*
+              Hilangkan parameter stop=... dari shareable URL,
+              tetapi pertahankan mode / route / compare / map.
+            */
+            syncUrlState();
+          }
+        );
+
+
         layer.on(
           "click",
           event => {
@@ -14787,7 +16085,7 @@ function drawStops(routeId) {
             selectStop(
               stopKey,
               routeId,
-              false
+              true
             );
           }
         );
@@ -14966,11 +16264,14 @@ function renderStopList(routeId) {
               </span>
             `;
 
-      const routeBadgeHTML =
+      const visibleRouteIds =
         getOperationalStopListVisibleRoutes(
           feature,
           routeId
-        )
+        );
+
+      const routeBadgeHTML =
+        visibleRouteIds
           .map(
             visibleRouteId =>
               buildSmallRouteBadge(
@@ -15058,6 +16359,11 @@ function renderStopList(routeId) {
         `);
       }
 
+      const isComplexListRow =
+        rightBadges.length > 1 ||
+        visibleRouteIds.length > 2 ||
+        physicalCount > 1;
+
       return `
         <div
           class="
@@ -15065,6 +16371,7 @@ function renderStopList(routeId) {
             ${isNotServed ? "is-operational-not-served" : ""}
             ${isTemporaryServed ? "is-operational-temporary" : ""}
             ${isTemporaryTerminus ? "is-operational-temp-terminus" : ""}
+            ${isComplexListRow ? "is-complex-row" : ""}
           "
           data-stop-key="${escapeHTML(stopKey)}"
           data-stop-logical-key="${escapeHTML(logicalKey)}"
@@ -15226,6 +16533,12 @@ function selectStop(
   routeId,
   zoomIn = true
 ) {
+  /*
+    Memilih halte baru berarti user kembali berinteraksi
+    dengan jaringan; suppression label sebelumnya dihapus.
+  */
+  dismissedStopLogicalKey = "";
+
   clearSelectedStop();
 
   if (isMobileLayout()) {
@@ -15253,11 +16566,19 @@ function selectStop(
     return;
   }
 
+  clearPoiMarker();
+
   currentSelectedStopKey =
     String(stopKey);
 
   currentSelectedRouteId =
     String(routeId);
+
+  /*
+    Selected stop selalu tampil walaupun labelnya sebelumnya
+    disembunyikan oleh decluttering.
+  */
+  updateStopLabelVisibility();
 
   marker.setStyle(
     selectedStopStyle(
@@ -16329,9 +17650,13 @@ function updateOperationalLegend(
 function showAllRoutes(
   fit = false
 ) {
+  dismissedStopLogicalKey = "";
+
+  clearPoiMarker();
   closeRoutePlanIntro();
 
   currentSelectedRouteId = null;
+  comparisonRouteId = null;
   showRegularRouteComparison = false;
 
   clearSelectedStop();
@@ -16346,6 +17671,9 @@ function showAllRoutes(
   renderAllRouteInfo();
 
   updateOperationalLegend("");
+
+  updateRouteCompareUI();
+  updateRecenterButtonLabel();
 
   syncUrlState();
 
@@ -16371,6 +17699,10 @@ function showSingleRoute(
   routeId,
   resetOptionalStops = true
 ) {
+  dismissedStopLogicalKey = "";
+
+  clearPoiMarker();
+
   const previousRouteId =
     String(
       currentSelectedRouteId ?? ""
@@ -16382,6 +17714,16 @@ function showSingleRoute(
   ) {
     showRegularRouteComparison =
       false;
+
+    /*
+      Saat user benar-benar pindah rute utama, pembanding lama
+      dibersihkan supaya konteks tidak terbawa tanpa sengaja.
+      Initial load (previousRouteId kosong) juga aman.
+    */
+    if (previousRouteId) {
+      comparisonRouteId =
+        null;
+    }
   }
 
   const feature =
@@ -16461,6 +17803,9 @@ function showSingleRoute(
     routeId
   );
 
+  updateRouteCompareUI();
+  updateRecenterButtonLabel();
+
   syncUrlState();
 }
 
@@ -16472,6 +17817,14 @@ map.on(
   "zoomend",
   () => {
     updateStopZoomVisualState();
+  }
+);
+
+
+map.on(
+  "resize",
+  () => {
+    updateStopLabelVisibility();
   }
 );
 
@@ -16530,9 +17883,101 @@ routeSelect.addEventListener(
         }
       );
     }
+
     updateRouteDetailCardState();
   }
 );
+
+
+routeCompareAdd
+  ?.addEventListener(
+    "click",
+    event => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (
+        !currentSelectedRouteId
+      ) {
+        return;
+      }
+
+      populateComparisonRouteDropdown();
+
+      routeComparePicker.hidden =
+        false;
+
+      routeCompareAdd.hidden =
+        true;
+
+      routeCompareAdd
+        .setAttribute(
+          "aria-expanded",
+          "true"
+        );
+
+      requestAnimationFrame(
+        () => {
+          comparisonRouteSelect
+            ?.focus();
+        }
+      );
+    }
+  );
+
+
+comparisonRouteSelect
+  ?.addEventListener(
+    "change",
+    () => {
+      const routeId =
+        comparisonRouteSelect.value;
+
+      if (!routeId) {
+        clearComparisonRoute();
+
+        /*
+          Picker tetap terbuka agar user bisa langsung
+          memilih pembanding lain.
+        */
+        routeComparePicker.hidden =
+          false;
+
+        routeCompareAdd.hidden =
+          true;
+
+        return;
+      }
+
+      setComparisonRoute(
+        routeId
+      );
+    }
+  );
+
+
+routeCompareClear
+  ?.addEventListener(
+    "click",
+    event => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      clearComparisonRoute();
+
+      routeComparePicker.hidden =
+        true;
+
+      routeCompareAdd.hidden =
+        false;
+
+      routeCompareAdd
+        .setAttribute(
+          "aria-expanded",
+          "false"
+        );
+    }
+  );
 
 /* =========================================================
    BASEMAP
@@ -17275,24 +18720,117 @@ gpsButton.addEventListener(
 );
 
 /* =========================================================
-   FULL EXTENT
+   RECENTER / CONTEXT EXTENT
    ========================================================= */
+
+/*
+  Recenter hanya mengubah kamera peta, bukan state jaringan.
+
+  - Bila satu rute sedang dipilih:
+    kembali ke extent rute tersebut.
+  - Bila sedang melihat ALL:
+    kembali ke extent jaringan yang sedang lolos filter.
+  - Bila layer belum tersedia:
+    kembali ke view awal Jabodetabek.
+
+  Dengan demikian pengguna tidak kehilangan pilihan rute,
+  status, moda, maupun daftar halte hanya karena ingin
+  memusatkan kembali peta.
+*/
+function recenterMap(
+  {
+    animate = true
+  } = {}
+) {
+  closeGlobalSearchResults();
+  closePoiSearchResults();
+
+  if (
+    currentSelectedRouteId &&
+    routeLayer &&
+    routeLayer.getBounds().isValid()
+  ) {
+    fitRouteToScreen({
+      animate
+    });
+
+    return;
+  }
+
+  if (
+    routeLayer &&
+    routeLayer.getBounds().isValid()
+  ) {
+    const padding =
+      getRouteFitPadding();
+
+    map.fitBounds(
+      routeLayer.getBounds(),
+      {
+        ...padding,
+        maxZoom: 13,
+        animate,
+        duration:
+          animate
+            ? 0.55
+            : 0
+      }
+    );
+
+    return;
+  }
+
+  map.setView(
+    [-6.20, 106.83],
+    11,
+    {
+      animate
+    }
+  );
+}
+
+
+function updateRecenterButtonLabel() {
+  if (!homeButton) {
+    return;
+  }
+
+  let label =
+    "Pusatkan kembali jaringan";
+
+  if (currentSelectedRouteId) {
+    const feature =
+      getRouteById(
+        currentSelectedRouteId
+      );
+
+    if (feature) {
+      const comparisonFeature =
+        getComparisonRouteFeature();
+
+      label =
+        comparisonFeature
+          ? `Pusatkan kembali dua rute yang dibandingkan`
+          : `Pusatkan kembali ${getRouteTitle(feature)}`;
+    }
+  }
+
+  homeButton.title =
+    label;
+
+  homeButton.setAttribute(
+    "aria-label",
+    label
+  );
+}
+
 
 homeButton.addEventListener(
   "click",
   () => {
-    /*
-      Full Extent kembali ke pilihan ALL dalam moda/status
-      yang sedang aktif. Jika mode masih Semua Moda,
-      dropdown tetap hanya berisi Semua Lin/Koridor.
-    */
-    populateRouteDropdown();
+    recenterMap();
 
-    routeSelect.value = "ALL";
-
-    showAllRoutes(true);
-
-    updateRouteDetailCardState();
+    updateRecenterButtonLabel();
 
     if (isMobileLayout()) {
       setMobileFilterOpen(
