@@ -14259,13 +14259,13 @@ function getStopPopupOptions() {
 
   const maxWidth =
     Math.min(
-      405,
+      370,
       availableWidth
     );
 
   const minWidth =
     Math.min(
-      295,
+      280,
       maxWidth
     );
 

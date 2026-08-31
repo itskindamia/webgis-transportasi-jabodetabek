@@ -13250,3 +13250,1305 @@ body .route-detail-card.is-collapsed
       none !important;
   }
 }
+
+
+/* =========================================================
+   DESKTOP 100% — COMPACT PROPORTIONS
+   Target:
+   - browser zoom 100%
+   - preserve readable typography
+   - reclaim map canvas from floating UI
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+  :root {
+    --desktop-left-width:
+      268px !important;
+
+    --desktop-right-width:
+      310px !important;
+
+    --desktop-card-gap:
+      7px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     LEFT PANEL
+     ------------------------------------------------------- */
+
+  .filter-panel {
+    width:
+      268px !important;
+  }
+
+  .filter-panel-content {
+    gap:
+      8px !important;
+  }
+
+  .filter-controls-card {
+    padding:
+      10px
+      11px
+      7px !important;
+  }
+
+  .route-detail-card {
+    padding:
+      10px
+      11px
+      12px !important;
+  }
+
+  .filter-grid {
+    gap:
+      7px !important;
+  }
+
+  .filter-controls-card
+    .form-field {
+    margin-bottom:
+      8px !important;
+  }
+
+  /*
+    Input tetap nyaman dibaca; hanya container/padding
+    yang dirapatkan.
+  */
+  .filter-controls-card
+    select,
+  .filter-controls-card
+    input {
+    min-height:
+      35px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     RIGHT SEARCH + LEGEND
+     ------------------------------------------------------- */
+
+  .global-search-panel {
+    width:
+      310px !important;
+
+    padding:
+      10px
+      11px
+      9px !important;
+  }
+
+  .right-info-body {
+    width:
+      310px !important;
+
+    padding:
+      12px
+      12px
+      13px !important;
+  }
+
+  /*
+    Header judul tidak dipaksa menjadi 80% scale.
+    Tetap cukup lebar agar judul satu baris.
+  */
+  .right-info-panel {
+    width:
+      clamp(
+        425px,
+        23vw,
+        450px
+      ) !important;
+  }
+
+  .right-info-header {
+    padding:
+      12px
+      15px
+      10px !important;
+  }
+
+  .right-info-header h1 {
+    font-size:
+      clamp(
+        18.5px,
+        1.02vw,
+        20px
+      ) !important;
+  }
+
+  .right-info-header p {
+    margin-top:
+      5px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     POPUP VISUAL COMPACTION
+     Width is controlled by JS.
+     Typography intentionally preserved.
+     ------------------------------------------------------- */
+
+  .leaflet-popup-content-wrapper
+    .stop-popup {
+    /*
+      Jangan menurunkan font-size secara global.
+      Rapikan ruang vertikal saja.
+    */
+    --popup-compact-gap:
+      8px;
+  }
+
+  .stop-popup-section {
+    margin-top:
+      10px !important;
+  }
+
+  .stop-popup-section--service,
+  .stop-popup-section--integration {
+    padding-top:
+      9px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     BASEMAP
+     ------------------------------------------------------- */
+
+  body #basemapPanel.basemap-panel {
+    width:
+      326px !important;
+
+    min-width:
+      326px !important;
+
+    max-width:
+      min(
+        326px,
+        calc(100vw - 92px)
+      ) !important;
+
+    padding:
+      13px !important;
+  }
+
+  body #basemapPanel
+    .basemap-carousel {
+    gap:
+      7px !important;
+  }
+
+  body #basemapPanel
+    .basemap-option {
+    width:
+      88px !important;
+
+    min-width:
+      88px !important;
+
+    max-width:
+      88px !important;
+
+    flex:
+      0 0 88px !important;
+  }
+
+  body #basemapPanel
+    .basemap-option-thumb {
+    width:
+      74px !important;
+
+    height:
+      62px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     ROUTE DETAIL COLLAPSED STATE
+     Preserve true compact collapse from previous version.
+     ------------------------------------------------------- */
+
+  body
+    .route-detail-card.is-collapsed,
+  body
+    .route-detail-card.is-collapsed:not(.is-overview) {
+    max-height:
+      40px !important;
+
+    padding:
+      9px
+      11px !important;
+  }
+}
+
+
+/*
+  Wide desktop: keep a little breathing room,
+  but do not return to the previous oversized panels.
+*/
+@media (min-width: 1600px) {
+
+  .right-info-panel {
+    width:
+      445px !important;
+  }
+
+  .filter-panel {
+    width:
+      270px !important;
+  }
+}
+
+
+/*
+  Do NOT scale map stop labels down.
+  Their adaptive zoom sizes from the previous revision
+  remain the final authority.
+*/
+
+
+/* =========================================================
+   WEBGIS VERSIONING — ABOUT + CHANGELOG
+   ========================================================= */
+
+.info-release-meta {
+  gap: 5px 7px;
+}
+
+.info-release-meta strong {
+  color: #2f3439;
+  font-weight: 700;
+}
+
+.info-changelog-entry > strong {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+
+  line-height: 1.25;
+}
+
+.info-changelog-version {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 2px 6px;
+
+  border-radius: 4px;
+
+  background: #343a40;
+  color: #fff;
+
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+.info-changelog-date {
+  font-size: 10px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #646a70;
+}
+
+@media (max-width: 760px) {
+  .info-release-meta {
+    gap: 4px 6px;
+  }
+
+  .info-changelog-entry > strong {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE v0.9 BETA
+   Map-first responsive adaptation.
+   Desktop >= 761px remains unchanged.
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  :root {
+    --mobile-edge: 7px !important;
+    --mobile-nav-height: 60px;
+    --mobile-nav-bottom: calc(
+      7px +
+      env(safe-area-inset-bottom)
+    );
+    --mobile-sheet-bottom: calc(
+      var(--mobile-nav-height) +
+      15px +
+      env(safe-area-inset-bottom)
+    );
+  }
+
+  html,
+  body,
+  #map {
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+  }
+
+
+  /* -------------------------------------------------------
+     GLOBAL SEARCH = compact top search bar
+     ------------------------------------------------------- */
+
+  .global-search-panel {
+    position: fixed !important;
+
+    top: max(
+      7px,
+      calc(
+        env(safe-area-inset-top) +
+        5px
+      )
+    ) !important;
+
+    left: var(--mobile-edge) !important;
+    right: var(--mobile-edge) !important;
+
+    width: auto !important;
+    max-width: none !important;
+
+    padding:
+      7px !important;
+
+    border-radius:
+      11px !important;
+
+    z-index:
+      1710 !important;
+  }
+
+  .global-search-panel label,
+  .global-search-source {
+    display:
+      none !important;
+  }
+
+  .global-search-input-wrap input {
+    height:
+      42px !important;
+
+    min-height:
+      42px !important;
+
+    padding-left:
+      38px !important;
+
+    padding-right:
+      36px !important;
+
+    border-radius:
+      8px !important;
+
+    font-size:
+      13px !important;
+  }
+
+  .global-search-results {
+    top:
+      calc(100% + 5px) !important;
+
+    left:
+      0 !important;
+
+    right:
+      0 !important;
+
+    width:
+      100% !important;
+
+    max-height:
+      min(
+        52dvh,
+        430px
+      ) !important;
+
+    border-radius:
+      10px !important;
+
+    overflow-y:
+      auto !important;
+
+    -webkit-overflow-scrolling:
+      touch;
+  }
+
+
+  /* -------------------------------------------------------
+     ROUTE SHEET
+     Two-card composition is preserved.
+     ------------------------------------------------------- */
+
+  .filter-panel {
+    position:
+      fixed !important;
+
+    top:
+      auto !important;
+
+    left:
+      var(--mobile-edge) !important;
+
+    right:
+      var(--mobile-edge) !important;
+
+    bottom:
+      var(--mobile-sheet-bottom) !important;
+
+    width:
+      auto !important;
+
+    max-height:
+      min(
+        78dvh,
+        720px
+      ) !important;
+
+    z-index:
+      1810 !important;
+
+    background:
+      transparent !important;
+
+    border:
+      0 !important;
+
+    box-shadow:
+      none !important;
+  }
+
+  .filter-panel-content {
+    display:
+      flex !important;
+
+    flex-direction:
+      column !important;
+
+    gap:
+      6px !important;
+
+    min-height:
+      0 !important;
+
+    max-height:
+      inherit !important;
+
+    padding:
+      0 !important;
+
+    overflow:
+      hidden !important;
+  }
+
+  .filter-controls-card,
+  .route-detail-card {
+    border-radius:
+      14px !important;
+
+    background:
+      rgba(250,250,250,.985) !important;
+
+    box-shadow:
+      0 4px 18px
+      rgba(0,0,0,.20) !important;
+  }
+
+  .filter-controls-card {
+    position:
+      relative;
+
+    flex:
+      0 0 auto !important;
+
+    max-height:
+      min(
+        35dvh,
+        330px
+      ) !important;
+
+    padding:
+      36px
+      11px
+      7px !important;
+
+    overflow-y:
+      auto !important;
+
+    overscroll-behavior:
+      contain;
+
+    -webkit-overflow-scrolling:
+      touch;
+  }
+
+  /*
+    Small visual handle. It does not imply drag interaction;
+    it only makes the sheet hierarchy visually familiar.
+  */
+  .filter-controls-card::before {
+    content:
+      "";
+
+    position:
+      absolute;
+
+    top:
+      8px;
+
+    left:
+      50%;
+
+    width:
+      36px;
+
+    height:
+      4px;
+
+    border-radius:
+      999px;
+
+    background:
+      #c9c9c9;
+
+    transform:
+      translateX(-50%);
+  }
+
+  .mobile-filter-close {
+    top:
+      5px !important;
+
+    right:
+      7px !important;
+
+    width:
+      32px !important;
+
+    height:
+      32px !important;
+
+    border-radius:
+      16px !important;
+
+    font-size:
+      20px !important;
+  }
+
+  .filter-grid {
+    grid-template-columns:
+      1fr 1fr !important;
+
+    gap:
+      7px !important;
+  }
+
+  .filter-controls-card
+    .form-field {
+    margin-bottom:
+      8px !important;
+  }
+
+  .filter-controls-card
+    .form-field label {
+    margin-bottom:
+      5px !important;
+
+    font-size:
+      9px !important;
+  }
+
+  .filter-controls-card
+    select,
+  .filter-controls-card
+    input {
+    min-height:
+      42px !important;
+
+    height:
+      42px !important;
+
+    font-size:
+      12px !important;
+  }
+
+  .route-select-field {
+    margin-bottom:
+      0 !important;
+  }
+
+  .route-detail-card {
+    min-height:
+      0 !important;
+
+    flex:
+      1 1 auto !important;
+
+    padding:
+      10px
+      11px
+      11px !important;
+
+    overflow:
+      hidden !important;
+  }
+
+  .route-detail-card:not(.is-collapsed)
+    .route-detail-body {
+    min-height:
+      0 !important;
+
+    flex:
+      1 1 auto !important;
+
+    display:
+      flex !important;
+
+    flex-direction:
+      column !important;
+  }
+
+  .route-detail-card:not(.is-collapsed)
+    .stop-list {
+    min-height:
+      0 !important;
+
+    flex:
+      1 1 auto !important;
+  }
+
+  .stop-list-scroll {
+    -webkit-overflow-scrolling:
+      touch;
+
+    overscroll-behavior:
+      contain;
+  }
+
+  .stop-list-item {
+    min-height:
+      42px !important;
+  }
+
+  .stop-list-name {
+    font-size:
+      11.5px !important;
+  }
+
+  /*
+    Independent collapse stays truly compact on mobile.
+  */
+  body
+    .route-detail-card.is-collapsed,
+  body
+    .route-detail-card.is-collapsed:not(.is-overview) {
+    flex:
+      0 0 auto !important;
+
+    max-height:
+      42px !important;
+
+    min-height:
+      42px !important;
+
+    padding:
+      10px
+      11px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     INFO / LEGEND SHEET
+     ------------------------------------------------------- */
+
+  .right-info-panel {
+    position:
+      fixed !important;
+
+    top:
+      auto !important;
+
+    left:
+      var(--mobile-edge) !important;
+
+    right:
+      var(--mobile-edge) !important;
+
+    bottom:
+      var(--mobile-sheet-bottom) !important;
+
+    width:
+      auto !important;
+
+    max-height:
+      min(
+        74dvh,
+        660px
+      ) !important;
+
+    border-radius:
+      14px !important;
+
+    overflow:
+      hidden !important;
+
+    z-index:
+      1815 !important;
+  }
+
+  .right-info-header {
+    flex:
+      0 0 auto;
+
+    padding:
+      13px
+      46px
+      11px
+      13px !important;
+  }
+
+  .right-info-header h1 {
+    font-size:
+      16px !important;
+
+    line-height:
+      1.2 !important;
+
+    white-space:
+      normal !important;
+  }
+
+  .right-info-header p {
+    font-size:
+      9px !important;
+
+    line-height:
+      1.3 !important;
+  }
+
+  .mobile-info-close {
+    width:
+      32px !important;
+
+    height:
+      32px !important;
+
+    border-radius:
+      16px !important;
+  }
+
+  .right-info-body {
+    min-height:
+      0 !important;
+
+    flex:
+      1 1 auto !important;
+
+    padding:
+      10px
+      12px
+      14px !important;
+
+    overflow-y:
+      auto !important;
+
+    -webkit-overflow-scrolling:
+      touch;
+
+    overscroll-behavior:
+      contain;
+  }
+
+
+  /* -------------------------------------------------------
+     BASEMAP SHEET
+     ------------------------------------------------------- */
+
+  body
+    #basemapPanel.basemap-panel {
+    left:
+      var(--mobile-edge) !important;
+
+    right:
+      var(--mobile-edge) !important;
+
+    bottom:
+      var(--mobile-sheet-bottom) !important;
+
+    width:
+      auto !important;
+
+    min-width:
+      0 !important;
+
+    max-width:
+      none !important;
+
+    padding:
+      11px !important;
+
+    border-radius:
+      14px !important;
+
+    z-index:
+      1820 !important;
+  }
+
+  body #basemapPanel
+    .basemap-carousel {
+    display:
+      grid !important;
+
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0,1fr)
+      ) !important;
+
+    gap:
+      7px !important;
+  }
+
+  body #basemapPanel
+    .basemap-option {
+    width:
+      100% !important;
+
+    min-width:
+      0 !important;
+
+    max-width:
+      none !important;
+
+    height:
+      auto !important;
+
+    min-height:
+      88px !important;
+
+    flex:
+      initial !important;
+  }
+
+  body #basemapPanel
+    .basemap-preview-map,
+  body #basemapPanel
+    .basemap-option-thumb {
+    width:
+      min(
+        72px,
+        20vw
+      ) !important;
+
+    height:
+      min(
+        62px,
+        17vw
+      ) !important;
+  }
+
+
+  /* -------------------------------------------------------
+     BOTTOM NAVIGATION
+     ------------------------------------------------------- */
+
+  .bottom-toolbar {
+    position:
+      fixed !important;
+
+    left:
+      var(--mobile-edge) !important;
+
+    right:
+      var(--mobile-edge) !important;
+
+    bottom:
+      var(--mobile-nav-bottom) !important;
+
+    width:
+      auto !important;
+
+    height:
+      var(--mobile-nav-height) !important;
+
+    display:
+      grid !important;
+
+    grid-template-columns:
+      repeat(
+        4,
+        minmax(0,1fr)
+      ) !important;
+
+    border-radius:
+      13px !important;
+
+    overflow:
+      hidden !important;
+
+    z-index:
+      1800 !important;
+  }
+
+  .bottom-toolbar
+    .toolbar-button {
+    width:
+      auto !important;
+
+    min-width:
+      0 !important;
+
+    height:
+      var(--mobile-nav-height) !important;
+
+    min-height:
+      var(--mobile-nav-height) !important;
+
+    padding:
+      5px 2px !important;
+
+    gap:
+      3px !important;
+  }
+
+  .bottom-toolbar
+    .toolbar-icon {
+    width:
+      22px !important;
+
+    height:
+      22px !important;
+  }
+
+  .bottom-toolbar
+    .toolbar-thumbnail {
+    width:
+      24px !important;
+
+    height:
+      24px !important;
+  }
+
+  .mobile-toolbar-label {
+    font-size:
+      8.5px !important;
+
+    line-height:
+      1.1 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     MAP CONTROLS
+     44px minimum touch target.
+     ------------------------------------------------------- */
+
+  .lower-right-nav-stack {
+    right:
+      7px !important;
+
+    bottom:
+      calc(
+        var(--mobile-nav-height) +
+        18px +
+        env(safe-area-inset-bottom)
+      ) !important;
+
+    gap:
+      6px !important;
+  }
+
+  .floating-north,
+  .floating-zoom button {
+    width:
+      44px !important;
+
+    min-width:
+      44px !important;
+
+    height:
+      44px !important;
+
+    min-height:
+      44px !important;
+  }
+
+  .floating-north {
+    position:
+      fixed !important;
+
+    top:
+      calc(
+        max(
+          7px,
+          env(safe-area-inset-top)
+        )
+        +
+        58px
+      ) !important;
+
+    right:
+      8px !important;
+  }
+
+  .floating-zoom {
+    position:
+      fixed !important;
+
+    right:
+      7px !important;
+
+    bottom:
+      calc(
+        var(--mobile-nav-height)
+        +
+        18px
+        +
+        env(safe-area-inset-bottom)
+      ) !important;
+  }
+
+
+  /* -------------------------------------------------------
+     POPUP
+     Keep it readable, but preserve the map around it.
+     ------------------------------------------------------- */
+
+  .leaflet-popup-content-wrapper {
+    max-width:
+      min(
+        90vw,
+        330px
+      ) !important;
+
+    max-height:
+      58dvh !important;
+
+    border-radius:
+      11px !important;
+  }
+
+  .leaflet-popup-content {
+    width:
+      auto !important;
+
+    max-width:
+      min(
+        314px,
+        calc(100vw - 52px)
+      ) !important;
+
+    max-height:
+      54dvh !important;
+
+    margin:
+      10px
+      11px
+      11px !important;
+  }
+
+  .stop-popup.is-compact {
+    width:
+      min(
+        76vw,
+        270px
+      ) !important;
+
+    min-width:
+      205px !important;
+  }
+
+  .stop-popup.is-rich {
+    width:
+      min(
+        84vw,
+        305px
+      ) !important;
+
+    min-width:
+      238px !important;
+  }
+
+  .stop-popup-navigation
+    button {
+    min-height:
+      42px !important;
+  }
+
+  .stop-popup-route-button {
+    min-width:
+      42px !important;
+
+    min-height:
+      42px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     MAP STOP LABELS
+     Mobile gets a slightly more conservative scale only.
+     Desktop sizes are untouched.
+     ------------------------------------------------------- */
+
+  #map[data-stop-zoom-band="far"]
+    .leaflet-tooltip.route-stop-name-label {
+    font-size:
+      9px !important;
+  }
+
+  #map[data-stop-zoom-band="mid"]
+    .leaflet-tooltip.route-stop-name-label {
+    font-size:
+      10.5px !important;
+  }
+
+  #map[data-stop-zoom-band="near"]
+    .leaflet-tooltip.route-stop-name-label {
+    font-size:
+      12px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     ROUTE PLAN INTRO
+     ------------------------------------------------------- */
+
+  .route-plan-intro-overlay {
+    width:
+      min(
+        calc(100vw - 18px),
+        420px
+      ) !important;
+  }
+
+  .route-plan-intro-card {
+    max-height:
+      min(
+        72dvh,
+        580px
+      ) !important;
+
+    overflow-y:
+      auto !important;
+
+    padding:
+      16px
+      15px
+      13px !important;
+
+    border-radius:
+      13px !important;
+  }
+
+  .route-plan-intro-title {
+    font-size:
+      16px !important;
+  }
+
+  .route-plan-intro-text {
+    font-size:
+      11px !important;
+
+    line-height:
+      1.5 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     Leaflet attribution
+     ------------------------------------------------------- */
+
+  .leaflet-control-attribution {
+    bottom:
+      calc(
+        var(--mobile-nav-height)
+        +
+        15px
+        +
+        env(safe-area-inset-bottom)
+      ) !important;
+
+    max-width:
+      62vw !important;
+
+    font-size:
+      7.5px !important;
+  }
+}
+
+
+/* =========================================================
+   MOBILE v0.9 — SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 430px) {
+
+  .filter-panel {
+    max-height:
+      min(
+        80dvh,
+        690px
+      ) !important;
+  }
+
+  .filter-controls-card {
+    max-height:
+      min(
+        38dvh,
+        315px
+      ) !important;
+  }
+
+  .filter-grid {
+    grid-template-columns:
+      1fr 1fr !important;
+  }
+
+  .right-info-panel {
+    max-height:
+      min(
+        78dvh,
+        640px
+      ) !important;
+  }
+
+  .mobile-toolbar-label {
+    font-size:
+      8px !important;
+  }
+}
+
+
+/* Very narrow phones: Moda + Status stack to avoid cramped selects. */
+@media (max-width: 350px) {
+
+  .filter-grid {
+    grid-template-columns:
+      1fr !important;
+  }
+
+  .filter-controls-card {
+    max-height:
+      min(
+        43dvh,
+        330px
+      ) !important;
+  }
+
+  .mobile-toolbar-label {
+    font-size:
+      7.5px !important;
+  }
+}
