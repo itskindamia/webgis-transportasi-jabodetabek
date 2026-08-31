@@ -842,6 +842,30 @@ body.basemap-panel-open .floating-zoom {
 
 /* Nama halte pada mode satu rute */
 /*
+  Target klik halte menggunakan elemen DOM transparan.
+
+  Jangan beri background/border karena simbol visual tetap
+  berasal dari CircleMarker di stopPane.
+*/
+.stop-hit-target {
+  width: 30px !important;
+  height: 30px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  border-radius: 50% !important;
+
+  background: transparent !important;
+  box-shadow: none !important;
+
+  cursor: pointer !important;
+
+  pointer-events: auto !important;
+}
+
+
+/*
   Label nama halte hanya informatif dan tidak boleh menangkap
   klik yang seharusnya diterima marker/hit-area di bawahnya.
 */
@@ -924,6 +948,80 @@ body.basemap-panel-open .floating-zoom {
 .stop-popup-direction-value.is-one-way
   .stop-popup-direction-symbol {
   font-size: 14px;
+}
+
+/* =========================================================
+   TERMINUS / STOP GROUP / ACTIVITY
+   ========================================================= */
+
+.stop-terminus-number-marker {
+  width: 22px !important;
+  height: 22px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  pointer-events: none !important;
+}
+
+.stop-terminus-number-marker > span {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 800;
+  text-shadow: 0 1px 1px rgba(0,0,0,.24);
+  pointer-events: none;
+}
+
+.stop-popup-activity {
+  margin-top: 9px;
+  padding: 7px 9px;
+  border: 1px solid #e4e4e4;
+  border-radius: 7px;
+  background: #fafafa;
+}
+
+.stop-popup-activity-label {
+  margin-bottom: 3px;
+  color: #737373;
+  font-size: 9px;
+  line-height: 1.2;
+}
+
+.stop-popup-activity-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #252525;
+  font-size: 10.5px;
+  line-height: 1.3;
+}
+
+.stop-popup-activity-symbol {
+  min-width: 14px;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.stop-physical-count-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  padding: 0 5px;
+  border: 1px solid #d7d7d7;
+  border-radius: 4px;
+  background: #f5f5f5;
+  color: #666;
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 650;
+  white-space: nowrap;
 }
 
 /* Catatan titik halte skenario Koridor 15–19 */
@@ -5373,6 +5471,119 @@ body.info-modal-open {
 
 .product-tour-primary:hover {
   background: #222;
+}
+
+
+/*
+  =========================================================
+  REAL MAP DEMO — TIP 2 & TIP 3
+  =========================================================
+*/
+
+.product-tour-map-stop-pulse {
+  width: 42px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  background: transparent !important;
+
+  pointer-events: none !important;
+}
+
+.product-tour-map-stop-pulse-ring {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 30px;
+  height: 30px;
+
+  border: 3px solid rgba(0,122,194,.92);
+  border-radius: 50%;
+
+  box-shadow:
+    0 0 0 5px rgba(255,255,255,.92),
+    0 0 0 8px rgba(0,122,194,.28);
+
+  transform:
+    translate(-50%, -50%);
+
+  animation:
+    product-tour-stop-pulse 1.25s
+    ease-in-out infinite;
+}
+
+@keyframes product-tour-stop-pulse {
+  0%,
+  100% {
+    transform:
+      translate(-50%, -50%)
+      scale(.92);
+
+    opacity: .86;
+  }
+
+  50% {
+    transform:
+      translate(-50%, -50%)
+      scale(1.12);
+
+    opacity: 1;
+  }
+}
+
+.leaflet-tooltip.product-tour-map-stop-tooltip {
+  padding: 4px 7px;
+
+  border: 1px solid rgba(0,0,0,.14);
+  border-radius: 5px;
+
+  background: rgba(255,255,255,.96);
+
+  box-shadow:
+    0 2px 7px rgba(0,0,0,.18);
+
+  color: #242424;
+
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+
+  pointer-events: none !important;
+}
+
+.product-tour-open
+  .stop-popup-direct-routes.product-tour-badges-focus {
+  position: relative;
+
+  border-radius: 7px;
+
+  box-shadow:
+    0 0 0 3px #ffffff,
+    0 0 0 6px rgba(0,122,194,.78);
+
+  animation:
+    product-tour-badge-focus 1.2s
+    ease-in-out infinite;
+}
+
+@keyframes product-tour-badge-focus {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px #ffffff,
+      0 0 0 6px rgba(0,122,194,.55);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 3px #ffffff,
+      0 0 0 8px rgba(0,122,194,.88);
+  }
 }
 
 
@@ -11184,3 +11395,892 @@ details.legend-collapsible-section:not([open])
 
 }
 
+
+
+/* =========================================================
+   POPUP REFINEMENT — ONLY INTEGRATION AREA SCROLLS
+   ========================================================= */
+
+/*
+  Struktur akhir:
+  .stop-popup
+    ├─ .stop-popup-scroll                  <-- area utama, tidak discroll
+    │   ├─ info halte / status / rute aktif
+    │   └─ .stop-popup-section--integration
+    │        └─ .stop-popup-integration-scroll  <-- satu-satunya area scroll konten
+    └─ .stop-popup-navigation              <-- footer tetap
+*/
+
+.stop-popup-scroll {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.stop-popup-section--integration {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.stop-popup-integration-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b9b9b9 transparent;
+}
+
+.stop-popup-integration-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.stop-popup-integration-scroll::-webkit-scrollbar-thumb {
+  background: #b9b9b9;
+  border-radius: 10px;
+}
+
+.stop-popup-integration-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/*
+  Bila popup tidak memiliki integrasi panjang, tinggi tetap natural.
+*/
+.stop-popup-section--integration .integration-list {
+  min-height: 0;
+}
+
+
+/* =========================================================
+   INTEGRATION POPUP — CLICKABLE TRANSJAKARTA STOP
+   ========================================================= */
+
+/*
+  Tahap awal:
+  hanya baris integrasi TransJakarta yang interaktif.
+  Moda lain tetap tampil seperti sebelumnya.
+*/
+.integration-place-row-button {
+  width: 100%;
+
+  margin: 0;
+  padding: 4px 6px;
+
+  border: 0;
+  border-radius: 6px;
+
+  background: transparent;
+
+  font: inherit;
+  color: inherit;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background .15s ease,
+    box-shadow .15s ease;
+}
+
+.integration-place-row-button:hover {
+  background:
+    rgba(0, 0, 0, .045);
+}
+
+.integration-place-row-button:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(0, 122, 194, .28);
+}
+
+.integration-place-row-button
+  .integration-place-name {
+  flex: 1 1 auto;
+}
+
+.integration-place-link-arrow {
+  flex: 0 0 auto;
+
+  margin-left: auto;
+
+  color: #8b8b8b;
+
+  font-size: 19px;
+  line-height: 1;
+  font-weight: 400;
+
+  transform:
+    translateY(-1px);
+}
+
+.integration-place-row-button:hover
+  .integration-place-name {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.integration-place-row-button:hover
+  .integration-place-link-arrow {
+  color: #333;
+}
+
+
+/* =========================================================
+   SPLIT NON-TERMINUS STOP — POPUP NOTE
+   ========================================================= */
+
+.stop-popup-split-note {
+  margin-top: 9px;
+  padding: 9px 10px;
+
+  border:
+    1px solid
+    rgba(45, 104, 145, .18);
+
+  border-radius: 7px;
+
+  background:
+    rgba(45, 104, 145, .055);
+
+  color: #3f4e59;
+}
+
+.stop-popup-split-note-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-bottom: 5px;
+
+  font-size: 10.5px;
+  line-height: 1.25;
+  color: #304a5c;
+}
+
+.stop-popup-split-note-title strong {
+  font-weight: 700;
+}
+
+.stop-popup-split-note-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(45, 104, 145, .11);
+
+  font-size: 11px;
+  font-weight: 700;
+  color: #356783;
+}
+
+.stop-popup-split-note-text {
+  font-size: 9.5px;
+  line-height: 1.45;
+  color: #58656e;
+}
+
+.stop-popup-split-note-text strong {
+  font-weight: 650;
+  color: #3e505c;
+}
+
+.stop-popup-split-action {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  margin-top: 7px;
+  padding: 6px 8px;
+
+  border:
+    1px solid
+    rgba(45, 104, 145, .20);
+
+  border-radius: 5px;
+
+  background: #ffffff;
+
+  font-family: inherit;
+  font-size: 9.5px;
+  line-height: 1.25;
+  font-weight: 600;
+
+  color: #315d77;
+
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    background .15s ease,
+    border-color .15s ease,
+    box-shadow .15s ease;
+}
+
+.stop-popup-split-action:hover {
+  background:
+    rgba(45, 104, 145, .06);
+
+  border-color:
+    rgba(45, 104, 145, .34);
+}
+
+.stop-popup-split-action:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(0, 122, 194, .23);
+}
+
+.stop-popup-split-action-arrow {
+  flex: 0 0 auto;
+
+  font-size: 13px;
+  line-height: 1;
+}
+
+
+/* =========================================================
+   ADAPTIVE STOP MARKERS — TERMINUS NUMBER
+   ========================================================= */
+
+/*
+  Outer DivIcon tetap 22x22 agar anchor Leaflet tidak bergeser.
+  Yang diskalakan hanya angka di dalamnya, sehingga nomor
+  terminus selalu tetap tepat di pusat marker.
+*/
+
+#map[data-stop-zoom-band="far"]
+  .stop-terminus-number-marker > span {
+  transform: scale(.70);
+  transform-origin: center;
+  opacity: .88;
+}
+
+#map[data-stop-zoom-band="mid"]
+  .stop-terminus-number-marker > span {
+  transform: scale(.86);
+  transform-origin: center;
+}
+
+#map[data-stop-zoom-band="near"]
+  .stop-terminus-number-marker > span {
+  transform: scale(1);
+  transform-origin: center;
+}
+
+
+/* =========================================================
+   DESKTOP STOP POPUP — MORE COMPACT
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+  /*
+    Lebar popup diperkecil tanpa mengorbankan popup integrasi.
+    Leaflet menentukan lebar akhir, selector berikut menjaga
+    isi card agar tetap proporsional.
+  */
+  .stop-popup.is-compact {
+    min-width: 250px !important;
+    max-width: 290px !important;
+  }
+
+  .stop-popup.is-rich {
+    min-width: 285px !important;
+    max-width: 360px !important;
+  }
+
+  .stop-popup {
+    max-height:
+      min(
+        560px,
+        calc(100vh - 205px)
+      ) !important;
+  }
+
+  .stop-popup.is-compact {
+    max-height:
+      min(
+        470px,
+        calc(100vh - 205px)
+      ) !important;
+  }
+
+  .stop-popup-scroll {
+    padding:
+      13px
+      14px
+      7px !important;
+  }
+
+  .stop-popup-navigation {
+    gap: 7px !important;
+
+    padding:
+      9px
+      14px
+      13px !important;
+  }
+
+  .stop-popup-title {
+    font-size: 17px !important;
+    line-height: 1.22 !important;
+  }
+
+  .stop-popup-eyebrow {
+    margin-bottom: 3px !important;
+  }
+
+  .stop-popup-divider {
+    margin:
+      11px
+      0 !important;
+  }
+
+  .stop-popup-section {
+    margin-top:
+      11px !important;
+  }
+
+  .stop-popup-label {
+    margin-bottom:
+      8px !important;
+
+    font-size:
+      12px !important;
+  }
+
+  .stop-popup-direction,
+  .stop-popup-activity {
+    margin-top:
+      7px !important;
+
+    padding:
+      6px
+      8px !important;
+  }
+
+  .stop-popup-route-hint {
+    margin-top:
+      5px !important;
+  }
+
+  .integration-list {
+    gap:
+      14px !important;
+  }
+
+  .integration-place-list {
+    gap:
+      7px !important;
+  }
+
+  .integration-place-row {
+    min-height:
+      28px !important;
+  }
+
+  .integration-place-name {
+    font-size:
+      13px !important;
+  }
+
+  .integration-group
+    .integration-operator {
+    font-size:
+      12px !important;
+  }
+
+  .stop-popup-nav-button {
+    min-height:
+      40px !important;
+  }
+}
+
+
+/* =========================================================
+   POPUP READABILITY — ROLE PILL + SLIGHTLY TALLER DESKTOP
+   ========================================================= */
+
+/*
+  .stop-popup-scroll sekarang memakai flex-column.
+  Flex item default-nya align-self: stretch, sehingga badge
+  "Transit" sempat melebar seperti bar penuh.
+
+  Paksa role kembali menjadi pill kecil.
+*/
+.stop-popup-role {
+  align-self: flex-start !important;
+  width: auto !important;
+  max-width: max-content !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+
+  padding:
+    2px
+    6px !important;
+
+  border-radius:
+    3px !important;
+
+  font-size:
+    9.5px !important;
+
+  line-height:
+    1.2 !important;
+
+  white-space:
+    nowrap !important;
+}
+
+
+/*
+  Desktop: jangan kembali ke popup lama yang terlalu besar.
+  Tambah sedikit tinggi dan keterbacaan saja.
+*/
+@media (min-width: 1024px) {
+
+  .stop-popup.is-compact {
+    min-width:
+      260px !important;
+
+    max-width:
+      305px !important;
+
+    max-height:
+      min(
+        500px,
+        calc(100vh - 190px)
+      ) !important;
+  }
+
+
+  .stop-popup.is-rich {
+    min-width:
+      295px !important;
+
+    max-width:
+      370px !important;
+  }
+
+
+  .stop-popup {
+    max-height:
+      min(
+        600px,
+        calc(100vh - 185px)
+      ) !important;
+  }
+
+
+  .stop-popup-scroll {
+    padding:
+      14px
+      15px
+      8px !important;
+  }
+
+
+  .stop-popup-navigation {
+    padding:
+      10px
+      15px
+      14px !important;
+  }
+
+
+  .stop-popup-title {
+    font-size:
+      17.5px !important;
+
+    line-height:
+      1.24 !important;
+  }
+
+
+  .stop-popup-eyebrow {
+    font-size:
+      9px !important;
+  }
+
+
+  .stop-popup-status {
+    font-size:
+      9.5px !important;
+  }
+
+
+  .stop-popup-label {
+    font-size:
+      12.5px !important;
+
+    line-height:
+      1.25 !important;
+  }
+
+
+  .stop-popup-direction-label,
+  .stop-popup-activity-label {
+    font-size:
+      9.5px !important;
+  }
+
+
+  .stop-popup-direction-value,
+  .stop-popup-activity-value {
+    font-size:
+      10.5px !important;
+  }
+
+
+  .stop-popup-route-hint {
+    font-size:
+      8.5px !important;
+
+    line-height:
+      1.35 !important;
+  }
+
+
+  .integration-group
+    .integration-operator {
+    font-size:
+      12.5px !important;
+  }
+
+
+  .integration-place-name {
+    font-size:
+      13.5px !important;
+
+    line-height:
+      1.3 !important;
+  }
+
+
+  .integration-place-row {
+    min-height:
+      30px !important;
+  }
+
+
+  .integration-list {
+    gap:
+      15px !important;
+  }
+
+
+  .stop-popup-nav-label {
+    font-size:
+      8.5px !important;
+  }
+
+
+  .stop-popup-nav-name {
+    font-size:
+      10px !important;
+  }
+}
+
+
+/* =========================================================
+   OPERATIONAL ROUTE BADGES — MRT 2A DIVERSION
+   ========================================================= */
+
+/*
+  Warna badge tetap menjadi identitas koridor.
+  Kondisi operasional ditunjukkan oleh ring/opacity.
+*/
+
+.stop-popup-route-option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: auto;
+}
+
+.stop-popup-route-operational-label {
+  display: none;
+}
+
+.stop-popup-route-state-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+
+  margin-top: 7px;
+
+  font-size: 8.5px;
+  line-height: 1.35;
+  color: #8a6217;
+}
+
+.stop-popup-route-state-note-label {
+  font-weight: 700;
+  color: #6f5318;
+}
+
+.stop-popup-route-state-note strong {
+  font-weight: 700;
+}
+
+.stop-popup-route-state-note-separator {
+  color: rgba(138, 98, 23, .58);
+}
+
+
+/* TEMP_SERVED = amber dashed ring */
+.stop-popup-route-button.is-operational-temporary::before {
+  content: "";
+
+  position: absolute;
+  inset: -3px;
+
+  border:
+    2px dashed
+    rgba(190, 132, 25, .88);
+
+  border-radius: 50%;
+
+  pointer-events: none;
+}
+
+
+/* TEMP_TERMINUS = stronger solid amber ring */
+.stop-popup-route-button.is-operational-temp-terminus::before {
+  content: "";
+
+  position: absolute;
+  inset: -3px;
+
+  border:
+    2px solid
+    rgba(190, 132, 25, .95);
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(255, 255, 255, .92);
+
+  pointer-events: none;
+}
+
+
+/*
+  Jika badge sementara juga merupakan rute aktif,
+  amber tetap dipertahankan dan ring hitam active tidak
+  menghilangkan makna operasional.
+*/
+.stop-popup-route-button.is-active.is-operational-temporary,
+.stop-popup-route-button.is-active.is-operational-temp-terminus {
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px #333333 !important;
+}
+
+
+/* =========================================================
+   NOT SERVED — SEPARATE SECTION
+   ========================================================= */
+
+.stop-popup-affected-routes {
+  margin-top: 11px !important;
+
+  padding-top: 10px;
+
+  border-top:
+    1px solid #e5e5e5;
+}
+
+.stop-popup-affected-route-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.stop-popup-affected-route-list.is-inline {
+  flex-direction: row;
+}
+
+.stop-popup-affected-route-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.stop-popup-affected-route-button {
+  flex: 0 0 auto;
+
+  opacity: .46;
+  filter: grayscale(.22);
+}
+
+.stop-popup-affected-route-button::after {
+  content: "";
+
+  position: absolute;
+
+  left: 4px;
+  right: 4px;
+  top: 50%;
+
+  height: 1.5px;
+
+  background:
+    rgba(78, 83, 88, .78);
+
+  transform:
+    rotate(-18deg);
+
+  pointer-events: none;
+}
+
+.stop-popup-affected-route-button:hover:not(:disabled) {
+  opacity: .72;
+}
+
+.stop-popup-affected-route-text {
+  display: none;
+}
+
+.stop-popup-affected-route-note {
+  margin-top: 7px;
+
+  font-size: 8.5px;
+  line-height: 1.35;
+  color: #737980;
+}
+
+.stop-popup-affected-route-note strong {
+  font-weight: 700;
+  color: #5f656b;
+}
+
+
+/* =========================================================
+   STOP LIST — OPERATIONAL ROUTE BADGES
+   ========================================================= */
+
+.stop-list-route-badge.is-operational-temporary {
+  outline:
+    1.5px dashed
+    rgba(190, 132, 25, .92);
+
+  outline-offset: 1px;
+}
+
+.stop-list-route-badge.is-operational-temp-terminus {
+  outline:
+    1.5px solid
+    rgba(190, 132, 25, .98);
+
+  outline-offset: 1px;
+}
+
+.stop-list-route-badge.is-operational-not-served {
+  opacity: .38;
+  filter: grayscale(.30);
+
+  text-decoration:
+    line-through;
+
+  text-decoration-thickness:
+    1px;
+}
+
+.stop-list-affected-route-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+
+  margin-left: 3px;
+  padding-left: 5px;
+
+  border-left:
+    1px solid
+    rgba(100, 100, 100, .20);
+}
+
+
+/*
+  Compact popup: operational labels dibuat sedikit lebih kecil
+  agar tidak membuat row badge terlalu tinggi.
+*/
+.stop-popup.is-compact
+  .stop-popup-route-operational-label {
+  max-width: 60px;
+  font-size: 7px;
+}
+
+
+@media (max-width: 760px) {
+  .stop-popup-route-operational-label {
+    max-width: 60px;
+    font-size: 7px;
+  }
+
+  .stop-popup-affected-route-text {
+    font-size: 8.5px;
+  }
+}
+
+
+/* =========================================================
+   PRODUCT TOUR — ANIMATED CENTERED STOP HIGHLIGHT
+   ========================================================= */
+
+/*
+  Highlight Tip 2 sekarang dianimasikan langsung sebagai
+  Leaflet CircleMarker lewat requestAnimationFrame.
+  Ini menjaga pusat lingkaran tepat pada koordinat halte.
+*/
+.product-tour-map-stop-pulse-ring {
+  animation: none !important;
+}
+
+
+.stop-popup-direct-routes {
+  align-items: center;
+  gap: 9px;
+}
+
+.stop-popup-route-button {
+  min-width: 42px;
+  min-height: 42px;
+}
+
+.stop-popup-affected-route-button {
+  margin-right: 0;
+}
+
+@media (max-width: 760px) {
+  .stop-popup-route-state-note,
+  .stop-popup-affected-route-note {
+    font-size: 8px;
+  }
+}
