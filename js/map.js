@@ -1,16 +1,49 @@
 /* =========================================================
-   WEBGIS TRANSPORTASI UMUM JAKARTA
-   HANYA MEMAKAI DUA FILE DATA:
-   - data/brt_route.geojson
-   - data/brt_stop.geojson
+   WEBGIS TRANSPORTASI UMUM JABODETABEK
+   DATASET RUNTIME MULTIMODA:
+   - data/brt_route.geojson   (wajib)
+   - data/brt_stop.geojson    (wajib)
+   - data/mrt_route.geojson   (opsional / pilot)
+   - data/mrt_stop.geojson    (opsional / pilot)
+
+   BRT tetap memakai schema v2.0 yang sudah ada.
+   MRT dibaca melalui adapter runtime sehingga file sumber
+   tidak perlu dipaksa mengikuti seluruh field khusus BRT.
 
    Field halte:
    ROUTES     = rute yang benar-benar melayani halte
    SEQ_MAP    = urutan halte per rute
    DIR_MAP    = arah khusus per rute
-   INTEGRASI  = transfer ke moda/rute lain
-   INT_NM     = nama titik fisik integrasi
-   INT_STATUS = status titik integrasi non-eksisting
+   INTEGRASI  = kode layanan/lin/operator integrasi
+   INT_NM     = label titik integrasi; key boleh kode integrasi ATAU ID target
+   INT_STOP   = STOP_ID/GEOM_ID target integrasi (opsional, disarankan)
+   INT_STATUS = status hubungan integrasi
+
+   Format integrasi yang direkomendasikan mulai v27:
+     INTEGRASI = BRT
+     INT_NM    = BRT073:Lebak Bulus
+     INT_STOP  = BRT:BRT073
+
+   Dengan format ini:
+   - INTEGRASI menentukan jaringan/operator yang dituju.
+   - INT_STOP memasangkan jaringan ke STOP_ID/GEOM_ID target.
+   - INT_NM boleh memakai ID target sebagai key agar nama selalu
+     melekat pada titik target, bukan pada operator.
+
+   Format lama tetap kompatibel:
+     INTEGRASI = BRT
+     INT_NM    = BRT:Lebak Bulus
+     INT_STOP  = BRT:BRT073
+
+   Navigasi integrasi menggunakan urutan prioritas:
+   1. INT_STOP (ID target; paling stabil)
+   2. INT_NM keyed-by-target-ID
+   3. INT_NM keyed-by-kode-integrasi (fallback legacy)
+   4. nama feature target dari dataset yang dimuat
+
+   Jika INTEGRASI terisi tetapi INT_NM/INT_STOP kosong,
+   item tersebut tidak ditampilkan ke pengguna dan hanya
+   dilaporkan oleh validator.
 
    ROUTE SOURCE METADATA
    SOURCE   = nama sumber / dokumen / institusi
@@ -682,6 +715,11 @@ const operationalLegendSection =
     "operationalLegendSection"
   );
 
+const structureLegendSection =
+  document.getElementById(
+    "structureLegendSection"
+  );
+
 const zoomInButton = document.getElementById("zoomInButton");
 const zoomOutButton = document.getElementById("zoomOutButton");
 
@@ -699,6 +737,223 @@ const gpsButton = document.getElementById("gpsButton");
 const homeButton = document.getElementById("homeButton");
 
 /* =========================================================
+   BRT_STOP SCHEMA v2.0 — FINAL 28 FIELDS
+   ========================================================= */
+
+const BRT_STOP_SCHEMA_V20_FIELDS = [
+  "STOP_ID",
+  "GEOM_ID",
+  "STOP_GROUP",
+  "STOP_NAME",
+  "DISPLAY_NM",
+  "MODE",
+  "STATUS",
+  "STOP_ROLE",
+  "STOP_VAR",
+  "PAID_LINK",
+  "LINK_TYPE",
+  "ROUTES",
+  "DIR_MAP",
+  "ACT_MAP",
+  "OPS_MAP",
+  "SEQ_MAP",
+  "DIV_SEQ",
+  "DIV_ID",
+  "REPLACES_ID",
+  "VALID_FR",
+  "VALID_TO",
+  "INTEGRASI",
+  "INT_NM",
+  "INT_STATUS",
+  "SOURCE",
+  "SRC_URL",
+  "SRC_NOTE",
+  "REMARK"
+];
+
+
+const BRT_STOP_SCHEMA_V20_DEFAULTS = {
+  MODE: "BRT",
+  STATUS: "Eksisting",
+  STOP_ROLE: "Regular",
+  STOP_VAR: "BASE",
+  PAID_LINK: "NA",
+  LINK_TYPE: "NONE",
+  INT_STATUS: "NONE"
+};
+
+
+const BRT_STOP_SCHEMA_V20_DOMAINS = {
+  MODE: [
+    "BRT"
+  ],
+
+  STATUS: [
+    "Eksisting",
+    "Rencana",
+    "Usulan",
+    "Konseptual",
+    "Nonaktif"
+  ],
+
+  STOP_ROLE: [
+    "Regular",
+    "Transit",
+    "Terminus",
+    "Transit-Terminus"
+  ],
+
+  STOP_VAR: [
+    "BASE",
+    "TEMPORARY"
+  ],
+
+  PAID_LINK: [
+    "YES",
+    "NO",
+    "NA",
+    "UNKNOWN"
+  ],
+
+  LINK_TYPE: [
+    "CONCOURSE",
+    "BRIDGE",
+    "UNDERPASS",
+    "CROSSING",
+    "NONE",
+    "UNKNOWN"
+  ],
+
+  INT_STATUS: [
+    "INTEGRATED",
+    "CONNECTION",
+    "NONE",
+    "UNKNOWN"
+  ]
+};
+
+
+function getStopSchemaV20MissingFields(
+  feature
+) {
+  const p =
+    feature?.properties ?? {};
+
+  return BRT_STOP_SCHEMA_V20_FIELDS
+    .filter(
+      field =>
+        !Object.prototype
+          .hasOwnProperty.call(
+            p,
+            field
+          )
+    );
+}
+
+
+function getStopSchemaV20DomainIssues(
+  feature
+) {
+  const p =
+    feature?.properties ?? {};
+
+  const issues = [];
+
+  Object.entries(
+    BRT_STOP_SCHEMA_V20_DOMAINS
+  )
+    .forEach(
+      ([field, allowed]) => {
+        const raw =
+          cleanText(
+            p[field]
+          );
+
+        if (!raw) {
+          return;
+        }
+
+        /*
+          Backward compatibility selama migrasi:
+          - STOP_ROLE route-specific: BRT_01:Transit;...
+          - INT_STATUS legacy: KODE:Nama=Status
+        */
+        if (
+          field === "STOP_ROLE" &&
+          raw.includes(":")
+        ) {
+          return;
+        }
+
+        if (
+          field === "INT_STATUS" &&
+          raw.includes("=")
+        ) {
+          return;
+        }
+
+        let comparable =
+          raw;
+
+        if (field === "STATUS") {
+          comparable =
+            getStatusLabel(
+              normalizeStatus(
+                raw
+              )
+            );
+        }
+        else if (
+          field === "STOP_ROLE"
+        ) {
+          comparable =
+            normalizeStopRole(
+              raw
+            );
+        }
+        else if (
+          field === "STOP_VAR"
+        ) {
+          comparable =
+            normalizeStopVariant(
+              raw
+            );
+        }
+        else {
+          comparable =
+            raw.toUpperCase();
+        }
+
+        const accepted =
+          (
+            field === "STATUS" ||
+            field === "STOP_ROLE"
+          )
+            ? allowed
+            : allowed.map(
+                value =>
+                  value.toUpperCase()
+              );
+
+        if (
+          !accepted.includes(
+            comparable
+          )
+        ) {
+          issues.push({
+            field,
+            value: raw,
+            allowed
+          });
+        }
+      }
+    );
+
+  return issues;
+}
+
+
+/* =========================================================
    DATA / STATE
    ========================================================= */
 
@@ -710,6 +965,7 @@ let stopData = null;
 
 let routeHaloLayer = null;
 let routeLayer = null;
+let routeStructureLayer = null;
 let stopLayer = null;
 let stopHitLayer = null;
 
@@ -722,6 +978,80 @@ let showRegularRouteComparison = false;
 
 let currentSelectedRouteId = null;
 let currentSelectedStopKey = null;
+
+/* =========================================================
+   ROUTE DIRECTION — A / B
+   =========================================================
+
+   State arah hanya memengaruhi representasi halte/stasiun.
+   Geometry rute tidak digambar ulang ketika arah berubah.
+*/
+const routeDirectionById = new Map();
+
+/*
+  Cache ringan khusus logika arah.
+  Tujuan: menghindari parsing DIR_MAP / SEQ_A_MAP / SEQ_B_MAP
+  dan pengelompokan stop yang sama berulang kali saat popup,
+  daftar, marker, summary, dan Previous/Next dirender.
+*/
+const directionFieldMapCache = new WeakMap();
+const routeDirectionStaticCache = new Map();
+const operationalStopEntriesCache = new Map();
+const logicalOperationalStopEntriesCache = new Map();
+
+function getCachedDirectionFieldMap(feature, cacheKey, rawValue) {
+  if (!feature || typeof feature !== "object") {
+    return parseRouteMap(rawValue);
+  }
+
+  let featureCache = directionFieldMapCache.get(feature);
+
+  if (!featureCache) {
+    featureCache = new Map();
+    directionFieldMapCache.set(feature, featureCache);
+  }
+
+  const raw = String(rawValue ?? "");
+  const existing = featureCache.get(cacheKey);
+
+  if (existing?.raw === raw) {
+    return existing.map;
+  }
+
+  const parsed = parseRouteMap(raw);
+  featureCache.set(cacheKey, { raw, map: parsed });
+  return parsed;
+}
+
+function getRouteDirectionRuntimeCacheKey(routeId) {
+  const routeKey = String(routeId ?? "");
+  const side = isRouteDirectionEnabled(routeKey)
+    ? getActiveRouteDirection(routeKey)
+    : "-";
+
+  const divId = getActiveRouteDivId(routeKey) || "-";
+
+  /*
+    Validity date bisa berubah ketika halaman dibiarkan terbuka
+    lama. Stamp per menit menjaga cache tetap ringan tanpa membuat
+    kondisi operasional menjadi stale.
+  */
+  const minuteStamp = Math.floor(Date.now() / 60000);
+
+  return [
+    routeKey,
+    side,
+    showProposedStops ? "P1" : "P0",
+    showConceptualStops ? "C1" : "C0",
+    divId,
+    minuteStamp
+  ].join("|");
+}
+
+function clearDirectionRuntimeCaches() {
+  operationalStopEntriesCache.clear();
+  logicalOperationalStopEntriesCache.clear();
+}
 
 /*
   Jika popup halte ditutup, label halte tersebut ikut
@@ -925,7 +1255,11 @@ function normalizeStatus(value) {
     "Konseptual": "Conceptual",
     "Konsep": "Conceptual",
     "Usulan Personal": "Conceptual",
-    "Usulan Konseptual": "Conceptual"
+    "Usulan Konseptual": "Conceptual",
+
+    "Inactive": "Inactive",
+    "Nonaktif": "Inactive",
+    "Non Aktif": "Inactive"
   };
 
   return aliases[text] ?? text;
@@ -948,7 +1282,8 @@ function getStatusLabel(value) {
     Existing: "Eksisting",
     Planned: "Rencana",
     Proposed: "Usulan",
-    Conceptual: "Konseptual"
+    Conceptual: "Konseptual",
+    Inactive: "Nonaktif"
   };
 
   return labels[status] ?? status;
@@ -961,6 +1296,305 @@ function featureCollection(features) {
     features
   };
 }
+
+
+/* =========================================================
+   MULTIMODAL DATA ADAPTER — MRT PILOT
+   =========================================================
+
+   Tujuan:
+   - BRT tetap memakai schema v2.0 tanpa perubahan sumber.
+   - MRT boleh memakai field yang lebih natural untuk rail:
+       LINE_ID, LINE_NAME, LINES, STRUCTURE, OPERATOR.
+   - Adapter hanya menambah alias pada objek runtime.
+   - GeoJSON asli tidak diubah / ditulis ulang.
+*/
+
+function normalizeDelimitedIds(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map(item => cleanText(item))
+      .filter(Boolean)
+      .join(";");
+  }
+
+  return String(value ?? "")
+    .replace(/\s*,\s*/g, ";")
+    .split(";")
+    .map(item => item.trim())
+    .filter(Boolean)
+    .join(";");
+}
+
+function normalizeStructure(value) {
+  const raw = cleanText(value)
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+
+  const aliases = {
+    ELEVATED: "ELEVATED",
+    LAYANG: "ELEVATED",
+    VIADUCT: "ELEVATED",
+
+    UNDERGROUND: "UNDERGROUND",
+    SUBWAY: "UNDERGROUND",
+    TUNNEL: "UNDERGROUND",
+    TUNNELLED: "UNDERGROUND",
+    BAWAH_TANAH: "UNDERGROUND",
+
+    TRANSITION: "TRANSITION",
+    TRANSISI: "TRANSITION",
+    RAMP: "TRANSITION",
+    PORTAL_TRANSITION: "TRANSITION",
+
+    AT_GRADE: "AT_GRADE",
+    ATGRADE: "AT_GRADE",
+    PERMUKAAN: "AT_GRADE",
+    GROUND: "AT_GRADE",
+
+    MIXED: "MIXED",
+    CAMPURAN: "MIXED",
+    UNKNOWN: "UNKNOWN",
+    TIDAK_DIKETAHUI: "UNKNOWN"
+  };
+
+  return aliases[raw] || raw || "UNKNOWN";
+}
+
+function getStructureLabel(value) {
+  const structure = normalizeStructure(value);
+
+  const labels = {
+    ELEVATED: "Elevated",
+    TRANSITION: "Transisi",
+    UNDERGROUND: "Bawah tanah",
+    AT_GRADE: "Permukaan",
+    MIXED: "Campuran",
+    UNKNOWN: "Tidak diketahui"
+  };
+
+  return labels[structure] || cleanText(value) || "Tidak diketahui";
+}
+
+
+function getRouteStructureSummary(routeId) {
+  const structures = Array.from(
+    new Set(
+      getRouteFeaturesById(routeId)
+        .map(feature =>
+          normalizeStructure(
+            feature?.properties?.STRUCTURE
+          )
+        )
+        .filter(value => value && value !== "UNKNOWN")
+    )
+  );
+
+  const order = {
+    ELEVATED: 10,
+    TRANSITION: 20,
+    UNDERGROUND: 30,
+    AT_GRADE: 40,
+    MIXED: 50
+  };
+
+  return structures
+    .sort((a, b) => (order[a] ?? 999) - (order[b] ?? 999))
+    .map(getStructureLabel)
+    .join(" · ");
+}
+
+function getDefaultModeColor(mode) {
+  const normalized = normalizeMode(mode);
+
+  if (normalized === "MRT") {
+    return "#ca2047";
+  }
+
+  return "#555555";
+}
+
+function getDefaultOperator(mode) {
+  const normalized = normalizeMode(mode);
+
+  if (normalized === "MRT") {
+    return "MRT Jakarta";
+  }
+
+  return "";
+}
+
+function adaptRouteFeatureForRuntime(feature, datasetKey = "") {
+  const original = feature?.properties ?? {};
+  const p = { ...original };
+
+  const mode = normalizeMode(
+    p.MODE ||
+    (String(datasetKey).toUpperCase() === "MRT" ? "MRT" : "")
+  );
+
+  const routeId = cleanText(
+    p.ID ??
+    p.ROUTE_ID ??
+    p.LINE_ID ??
+    ""
+  );
+
+  const name = cleanText(
+    p.NAME ??
+    p.LINE_NAME ??
+    p.ROUTE_NAME ??
+    ""
+  );
+
+  const structure = normalizeStructure(
+    p.STRUCTURE ??
+    p.ALIGNMENT ??
+    "UNKNOWN"
+  );
+
+  return {
+    ...feature,
+    properties: {
+      ...p,
+      ID: routeId,
+      ROUTE_ID: cleanText(p.ROUTE_ID) || routeId,
+      LINE_ID: cleanText(p.LINE_ID) || routeId,
+      NAME: name,
+      LINE_NAME: cleanText(p.LINE_NAME) || name,
+      MODE: mode,
+      OPERATOR: cleanText(p.OPERATOR) || getDefaultOperator(mode),
+      STATUS: cleanText(p.STATUS) || "Eksisting",
+      COLOR: cleanText(p.COLOR) || getDefaultModeColor(mode),
+      STRUCTURE: structure,
+      _DATASET: String(datasetKey || mode || "UNKNOWN").toUpperCase()
+    }
+  };
+}
+
+function adaptStopFeatureForRuntime(feature, datasetKey = "") {
+  const original = feature?.properties ?? {};
+  const p = { ...original };
+
+  const mode = normalizeMode(
+    p.MODE ||
+    (String(datasetKey).toUpperCase() === "MRT" ? "MRT" : "")
+  );
+
+  const routes = normalizeDelimitedIds(
+    p.ROUTES ??
+    p.LINES ??
+    p.LINE_ID ??
+    ""
+  );
+
+  const routeIds = splitIds(routes);
+
+  let seqMap = cleanText(
+    p.SEQ_MAP ??
+    p.ROUTE_SEQ ??
+    ""
+  );
+
+  if (!seqMap && routeIds.length === 1) {
+    const rawSeq = cleanText(
+      p.SEQ ??
+      p.SEQUENCE ??
+      p.STOP_SEQ ??
+      ""
+    );
+
+    if (rawSeq) {
+      seqMap = `${routeIds[0]}:${rawSeq}`;
+    }
+  }
+
+  const stopName = cleanText(
+    p.STOP_NAME ??
+    p.NAME ??
+    p.STATION_NAME ??
+    ""
+  );
+
+  const stopId = cleanText(
+    p.STOP_ID ??
+    p.STATION_ID ??
+    p.ID ??
+    ""
+  );
+
+  const geomId = cleanText(
+    p.GEOM_ID ??
+    p.GEOMETRY_ID ??
+    stopId
+  );
+
+  return {
+    ...feature,
+    properties: {
+      ...p,
+      STOP_ID: stopId,
+      GEOM_ID: geomId,
+      STOP_NAME: stopName,
+      DISPLAY_NM: cleanText(p.DISPLAY_NM) || stopName,
+      MODE: mode,
+      OPERATOR: cleanText(p.OPERATOR) || getDefaultOperator(mode),
+      STATUS: cleanText(p.STATUS) || "Eksisting",
+      STRUCTURE: normalizeStructure(
+        p.STRUCTURE ??
+        "UNKNOWN"
+      ),
+      ROUTES: routes,
+      LINES: normalizeDelimitedIds(p.LINES ?? routes),
+      SEQ_MAP: seqMap,
+      _DATASET: String(datasetKey || mode || "UNKNOWN").toUpperCase()
+    }
+  };
+}
+
+function adaptFeatureCollectionForRuntime(
+  collection,
+  {
+    type = "route",
+    datasetKey = ""
+  } = {}
+) {
+  const features = Array.isArray(collection?.features)
+    ? collection.features
+    : [];
+
+  return featureCollection(
+    features.map(feature =>
+      type === "stop"
+        ? adaptStopFeatureForRuntime(feature, datasetKey)
+        : adaptRouteFeatureForRuntime(feature, datasetKey)
+    )
+  );
+}
+
+function mergeFeatureCollections(...collections) {
+  return featureCollection(
+    collections.flatMap(collection =>
+      Array.isArray(collection?.features)
+        ? collection.features
+        : []
+    )
+  );
+}
+
+/*
+  STOP_ROLE rail sepenuhnya attribute-driven.
+
+  Penting untuk dataset parsial/testing:
+  sequence terbesar yang sedang tersedia TIDAK boleh otomatis
+  dianggap terminus. Karena itu tidak ada inferensi endpoint rail
+  pada runtime. Bila suatu stasiun merupakan terminus, isi
+  STOP_ROLE = Terminus / Transit-Terminus pada GeoJSON.
+*/
+function applyRailStopRolePolicy() {
+  return;
+}
+
 
 /*
   Membaca:
@@ -1148,11 +1782,12 @@ function getDiversionSequenceRaw(
    ========================================================= */
 
 function getRouteId(feature) {
-  const p = feature.properties;
+  const p = feature?.properties ?? {};
 
   return String(
     p.ID ??
     p.ROUTE_ID ??
+    p.LINE_ID ??
     ""
   ).trim();
 }
@@ -1161,6 +1796,74 @@ function getRouteHeaderLabel(feature) {
   return getRouteMode(feature) === "BRT"
     ? "KORIDOR"
     : "LIN";
+}
+
+
+/*
+  Header kartu detail mengikuti konteks moda.
+  Label kecil di dalam routeInfo tidak lagi diperlukan karena
+  header kartu sudah menyatakan KORIDOR / LIN.
+*/
+function getRouteDetailSectionLabel() {
+  const selectedRoute =
+    currentSelectedRouteId
+      ? getRouteById(currentSelectedRouteId)
+      : null;
+
+  const mode = selectedRoute
+    ? getRouteMode(selectedRoute)
+    : normalizeMode(modeSelect?.value);
+
+  if (mode === "BRT") {
+    return "Koridor";
+  }
+
+  if (["MRT", "LRT", "KRL"].includes(mode)) {
+    return "Lin";
+  }
+
+  return "Lin / Koridor";
+}
+
+
+function updateRouteDetailToggleTerminology() {
+  if (!routeDetailToggle) {
+    return;
+  }
+
+  const sectionLabel =
+    getRouteDetailSectionLabel();
+
+  const labelEl =
+    routeDetailToggle.querySelector(
+      ".route-detail-toggle-label"
+    );
+
+  if (labelEl) {
+    labelEl.textContent = sectionLabel;
+  }
+
+  const isCollapsed =
+    routeDetailCard?.classList?.contains(
+      "is-collapsed"
+    );
+
+  const action = isCollapsed
+    ? "Tampilkan"
+    : "Sembunyikan";
+
+  const accessibleLabel =
+    `${action} bagian ${sectionLabel.toLowerCase()}`;
+
+  routeDetailToggle.setAttribute(
+    "title",
+    accessibleLabel
+  );
+
+  routeDetailToggle.setAttribute(
+    "aria-label",
+    accessibleLabel
+  );
 }
 
 
@@ -1265,7 +1968,9 @@ function getRouteDisplayName(feature) {
     ]
     ||
     cleanText(
-      feature?.properties?.NAME
+      feature?.properties?.NAME ??
+      feature?.properties?.LINE_NAME ??
+      feature?.properties?.ROUTE_NAME
     )
     ||
     ""
@@ -1274,7 +1979,7 @@ function getRouteDisplayName(feature) {
 
 
 function getRouteTitle(feature) {
-  const p = feature.properties;
+  const p = feature?.properties ?? {};
   const mode = getRouteMode(feature);
   const routeName =
     getRouteDisplayName(feature);
@@ -1283,15 +1988,40 @@ function getRouteTitle(feature) {
     return `Koridor ${p.LINE} (${routeName})`;
   }
 
-  if (hasText(p.LINE)) {
-    return `${mode} ${p.LINE} (${routeName})`;
+  const operator = cleanText(
+    p.OPERATOR
+  );
+
+  /*
+    MRT memakai format operator + nama lin di dalam kurung agar
+    konsisten di dropdown, panel rute, dan label aksesibilitas, mis.:
+    MRT Jakarta (Lin Utara - Selatan).
+
+    Nama lin dinormalisasi hanya untuk tampilan; nilai LINE_NAME dan
+    LINE_ID pada GeoJSON tidak diubah.
+  */
+  if (mode === "MRT" && operator && routeName) {
+    const mrtRouteName = routeName
+      .replace(/\s*[–—-]\s*/g, " - ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return `${operator} (${mrtRouteName})`;
   }
 
-  return (
-    routeName ||
-    mode ||
-    "Lin"
-  );
+  if (operator && routeName) {
+    return `${operator} — ${routeName}`;
+  }
+
+  if (routeName) {
+    return routeName;
+  }
+
+  if (hasText(p.LINE)) {
+    return `${mode} ${p.LINE}`;
+  }
+
+  return mode || "Lin";
 }
 
 function getRouteOptionText(feature) {
@@ -1354,33 +2084,257 @@ function getRouteFeaturesById(routeId) {
 }
 
 
+function getRegularRouteFeatures(routeId) {
+  return getRouteFeaturesById(routeId)
+    .filter(
+      feature =>
+        normalizeRouteVariant(
+          feature
+        ) === "REGULAR"
+    );
+}
+
+
 function getRegularRouteFeature(routeId) {
   return (
-    getRouteFeaturesById(routeId)
-      .find(
-        feature =>
-          normalizeRouteVariant(
-            feature
-          ) === "REGULAR"
-      )
+    getRegularRouteFeatures(routeId)[0]
     ??
     null
   );
 }
 
 
+/*
+  Satu lin rail boleh mempunyai beberapa feature geometri dengan
+  LINE_ID yang sama, misalnya:
+  - MRT_NS_EL_01  ELEVATED
+  - MRT_NS_TR_01  TRANSITION
+  - MRT_NS_UG_01  UNDERGROUND
+
+  Identitas lin tetap satu; hanya geometri yang dipisah.
+*/
+function getActiveRouteGeometryFeatures(routeId) {
+  const diversion =
+    getDiversionRouteFeature(
+      routeId
+    );
+
+  if (diversion) {
+    return [diversion];
+  }
+
+  const regular =
+    getRegularRouteFeatures(
+      routeId
+    );
+
+  if (regular.length) {
+    return regular;
+  }
+
+  return getRouteFeaturesById(
+    routeId
+  );
+}
+
+
+function expandLogicalRouteGeometryFeatures(features) {
+  const result = [];
+  const seenGeom = new Set();
+
+  (features || []).forEach(feature => {
+    const routeId = getRouteId(feature);
+    const expanded = routeId
+      ? getActiveRouteGeometryFeatures(routeId)
+      : [feature];
+
+    expanded.forEach(item => {
+      const geomKey = cleanText(
+        item?.properties?.GEOM_ID
+      ) || `${getRouteId(item)}:${result.length}`;
+
+      if (seenGeom.has(geomKey)) return;
+      seenGeom.add(geomKey);
+      result.push(item);
+    });
+  });
+
+  return result;
+}
+
+
+function parseValidityDate(
+  value,
+  {
+    endOfDay = false
+  } = {}
+) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return null;
+  }
+
+  if (
+    typeof value === "number" &&
+    Number.isFinite(value)
+  ) {
+    const date =
+      new Date(value);
+
+    return Number.isNaN(
+      date.getTime()
+    )
+      ? null
+      : date;
+  }
+
+  const raw =
+    String(value ?? "")
+      .trim();
+
+  if (!raw) {
+    return null;
+  }
+
+  /*
+    Date-only dari GeoJSON manual:
+    VALID_TO dianggap berlaku sampai akhir hari.
+  */
+  if (
+    /^\d{4}-\d{2}-\d{2}$/
+      .test(raw)
+  ) {
+    const suffix =
+      endOfDay
+        ? "T23:59:59.999"
+        : "T00:00:00";
+
+    const date =
+      new Date(
+        `${raw}${suffix}`
+      );
+
+    return Number.isNaN(
+      date.getTime()
+    )
+      ? null
+      : date;
+  }
+
+  const date =
+    new Date(raw);
+
+  return Number.isNaN(
+    date.getTime()
+  )
+    ? null
+    : date;
+}
+
+
+function isFeatureWithinValidity(
+  feature,
+  referenceDate = new Date()
+) {
+  const p =
+    feature?.properties ?? {};
+
+  const validFrom =
+    parseValidityDate(
+      p.VALID_FR
+    );
+
+  const validTo =
+    parseValidityDate(
+      p.VALID_TO,
+      {
+        endOfDay: true
+      }
+    );
+
+  const now =
+    referenceDate instanceof Date
+      ? referenceDate
+      : new Date(referenceDate);
+
+  if (
+    Number.isNaN(
+      now.getTime()
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    validFrom &&
+    now < validFrom
+  ) {
+    return false;
+  }
+
+  if (
+    validTo &&
+    now > validTo
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+
 function getDiversionRouteFeature(routeId) {
-  return (
+  const diversions =
     getRouteFeaturesById(routeId)
-      .find(
+      .filter(
         feature =>
           normalizeRouteVariant(
             feature
           ) === "DIVERSION"
+      );
+
+  if (!diversions.length) {
+    return null;
+  }
+
+  /*
+    Pedoman v2.0 menyediakan VALID_FR / VALID_TO.
+    DIVERSION yang aktif diprioritaskan.
+    Jika semua diversion punya periode dan sudah tidak aktif,
+    WebGIS kembali ke REGULAR.
+  */
+  const active =
+    diversions
+      .filter(
+        feature =>
+          isFeatureWithinValidity(
+            feature
+          )
       )
-    ??
-    null
-  );
+      .sort(
+        (a, b) => {
+          const aDate =
+            parseValidityDate(
+              a?.properties?.VALID_FR
+            )
+              ?.getTime()
+            ?? 0;
+
+          const bDate =
+            parseValidityDate(
+              b?.properties?.VALID_FR
+            )
+              ?.getTime()
+            ?? 0;
+
+          return bDate - aDate;
+        }
+      );
+
+  return active[0] ?? null;
 }
 
 
@@ -1803,6 +2757,781 @@ function setComparisonRoute(
 }
 
 /* =========================================================
+   ROUTE DIRECTION HELPERS
+   ========================================================= */
+
+function normalizeRouteDirectionSide(value) {
+  return String(value ?? "")
+    .trim()
+    .toUpperCase() === "B"
+      ? "B"
+      : "A";
+}
+
+function getDirectionalSequenceRaw(feature, routeId, side) {
+  const p = feature?.properties ?? {};
+  const normalizedSide = normalizeRouteDirectionSide(side);
+  const field =
+    normalizedSide === "A"
+      ? (p.SEQ_A_MAP ?? p.SEQ_A ?? "")
+      : (p.SEQ_B_MAP ?? p.SEQ_B ?? "");
+
+  const seqMap = getCachedDirectionFieldMap(
+    feature,
+    normalizedSide === "A" ? "SEQ_A" : "SEQ_B",
+    field
+  );
+
+  return cleanText(seqMap[String(routeId ?? "")]);
+}
+
+function hasDirectionalSequenceForRoute(feature, routeId) {
+  return Boolean(
+    getDirectionalSequenceRaw(feature, routeId, "A") ||
+    getDirectionalSequenceRaw(feature, routeId, "B")
+  );
+}
+
+function getRouteDirectionSourceFeatures(routeId) {
+  const result = [];
+  const push = feature => {
+    if (feature && !result.includes(feature)) result.push(feature);
+  };
+  push(getRouteById(routeId));
+  push(getRegularRouteFeature(routeId));
+  push(getDiversionRouteFeature(routeId));
+  return result;
+}
+
+function getRouteDirectionFieldLabels(routeId) {
+  const labels = { A: "", B: "" };
+
+  getRouteDirectionSourceFeatures(routeId)
+    .forEach(feature => {
+      const p = feature?.properties ?? {};
+      if (!labels.A) {
+        labels.A = cleanText(p.DIR_A_NM ?? p.DIR_A_NAME ?? "");
+      }
+      if (!labels.B) {
+        labels.B = cleanText(p.DIR_B_NM ?? p.DIR_B_NAME ?? "");
+      }
+    });
+
+  return labels;
+}
+
+function getRouteNameEndpoints(routeId) {
+  /*
+    Untuk pengalihan aktif, nama/trase operasional menjadi sumber
+    endpoint arah. Jika tidak ada diversion, getRouteById() tetap
+    mengembalikan rute reguler.
+  */
+  const feature =
+    getRouteById(routeId) ||
+    getRegularRouteFeature(routeId);
+
+  const routeName = feature
+    ? getRouteDisplayName(feature)
+    : "";
+
+  if (!routeName) return [];
+
+  const parts = routeName
+    .split(/\s+(?:-|–|—|→|↔)\s+/)
+    .map(cleanText)
+    .filter(Boolean);
+
+  if (parts.length < 2) return [];
+  return [parts[0], parts[parts.length - 1]];
+}
+
+function normalizeDirectionPlaceKey(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function getDestinationFromDirectionLabel(value) {
+  const text = cleanText(value);
+  if (!text) return "";
+
+  const parts = text
+    .split(/\s*(?:→|->|›)\s*/)
+    .map(cleanText)
+    .filter(Boolean);
+
+  if (parts.length >= 2) {
+    return parts[parts.length - 1];
+  }
+
+  return text.replace(/^arah\s+/i, "").trim();
+}
+
+function getOriginFromDirectionLabel(value) {
+  const text = cleanText(value);
+  if (!text) return "";
+
+  const parts = text
+    .split(/\s*(?:→|->|›)\s*/)
+    .map(cleanText)
+    .filter(Boolean);
+
+  return parts.length >= 2
+    ? parts[0]
+    : "";
+}
+
+function getRawStopDirectionForRoute(feature, routeId) {
+  const raw =
+    feature?.properties?.DIR_MAP ??
+    feature?.properties?.ROUTE_DIR ??
+    "";
+
+  const mapValue = getCachedDirectionFieldMap(
+    feature,
+    "DIR",
+    raw
+  );
+
+  return cleanText(mapValue[String(routeId ?? "")]);
+}
+
+function isAmbiguousDirectionValue(value) {
+  const raw = cleanText(value);
+  if (!raw) return false;
+
+  const code = normalizeDirectionCode(raw);
+  if (!code || code === "BOTH") return true;
+
+  /*
+    Nilai seperti "Kota/Blok M" berarti dua arah dan tidak boleh
+    dipakai untuk menebak tujuan A/B. Inilah yang sebelumnya dapat
+    menghasilkan label "Kota/Blok M → Kota/Blok M".
+  */
+  return /[/&,;+]|\bDAN\b|\bAND\b/i.test(raw);
+}
+
+function getUnambiguousDirectionPlace(value) {
+  if (isAmbiguousDirectionValue(value)) return "";
+
+  const code = normalizeDirectionCode(value);
+  if (!code || code === "BOTH") return "";
+
+  const label = getDirectionLabel(code);
+  return String(label ?? "")
+    .replace(/^Arah\s+/i, "")
+    .trim();
+}
+
+function getRouteDirectionDestination(routeId, side) {
+  if (!stopData?.features) return "";
+
+  const wantedSide = normalizeRouteDirectionSide(side);
+  const counts = new Map();
+
+  stopData.features.forEach(feature => {
+    if (!getDirectionalSequenceRaw(feature, routeId, wantedSide)) {
+      return;
+    }
+
+    const destination = getUnambiguousDirectionPlace(
+      getRawStopDirectionForRoute(feature, routeId)
+    );
+
+    if (!destination) return;
+
+    counts.set(
+      destination,
+      (counts.get(destination) ?? 0) + 1
+    );
+  });
+
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])?.[0]?.[0] ?? "";
+}
+
+function findMatchingEndpoint(endpoints, destination) {
+  const target = normalizeDirectionPlaceKey(destination);
+  if (!target || !Array.isArray(endpoints)) return -1;
+
+  return endpoints.findIndex(endpoint => {
+    const key = normalizeDirectionPlaceKey(endpoint);
+    return Boolean(
+      key === target ||
+      key.includes(target) ||
+      target.includes(key)
+    );
+  });
+}
+
+function buildDirectionLabelFromDestination(routeId, destination) {
+  if (!destination) return "";
+
+  const endpoints = getRouteNameEndpoints(routeId);
+  if (endpoints.length >= 2) {
+    const destinationIndex = findMatchingEndpoint(
+      endpoints,
+      destination
+    );
+
+    if (destinationIndex !== -1) {
+      const origin = endpoints[destinationIndex === 0 ? 1 : 0];
+      return `${origin} → ${endpoints[destinationIndex]}`;
+    }
+  }
+
+  return `Arah ${destination}`;
+}
+
+function getRouteDirectionLabels(routeId) {
+  const cacheKey = `labels:${String(routeId ?? "")}`;
+  if (routeDirectionStaticCache.has(cacheKey)) {
+    return routeDirectionStaticCache.get(cacheKey);
+  }
+
+  const direct = getRouteDirectionFieldLabels(routeId);
+  const destinationA = getRouteDirectionDestination(routeId, "A");
+  const destinationB = getRouteDirectionDestination(routeId, "B");
+
+  const result = {
+    A: direct.A || buildDirectionLabelFromDestination(routeId, destinationA),
+    B: direct.B || buildDirectionLabelFromDestination(routeId, destinationB)
+  };
+
+  /* Jika dua tujuan eksplisit tersedia, keduanya juga dapat saling
+     menjadi origin tanpa perlu menebak kode A/B dari NAME. */
+  if (!direct.A && destinationA && destinationB) {
+    result.A = `${destinationB} → ${destinationA}`;
+  }
+  if (!direct.B && destinationA && destinationB) {
+    result.B = `${destinationA} → ${destinationB}`;
+  }
+
+  /*
+    FALLBACK UNTUK KORIDOR BRT YANG BELUM DIMIGRASIKAN
+    --------------------------------------------------
+    Koridor selain K1 masih dapat memakai NAME + SEQ_MAP lama.
+    Fallback ini hanya dipakai bila tidak ada label/sequence arah
+    eksplisit yang cukup. Begitu DIR_A_NM/DIR_B_NM atau SEQ_A/B_MAP
+    diisi, data eksplisit tetap mendapat prioritas.
+  */
+  const endpoints = getRouteNameEndpoints(routeId);
+  if (endpoints.length >= 2) {
+    if (!result.A) {
+      result.A = `${endpoints[0]} → ${endpoints[1]}`;
+    }
+    if (!result.B) {
+      result.B = `${endpoints[1]} → ${endpoints[0]}`;
+    }
+  }
+
+  if (!result.A) result.A = "Arah A";
+  if (!result.B) result.B = "Arah B";
+
+  routeDirectionStaticCache.set(cacheKey, result);
+  return result;
+}
+
+function getRouteDirectionalCoverage(routeId) {
+  if (!stopData?.features) {
+    return { A: false, B: false };
+  }
+
+  const routeKey = String(routeId ?? "");
+  const cacheKey = `coverage:${routeKey}`;
+
+  if (routeDirectionStaticCache.has(cacheKey)) {
+    return routeDirectionStaticCache.get(cacheKey);
+  }
+
+  const direct = getRouteDirectionFieldLabels(routeKey);
+
+  let hasA = Boolean(direct.A);
+  let hasB = Boolean(direct.B);
+
+  stopData.features.forEach(feature => {
+    if (!stopServesRoute(feature, routeKey)) return;
+    if (getDirectionalSequenceRaw(feature, routeKey, "A")) hasA = true;
+    if (getDirectionalSequenceRaw(feature, routeKey, "B")) hasB = true;
+  });
+
+  const result = { A: hasA, B: hasB };
+  routeDirectionStaticCache.set(cacheKey, result);
+  return result;
+}
+
+function hasLegacyBidirectionalRouteData(routeId) {
+  if (!routeId || !stopData?.features) return false;
+
+  const route = getRouteById(routeId);
+  if (!route || getRouteMode(route) !== "BRT") return false;
+
+  const endpoints = getRouteNameEndpoints(routeId);
+  if (endpoints.length < 2) return false;
+
+  /*
+    Minimal dua halte dengan SEQ_MAP diperlukan agar arah pergi dan
+    balik dapat dibentuk secara aman dari urutan legacy.
+  */
+  let sequenceCount = 0;
+
+  stopData.features.forEach(feature => {
+    if (!stopServesRoute(feature, routeId)) return;
+
+    const raw = getLegacySequenceRawForDirection(
+      feature,
+      routeId
+    );
+
+    if (raw) sequenceCount += 1;
+  });
+
+  return sequenceCount >= 2;
+}
+
+function isRouteDirectionEnabled(routeId) {
+  if (!routeId) return false;
+
+  const coverage = getRouteDirectionalCoverage(routeId);
+
+  /* Schema arah baru selalu menjadi pilihan utama. */
+  if (coverage.A && coverage.B) {
+    return true;
+  }
+
+  /*
+    Koridor BRT yang belum mempunyai SEQ_A/B_MAP tetap memperoleh
+    toggle arah menggunakan NAME + SEQ_MAP sebagai fallback.
+  */
+  return hasLegacyBidirectionalRouteData(routeId);
+}
+
+function getDefaultRouteDirection(routeId) {
+  /*
+    Bila NAME = Origin - Destination dan salah satu side secara
+    eksplisit menuju Destination, side tersebut menjadi default.
+    Jika tidak dapat dipastikan, A tetap fallback aman.
+  */
+  const endpoints = getRouteNameEndpoints(routeId);
+  if (endpoints.length >= 2) {
+    const endKey = normalizeDirectionPlaceKey(endpoints[1]);
+    for (const side of ["A", "B"]) {
+      const destination = normalizeDirectionPlaceKey(
+        getRouteDirectionDestination(routeId, side)
+      );
+      if (
+        destination &&
+        (destination === endKey || destination.includes(endKey) || endKey.includes(destination))
+      ) {
+        return side;
+      }
+    }
+  }
+  return "A";
+}
+
+function getActiveRouteDirection(routeId) {
+  const routeKey = String(routeId ?? "");
+  if (!routeDirectionById.has(routeKey)) {
+    routeDirectionById.set(routeKey, getDefaultRouteDirection(routeKey));
+  }
+  return normalizeRouteDirectionSide(routeDirectionById.get(routeKey));
+}
+
+function setActiveRouteDirection(routeId, side) {
+  const normalized = normalizeRouteDirectionSide(side);
+  routeDirectionById.set(String(routeId ?? ""), normalized);
+  clearDirectionRuntimeCaches();
+  return normalized;
+}
+
+function toggleActiveRouteDirection(routeId) {
+  const current = getActiveRouteDirection(routeId);
+  return setActiveRouteDirection(routeId, current === "A" ? "B" : "A");
+}
+
+function getRouteDirectionDestinationKey(routeId, side) {
+  const labels = getRouteDirectionLabels(routeId);
+  return normalizeDirectionPlaceKey(
+    getDestinationFromDirectionLabel(
+      labels[normalizeRouteDirectionSide(side)]
+    )
+  );
+}
+
+function isStopVisibleInActiveDirection(feature, routeId) {
+  if (!isRouteDirectionEnabled(routeId)) return true;
+
+  const activeSide = getActiveRouteDirection(routeId);
+  const activeSeq = getDirectionalSequenceRaw(
+    feature,
+    routeId,
+    activeSide
+  );
+
+  /* Feature yang sudah memiliki map sequence directional bersifat
+     eksplisit: kosong pada side aktif = tidak dilayani side itu. */
+  if (hasDirectionalSequenceForRoute(feature, routeId)) {
+    return Boolean(activeSeq);
+  }
+
+  /* Feature yang belum dimigrasikan TIDAK boleh hilang hanya karena
+     rute sudah mulai memakai SEQ_A/B_MAP. Ini memperbaiki regresi
+     build v3 yang dapat menyisakan hanya satu halte. */
+  const rawDirection = getRawStopDirectionForRoute(feature, routeId);
+
+  if (!rawDirection || isAmbiguousDirectionValue(rawDirection)) {
+    return true;
+  }
+
+  const stopDestination = normalizeDirectionPlaceKey(
+    getUnambiguousDirectionPlace(rawDirection)
+  );
+  const activeDestination = getRouteDirectionDestinationKey(
+    routeId,
+    activeSide
+  );
+
+  if (
+    stopDestination &&
+    activeDestination &&
+    (
+      stopDestination === activeDestination ||
+      stopDestination.includes(activeDestination) ||
+      activeDestination.includes(stopDestination)
+    )
+  ) {
+    return true;
+  }
+
+  /* Satu-satunya physical point pada terminus boleh dipakai untuk
+     kedua arah. Terminus dengan dua physical point tetap mengikuti
+     DIR_MAP / SEQ_A/B_MAP. */
+  const role = getStopRoleForRoute(feature, routeId);
+  if (role === "Terminus" || role === "Transit-Terminus") {
+    const group = getStopGroupFeatures(feature, routeId);
+    return group.length <= 1;
+  }
+
+  return false;
+}
+
+function getLegacySequenceRawForDirection(feature, routeId) {
+  const seqMap = parseRouteMap(
+    feature?.properties?.SEQ_MAP ??
+    feature?.properties?.ROUTE_SEQ ??
+    ""
+  );
+  return cleanText(seqMap[String(routeId ?? "")]);
+}
+
+function parseDirectionalSequenceNumber(value) {
+  const raw = String(value ?? "").trim().toLowerCase();
+  if (!raw) return 999999;
+  const match = raw.match(/^(\d+)([a-z]*)$/);
+  if (!match) return 999999;
+  const major = Number(match[1]);
+  const suffix = match[2];
+  if (!suffix) return major;
+  let suffixValue = 0;
+  for (let i = 0; i < suffix.length; i += 1) {
+    suffixValue = suffixValue * 26 + (suffix.charCodeAt(i) - 96);
+  }
+  return major + suffixValue / 1000;
+}
+
+function getLegacySequenceNumberForDirection(feature, routeId) {
+  return parseDirectionalSequenceNumber(
+    getLegacySequenceRawForDirection(feature, routeId)
+  );
+}
+
+function getRouteLegacySequenceMaximum(routeId) {
+  if (!stopData?.features) return 0;
+  let maximum = 0;
+  stopData.features.forEach(feature => {
+    if (!stopServesRoute(feature, routeId)) return;
+    const value = getLegacySequenceNumberForDirection(feature, routeId);
+    if (value < 999999 && value > maximum) maximum = value;
+  });
+  return maximum;
+}
+
+function getRouteEndpointLegacySequences(routeId) {
+  const endpoints = getRouteNameEndpoints(routeId);
+  if (endpoints.length < 2 || !stopData?.features) return null;
+
+  const result = endpoints.map(endpoint => {
+    const target = normalizeDirectionPlaceKey(endpoint);
+    const matches = stopData.features
+      .filter(feature => stopServesRoute(feature, routeId))
+      .filter(feature => {
+        const key = normalizeDirectionPlaceKey(getStopDisplayName(feature));
+        return key === target || key.includes(target) || target.includes(key);
+      })
+      .map(feature => getLegacySequenceNumberForDirection(feature, routeId))
+      .filter(value => value < 999999);
+
+    return matches.length ? Math.min(...matches) : null;
+  });
+
+  if (result.some(value => value === null)) return null;
+  return { endpoints, sequences: result };
+}
+
+function shouldReverseLegacySequence(routeId, side) {
+  const endpointInfo = getRouteEndpointLegacySequences(routeId);
+  if (!endpointInfo) return false;
+
+  const destinationKey = getRouteDirectionDestinationKey(routeId, side);
+  const destinationIndex = findMatchingEndpoint(
+    endpointInfo.endpoints,
+    getDestinationFromDirectionLabel(getRouteDirectionLabels(routeId)[normalizeRouteDirectionSide(side)])
+  );
+
+  if (destinationIndex === -1 || !destinationKey) return false;
+
+  const originIndex = destinationIndex === 0 ? 1 : 0;
+  return endpointInfo.sequences[destinationIndex] < endpointInfo.sequences[originIndex];
+}
+
+function getRouteOperationalSequenceMaximum(routeId) {
+  if (!stopData?.features) return 0;
+
+  let maximum = 0;
+
+  stopData.features.forEach(feature => {
+    const operationalCode = getOperationalMapValue(feature, routeId);
+    const belongsToRoute = stopServesRoute(feature, routeId);
+
+    if (
+      !belongsToRoute &&
+      operationalCode !== "TEMP_SERVED" &&
+      operationalCode !== "TEMP_TERMINUS"
+    ) {
+      return;
+    }
+
+    const value = getStopSequence(feature, routeId);
+    if (value < 999999 && value > maximum) {
+      maximum = value;
+    }
+  });
+
+  return maximum;
+}
+
+function getRouteOperationalEndpointSequences(routeId) {
+  const endpoints = getRouteNameEndpoints(routeId);
+  if (endpoints.length < 2 || !stopData?.features) return null;
+
+  const result = endpoints.map(endpoint => {
+    const target = normalizeDirectionPlaceKey(endpoint);
+
+    const matches = stopData.features
+      .filter(feature => {
+        const operationalCode = getOperationalMapValue(feature, routeId);
+        return (
+          stopServesRoute(feature, routeId) ||
+          operationalCode === "TEMP_SERVED" ||
+          operationalCode === "TEMP_TERMINUS"
+        );
+      })
+      .filter(feature => {
+        const key = normalizeDirectionPlaceKey(getStopDisplayName(feature));
+        return key === target || key.includes(target) || target.includes(key);
+      })
+      .map(feature => getStopSequence(feature, routeId))
+      .filter(value => value < 999999);
+
+    return matches.length ? Math.min(...matches) : null;
+  });
+
+  if (result.some(value => value === null)) return null;
+  return { endpoints, sequences: result };
+}
+
+function shouldReverseOperationalSequence(routeId, side) {
+  const endpointInfo = getRouteOperationalEndpointSequences(routeId);
+  if (!endpointInfo) {
+    /*
+      Untuk rute legacy tanpa endpoint sequence yang dapat dibaca,
+      A mengikuti urutan sumber dan B menjadi arah balik.
+    */
+    return normalizeRouteDirectionSide(side) === "B";
+  }
+
+  const label = getRouteDirectionLabels(routeId)[
+    normalizeRouteDirectionSide(side)
+  ];
+
+  const destinationIndex = findMatchingEndpoint(
+    endpointInfo.endpoints,
+    getDestinationFromDirectionLabel(label)
+  );
+
+  if (destinationIndex === -1) {
+    return normalizeRouteDirectionSide(side) === "B";
+  }
+
+  const originIndex = destinationIndex === 0 ? 1 : 0;
+
+  return (
+    endpointInfo.sequences[destinationIndex] <
+    endpointInfo.sequences[originIndex]
+  );
+}
+
+function getDirectionalSortSequence(feature, routeId) {
+  /*
+    Operational diversion tetap menjadi sumber urutan utama, tetapi
+    urutannya dapat dibalik untuk sisi perjalanan sebaliknya.
+  */
+  if (hasRouteDiversion(routeId)) {
+    const operationalSequence = getStopSequence(feature, routeId);
+
+    if (!isRouteDirectionEnabled(routeId)) {
+      return operationalSequence;
+    }
+
+    if (!shouldReverseOperationalSequence(
+      routeId,
+      getActiveRouteDirection(routeId)
+    )) {
+      return operationalSequence;
+    }
+
+    const maximum = getRouteOperationalSequenceMaximum(routeId);
+
+    return (
+      operationalSequence < 999999 && maximum
+        ? maximum + 1 - operationalSequence
+        : operationalSequence
+    );
+  }
+
+  if (!isRouteDirectionEnabled(routeId)) {
+    return getStopSequence(feature, routeId);
+  }
+
+  const side = getActiveRouteDirection(routeId);
+
+  /*
+    Endpoint terminus tetap dikunci secara semantik:
+    origin = pertama, destination = terakhir.
+    Ini juga membuat migrasi bertahap aman ketika sequence endpoint
+    belum sempat diperbarui, tanpa hardcode nama halte tertentu.
+  */
+  const role = getStopRoleForRoute(feature, routeId);
+  if (role === "Terminus" || role === "Transit-Terminus") {
+    const activeLabel = getRouteDirectionLabels(routeId)[side];
+    const originKey = normalizeDirectionPlaceKey(
+      getOriginFromDirectionLabel(activeLabel)
+    );
+    const destinationKey = normalizeDirectionPlaceKey(
+      getDestinationFromDirectionLabel(activeLabel)
+    );
+    const stopKey = normalizeDirectionPlaceKey(
+      getStopDisplayName(feature)
+    );
+
+    if (
+      originKey &&
+      (stopKey === originKey || stopKey.includes(originKey) || originKey.includes(stopKey))
+    ) {
+      return -1000;
+    }
+
+    if (
+      destinationKey &&
+      (stopKey === destinationKey || stopKey.includes(destinationKey) || destinationKey.includes(stopKey))
+    ) {
+      return 900000;
+    }
+  }
+
+  const explicit = getDirectionalSequenceRaw(feature, routeId, side);
+
+  if (explicit) {
+    return parseDirectionalSequenceNumber(explicit);
+  }
+
+  if (hasDirectionalSequenceForRoute(feature, routeId)) {
+    return 999999;
+  }
+
+  const legacy = getLegacySequenceNumberForDirection(feature, routeId);
+  if (legacy >= 999999) return legacy;
+
+  if (!shouldReverseLegacySequence(routeId, side)) {
+    return legacy;
+  }
+
+  const maximum = getRouteLegacySequenceMaximum(routeId);
+  return maximum ? maximum + 1 - legacy : legacy;
+}
+
+function compareStopsForActiveDirection(a, b, routeId) {
+  const seqA = getDirectionalSortSequence(a, routeId);
+  const seqB = getDirectionalSortSequence(b, routeId);
+  if (seqA !== seqB) return seqA - seqB;
+  return getStopDisplayName(a).localeCompare(getStopDisplayName(b), "id");
+}
+
+function getActiveDirectionSequenceRaw(feature, routeId) {
+  if (!isRouteDirectionEnabled(routeId) || hasRouteDiversion(routeId)) {
+    return getStopSequenceRaw(feature, routeId);
+  }
+
+  const explicit = getDirectionalSequenceRaw(
+    feature,
+    routeId,
+    getActiveRouteDirection(routeId)
+  );
+
+  return explicit || "";
+}
+
+function buildRouteDirectionControlHTML(routeId) {
+  if (!isRouteDirectionEnabled(routeId)) return "";
+
+  const side = getActiveRouteDirection(routeId);
+  const labels = getRouteDirectionLabels(routeId);
+  const nextSide = side === "A" ? "B" : "A";
+
+  return `
+    <div class="route-direction-control">
+      <div class="route-direction-caption">Arah perjalanan</div>
+      <button
+        type="button"
+        class="route-direction-toggle"
+        data-route-direction-toggle="${escapeHTML(routeId)}"
+        aria-label="Ganti arah ke ${escapeHTML(labels[nextSide])}"
+        title="Ganti ke ${escapeHTML(labels[nextSide])}"
+      >
+        <span class="route-direction-toggle-text">${escapeHTML(labels[side])}</span>
+        <span class="route-direction-toggle-icon" aria-hidden="true">⇄</span>
+      </button>
+    </div>
+  `;
+}
+
+function refreshRouteDirectionView(routeId) {
+  if (!routeId || !getRouteById(routeId)) return;
+
+  clearSelectedStop();
+  renderRouteInfo(getRouteById(routeId));
+  renderStopList(routeId);
+  drawStops(routeId);
+  updateStopLabelVisibility();
+  updateRouteDetailCardState();
+  syncUrlState();
+}
+
+/* =========================================================
    ROUTE SUMMARY
    ========================================================= */
 
@@ -1905,6 +3634,202 @@ function getGeometryLengthKm(geometry) {
 }
 
 
+/*
+  Panjang lin rail tidak boleh sekadar menjumlahkan semua feature
+  dengan LINE_ID yang sama. Saat proses migrasi, sebuah lin dapat
+  memiliki geometri baseline/generik sekaligus segmen detail
+  ELEVATED / TRANSITION / UNDERGROUND yang menimpa trase yang sama.
+
+  Aturan ringkasan:
+  1. feature identik dideduplikasi;
+  2. jika tersedia sedikitnya dua jenis struktur detail, segmen
+     detail menjadi sumber panjang utama dan geometri generik
+     MIXED/UNKNOWN tidak ikut dijumlahkan;
+  3. jika struktur detail masih parsial, fallback ke seluruh
+     geometri aktif agar panjang tidak terpotong saat digitasi.
+*/
+function getGeometryFingerprint(geometry) {
+  if (!geometry) {
+    return "";
+  }
+
+  const roundCoord = value => {
+    const number = Number(value);
+    return Number.isFinite(number)
+      ? number.toFixed(6)
+      : "";
+  };
+
+  const canonicalLine = line => {
+    if (!Array.isArray(line)) {
+      return "";
+    }
+
+    const forward = line
+      .map(coord =>
+        `${roundCoord(coord?.[0])},${roundCoord(coord?.[1])}`
+      )
+      .join("|");
+
+    const reverse = [...line]
+      .reverse()
+      .map(coord =>
+        `${roundCoord(coord?.[0])},${roundCoord(coord?.[1])}`
+      )
+      .join("|");
+
+    return forward <= reverse
+      ? forward
+      : reverse;
+  };
+
+  if (geometry.type === "LineString") {
+    return `L:${canonicalLine(geometry.coordinates)}`;
+  }
+
+  if (geometry.type === "MultiLineString") {
+    const parts = (geometry.coordinates || [])
+      .map(canonicalLine)
+      .filter(Boolean)
+      .sort();
+
+    return `M:${parts.join("||")}`;
+  }
+
+  return "";
+}
+
+
+function getUniqueRouteGeometryFeatures(features) {
+  const seen = new Set();
+
+  return (features || []).filter(feature => {
+    const fingerprint =
+      getGeometryFingerprint(feature?.geometry);
+
+    if (!fingerprint) {
+      return true;
+    }
+
+    if (seen.has(fingerprint)) {
+      return false;
+    }
+
+    seen.add(fingerprint);
+    return true;
+  });
+}
+
+
+function getRailSummaryGeometryFeatures(routeId) {
+  const active =
+    getUniqueRouteGeometryFeatures(
+      getActiveRouteGeometryFeatures(routeId)
+    );
+
+  const detailedStructures = new Set([
+    "ELEVATED",
+    "TRANSITION",
+    "UNDERGROUND",
+    "AT_GRADE"
+  ]);
+
+  const detailed = active.filter(feature =>
+    detailedStructures.has(
+      normalizeStructure(
+        feature?.properties?.STRUCTURE
+      )
+    )
+  );
+
+  const detailedTypes = new Set(
+    detailed.map(feature =>
+      normalizeStructure(
+        feature?.properties?.STRUCTURE
+      )
+    )
+  );
+
+  /*
+    Dua atau lebih kelas struktur menunjukkan bahwa lin mulai
+    dipecah menjadi segmen kartografis. Jika masih ada geometri
+    generik/baseline, bandingkan cakupannya agar digitasi parsial
+    tidak membuat ringkasan panjang tiba-tiba terpotong.
+  */
+  if (detailedTypes.size >= 2) {
+    const generic = active.filter(feature =>
+      !detailedStructures.has(
+        normalizeStructure(
+          feature?.properties?.STRUCTURE
+        )
+      )
+    );
+
+    if (!generic.length) {
+      return detailed;
+    }
+
+    const detailedLengthKm = detailed
+      .map(feature =>
+        getGeometryLengthKm(feature.geometry)
+      )
+      .filter(Number.isFinite)
+      .reduce((sum, value) => sum + value, 0);
+
+    const genericByLength = generic
+      .map(feature => ({
+        feature,
+        lengthKm: getGeometryLengthKm(feature.geometry)
+      }))
+      .filter(item => Number.isFinite(item.lengthKm))
+      .sort((a, b) => b.lengthKm - a.lengthKm);
+
+    const longestGeneric = genericByLength[0];
+
+    /*
+      Jika segmen detail sudah mencakup sekurangnya ±80% dari
+      geometri baseline terpanjang, baseline dianggap representasi
+      lama yang overlap dan tidak ikut dijumlahkan.
+    */
+    if (
+      !longestGeneric ||
+      detailedLengthKm >= longestGeneric.lengthKm * 0.8
+    ) {
+      return detailed;
+    }
+
+    /*
+      Segmen detail masih parsial: gunakan baseline terpanjang
+      sebagai estimasi sementara, bukan baseline + segmen detail.
+    */
+    return [longestGeneric.feature];
+  }
+
+  return active;
+}
+
+
+function getRouteSummaryLengthKm(feature) {
+  const routeId = getRouteId(feature);
+  const mode = getRouteMode(feature);
+
+  if (mode === "BRT") {
+    return getGeometryLengthKm(
+      feature.geometry
+    );
+  }
+
+  return getRailSummaryGeometryFeatures(routeId)
+    .map(routeFeature =>
+      getGeometryLengthKm(
+        routeFeature.geometry
+      )
+    )
+    .filter(Number.isFinite)
+    .reduce((sum, value) => sum + value, 0);
+}
+
+
 function getRouteSummaryStats(feature) {
   const routeId =
     getRouteId(feature);
@@ -1919,11 +3844,18 @@ function getRouteSummaryStats(feature) {
 
   const transitCount =
     entries.filter(
-      entry =>
-        getOperationalStopRole(
-          entry.feature,
-          routeId
-        ) === "Transit"
+      entry => {
+        const role =
+          getOperationalStopRole(
+            entry.feature,
+            routeId
+          );
+
+        return (
+          role === "Transit" ||
+          role === "Transit-Terminus"
+        );
+      }
     ).length;
 
   const terminusCount =
@@ -1937,19 +3869,23 @@ function getRouteSummaryStats(feature) {
 
         return (
           role === "Terminus" ||
+          role === "Transit-Terminus" ||
           role === "Terminus Sementara"
         );
       }
     ).length;
+
+  const lengthKm =
+    getRouteSummaryLengthKm(feature);
 
   return {
     stopCount: entries.length,
     transitCount,
     terminusCount,
     lengthKm:
-      getGeometryLengthKm(
-        feature.geometry
-      )
+      Number.isFinite(lengthKm) && lengthKm > 0
+        ? lengthKm
+        : null
   };
 }
 
@@ -1960,6 +3896,11 @@ function buildRouteSummaryHTML(
 ) {
   const stats =
     getRouteSummaryStats(
+      feature
+    );
+
+  const mode =
+    getRouteMode(
       feature
     );
 
@@ -2005,8 +3946,11 @@ function buildRouteSummaryHTML(
       )
         ? `
           <div class="route-summary-length-note">
-            * Panjang merupakan estimasi total trase dua arah
-            (pergi–kembali), bukan panjang satu arah.
+            ${
+              mode === "BRT"
+                ? "* Panjang merupakan estimasi total trase dua arah (pergi–kembali), bukan panjang satu arah."
+                : "* Panjang merupakan estimasi geometri lin yang ditampilkan."
+            }
           </div>
         `
         : ""
@@ -2020,61 +3964,101 @@ function buildRouteSummaryHTML(
    ========================================================= */
 
 /*
-  Karena file saat ini masih punya beberapa STOP_ID kosong,
-  script membuat key internal unik secara otomatis.
+  PEDOMAN BRT v2.0
+  ----------------
+  STOP_ID = identitas halte logis.
+  GEOM_ID = identitas feature/titik fisik dan wajib unik.
 
-  Setelah STOP_ID diisi di GeoJSON, script otomatis memakai STOP_ID asli.
+  Runtime key karena itu memakai GEOM_ID terlebih dahulu.
+  Fallback STOP_ID/FID hanya dipertahankan untuk data lama
+  selama proses migrasi.
 */
 function assignRuntimeStopKeys() {
   if (!stopData) return;
 
-  const usedKeys = new Map();
+  const usedKeys =
+    new Map();
 
-  stopData.features.forEach((feature, index) => {
-    const p = feature.properties ?? {};
+  stopData.features.forEach(
+    (feature, index) => {
+      const p =
+        feature.properties ?? {};
 
-    const rawId =
-      String(p.STOP_ID ?? "").trim();
+      const rawGeomId =
+        String(
+          p.GEOM_ID ?? ""
+        ).trim();
 
-    const rawFid =
-      String(p.FID ?? "").trim();
+      const rawStopId =
+        String(
+          p.STOP_ID ?? ""
+        ).trim();
 
-    let baseKey = "";
+      const rawFid =
+        String(
+          p.FID ?? ""
+        ).trim();
 
-    if (rawId) {
-      baseKey = rawId;
+      let baseKey = "";
+
+      if (rawGeomId) {
+        baseKey = rawGeomId;
+      }
+      else if (rawStopId) {
+        baseKey =
+          `STOP_${rawStopId}`;
+      }
+      else if (rawFid !== "") {
+        baseKey =
+          `FID_${String(rawFid)
+            .padStart(3, "0")}`;
+      }
+      else {
+        baseKey =
+          `AUTO_STOP_${String(index + 1)
+            .padStart(3, "0")}`;
+      }
+
+      const usedCount =
+        usedKeys.get(baseKey)
+        ?? 0;
+
+      usedKeys.set(
+        baseKey,
+        usedCount + 1
+      );
+
+      p.__STOP_KEY =
+        usedCount === 0
+          ? baseKey
+          : `${baseKey}__${usedCount + 1}`;
+
+      feature.properties = p;
     }
-    else if (rawFid !== "") {
-      baseKey =
-        `FID_${String(rawFid).padStart(3, "0")}`;
-    }
-    else {
-      baseKey =
-        `AUTO_STOP_${String(index + 1).padStart(3, "0")}`;
-    }
-
-    const usedCount =
-      usedKeys.get(baseKey) ?? 0;
-
-    usedKeys.set(
-      baseKey,
-      usedCount + 1
-    );
-
-    p.__STOP_KEY =
-      usedCount === 0
-        ? baseKey
-        : `${baseKey}__${usedCount + 1}`;
-
-    feature.properties = p;
-  });
+  );
 }
+
 
 function getStopKey(feature) {
   return String(
     feature?.properties?.__STOP_KEY ??
+    feature?.properties?.GEOM_ID ??
     feature?.properties?.STOP_ID ??
     ""
+  );
+}
+
+
+function getStopGeomId(feature) {
+  return cleanText(
+    feature?.properties?.GEOM_ID
+  );
+}
+
+
+function getStopLogicalId(feature) {
+  return cleanText(
+    feature?.properties?.STOP_ID
   );
 }
 
@@ -2100,12 +4084,229 @@ function getStopDisplayName(feature) {
   );
 }
 
+
+function normalizeStopVariant(value) {
+  const code =
+    cleanText(value)
+      .toUpperCase();
+
+  if (code === "TEMPORARY") {
+    return "TEMPORARY";
+  }
+
+  return "BASE";
+}
+
+
+function getStopVariant(feature) {
+  return normalizeStopVariant(
+    feature?.properties?.STOP_VAR
+  );
+}
+
+
+function isTemporaryStopFeature(feature) {
+  return (
+    getStopVariant(
+      feature
+    ) === "TEMPORARY"
+  );
+}
+
+
+function getStopReplacesId(feature) {
+  return cleanText(
+    feature
+      ?.properties
+      ?.REPLACES_ID
+  );
+}
+
+
+function getActiveRouteDivId(routeId) {
+  const activeRoute =
+    getRouteById(
+      routeId
+    );
+
+  if (
+    !activeRoute ||
+    normalizeRouteVariant(
+      activeRoute
+    ) !== "DIVERSION"
+  ) {
+    return "";
+  }
+
+  return cleanText(
+    activeRoute
+      ?.properties
+      ?.DIV_ID
+  );
+}
+
+
+function isTemporaryStopActiveForRoute(
+  feature,
+  routeId
+) {
+  if (
+    !isTemporaryStopFeature(
+      feature
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    !isFeatureWithinValidity(
+      feature
+    )
+  ) {
+    return false;
+  }
+
+  const stopDivId =
+    cleanText(
+      feature
+        ?.properties
+        ?.DIV_ID
+    );
+
+  /*
+    Jika halte temporary menyebut DIV_ID,
+    hanya aktif ketika rute yang sedang dilihat sedang memakai
+    DIVERSION dengan DIV_ID yang sama.
+  */
+  if (stopDivId) {
+    const routeDivId =
+      getActiveRouteDivId(
+        routeId
+      );
+
+    return Boolean(
+      routeDivId &&
+      routeDivId === stopDivId
+    );
+  }
+
+  /*
+    Temporary tanpa DIV_ID tetap didukung, tetapi keberadaannya
+    harus lolos VALID_FR / VALID_TO.
+  */
+  return true;
+}
+
+
+function getActiveTemporaryReplacementForBase(
+  feature,
+  routeId
+) {
+  if (
+    !stopData?.features ||
+    isTemporaryStopFeature(
+      feature
+    )
+  ) {
+    return null;
+  }
+
+  const baseGeomId =
+    getStopGeomId(
+      feature
+    );
+
+  if (!baseGeomId) {
+    return null;
+  }
+
+  return (
+    stopData.features.find(
+      candidate =>
+        isTemporaryStopActiveForRoute(
+          candidate,
+          routeId
+        )
+        &&
+        getStopReplacesId(
+          candidate
+        ) === baseGeomId
+    )
+    ??
+    null
+  );
+}
+
+
+function isBaseStopReplacedDuringActiveDiversion(
+  feature,
+  routeId
+) {
+  return Boolean(
+    getActiveTemporaryReplacementForBase(
+      feature,
+      routeId
+    )
+  );
+}
+
+
+function getPhysicalStopSummary(
+  features
+) {
+  const list =
+    Array.isArray(features)
+      ? features.filter(Boolean)
+      : [];
+
+  const variants =
+    new Set(
+      list.map(
+        getStopVariant
+      )
+    );
+
+  if (
+    variants.has("BASE") &&
+    variants.has("TEMPORARY")
+  ) {
+    return {
+      short:
+        "Lokasi reguler + sementara",
+      long:
+        "Halte ini memiliki lokasi reguler dan lokasi sementara untuk layanan yang sama."
+    };
+  }
+
+  if (list.length > 1) {
+    return {
+      short:
+        `${list.length} lokasi fisik`,
+      long:
+        `${list.length} lokasi fisik mewakili satu halte yang sama.`
+    };
+  }
+
+  return {
+    short: "",
+    long: ""
+  };
+}
+
+
 /*
   ROUTES adalah sumber utama keanggotaan halte.
 */
 function getStopRoutes(feature) {
+  const p = feature?.properties ?? {};
+
   return splitIds(
-    feature?.properties?.ROUTES
+    normalizeDelimitedIds(
+      p.ROUTES ??
+      p.LINES ??
+      p.LINE_ID ??
+      ""
+    )
   );
 }
 
@@ -2314,24 +4515,49 @@ function getStopSequence(feature, routeId) {
 }
 
 function normalizeDirectionCode(value) {
-  return String(value ?? "")
+  const raw = String(value ?? "")
     .trim()
-    .toUpperCase()
+    .toUpperCase();
+
+  if (!raw) {
+    return "";
+  }
+
+  /*
+    DIR_MAP yang menyebut dua tujuan sekaligus berarti halte
+    melayani dua arah. Contoh data K1:
+      Kota/Blok M
+      Blok M/Kota
+
+    Nilai dua arah dinormalisasi menjadi BOTH agar UI tidak
+    menampilkan badge repetitif seperti "Arah Kota/Blok M".
+    Titik fisik yang benar-benar satu arah tetap memakai nilai
+    tujuan tunggal, mis. Kota atau Blok M.
+  */
+  const normalizedWords = raw
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (
+    normalizedWords === "BOTH" ||
+    normalizedWords === "DUA ARAH" ||
+    normalizedWords === "DUA_ARAH" ||
+    /[\/|&]/.test(normalizedWords)
+  ) {
+    return "BOTH";
+  }
+
+  return raw
     .replaceAll(" ", "_")
     .replaceAll("-", "_");
 }
 
 function getStopDirection(feature, routeId) {
-  const p = feature.properties;
-
-  const mapValue = parseRouteMap(
-    p.DIR_MAP ??
-    p.ROUTE_DIR ??
-    ""
-  );
-
   return normalizeDirectionCode(
-    mapValue[String(routeId)] ?? ""
+    getRawStopDirectionForRoute(
+      feature,
+      routeId
+    )
   );
 }
 
@@ -2445,15 +4671,82 @@ function getStopGroupId(feature) {
 }
 
 
-function getLogicalStopKey(feature) {
-  const groupId =
-    getStopGroupId(feature);
+function humanizeStopGroupName(
+  value
+) {
+  const raw =
+    cleanText(
+      value
+    );
 
-  if (groupId) {
-    return `GROUP:${groupId}`;
+  if (!raw) {
+    return "";
   }
 
-  return `STOP:${getStopKey(feature)}`;
+  return raw
+    .replace(
+      /[_-]+/g,
+      " "
+    )
+    .replace(
+      /\s+/g,
+      " "
+    )
+    .trim()
+    .replace(
+      /\b\w/g,
+      letter =>
+        letter.toUpperCase()
+    );
+}
+
+
+function getStopComplexName(
+  feature
+) {
+  /*
+    STOP_GROUP adalah kode internal kompleks/interchange.
+    User-facing label dibuat manusiawi:
+    BLOK_M -> Blok M.
+  */
+  return humanizeStopGroupName(
+    getStopGroupId(
+      feature
+    )
+  );
+}
+
+
+function getLogicalStopKey(feature) {
+  /*
+    v2.0: STOP_ID sendiri adalah identitas halte logis.
+    STOP_GROUP hanya untuk kompleks/interchange yang lebih luas
+    dan tidak boleh menggabungkan dua STOP_ID berbeda menjadi
+    satu halte statistik.
+  */
+  const logicalId =
+    getStopLogicalId(
+      feature
+    );
+
+  if (logicalId) {
+    return `STOP:${logicalId}`;
+  }
+
+  /*
+    Backward compatibility:
+    data lama tanpa STOP_ID masih boleh memakai STOP_GROUP.
+  */
+  const groupId =
+    getStopGroupId(
+      feature
+    );
+
+  if (groupId) {
+    return `LEGACY_GROUP:${groupId}`;
+  }
+
+  return `GEOM:${getStopKey(feature)}`;
 }
 
 
@@ -2553,17 +4846,17 @@ function getStopGroupFeatures(
     return feature ? [feature] : [];
   }
 
-  const groupId =
-    getStopGroupId(feature);
-
-  if (!groupId) {
-    return feature ? [feature] : [];
-  }
+  const logicalKey =
+    getLogicalStopKey(
+      feature
+    );
 
   return stopData.features
     .filter(
       item =>
-        getStopGroupId(item) === groupId
+        getLogicalStopKey(
+          item
+        ) === logicalKey
     )
     .filter(
       item => {
@@ -2608,12 +4901,38 @@ function chooseStopGroupRepresentative(
     yang ingin memulai perjalanan.
   */
   return (
+    /*
+      Jika halte logis memiliki BASE + TEMPORARY untuk
+      diversion aktif, panel/list memakai titik temporary
+      sebagai representasi aktif.
+    */
     features.find(
       feature =>
+        isTemporaryStopActiveForRoute(
+          feature,
+          routeId
+        )
+    )
+    ||
+    features.find(
+      feature =>
+        getOperationalStopState(
+          feature,
+          routeId
+        ).state !== "not-served"
+        &&
         getStopActivityForRoute(
           feature,
           routeId
         ) === "BOARD"
+    )
+    ||
+    features.find(
+      feature =>
+        getOperationalStopState(
+          feature,
+          routeId
+        ).state !== "not-served"
     )
     ||
     features[0]
@@ -2625,6 +4944,13 @@ function getLogicalOperationalStopEntries(
   routeId,
   { includeNotServed = true } = {}
 ) {
+  const cacheKey =
+    `logical:${getRouteDirectionRuntimeCacheKey(routeId)}:${includeNotServed ? "all" : "active"}`;
+
+  if (logicalOperationalStopEntriesCache.has(cacheKey)) {
+    return logicalOperationalStopEntriesCache.get(cacheKey);
+  }
+
   const rawEntries =
     getOperationalStopListEntries(
       routeId
@@ -2655,7 +4981,7 @@ function getLogicalOperationalStopEntries(
       .push(entry);
   });
 
-  return Array.from(
+  const result = Array.from(
     grouped.entries()
   )
     .map(
@@ -2695,13 +5021,13 @@ function getLogicalOperationalStopEntries(
     .sort(
       (a, b) => {
         const seqA =
-          getStopSequence(
+          getDirectionalSortSequence(
             a.feature,
             routeId
           );
 
         const seqB =
-          getStopSequence(
+          getDirectionalSortSequence(
             b.feature,
             routeId
           );
@@ -2720,6 +5046,9 @@ function getLogicalOperationalStopEntries(
         );
       }
     );
+
+  logicalOperationalStopEntriesCache.set(cacheKey, result);
+  return result;
 }
 
 
@@ -2980,12 +5309,16 @@ function isStopTerminusForRoute(
       routeId
     );
 
-  return Boolean(
-    operational.temporaryTerminus ||
+  const role =
     getStopRoleForRoute(
       feature,
       routeId
-    ) === "Terminus"
+    );
+
+  return Boolean(
+    operational.temporaryTerminus ||
+    role === "Terminus" ||
+    role === "Transit-Terminus"
   );
 }
 
@@ -3062,6 +5395,16 @@ function normalizeStopRole(value) {
   }
 
   if (
+    role === "transit-terminus" ||
+    role === "transit_terminus" ||
+    role === "transit terminus" ||
+    role === "terminus-transit" ||
+    role === "terminus transit"
+  ) {
+    return "Transit-Terminus";
+  }
+
+  if (
     role === "transit" ||
     role === "through"
   ) {
@@ -3098,6 +5441,10 @@ function getStopRoleClass(
     return "is-transit";
   }
 
+  if (role === "Transit-Terminus") {
+    return "is-transit-terminus";
+  }
+
   if (role === "Regular") {
     return "is-regular";
   }
@@ -3121,16 +5468,21 @@ function getStopIntegrations(feature) {
 
 /*
   Nama titik fisik yang terkait dengan integrasi.
-  Field terbaru: INT_NM
+  Field: INT_NM
 
-  Contoh:
-  BRT_04:Galunggung;
-  KRL_CK:Sudirman;
-  MRT_NS:Dukuh Atas
+  Dua pola key diterima:
 
-  Jika satu lin terhubung ke dua titik fisik berbeda,
-  ulangi kodenya:
-  KRL_CK:Sudirman;KRL_CK:Karet
+  A. REKOMENDASI v27 — key = STOP_ID/GEOM_ID target
+     BRT073:Lebak Bulus;MRT001:Lebak Bulus BSI
+
+     Pasangannya berada pada INT_STOP:
+     BRT:BRT073;MRT_NS:MRT001
+
+  B. LEGACY — key = kode integrasi
+     BRT:Lebak Bulus;MRT_NS:Lebak Bulus BSI
+
+  Pola A lebih tahan terhadap perubahan operator/lin karena nama
+  melekat langsung pada target fisik/logis yang dituju.
 */
 function getStopIntegrationNameMap(feature) {
   const p =
@@ -3147,6 +5499,139 @@ function getStopIntegrationNameMap(feature) {
     p.INTEGRASI_NM ??
     ""
   );
+}
+
+
+/*
+  ID target integrasi. Field utama yang direkomendasikan:
+
+    INT_STOP = MRT_NS:MRT012;BRT:BRT073
+
+  Nilainya boleh STOP_ID (logical stop) atau GEOM_ID (physical
+  point). Jika GEOM_ID diberikan, titik fisik tersebut diprioritaskan.
+
+  Alias diterima agar migrasi data tidak kaku:
+  INT_STOP_ID / INT_ID / INT_TARGET.
+*/
+function getStopIntegrationTargetMap(feature) {
+  const p =
+    feature?.properties ?? {};
+
+  return parseRouteMultiMap(
+    p.INT_STOP ??
+    p.INT_STOP_ID ??
+    p.INT_ID ??
+    p.INT_TARGET ??
+    ""
+  );
+}
+
+
+function getIntegrationMultiMapValues(
+  map,
+  code
+) {
+  const targetCode =
+    String(code ?? "")
+      .trim()
+      .toUpperCase();
+
+  if (!targetCode) {
+    return [];
+  }
+
+  for (const [key, rawValues] of Object.entries(map ?? {})) {
+    if (String(key).trim().toUpperCase() !== targetCode) {
+      continue;
+    }
+
+    return (Array.isArray(rawValues) ? rawValues : [rawValues])
+      .map(value => String(value ?? "").trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+
+/*
+  Mengembalikan seluruh ID target yang disebut di INT_STOP.
+  Dipakai validator agar INT_NM keyed-by-target-ID tidak salah
+  dianggap sebagai "kode yang tidak ada di INTEGRASI".
+*/
+function getIntegrationTargetIdsFromMap(map) {
+  return Object.values(map ?? {})
+    .flatMap(rawValues =>
+      (Array.isArray(rawValues) ? rawValues : [rawValues])
+        .map(value => String(value ?? "").trim())
+        .filter(Boolean)
+    );
+}
+
+
+function integrationKeyEquals(a, b) {
+  return String(a ?? "")
+    .trim()
+    .toUpperCase() ===
+    String(b ?? "")
+      .trim()
+      .toUpperCase();
+}
+
+
+/*
+  Resolver label integrasi v27.
+
+  Prioritas:
+  1. INT_NM keyed-by-target-ID, contoh BRT073:Lebak Bulus
+  2. INT_NM keyed-by-kode-integrasi, contoh BRT:Lebak Bulus
+
+  legacyIndex menjaga pairing lama ketika satu kode integrasi
+  mempunyai beberapa nama yang ditulis berurutan.
+*/
+function getIntegrationRelatedName(
+  integrationNameMap,
+  integrationCode,
+  targetStopId = "",
+  legacyIndex = 0
+) {
+  if (hasText(targetStopId)) {
+    const targetNames = getIntegrationMultiMapValues(
+      integrationNameMap,
+      targetStopId
+    );
+
+    if (targetNames.length) {
+      return targetNames[0];
+    }
+  }
+
+  const legacyNames = getIntegrationMultiMapValues(
+    integrationNameMap,
+    integrationCode
+  );
+
+  return legacyNames[legacyIndex] || "";
+}
+
+
+/*
+  Memeriksa apakah sebuah key INT_NM sah. Key dianggap sah bila:
+  - sama dengan salah satu kode INTEGRASI; atau
+  - sama dengan salah satu target STOP_ID/GEOM_ID pada INT_STOP.
+*/
+function isValidIntegrationNameKey(
+  key,
+  integrations = [],
+  integrationTargetMap = {}
+) {
+  const targetIds = getIntegrationTargetIdsFromMap(
+    integrationTargetMap
+  );
+
+  return (Array.isArray(integrations) ? integrations : [])
+    .some(code => integrationKeyEquals(code, key)) ||
+    targetIds.some(targetId => integrationKeyEquals(targetId, key));
 }
 
 
@@ -3298,17 +5783,266 @@ function parseIntegrationStatusMap(value) {
 }
 
 
+function normalizeIntegrationRelationStatus(
+  value
+) {
+  const code =
+    cleanText(value)
+      .toUpperCase()
+      .replace(/[\s-]+/g, "_");
+
+  const aliases = {
+    INTEGRATED: "INTEGRATED",
+    TERINTEGRASI: "INTEGRATED",
+
+    CONNECTION: "CONNECTION",
+    SAMBUNGAN: "CONNECTION",
+    CONNECTED: "CONNECTION",
+
+    NONE: "NONE",
+    TIDAK_ADA: "NONE",
+
+    UNKNOWN: "UNKNOWN",
+    BELUM_DIKETAHUI: "UNKNOWN",
+    BELUM_DIVERIFIKASI: "UNKNOWN"
+  };
+
+  return aliases[code] || "";
+}
+
+
+function getStopIntegrationRelationStatus(
+  feature
+) {
+  const raw =
+    feature
+      ?.properties
+      ?.INT_STATUS
+    ??
+    feature
+      ?.properties
+      ?.INTEGRASI_STATUS
+    ??
+    "";
+
+  return normalizeIntegrationRelationStatus(
+    raw
+  );
+}
+
+
 function getStopIntegrationStatusMap(feature) {
   const p =
     feature?.properties ?? {};
 
-  return parseIntegrationStatusMap(
+  const raw =
     p.INT_STATUS ??
     p.INTEGRASI_STATUS ??
-    ""
-  );
+    "";
+
+  const relationStatus =
+    normalizeIntegrationRelationStatus(
+      raw
+    );
+
+  /*
+    v2.0 memakai INT_STATUS sebagai status HUBUNGAN:
+    INTEGRATED / CONNECTION / NONE / UNKNOWN.
+
+    Bila value tersebut ditemukan, tidak lagi diperlakukan
+    sebagai map status Eksisting/Rencana per lin.
+  */
+  if (relationStatus) {
+    return {
+      exact: {},
+      byCode: {},
+      entries: [],
+      relationStatus,
+      isV2Relation: true
+    };
+  }
+
+  /*
+    Backward compatibility untuk file lama:
+    KODE:Nama=Rencana;KODE=Usulan
+  */
+  return {
+    ...parseIntegrationStatusMap(
+      raw
+    ),
+    relationStatus: "",
+    isV2Relation: false
+  };
 }
 
+
+function getPaidLinkStatus(feature) {
+  const code =
+    cleanText(
+      feature
+        ?.properties
+        ?.PAID_LINK
+    )
+      .toUpperCase();
+
+  return [
+    "YES",
+    "NO",
+    "NA",
+    "UNKNOWN"
+  ].includes(code)
+    ? code
+    : "";
+}
+
+
+function getLinkType(feature) {
+  const code =
+    cleanText(
+      feature
+        ?.properties
+        ?.LINK_TYPE
+    )
+      .toUpperCase();
+
+  return [
+    "CONCOURSE",
+    "BRIDGE",
+    "UNDERPASS",
+    "CROSSING",
+    "NONE",
+    "UNKNOWN"
+  ].includes(code)
+    ? code
+    : "";
+}
+
+
+function getLinkTypeLabel(value) {
+  return {
+    CONCOURSE: "Concourse",
+    BRIDGE: "Jembatan",
+    UNDERPASS: "Underpass",
+    CROSSING: "Penyeberangan",
+    NONE: "Tidak ada koneksi khusus",
+    UNKNOWN: "Belum diketahui"
+  }[value] || value;
+}
+
+
+function buildIntegrationRelationshipHTML(
+  feature
+) {
+  const integrations =
+    getStopIntegrations(
+      feature
+    );
+
+  /*
+    Metadata hubungan simpul hanya aman ditampilkan bila satu
+    integrasi dapat dipetakan secara jelas. UI sengaja dibuat
+    ringkas karena WebGIS berfungsi sebagai infografis, bukan
+    viewer atribut.
+  */
+  if (integrations.length !== 1) {
+    return "";
+  }
+
+  const relation =
+    getStopIntegrationRelationStatus(
+      feature
+    );
+
+  const paidLink =
+    getPaidLinkStatus(
+      feature
+    );
+
+  const linkType =
+    getLinkType(
+      feature
+    );
+
+  const relationInfo = {
+    INTEGRATED: {
+      label: "Terintegrasi",
+      className: "is-integrated"
+    },
+    CONNECTION: {
+      label: "Sambungan",
+      className: "is-connection"
+    },
+    UNKNOWN: {
+      label: "Belum diverifikasi",
+      className: "is-unknown"
+    }
+  }[relation];
+
+  const linkText =
+    linkType &&
+    ![
+      "NONE",
+      "UNKNOWN"
+    ].includes(
+      linkType
+    )
+      ? getLinkTypeLabel(
+          linkType
+        )
+      : "";
+
+  /*
+    PAID_LINK=YES tidak perlu diberi teks karena menambah
+    kepadatan visual. Kondisi NO tetap ditampilkan karena
+    merupakan informasi operasional yang perlu diketahui user.
+  */
+  const paidText =
+    paidLink === "NO"
+      ? "Perlu keluar paid area"
+      : "";
+
+  if (
+    !relationInfo &&
+    !linkText &&
+    !paidText
+  ) {
+    return "";
+  }
+
+  return `
+    <div class="integration-relationship-meta">
+      ${
+        relationInfo
+          ? `
+            <span class="integration-relationship-pill ${relationInfo.className}">
+              ${escapeHTML(relationInfo.label)}
+            </span>
+          `
+          : ""
+      }
+
+      ${
+        linkText
+          ? `
+            <span class="integration-relationship-detail">
+              ${escapeHTML(linkText)}
+            </span>
+          `
+          : ""
+      }
+
+      ${
+        paidText
+          ? `
+            <span class="integration-relationship-detail is-important">
+              ${escapeHTML(paidText)}
+            </span>
+          `
+          : ""
+      }
+    </div>
+  `;
+}
 
 function getIntegrationStatusFromMap(
   integrationStatusMap,
@@ -3443,7 +6177,11 @@ function getIntegrationPlacePrefix(info) {
     return "";
   }
 
-  return info?.brt
+  return (
+    info?.brt ||
+    info?.brtOperator ||
+    info?.operatorKey === "TRANSJAKARTA"
+  )
     ? "Halte"
     : "Stasiun";
 }
@@ -3553,6 +6291,19 @@ function getVisibleStopsForRoute(
     .filter(
       feature => {
         if (
+          isTemporaryStopFeature(
+            feature
+          )
+          &&
+          !isTemporaryStopActiveForRoute(
+            feature,
+            routeId
+          )
+        ) {
+          return false;
+        }
+
+        if (
           isProposedStop(feature) &&
           !showProposedStops
         ) {
@@ -3562,6 +6313,15 @@ function getVisibleStopsForRoute(
         if (
           isConceptualStop(feature) &&
           !showConceptualStops
+        ) {
+          return false;
+        }
+
+        if (
+          !isStopVisibleInActiveDirection(
+            feature,
+            routeId
+          )
         ) {
           return false;
         }
@@ -5856,29 +8616,70 @@ function getProductTourTargetRect(step) {
         latlng
       );
 
-    const width =
+    const markerRadius =
       isMobileLayout()
-        ? 60
-        : 68;
+        ? 30
+        : 34;
 
-    const height =
-      isMobileLayout()
-        ? 60
-        : 68;
+    let left =
+      mapRect.left +
+      point.x -
+      markerRadius;
+
+    let top =
+      mapRect.top +
+      point.y -
+      markerRadius;
+
+    let right =
+      mapRect.left +
+      point.x +
+      markerRadius;
+
+    let bottom =
+      mapRect.top +
+      point.y +
+      markerRadius;
+
+    /*
+      Masukkan label permanen Monumen Nasional ke area
+      spotlight agar frame tidak memotong teks tutorial.
+    */
+    const tooltip =
+      document.querySelector(
+        ".leaflet-tooltip.product-tour-map-stop-tooltip"
+      );
+
+    if (tooltip) {
+      const tooltipRect =
+        tooltip.getBoundingClientRect();
+
+      left = Math.min(
+        left,
+        tooltipRect.left
+      );
+
+      top = Math.min(
+        top,
+        tooltipRect.top
+      );
+
+      right = Math.max(
+        right,
+        tooltipRect.right
+      );
+
+      bottom = Math.max(
+        bottom,
+        tooltipRect.bottom
+      );
+    }
 
     return {
-      left:
-        mapRect.left +
-        point.x -
-        width / 2,
-
-      top:
-        mapRect.top +
-        point.y -
-        height / 2,
-
-      width,
-      height
+      left,
+      top,
+      width: right - left,
+      height: bottom - top
     };
   }
 
@@ -5973,7 +8774,22 @@ function positionProductTour() {
     );
 
   if (targetRect) {
-    const padding = 6;
+    const padding =
+      step.target === "tutorial-stop"
+        ? 10
+        : step.target === "tutorial-route-badges"
+          ? 8
+          : 6;
+
+    productTourSpotlight.style.setProperty(
+      "--tour-dim-opacity",
+      (
+        step.target === "tutorial-stop" ||
+        step.target === "tutorial-route-badges"
+      )
+        ? "0.36"
+        : "0.41"
+    );
 
     productTourSpotlight.hidden =
       false;
@@ -7432,6 +10248,13 @@ function syncUrlState() {
       "route",
       routeId
     );
+
+    if (isRouteDirectionEnabled(routeId)) {
+      params.set(
+        "dir",
+        getActiveRouteDirection(routeId)
+      );
+    }
   }
 
   if (
@@ -7510,6 +10333,9 @@ function applyUrlStateAfterDataLoad() {
   try {
     const routeId =
       params.get("route");
+
+    const directionSide =
+      params.get("dir");
 
     const comparisonId =
       params.get("compare");
@@ -7594,6 +10420,16 @@ function applyUrlStateAfterDataLoad() {
 
       routeSelect.value =
         routeId;
+
+      if (
+        directionSide &&
+        isRouteDirectionEnabled(routeId)
+      ) {
+        setActiveRouteDirection(
+          routeId,
+          directionSide
+        );
+      }
 
       showSingleRoute(
         routeId
@@ -7982,12 +10818,23 @@ function validateRouteData() {
     return;
   }
 
+  const routeFeatures = routeData.features.filter(
+    feature => getRouteMode(feature) === "BRT"
+  );
+
+  if (!routeFeatures.length) {
+    return;
+  }
+
   const missingIds = [];
+  const missingGeomIds = [];
+  const geomIdCounts =
+    new Map();
   const invalidGeometry = [];
   const variantsByRoute =
     new Map();
 
-  routeData.features.forEach(
+  routeFeatures.forEach(
     (feature, index) => {
       const routeId =
         getRouteId(feature);
@@ -7996,8 +10843,32 @@ function validateRouteData() {
         missingIds.push(
           index + 1
         );
+      }
 
-        return;
+      const geomId =
+        cleanText(
+          feature
+            ?.properties
+            ?.GEOM_ID
+        );
+
+      if (!geomId) {
+        missingGeomIds.push(
+          routeId ||
+          `feature ${index + 1}`
+        );
+      }
+      else {
+        geomIdCounts.set(
+          geomId,
+          (
+            geomIdCounts.get(
+              geomId
+            )
+            ??
+            0
+          ) + 1
+        );
       }
 
       if (
@@ -8035,6 +10906,15 @@ function validateRouteData() {
     }
   );
 
+  const duplicateGeomIds =
+    Array.from(
+      geomIdCounts.entries()
+    )
+      .filter(
+        ([, count]) =>
+          count > 1
+      );
+
   const duplicateVariants = [];
 
   variantsByRoute.forEach(
@@ -8067,13 +10947,27 @@ function validateRouteData() {
 
   console.log(
     "Jumlah fitur rute:",
-    routeData.features.length
+    routeFeatures.length
   );
 
   if (missingIds.length) {
     console.warn(
       "Fitur rute tanpa ID:",
       missingIds
+    );
+  }
+
+  if (missingGeomIds.length) {
+    console.warn(
+      "Fitur rute tanpa GEOM_ID:",
+      missingGeomIds
+    );
+  }
+
+  if (duplicateGeomIds.length) {
+    console.warn(
+      "GEOM_ID rute duplikat:",
+      duplicateGeomIds
     );
   }
 
@@ -8100,29 +10994,62 @@ function validateStopData() {
     return;
   }
 
-  const explicitIds = new Map();
+  const stopFeatures = stopData.features.filter(
+    feature => normalizeMode(feature?.properties?.MODE) === "BRT"
+  );
+
+  if (!stopFeatures.length) {
+    return;
+  }
+
+  const logicalIds =
+    new Map();
+
+  const geomIds =
+    new Map();
+
   const blankStopIds = [];
+  const blankGeomIds = [];
   const missingSequence = [];
   const invalidPoints = [];
+
+  const invalidStopRole = [];
+  const invalidStopVar = [];
+  const invalidPaidLink = [];
+  const invalidLinkType = [];
+  const invalidIntegrationRelation = [];
+
+  const temporaryMissingDivId = [];
+  const temporaryMissingReplaces = [];
+  const transitPaidAreaIssues = [];
+
   const integrationNameWithoutService = [];
-  const integrationWithoutName = [];
-  const invalidIntegrationStatuses = [];
-  const integrationStatusWithoutService = [];
-  const integrationStatusWithoutNameMatch = [];
+  const integrationTargetWithoutService = [];
+  const integrationWithoutDescriptor = [];
 
-  stopData.features.forEach(
+  const legacyInvalidIntegrationStatuses = [];
+  const legacyIntegrationStatusWithoutService = [];
+  const legacyIntegrationStatusWithoutNameMatch = [];
+
+  stopFeatures.forEach(
     (feature, index) => {
-
       const p =
         feature.properties ?? {};
 
       const stopName =
-        getStopDisplayName(feature);
+        getStopDisplayName(
+          feature
+        );
 
       const stopId =
-        String(
-          p.STOP_ID ?? ""
-        ).trim();
+        cleanText(
+          p.STOP_ID
+        );
+
+      const geomId =
+        cleanText(
+          p.GEOM_ID
+        );
 
       if (!stopId) {
         blankStopIds.push(
@@ -8130,11 +11057,32 @@ function validateStopData() {
         );
       }
       else {
-        explicitIds.set(
+        logicalIds.set(
           stopId,
           (
-            explicitIds.get(stopId)
-            ?? 0
+            logicalIds.get(
+              stopId
+            )
+            ??
+            0
+          ) + 1
+        );
+      }
+
+      if (!geomId) {
+        blankGeomIds.push(
+          stopName
+        );
+      }
+      else {
+        geomIds.set(
+          geomId,
+          (
+            geomIds.get(
+              geomId
+            )
+            ??
+            0
           ) + 1
         );
       }
@@ -8155,28 +11103,170 @@ function validateStopData() {
         );
       }
 
-      const routes =
-        getStopRoutes(feature);
+      const role =
+        normalizeStopRole(
+          p.STOP_ROLE
+        );
 
-      routes.forEach(routeId => {
+      if (
+        p.STOP_ROLE &&
+        ![
+          "Regular",
+          "Transit",
+          "Terminus",
+          "Transit-Terminus"
+        ].includes(role)
+        &&
+        !String(
+          p.STOP_ROLE
+        ).includes(":")
+      ) {
+        invalidStopRole.push(
+          `${stopName} → ${p.STOP_ROLE}`
+        );
+      }
 
-        const seqMap =
-          parseRouteMap(
-            p.SEQ_MAP ?? ""
-          );
+      const stopVar =
+        normalizeStopVariant(
+          p.STOP_VAR
+        );
 
+      if (
+        p.STOP_VAR &&
+        ![
+          "BASE",
+          "TEMPORARY"
+        ].includes(
+          String(
+            p.STOP_VAR
+          ).trim().toUpperCase()
+        )
+      ) {
+        invalidStopVar.push(
+          `${stopName} → ${p.STOP_VAR}`
+        );
+      }
+
+      const paidLink =
+        getPaidLinkStatus(
+          feature
+        );
+
+      if (
+        hasText(
+          p.PAID_LINK
+        )
+        &&
+        !paidLink
+      ) {
+        invalidPaidLink.push(
+          `${stopName} → ${p.PAID_LINK}`
+        );
+      }
+
+      const linkType =
+        getLinkType(
+          feature
+        );
+
+      if (
+        hasText(
+          p.LINK_TYPE
+        )
+        &&
+        !linkType
+      ) {
+        invalidLinkType.push(
+          `${stopName} → ${p.LINK_TYPE}`
+        );
+      }
+
+      const intRaw =
+        cleanText(
+          p.INT_STATUS
+        );
+
+      const relationStatus =
+        normalizeIntegrationRelationStatus(
+          intRaw
+        );
+
+      const isLegacyIntMap =
+        Boolean(
+          intRaw &&
+          !relationStatus
+        );
+
+      if (
+        intRaw &&
+        !relationStatus &&
+        !intRaw.includes("=")
+      ) {
+        invalidIntegrationRelation.push(
+          `${stopName} → ${intRaw}`
+        );
+      }
+
+      if (
+        stopVar === "TEMPORARY"
+      ) {
         if (
-          !String(
-            seqMap[routeId] ?? ""
-          ).trim()
+          !hasText(
+            p.DIV_ID
+          )
         ) {
-          missingSequence.push(
-            `${stopName} → ${routeId}`
+          temporaryMissingDivId.push(
+            stopName
           );
         }
 
-      });
+        if (
+          !hasText(
+            p.REPLACES_ID
+          )
+        ) {
+          temporaryMissingReplaces.push(
+            stopName
+          );
+        }
+      }
 
+      if (
+        [
+          "Transit",
+          "Transit-Terminus"
+        ].includes(role)
+      ) {
+        if (paidLink !== "YES") {
+          transitPaidAreaIssues.push(
+            `${stopName} → STOP_ROLE=${role}, PAID_LINK=${paidLink || "(kosong)"}`
+          );
+        }
+      }
+
+      const routes =
+        getStopRoutes(
+          feature
+        );
+
+      routes.forEach(
+        routeId => {
+          const seqMap =
+            parseRouteMap(
+              p.SEQ_MAP ?? ""
+            );
+
+          if (
+            !String(
+              seqMap[routeId] ?? ""
+            ).trim()
+          ) {
+            missingSequence.push(
+              `${stopName} → ${routeId}`
+            );
+          }
+        }
+      );
 
       const integrations =
         getStopIntegrations(
@@ -8188,154 +11278,413 @@ function validateStopData() {
           feature
         );
 
-      Object.keys(
-        integrationNameMap
-      )
-        .forEach(code => {
-
-          if (
-            !integrations.includes(
-              code
-            )
-          ) {
-            integrationNameWithoutService.push(
-              `${stopName} → ${code}`
-            );
-          }
-
-        });
-
-
-      const integrationStatusMap =
-        getStopIntegrationStatusMap(
+      const integrationTargetMap =
+        getStopIntegrationTargetMap(
           feature
         );
 
-      integrationStatusMap.entries
-        .forEach(entry => {
-          if (!entry.valid) {
-            invalidIntegrationStatuses.push(
-              `${stopName} → ${entry.raw}`
-            );
-
-            return;
-          }
-
-          if (
-            !integrations.includes(
-              entry.code
-            )
-          ) {
-            integrationStatusWithoutService.push(
-              `${stopName} → ${entry.code}`
-            );
-          }
-
-          if (entry.relatedName) {
-            const names =
-              integrationNameMap[
-                entry.code
-              ] ?? [];
-
-            const normalizedNames =
-              (
-                Array.isArray(names)
-                  ? names
-                  : [names]
-              )
-                .map(
-                  normalizeIntegrationStatusName
-                );
-
+      Object.keys(
+        integrationNameMap
+      )
+        .forEach(
+          code => {
             if (
-              !normalizedNames.includes(
-                normalizeIntegrationStatusName(
-                  entry.relatedName
-                )
+              !isValidIntegrationNameKey(
+                code,
+                integrations,
+                integrationTargetMap
               )
             ) {
-              integrationStatusWithoutNameMatch.push(
-                `${stopName} → ${entry.code}:${entry.relatedName}`
+              integrationNameWithoutService.push(
+                `${stopName} → ${code}`
               );
             }
           }
-        });
+        );
 
+      Object.keys(
+        integrationTargetMap
+      )
+        .forEach(
+          code => {
+            if (
+              !integrations.some(
+                integrationCode =>
+                  String(integrationCode).trim().toUpperCase() ===
+                  String(code).trim().toUpperCase()
+              )
+            ) {
+              integrationTargetWithoutService.push(
+                `${stopName} → ${code}`
+              );
+            }
+          }
+        );
 
-      integrations.forEach(code => {
+      integrations.forEach(
+        code => {
+          const integrationNames =
+            integrationNameMap[
+              code
+            ] ?? [];
 
-        const integrationNames =
-          integrationNameMap[
-            code
-          ] ?? [];
-
-        const hasIntegrationName =
-          (
-            Array.isArray(
-              integrationNames
+          const hasIntegrationName =
+            (
+              Array.isArray(
+                integrationNames
+              )
+                ? integrationNames
+                : [integrationNames]
             )
-              ? integrationNames
-              : [integrationNames]
-          )
-            .some(
-              value =>
-                String(value || "")
-                  .trim()
+              .some(
+                value =>
+                  String(
+                    value || ""
+                  ).trim()
+              );
+
+          const hasIntegrationTarget =
+            getIntegrationMultiMapValues(
+              integrationTargetMap,
+              code
+            ).length > 0;
+
+          if (
+            !hasIntegrationName &&
+            !hasIntegrationTarget
+          ) {
+            integrationWithoutDescriptor.push(
+              `${stopName} → ${code}`
             );
-
-        if (
-          Object.keys(
-            integrationNameMap
-          ).length > 0
-          &&
-          !hasIntegrationName
-        ) {
-          integrationWithoutName.push(
-            `${stopName} → ${code}`
-          );
+          }
         }
+      );
 
-      });
+      /*
+        Validator legacy hanya berjalan bila INT_STATUS masih
+        memakai format lama KODE:Nama=Status.
+      */
+      if (isLegacyIntMap) {
+        const integrationStatusMap =
+          parseIntegrationStatusMap(
+            intRaw
+          );
 
+        integrationStatusMap.entries
+          .forEach(
+            entry => {
+              if (!entry.valid) {
+                legacyInvalidIntegrationStatuses.push(
+                  `${stopName} → ${entry.raw}`
+                );
+                return;
+              }
+
+              if (
+                !integrations.includes(
+                  entry.code
+                )
+              ) {
+                legacyIntegrationStatusWithoutService.push(
+                  `${stopName} → ${entry.code}`
+                );
+              }
+
+              if (entry.relatedName) {
+                const targetIdsForCode =
+                  getIntegrationMultiMapValues(
+                    integrationTargetMap,
+                    entry.code
+                  );
+
+                const names = [
+                  ...getIntegrationMultiMapValues(
+                    integrationNameMap,
+                    entry.code
+                  ),
+                  ...targetIdsForCode.flatMap(targetId =>
+                    getIntegrationMultiMapValues(
+                      integrationNameMap,
+                      targetId
+                    )
+                  )
+                ];
+
+                const normalizedNames =
+                  names.map(
+                    normalizeIntegrationStatusName
+                  );
+
+                if (
+                  !normalizedNames.includes(
+                    normalizeIntegrationStatusName(
+                      entry.relatedName
+                    )
+                  )
+                ) {
+                  legacyIntegrationStatusWithoutNameMatch.push(
+                    `${stopName} → ${entry.code}:${entry.relatedName}`
+                  );
+                }
+              }
+            }
+          );
+      }
     }
   );
 
-  const duplicateIds =
+  const duplicateGeomIds =
     Array.from(
-      explicitIds.entries()
+      geomIds.entries()
     )
       .filter(
         ([, count]) =>
           count > 1
       );
 
+  const repeatedLogicalIds =
+    Array.from(
+      logicalIds.entries()
+    )
+      .filter(
+        ([, count]) =>
+          count > 1
+      );
+
+  const datasetFieldPresence =
+    new Map(
+      BRT_STOP_SCHEMA_V20_FIELDS
+        .map(
+          field => [
+            field,
+            false
+          ]
+        )
+    );
+
+  const featureSchemaGaps = [];
+  const schemaDomainIssues = [];
+
+  stopFeatures.forEach(
+    (feature, index) => {
+      const p =
+        feature?.properties ?? {};
+
+      BRT_STOP_SCHEMA_V20_FIELDS
+        .forEach(
+          field => {
+            if (
+              Object.prototype
+                .hasOwnProperty.call(
+                  p,
+                  field
+                )
+            ) {
+              datasetFieldPresence.set(
+                field,
+                true
+              );
+            }
+          }
+        );
+
+      const missingFields =
+        getStopSchemaV20MissingFields(
+          feature
+        );
+
+      if (
+        missingFields.length
+      ) {
+        featureSchemaGaps.push({
+          feature:
+            cleanText(
+              p.GEOM_ID
+            )
+            ||
+            cleanText(
+              p.STOP_ID
+            )
+            ||
+            `feature ${index + 1}`,
+          missingFields
+        });
+      }
+
+      getStopSchemaV20DomainIssues(
+        feature
+      )
+        .forEach(
+          issue => {
+            schemaDomainIssues.push({
+              feature:
+                cleanText(
+                  p.GEOM_ID
+                )
+                ||
+                cleanText(
+                  p.STOP_ID
+                )
+                ||
+                `feature ${index + 1}`,
+              ...issue
+            });
+          }
+        );
+    }
+  );
+
+  const missingDatasetFields =
+    Array.from(
+      datasetFieldPresence.entries()
+    )
+      .filter(
+        ([, present]) =>
+          !present
+      )
+      .map(
+        ([field]) =>
+          field
+      );
+
   console.groupCollapsed(
-    "Validasi brt_stop.geojson"
+    "Validasi brt_stop.geojson · Pedoman BRT v2.0"
   );
 
   console.log(
-    "Jumlah halte/stasiun:",
-    stopData.features.length
+    "Jumlah feature point:",
+    stopFeatures.length
   );
+
+  console.log(
+    "Jumlah halte logis (COUNT DISTINCT STOP_ID):",
+    logicalIds.size
+  );
+
+  console.log(
+    "Schema target BRT_Stop v2.0:",
+    BRT_STOP_SCHEMA_V20_FIELDS
+  );
+
+  if (
+    missingDatasetFields.length
+  ) {
+    console.warn(
+      "Field schema v2.0 belum ditemukan di dataset:",
+      missingDatasetFields
+    );
+  }
+  else {
+    console.info(
+      "Schema BRT_Stop v2.0 lengkap: 28 field ditemukan."
+    );
+  }
+
+  if (
+    featureSchemaGaps.length
+  ) {
+    console.info(
+      "Feature yang belum membawa seluruh 28 property v2.0:",
+      featureSchemaGaps
+    );
+  }
+
+  if (
+    schemaDomainIssues.length
+  ) {
+    console.warn(
+      "Nilai domain schema v2.0 perlu diperiksa:",
+      schemaDomainIssues
+    );
+  }
 
   if (blankStopIds.length) {
     console.warn(
-      `${blankStopIds.length} STOP_ID kosong. ` +
-      "WebGIS memakai FID sebagai runtime key sementara.",
+      "STOP_ID kosong:",
       blankStopIds
     );
   }
 
-  if (duplicateIds.length) {
+  if (blankGeomIds.length) {
     console.warn(
-      "STOP_ID duplikat:",
-      duplicateIds
+      "GEOM_ID kosong:",
+      blankGeomIds
+    );
+  }
+
+  if (duplicateGeomIds.length) {
+    console.warn(
+      "GEOM_ID duplikat (tidak diperbolehkan):",
+      duplicateGeomIds
+    );
+  }
+
+  if (repeatedLogicalIds.length) {
+    console.info(
+      "STOP_ID berulang. Ini valid bila feature mewakili halte logis yang sama:",
+      repeatedLogicalIds
+    );
+  }
+
+  if (invalidStopRole.length) {
+    console.warn(
+      "STOP_ROLE di luar domain v2.0:",
+      invalidStopRole
+    );
+  }
+
+  if (invalidStopVar.length) {
+    console.warn(
+      "STOP_VAR di luar domain BASE/TEMPORARY:",
+      invalidStopVar
+    );
+  }
+
+  if (invalidPaidLink.length) {
+    console.warn(
+      "PAID_LINK tidak valid:",
+      invalidPaidLink
+    );
+  }
+
+  if (invalidLinkType.length) {
+    console.warn(
+      "LINK_TYPE tidak valid:",
+      invalidLinkType
+    );
+  }
+
+  if (invalidIntegrationRelation.length) {
+    console.warn(
+      "INT_STATUS v2.0 harus INTEGRATED / CONNECTION / NONE / UNKNOWN:",
+      invalidIntegrationRelation
+    );
+  }
+
+  if (temporaryMissingDivId.length) {
+    console.warn(
+      "STOP_VAR=TEMPORARY tanpa DIV_ID:",
+      temporaryMissingDivId
+    );
+  }
+
+  if (temporaryMissingReplaces.length) {
+    console.info(
+      "STOP_VAR=TEMPORARY tanpa REPLACES_ID. Isi bila titik ini menggantikan feature BASE:",
+      temporaryMissingReplaces
+    );
+  }
+
+  if (transitPaidAreaIssues.length) {
+    console.warn(
+      "STOP_ROLE Transit/Transit-Terminus belum konsisten dengan PAID_LINK=YES:",
+      transitPaidAreaIssues
     );
   }
 
   if (missingSequence.length) {
     console.warn(
-      "ROUTES terisi tetapi sequence route terkait belum ada di SEQ_MAP:",
+      "ROUTES terisi tetapi sequence terkait belum ada di SEQ_MAP:",
       missingSequence
     );
   }
@@ -8344,38 +11693,53 @@ function validateStopData() {
     integrationNameWithoutService.length
   ) {
     console.warn(
-      "INT_NM memiliki kode yang tidak ada di INTEGRASI:",
+      "INT_NM memiliki key yang bukan kode INTEGRASI maupun target INT_STOP:",
       integrationNameWithoutService
     );
   }
 
   if (
-    integrationWithoutName.length
+    integrationTargetWithoutService.length
   ) {
     console.warn(
-      "Sebagian kode INTEGRASI belum memiliki nama titik pada INT_NM:",
-      integrationWithoutName
+      "INT_STOP memiliki kode yang tidak ada di INTEGRASI:",
+      integrationTargetWithoutService
     );
   }
 
-  if (invalidIntegrationStatuses.length) {
+  if (
+    integrationWithoutDescriptor.length
+  ) {
     console.warn(
-      "INT_STATUS tidak valid. Gunakan KODE:Nama=Eksisting/Rencana/Usulan/Konseptual:",
-      invalidIntegrationStatuses
+      "INTEGRASI tanpa INT_NM maupun INT_STOP (disembunyikan dari popup):",
+      integrationWithoutDescriptor
     );
   }
 
-  if (integrationStatusWithoutService.length) {
+  if (
+    legacyInvalidIntegrationStatuses.length
+  ) {
     console.warn(
-      "INT_STATUS memiliki kode yang tidak ada di INTEGRASI:",
-      integrationStatusWithoutService
+      "INT_STATUS legacy tidak valid:",
+      legacyInvalidIntegrationStatuses
     );
   }
 
-  if (integrationStatusWithoutNameMatch.length) {
+  if (
+    legacyIntegrationStatusWithoutService.length
+  ) {
     console.warn(
-      "INT_STATUS tidak menemukan pasangan nama yang sama di INT_NM:",
-      integrationStatusWithoutNameMatch
+      "INT_STATUS legacy memiliki kode yang tidak ada di INTEGRASI:",
+      legacyIntegrationStatusWithoutService
+    );
+  }
+
+  if (
+    legacyIntegrationStatusWithoutNameMatch.length
+  ) {
+    console.warn(
+      "INT_STATUS legacy tidak menemukan pasangan nama di INT_NM:",
+      legacyIntegrationStatusWithoutNameMatch
     );
   }
 
@@ -8388,6 +11752,247 @@ function validateStopData() {
 
   console.groupEnd();
 }
+
+/* =========================================================
+   MRT PILOT VALIDATION
+   ========================================================= */
+
+function validateMrtData() {
+  const routes = routeData?.features?.filter(
+    feature => getRouteMode(feature) === "MRT"
+  ) ?? [];
+
+  const stops = stopData?.features?.filter(
+    feature => normalizeMode(feature?.properties?.MODE) === "MRT"
+  ) ?? [];
+
+  if (!routes.length && !stops.length) {
+    console.info(
+      "MRT pilot: mrt_route.geojson / mrt_stop.geojson belum dimuat. BRT tetap berjalan."
+    );
+    return;
+  }
+
+  const routeIssues = [];
+  const geomIds = new Map();
+
+  routes.forEach((feature, index) => {
+    const p = feature?.properties ?? {};
+    const routeId = getRouteId(feature);
+    const geomId = cleanText(p.GEOM_ID);
+    const structure = normalizeStructure(p.STRUCTURE);
+
+    if (!routeId) {
+      routeIssues.push(`route feature ${index + 1}: LINE_ID/ID kosong`);
+    }
+
+    if (!geomId) {
+      routeIssues.push(`${routeId || `feature ${index + 1}`}: GEOM_ID kosong`);
+    }
+    else {
+      geomIds.set(geomId, (geomIds.get(geomId) ?? 0) + 1);
+    }
+
+    if (!feature?.geometry || !["LineString", "MultiLineString"].includes(feature.geometry.type)) {
+      routeIssues.push(`${routeId || `feature ${index + 1}`}: geometri bukan LineString/MultiLineString`);
+    }
+
+    if (!["ELEVATED", "TRANSITION", "UNDERGROUND", "AT_GRADE", "MIXED", "UNKNOWN"].includes(structure)) {
+      routeIssues.push(`${routeId || `feature ${index + 1}`}: STRUCTURE=${p.STRUCTURE}`);
+    }
+  });
+
+  Array.from(geomIds.entries())
+    .filter(([, count]) => count > 1)
+    .forEach(([geomId, count]) =>
+      routeIssues.push(`GEOM_ID duplikat: ${geomId} (${count})`)
+    );
+
+  const stopIssues = [];
+  const stopGeomIds = new Map();
+  const integrationIssues = [];
+
+  stops.forEach((feature, index) => {
+    const p = feature?.properties ?? {};
+    const stopName = getStopDisplayName(feature) || `feature ${index + 1}`;
+    const stopId = cleanText(p.STOP_ID);
+    const geomId = cleanText(p.GEOM_ID);
+    const routesForStop = getStopRoutes(feature);
+
+    if (!stopId) {
+      stopIssues.push(`${stopName}: STOP_ID kosong`);
+    }
+
+    if (!geomId) {
+      stopIssues.push(`${stopName}: GEOM_ID kosong`);
+    }
+    else {
+      stopGeomIds.set(geomId, (stopGeomIds.get(geomId) ?? 0) + 1);
+    }
+
+    if (!feature?.geometry || feature.geometry.type !== "Point") {
+      stopIssues.push(`${stopName}: geometri bukan Point`);
+    }
+
+    if (!routesForStop.length) {
+      stopIssues.push(`${stopName}: LINES/ROUTES kosong`);
+    }
+
+    routesForStop.forEach(routeId => {
+      if (!getRouteById(routeId)) {
+        stopIssues.push(`${stopName}: lin ${routeId} tidak ditemukan di mrt_route`);
+      }
+
+      if (!getStopSequenceRaw(feature, routeId)) {
+        stopIssues.push(`${stopName}: sequence ${routeId} kosong`);
+      }
+    });
+
+    const role = getStopRoleForRoute(
+      feature,
+      routesForStop[0] || ""
+    );
+
+    if (
+      hasText(p.STOP_ROLE) &&
+      ![
+        "Regular",
+        "Transit",
+        "Terminus",
+        "Transit-Terminus"
+      ].includes(role)
+    ) {
+      stopIssues.push(`${stopName}: STOP_ROLE=${p.STOP_ROLE}`);
+    }
+
+    const integrations = getStopIntegrations(feature);
+    const nameMap = getStopIntegrationNameMap(feature);
+    const targetMap = getStopIntegrationTargetMap(feature);
+
+    Object.keys(nameMap).forEach(key => {
+      if (!isValidIntegrationNameKey(key, integrations, targetMap)) {
+        integrationIssues.push(
+          `${stopName}: INT_NM key ${key} bukan kode integrasi/target INT_STOP`
+        );
+      }
+    });
+
+    integrations.forEach(code => {
+      const legacyNames = getIntegrationMultiMapValues(nameMap, code);
+      const targets = getIntegrationMultiMapValues(targetMap, code);
+      const targetKeyedNames = targets.flatMap(targetId =>
+        getIntegrationMultiMapValues(nameMap, targetId)
+      );
+      const names = [
+        ...legacyNames,
+        ...targetKeyedNames
+      ];
+
+      if (!names.length && !targets.length) {
+        integrationIssues.push(
+          `${stopName}: ${code} tanpa INT_NM/INT_STOP (tidak ditampilkan)`
+        );
+        return;
+      }
+
+      const info = getIntegrationInfo(code);
+      const routeIds = [info.routeId, info.operatorOnly ? "" : info.code]
+        .map(value => String(value ?? "").trim())
+        .filter(routeId => Boolean(getRouteById(routeId)));
+      const expectedModes = getIntegrationExpectedModes([info]);
+
+      targets.forEach(targetId => {
+        const target = findIntegrationStopFeatureByTargetId(
+          targetId,
+          routeIds,
+          expectedModes
+        );
+
+        if (!target) {
+          integrationIssues.push(
+            `${stopName}: ${code} → INT_STOP ${targetId} tidak ditemukan`
+          );
+        }
+      });
+
+      /*
+        Bila jaringan target sudah tersedia tetapi hanya INT_NM yang
+        dipakai, pastikan fallback nama benar-benar dapat di-resolve.
+      */
+      const targetNetworkLoaded =
+        routeIds.length > 0 ||
+        (
+          info.operatorKey === "TRANSJAKARTA" &&
+          stopData.features.some(stop =>
+            normalizeMode(stop?.properties?.MODE) === "BRT"
+          )
+        );
+
+      if (
+        targetNetworkLoaded &&
+        !targets.length &&
+        names.length
+      ) {
+        names.forEach(relatedName => {
+          const resolved = info.operatorKey === "TRANSJAKARTA"
+            ? findTransJakartaIntegrationStopFeature(
+                relatedName,
+                routeIds
+              )
+            : findNetworkIntegrationStopFeature(
+                relatedName,
+                routeIds,
+                expectedModes
+              );
+
+          if (!resolved) {
+            integrationIssues.push(
+              `${stopName}: ${code} → INT_NM ${relatedName} tidak menemukan target`
+            );
+          }
+        });
+      }
+    });
+  });
+
+  Array.from(stopGeomIds.entries())
+    .filter(([, count]) => count > 1)
+    .forEach(([geomId, count]) =>
+      stopIssues.push(`GEOM_ID stasiun duplikat: ${geomId} (${count})`)
+    );
+
+  console.groupCollapsed("Validasi MRT pilot");
+  console.log("Segmen rute MRT:", routes.length);
+  console.log("Stasiun MRT:", stops.length);
+  console.log(
+    "Struktur:",
+    Array.from(new Set(routes.map(feature => normalizeStructure(feature?.properties?.STRUCTURE))))
+  );
+
+  if (routeIssues.length) {
+    console.warn("Catatan mrt_route.geojson:", routeIssues);
+  }
+  else if (routes.length) {
+    console.info("mrt_route.geojson: struktur dasar valid.");
+  }
+
+  if (stopIssues.length) {
+    console.warn("Catatan mrt_stop.geojson:", stopIssues);
+  }
+  else if (stops.length) {
+    console.info("mrt_stop.geojson: struktur dasar valid.");
+  }
+
+  if (integrationIssues.length) {
+    console.warn("Catatan integrasi MRT:", integrationIssues);
+  }
+  else if (stops.length) {
+    console.info("Integrasi MRT: tidak ada target kosong/rusak yang terdeteksi.");
+  }
+
+  console.groupEnd();
+}
+
 
 /* =========================================================
    ROUTE FILTER
@@ -8562,9 +12167,28 @@ function isRuntimeRouteComparison(
 }
 
 
+function getRouteZoomWeightScale() {
+  const zoom =
+    map?.getZoom?.() ?? 11;
+
+  if (zoom >= 17) {
+    return 0.88;
+  }
+
+  if (zoom >= 15) {
+    return 0.94;
+  }
+
+  return 1;
+}
+
+
 function routeStyle(feature) {
   const statusStyle =
     getRouteStatusStyle(feature);
+
+  const zoomWeightScale =
+    getRouteZoomWeightScale();
 
   const comparison =
     isRuntimeRegularComparison(
@@ -8584,13 +12208,15 @@ function routeStyle(feature) {
       "#555555",
 
     weight:
-      comparison
-        ? 3.2
-        : (
-            routeComparison
-              ? 3.6
-              : 4.4
-          ),
+      (
+        comparison
+          ? 3.2
+          : (
+              routeComparison
+                ? 3.6
+                : 4.4
+            )
+      ) * zoomWeightScale,
 
     /*
       - Trase REGULAR pembanding pengalihan dibuat sangat redup.
@@ -8618,9 +12244,91 @@ function routeStyle(feature) {
 }
 
 
+function hasVisibleStructurePattern(feature) {
+  if (
+    normalizeStatus(
+      feature?.properties?.STATUS
+    ) !== "Existing"
+  ) {
+    return false;
+  }
+
+  const structure = normalizeStructure(
+    feature?.properties?.STRUCTURE
+  );
+
+  return [
+    "UNDERGROUND",
+    "TRANSITION"
+  ].includes(structure);
+}
+
+
+/*
+  Struktur jalur tidak mengganti bahasa visual STATUS.
+  Garis utama tetap solid/dash sesuai Existing/Rencana/Usulan.
+
+  Untuk MRT eksisting, lapisan tipis di tengah garis memberi
+  pola tambahan:
+  - Elevated   : tanpa pola tambahan
+  - Transition : dash panjang tipis
+  - Underground: titik/dash pendek tipis
+
+  Dengan cara ini warna identitas lin tetap utuh dan dash status
+  tidak ditimpa oleh klasifikasi struktur.
+*/
+function routeStructureStyle(feature) {
+  const structure = normalizeStructure(
+    feature?.properties?.STRUCTURE
+  );
+
+  const zoomScale =
+    getRouteZoomWeightScale();
+
+  const base = {
+    pane: "routePane",
+    color:
+      currentBasemapType === "satellite"
+        ? "#ffffff"
+        : "rgba(255,255,255,0.96)",
+    weight: 1.35 * zoomScale,
+    opacity: 0,
+    lineCap: "round",
+    lineJoin: "round",
+    interactive: false
+  };
+
+  if (!hasVisibleStructurePattern(feature)) {
+    return base;
+  }
+
+  if (structure === "UNDERGROUND") {
+    return {
+      ...base,
+      opacity: 0.92,
+      dashArray: "1 6"
+    };
+  }
+
+  if (structure === "TRANSITION") {
+    return {
+      ...base,
+      weight: 1.55 * zoomScale,
+      opacity: 0.86,
+      dashArray: "9 4"
+    };
+  }
+
+  return base;
+}
+
+
 function haloStyle(feature) {
   const statusStyle =
     getRouteStatusStyle(feature);
+
+  const zoomWeightScale =
+    getRouteZoomWeightScale();
 
   const comparison =
     isRuntimeRegularComparison(
@@ -8641,13 +12349,15 @@ function haloStyle(feature) {
         : "#222222",
 
     weight:
-      comparison
-        ? 5.5
-        : (
-            routeComparison
-              ? 6.2
-              : 7.4
-          ),
+      (
+        comparison
+          ? 5.5
+          : (
+              routeComparison
+                ? 6.2
+                : 7.4
+            )
+      ) * zoomWeightScale,
 
     opacity:
       comparison
@@ -8690,6 +12400,12 @@ function updateHalo() {
       haloStyle
     );
   }
+
+  if (routeStructureLayer) {
+    routeStructureLayer.setStyle(
+      routeStructureStyle
+    );
+  }
 }
 
 /* =========================================================
@@ -8709,6 +12425,23 @@ function bindRoutePopup(feature, layer) {
       </div>
     `
     : "";
+
+  const structure = normalizeStructure(
+    p.STRUCTURE
+  );
+
+  const structureHTML =
+    getRouteMode(feature) !== "BRT" &&
+    structure !== "UNKNOWN"
+      ? `
+        <div class="route-popup-row">
+          <div class="route-popup-label">Struktur jalur</div>
+          <div class="route-popup-value">
+            ${escapeHTML(getStructureLabel(structure))}
+          </div>
+        </div>
+      `
+      : "";
 
   const genericVisualizationRemark =
     isPlannedBRTVisualizationRoute(
@@ -8828,6 +12561,7 @@ function bindRoutePopup(feature, layer) {
       ${comparisonRouteNoteHTML}
       ${routeVariantHTML}
       ${routeScenarioNoteHTML}
+      ${structureHTML}
       ${alignmentHTML}
       ${remarkHTML}
 
@@ -8989,6 +12723,11 @@ function removeRouteLayers() {
     map.removeLayer(routeLayer);
     routeLayer = null;
   }
+
+  if (routeStructureLayer) {
+    map.removeLayer(routeStructureLayer);
+    routeStructureLayer = null;
+  }
 }
 
 function drawRoutes(features) {
@@ -9010,6 +12749,26 @@ function drawRoutes(features) {
       onEachFeature: bindRoutePopup
     }
   ).addTo(map);
+
+  /*
+    Layer pola struktur hanya dibuat bila memang ada segmen
+    transition/underground. Overview BRT murni tidak mendapat
+    layer ekstra.
+  */
+  const hasStructurePattern =
+    (features || []).some(
+      hasVisibleStructurePattern
+    );
+
+  if (hasStructurePattern) {
+    routeStructureLayer = L.geoJSON(
+      fc,
+      {
+        style: routeStructureStyle,
+        interactive: false
+      }
+    ).addTo(map);
+  }
 }
 
 
@@ -9073,7 +12832,19 @@ function getSelectedRouteGeometryFeatures(
     }
   }
 
-  result.push(active);
+  const activeGeometry =
+    getActiveRouteGeometryFeatures(
+      routeId
+    );
+
+  if (activeGeometry.length) {
+    result.push(
+      ...activeGeometry
+    );
+  }
+  else {
+    result.push(active);
+  }
 
   return result;
 }
@@ -9105,15 +12876,18 @@ function drawSelectedRouteGeometry(
 
   const comparisonFeatures =
     comparisonFeature
-      ? [
-          cloneRouteFeatureForRuntime(
-            comparisonFeature,
-            {
-              _RUNTIME_ROUTE_COMPARISON:
-                true
-            }
+      ? getActiveRouteGeometryFeatures(
+          getRouteId(comparisonFeature)
+        )
+          .map(feature =>
+            cloneRouteFeatureForRuntime(
+              feature,
+              {
+                _RUNTIME_ROUTE_COMPARISON:
+                  true
+              }
+            )
           )
-        ]
       : [];
 
   /*
@@ -10268,6 +14042,35 @@ function getOperationalStopState(
     };
   }
 
+  /*
+    PEDOMAN v2.0:
+    STOP_VAR / DIV_ID / REPLACES_ID adalah sumber data utama
+    untuk relokasi titik halte sementara.
+  */
+  if (
+    isTemporaryStopActiveForRoute(
+      feature,
+      routeId
+    )
+  ) {
+    return {
+      state: "temporary-served",
+      temporaryTerminus: false
+    };
+  }
+
+  if (
+    isBaseStopReplacedDuringActiveDiversion(
+      feature,
+      routeId
+    )
+  ) {
+    return {
+      state: "not-served",
+      temporaryTerminus: false
+    };
+  }
+
   const config =
     getRouteOperationalConfig(
       routeId
@@ -10390,6 +14193,13 @@ function findStopFeatureByDisplayName(
 function getOperationalStopListEntries(
   routeId
 ) {
+  const cacheKey =
+    `operational:${getRouteDirectionRuntimeCacheKey(routeId)}`;
+
+  if (operationalStopEntriesCache.has(cacheKey)) {
+    return operationalStopEntriesCache.get(cacheKey);
+  }
+
   const baseFeatures =
     getVisibleStopsForRoute(
       routeId
@@ -10636,6 +14446,7 @@ function getOperationalStopListEntries(
       );
   }
 
+  operationalStopEntriesCache.set(cacheKey, entries);
   return entries;
 }
 
@@ -10912,7 +14723,11 @@ function getOperationalStopRole(
   }
 
   if (state.state === "temporary-served") {
-    return "Sementara";
+    return isTemporaryStopFeature(
+      feature
+    )
+      ? "Halte Sementara"
+      : "Sementara";
   }
 
   return getStopRoleForRoute(
@@ -10940,7 +14755,10 @@ function getOperationalStopRoleClass(
     return "is-temp-terminus";
   }
 
-  if (role === "Sementara") {
+  if (
+    role === "Sementara" ||
+    role === "Halte Sementara"
+  ) {
     return "is-temporary";
   }
 
@@ -11048,15 +14866,94 @@ function getRouteAlertData(feature) {
   const routeId =
     getRouteId(feature);
 
-  /*
-    Prioritas pertama adalah konfigurasi operasional yang
-    ditulis langsung di map.js.
-  */
   const configured =
     ROUTE_ALERTS[
       routeId
     ];
 
+  /*
+    PEDOMAN v2.0:
+    ketika feature aktif memang ROUTE_VAR=DIVERSION,
+    metadata DIV_ID / DIV_NOTE / DIV_SRC menjadi sumber utama.
+
+    ROUTE_ALERTS tetap dipakai sebagai fallback untuk daftar
+    halte terdampak lama selama migrasi OPS_MAP belum selesai.
+  */
+  if (
+    normalizeRouteVariant(
+      feature
+    ) === "DIVERSION"
+  ) {
+    return {
+      hasAlert: true,
+
+      type:
+        "Pengalihan Sementara",
+
+      title:
+        getRouteTitle(
+          feature
+        ),
+
+      note:
+        cleanText(
+          p.DIV_NOTE
+        )
+        ||
+        cleanText(
+          configured?.note
+        ),
+
+      source:
+        cleanText(
+          p.DIV_SRC
+        )
+        ||
+        cleanText(
+          configured?.source
+        ),
+
+      geometryUnchanged: false,
+
+      temporaryTerminus:
+        cleanText(
+          configured
+            ?.temporaryTerminus
+        ),
+
+      notServed:
+        Array.isArray(
+          configured?.notServed
+        )
+          ? configured.notServed
+              .map(cleanText)
+              .filter(Boolean)
+          : [],
+
+      temporaryServed:
+        Array.isArray(
+          configured?.temporaryServed
+        )
+          ? configured.temporaryServed
+              .map(cleanText)
+              .filter(Boolean)
+          : [],
+
+      stops:
+        Array.isArray(
+          configured?.temporaryServed
+        )
+          ? configured.temporaryServed
+              .map(cleanText)
+              .filter(Boolean)
+          : []
+    };
+  }
+
+  /*
+    Backward compatibility:
+    konfigurasi operasional lama di map.js.
+  */
   if (configured) {
     return {
       hasAlert: true,
@@ -11446,6 +15343,20 @@ function renderRouteInfo(feature) {
     `
     : "";
 
+  const structureSummary =
+    getRouteMode(feature) !== "BRT"
+      ? getRouteStructureSummary(routeId)
+      : "";
+
+  const structureSummaryHTML = structureSummary
+    ? `
+      <div class="route-meta-row">
+        <div class="route-meta-label">Struktur jalur</div>
+        <div>${escapeHTML(structureSummary)}</div>
+      </div>
+    `
+    : "";
+
   const nonExistingCount =
     proposedCount + conceptualCount;
 
@@ -11535,16 +15446,25 @@ function renderRouteInfo(feature) {
       `
       : "";
 
-  routeInfoEl.innerHTML = `
-    <div class="eyebrow">
-      ${escapeHTML(
-        getRouteHeaderLabel(feature)
-      )}
-    </div>
+  const routeTitle =
+    getRouteTitle(feature);
 
-    <h2>
-      ${escapeHTML(getRouteTitle(feature))}
+  const routeTitleLength =
+    Array.from(routeTitle).length;
+
+  const routeTitleClass =
+    routeTitleLength >= 38
+      ? "route-title is-very-long"
+      : routeTitleLength >= 30
+        ? "route-title is-long"
+        : "route-title";
+
+  routeInfoEl.innerHTML = `
+    <h2 class="${routeTitleClass}">
+      ${escapeHTML(routeTitle)}
     </h2>
+
+    ${buildRouteDirectionControlHTML(routeId)}
 
     <div class="route-meta">
       <div class="route-meta-row">
@@ -11557,6 +15477,7 @@ function renderRouteInfo(feature) {
         <div>${escapeHTML(getStatusLabel(p.STATUS))}</div>
       </div>
 
+      ${structureSummaryHTML}
       ${alignmentHTML}
     </div>
 
@@ -11574,6 +15495,39 @@ function renderRouteInfo(feature) {
     </div>
   `;
 }
+
+
+/*
+  Route direction memakai event delegation pada routeInfoEl yang
+  persisten. Tombol boleh dirender ulang tanpa kehilangan handler.
+*/
+routeInfoEl
+  ?.addEventListener(
+    "click",
+    event => {
+      const button =
+        event.target
+          ?.closest?.(
+            "[data-route-direction-toggle]"
+          );
+
+      if (!button) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const routeId = String(
+        button.dataset.routeDirectionToggle ||
+        currentSelectedRouteId ||
+        ""
+      );
+
+      if (!routeId || !isRouteDirectionEnabled(routeId)) return;
+
+      toggleActiveRouteDirection(routeId);
+      refreshRouteDirectionView(routeId);
+    }
+  );
 
 
 /*
@@ -12004,6 +15958,45 @@ function getIntegrationInfo(id) {
 
 
   /*
+    OPERATOR-LEVEL ALIASES
+
+    Berguna ketika titik integrasi diketahui tetapi koridor/lin
+    spesifik tidak perlu disimpan pada INTEGRASI. Navigasi tetap
+    dapat dilakukan melalui INT_STOP.
+  */
+  if (
+    code === "TRANSJAKARTA" ||
+    code === "TJ" ||
+    code === "BRT"
+  ) {
+    return {
+      code,
+      operatorKey: "TRANSJAKARTA",
+      operator: "TransJakarta",
+      route: "",
+      logo: TRANSIT_LOGOS.TJ,
+      brtOperator: true,
+      operatorOnly: true
+    };
+  }
+
+  if (
+    code === "MRT" ||
+    code === "MRT_JAKARTA"
+  ) {
+    return {
+      code,
+      operatorKey: "MRT_JAKARTA",
+      operator: "MRT Jakarta",
+      route: "",
+      logo: TRANSIT_LOGOS.MRT,
+      mrtOperator: true,
+      operatorOnly: true
+    };
+  }
+
+
+  /*
     MRT JAKARTA
   */
   if (code === "MRT_NS") {
@@ -12349,50 +16342,53 @@ function groupIntegrationsByOperator(
     exact: {},
     byCode: {},
     entries: []
-  }
+  },
+  integrationTargetMap = {}
 ) {
 
-  const groups =
-    new Map();
-
+  const groups = new Map();
 
   ids.forEach(id => {
+    const info = getIntegrationInfo(id);
+    const key = info.operatorKey;
 
-    const info =
-      getIntegrationInfo(id);
+    const legacyRelatedNames =
+      getIntegrationMultiMapValues(
+        integrationNameMap,
+        info.code || id
+      );
 
-    const key =
-      info.operatorKey;
+    const targetStopIds =
+      getIntegrationMultiMapValues(
+        integrationTargetMap,
+        info.code || id
+      );
 
-    const rawRelatedNames =
-      integrationNameMap[
-        info.code
-      ]
-      ??
-      integrationNameMap[
-        String(id)
-      ]
-      ??
-      [];
+    /*
+      INT_NM v27 dapat memakai target ID sebagai key. Karena itu
+      presence check tidak hanya melihat nama keyed-by-kode.
+    */
+    const hasTargetKeyedName = targetStopIds.some(targetStopId =>
+      getIntegrationMultiMapValues(
+        integrationNameMap,
+        targetStopId
+      ).length > 0
+    );
 
-    const relatedNames =
-      (
-        Array.isArray(
-          rawRelatedNames
-        )
-          ? rawRelatedNames
-          : [rawRelatedNames]
-      )
-        .map(
-          value =>
-            String(value || "")
-              .trim()
-        )
-        .filter(Boolean);
-
+    /*
+      Tidak lagi membuat placeholder kosong.
+      INTEGRASI tanpa INT_NM maupun INT_STOP dianggap data belum
+      lengkap: disembunyikan dari UI dan dilaporkan validator.
+    */
+    if (
+      !legacyRelatedNames.length &&
+      !targetStopIds.length &&
+      !hasTargetKeyedName
+    ) {
+      return;
+    }
 
     if (!groups.has(key)) {
-
       groups.set(
         key,
         {
@@ -12402,99 +16398,92 @@ function groupIntegrationsByOperator(
           services: []
         }
       );
-
     }
 
+    const serviceCount = Math.max(
+      legacyRelatedNames.length,
+      targetStopIds.length,
+      1
+    );
 
-    /*
-      Satu kode integrasi dapat menunjuk ke lebih dari satu
-      titik fisik.
-
-      Contoh:
-      INTEGRASI = KRL_CK
-      INT_NM    = KRL_CK:Sudirman;KRL_CK:Karet
-
-      Popup:
-      [C] Stasiun Sudirman
-      [C] Stasiun Karet
-    */
-    if (relatedNames.length) {
-
-      relatedNames.forEach(
-        relatedName => {
-
-          groups
-            .get(key)
-            .services
-            .push({
-              ...info,
-              relatedName,
-              integrationStatus:
-                getIntegrationStatusFromMap(
-                  integrationStatusMap,
-                  info.code || id,
-                  relatedName
-                )
-            });
-
-        }
+    for (let index = 0; index < serviceCount; index += 1) {
+      const targetStopId = targetStopIds[index] || "";
+      let relatedName = getIntegrationRelatedName(
+        integrationNameMap,
+        info.code || id,
+        targetStopId,
+        index
       );
 
-    } else {
-
       /*
-        Tetap buat satu service kosong agar warning/fallback
-        "Titik integrasi belum diisi" tetap bekerja.
+        Bila hanya INT_STOP yang diisi, nama target dapat diturunkan
+        dari dataset yang sedang dimuat. Ini menjaga UI tetap bersih
+        tanpa memaksa duplikasi nama di master data.
       */
+      if (!relatedName && targetStopId) {
+        const candidateRouteIds = [
+          info.routeId,
+          info.code
+        ]
+          .map(value => String(value ?? "").trim())
+          .filter(routeId => Boolean(getRouteById(routeId)));
+
+        const targetFeature =
+          findIntegrationStopFeatureByTargetId(
+            targetStopId,
+            candidateRouteIds,
+            getIntegrationExpectedModes([info])
+          );
+
+        if (targetFeature) {
+          relatedName = stripTransitPlacePrefix(
+            getStopDisplayName(targetFeature)
+          );
+        }
+      }
+
       groups
         .get(key)
         .services
         .push({
           ...info,
-          relatedName: "",
+          relatedName,
+          targetStopId,
           integrationStatus:
             getIntegrationStatusFromMap(
               integrationStatusMap,
               info.code || id,
-              ""
+              relatedName
             )
         });
-
     }
-
   });
 
+  return Array.from(groups.values())
+    .filter(group => group.services.length > 0)
+    .sort((a, b) => {
+      const priorityDiff =
+        getIntegrationOperatorPriority(a.operatorKey)
+        -
+        getIntegrationOperatorPriority(b.operatorKey);
 
-  return Array.from(
-    groups.values()
-  )
-    .sort(
-      (a, b) => {
-        const priorityDiff =
-          getIntegrationOperatorPriority(
-            a.operatorKey
-          )
-          -
-          getIntegrationOperatorPriority(
-            b.operatorKey
-          );
-
-        if (priorityDiff !== 0) {
-          return priorityDiff;
-        }
-
-        return String(
-          a.operator || a.operatorKey
-        )
-          .localeCompare(
-            String(
-              b.operator || b.operatorKey
-            ),
-            "id"
-          );
+      if (priorityDiff !== 0) {
+        return priorityDiff;
       }
-    );
 
+      return String(a.operator || a.operatorKey)
+        .localeCompare(
+          String(b.operator || b.operatorKey),
+          "id"
+        );
+    });
+}
+
+
+function stripTransitPlacePrefix(value) {
+  return String(value ?? "")
+    .replace(/^\s*(?:halte|stasiun)\s+/i, "")
+    .trim();
 }
 
 
@@ -12517,6 +16506,13 @@ function getIntegrationPlaceLabel(service) {
     )
       .trim();
 
+  if (
+    prefix &&
+    new RegExp(`^${prefix}\\s+`, "i").test(relatedName)
+  ) {
+    return relatedName;
+  }
+
   return prefix
     ? `${prefix} ${relatedName}`
     : relatedName;
@@ -12531,7 +16527,9 @@ function buildIntegrationBadge(service) {
   */
   if (
     service.kajj ||
-    service.terminal
+    service.terminal ||
+    service.operatorOnly ||
+    service.brtOperator
   ) {
     return "";
   }
@@ -12570,7 +16568,7 @@ function groupServicesByRelatedPlace(services) {
     new Map();
 
 
-  services.forEach(service => {
+  services.forEach((service, serviceIndex) => {
 
     const placeLabel =
       getIntegrationPlaceLabel(
@@ -12581,9 +16579,16 @@ function groupServicesByRelatedPlace(services) {
       Jika beberapa lin menuju titik yang sama:
       [CB] [BK] Stasiun Dukuh Atas
     */
+    const targetStopId =
+      cleanText(service?.targetStopId);
+
     const key =
       placeLabel ||
-      `__NO_PLACE__${service.code}`;
+      (
+        targetStopId
+          ? `__TARGET__${service.code}::${targetStopId}`
+          : `__NO_PLACE__${service.code}`
+      );
 
 
     if (!groups.has(key)) {
@@ -12591,7 +16596,14 @@ function groupServicesByRelatedPlace(services) {
         key,
         {
           placeLabel,
-          services: []
+          services: [],
+
+          /*
+            Urutan pertama pada INT_NM / INT_STOP disimpan agar
+            tie-break antar titik pada koridor yang sama tetap
+            mengikuti urutan yang ditulis pengelola data.
+          */
+          firstIndex: serviceIndex
         }
       );
     }
@@ -12642,6 +16654,151 @@ function groupServicesByRelatedPlace(services) {
         );
       }
     );
+}
+
+
+function getIntegrationExpectedModes(services) {
+  const modes = new Set();
+
+  (Array.isArray(services) ? services : [])
+    .forEach(service => {
+      if (service?.brt || service?.brtOperator || service?.operatorKey === "TRANSJAKARTA") {
+        modes.add("BRT");
+      }
+      else if (service?.operatorKey === "MRT_JAKARTA") {
+        modes.add("MRT");
+      }
+      else if (service?.operatorKey === "KRL") {
+        modes.add("KRL");
+      }
+      else if (
+        service?.operatorKey === "LRT_JAKARTA" ||
+        service?.operatorKey === "LRT_JABODEBEK"
+      ) {
+        modes.add("LRT");
+      }
+    });
+
+  return Array.from(modes);
+}
+
+
+function stopMatchesExpectedModes(
+  feature,
+  expectedModes = []
+) {
+  if (!Array.isArray(expectedModes) || !expectedModes.length) {
+    return true;
+  }
+
+  return expectedModes.includes(
+    normalizeMode(feature?.properties?.MODE)
+  );
+}
+
+
+function stopMatchesIntegrationRoute(
+  feature,
+  routeId
+) {
+  if (!feature || !routeId) {
+    return false;
+  }
+
+  if (stopServesRoute(feature, routeId)) {
+    return true;
+  }
+
+  const operational =
+    getOperationalMapValue(
+      feature,
+      routeId
+    );
+
+  return [
+    "TEMP_SERVED",
+    "TEMP_TERMINUS",
+    "NOT_SERVED"
+  ].includes(operational);
+}
+
+
+function findIntegrationStopFeatureByTargetId(
+  targetId,
+  routeIds = [],
+  expectedModes = []
+) {
+  if (!stopData?.features || !hasText(targetId)) {
+    return null;
+  }
+
+  const target = String(targetId).trim().toUpperCase();
+  const validRouteIds = (Array.isArray(routeIds) ? routeIds : [])
+    .map(value => String(value ?? "").trim())
+    .filter(Boolean);
+
+  /* GEOM_ID adalah target paling spesifik. */
+  const exactGeom = stopData.features
+    .filter(feature => stopMatchesExpectedModes(feature, expectedModes))
+    .find(feature =>
+      String(feature?.properties?.GEOM_ID ?? "")
+        .trim()
+        .toUpperCase() === target
+    );
+
+  if (exactGeom) {
+    return exactGeom;
+  }
+
+  const candidates = stopData.features
+    .filter(feature => stopMatchesExpectedModes(feature, expectedModes))
+    .filter(feature => {
+      const p = feature?.properties ?? {};
+      const ids = [
+        p.STOP_ID,
+        p._RUNTIME_STOP_KEY,
+        p.STATION_ID,
+        p.ID
+      ]
+        .map(value => String(value ?? "").trim().toUpperCase())
+        .filter(Boolean);
+
+      return ids.includes(target);
+    });
+
+  if (!candidates.length) {
+    return null;
+  }
+
+  for (const routeId of validRouteIds) {
+    const routeMatched = candidates.filter(feature =>
+      stopMatchesIntegrationRoute(feature, routeId)
+    );
+
+    if (routeMatched.length) {
+      return (
+        chooseStopGroupRepresentative(routeMatched, routeId)
+        || routeMatched[0]
+      );
+    }
+  }
+
+  return candidates[0] || null;
+}
+
+
+function getIntegrationRouteIdsForServices(services) {
+  return Array.from(
+    new Set(
+      (Array.isArray(services) ? services : [])
+        .flatMap(service => [
+          service?.routeId,
+          service?.operatorOnly ? "" : service?.code
+        ])
+        .map(value => String(value ?? "").trim())
+        .filter(routeId => Boolean(getRouteById(routeId)))
+    )
+  );
 }
 
 
@@ -12769,7 +16926,118 @@ function findTransJakartaIntegrationStopFeature(
 }
 
 
-function openTransJakartaIntegrationStop(
+function normalizeIntegrationStopMatchName(value) {
+  return normalizeOperationalStopName(
+    String(value ?? "")
+      .replace(/^\s*(?:halte|stasiun)\s+/i, "")
+      .trim()
+  );
+}
+
+
+function isIntegrationStopNameMatch(a, b) {
+  const left = normalizeIntegrationStopMatchName(a);
+  const right = normalizeIntegrationStopMatchName(b);
+
+  if (!left || !right) return false;
+  if (left === right) return true;
+
+  /*
+    Sponsorship / naming suffix dapat berbeda antara dataset BRT
+    dan rail, mis. "ASEAN Headquarters" vs "ASEAN", atau
+    "Dukuh Atas BNI" vs "Dukuh Atas". Route context tetap
+    menjadi discriminator utama sehingga fuzzy match ini tidak
+    dipakai lintas lin secara bebas.
+  */
+  const shorter = left.length <= right.length ? left : right;
+  const longer = left.length > right.length ? left : right;
+
+  return (
+    shorter.length >= 4 &&
+    (
+      longer.startsWith(`${shorter} `) ||
+      longer.endsWith(` ${shorter}`) ||
+      longer.includes(` ${shorter} `)
+    )
+  );
+}
+
+
+function findNetworkIntegrationStopFeature(
+  relatedName,
+  routeIds = [],
+  expectedModes = []
+) {
+  if (
+    !stopData?.features ||
+    !hasText(relatedName)
+  ) {
+    return null;
+  }
+
+  const targetName =
+    normalizeIntegrationStopMatchName(
+      relatedName
+    );
+
+  const validRouteIds = routeIds
+    .map(value => String(value ?? "").trim())
+    .filter(routeId => Boolean(getRouteById(routeId)));
+
+  const matches = stopData.features
+    .filter(feature =>
+      stopMatchesExpectedModes(
+        feature,
+        expectedModes
+      )
+    )
+    .filter(feature =>
+      isIntegrationStopNameMatch(
+        getStopDisplayName(feature),
+        targetName
+      )
+    );
+
+  if (!matches.length) {
+    return null;
+  }
+
+  const routeMatched = matches.filter(feature =>
+    validRouteIds.some(routeId =>
+      stopMatchesIntegrationRoute(
+        feature,
+        routeId
+      )
+    )
+  );
+
+  const candidates = routeMatched.length
+    ? routeMatched
+    : matches;
+
+  for (const routeId of validRouteIds) {
+    const grouped = candidates.filter(feature =>
+      stopMatchesIntegrationRoute(
+        feature,
+        routeId
+      )
+    );
+
+    if (grouped.length) {
+      return (
+        chooseStopGroupRepresentative(
+          grouped,
+          routeId
+        ) || grouped[0]
+      );
+    }
+  }
+
+  return candidates[0] || null;
+}
+
+
+function openNetworkIntegrationStop(
   stopKey,
   preferredRouteId = ""
 ) {
@@ -12829,7 +17097,7 @@ function openTransJakartaIntegrationStop(
 
   if (!routeId) {
     console.warn(
-      "Halte integrasi TransJakarta tidak memiliki konteks koridor yang valid:",
+      "Titik integrasi tidak memiliki konteks lin/koridor yang valid:",
       getStopDisplayName(
         feature
       )
@@ -12902,8 +17170,105 @@ function openTransJakartaIntegrationStop(
 }
 
 
-function buildIntegrationPlaceRow(placeGroup) {
+function resolveIntegrationPlaceTarget(placeGroup) {
+  const services = Array.isArray(placeGroup?.services)
+    ? placeGroup.services
+    : [];
 
+  const routeIds =
+    getIntegrationRouteIdsForServices(
+      services
+    );
+
+  const expectedModes =
+    getIntegrationExpectedModes(
+      services
+    );
+
+  const targetStopIds = services
+    .map(service => cleanText(service?.targetStopId))
+    .filter(Boolean);
+
+  let targetFeature = null;
+
+  /* INT_STOP selalu menjadi resolver utama. */
+  for (const targetStopId of targetStopIds) {
+    targetFeature =
+      findIntegrationStopFeatureByTargetId(
+        targetStopId,
+        routeIds,
+        expectedModes
+      );
+
+    if (targetFeature) {
+      break;
+    }
+  }
+
+  /* Fallback kompatibilitas: INT_NM + konteks route/operator. */
+  if (!targetFeature) {
+    const relatedName = services
+      .map(service => cleanText(service?.relatedName))
+      .find(Boolean) || "";
+
+    if (relatedName) {
+      const isTransJakartaGroup = services.some(service =>
+        service?.brt ||
+        service?.brtOperator ||
+        service?.operatorKey === "TRANSJAKARTA"
+      );
+
+      targetFeature = isTransJakartaGroup
+        ? findTransJakartaIntegrationStopFeature(
+            relatedName,
+            routeIds
+          )
+        : findNetworkIntegrationStopFeature(
+            relatedName,
+            routeIds,
+            expectedModes
+          );
+    }
+  }
+
+  if (!targetFeature) {
+    return {
+      targetFeature: null,
+      targetStopKey: "",
+      targetRouteId: "",
+      routeIds,
+      expectedModes
+    };
+  }
+
+  const targetStopKey =
+    getStopKey(targetFeature);
+
+  const targetRouteIds =
+    getStopRoutes(targetFeature)
+      .filter(routeId => Boolean(getRouteById(routeId)));
+
+  const targetRouteId =
+    routeIds.find(routeId =>
+      stopMatchesIntegrationRoute(
+        targetFeature,
+        routeId
+      )
+    )
+    || targetRouteIds[0]
+    || "";
+
+  return {
+    targetFeature,
+    targetStopKey,
+    targetRouteId,
+    routeIds,
+    expectedModes
+  };
+}
+
+
+function buildIntegrationPlaceRow(placeGroup) {
   const placeStatus =
     normalizeIntegrationStatus(
       placeGroup.integrationStatus
@@ -12919,147 +17284,93 @@ function buildIntegrationPlaceRow(placeGroup) {
       placeStatus
     );
 
-  const badgesHTML =
-    placeGroup.services
-      .map(
-        buildIntegrationBadge
-      )
-      .join("");
+  const resolved =
+    resolveIntegrationPlaceTarget(
+      placeGroup
+    );
 
-
-  const placeHTML =
-    placeGroup.placeLabel
-      ?
-      `
-        <span class="integration-place-name-wrap">
-          <span class="integration-place-name">
-            ${escapeHTML(
-              placeGroup.placeLabel
-            )}
-          </span>
-
-          ${statusPillHTML}
-        </span>
-      `
-      :
-      `
-        <span class="integration-place-name-wrap">
-          <span class="integration-place-name is-missing">
-            Titik integrasi belum diisi
-          </span>
-
-          ${statusPillHTML}
-        </span>
-      `;
-
+  let placeLabel =
+    String(placeGroup.placeLabel || "").trim();
 
   /*
-    Tahap pertama: hanya titik integrasi TransJakarta
-    yang dibuat interaktif.
-
-    relatedName memakai nama murni dari INT_NM,
-    mis. "Semanggi", sedangkan placeLabel dapat berbunyi
-    "Halte Semanggi".
+    Jika INT_NM kosong tetapi INT_STOP valid, tampilkan nama yang
+    berasal dari feature target. Tidak ada lagi teks placeholder.
   */
-  const brtServices =
-    placeGroup.services
-      .filter(
-        service =>
-          Boolean(
-            service?.brt &&
-            service?.routeId
-          )
-      );
-
-  const integrationRouteIds =
-    Array.from(
-      new Set(
-        brtServices
-          .map(
-            service =>
-              String(
-                service.routeId
-              )
-          )
-      )
+  if (!placeLabel && resolved.targetFeature) {
+    const representativeService = placeGroup.services[0] || {};
+    const targetName = stripTransitPlacePrefix(
+      getStopDisplayName(resolved.targetFeature)
     );
 
-  const relatedName =
-    brtServices
-      .map(
-        service =>
-          String(
-            service?.relatedName ??
-            ""
-          ).trim()
-      )
-      .find(Boolean)
-    ||
-    "";
+    placeLabel = getIntegrationPlaceLabel({
+      ...representativeService,
+      relatedName: targetName
+    });
+  }
 
-  const targetFeature =
-    relatedName
-      ? findTransJakartaIntegrationStopFeature(
-          relatedName,
-          integrationRouteIds
-        )
-      : null;
+  /*
+    Guard terakhir: baris integrasi tanpa nama yang dapat ditampilkan
+    tidak dirender. Validator tetap memberi catatan untuk pengelola.
+  */
+  if (!placeLabel) {
+    return "";
+  }
 
-  const targetStopKey =
-    targetFeature
-      ? getStopKey(
-          targetFeature
-        )
-      : "";
+  let badgesHTML = placeGroup.services
+    .map(buildIntegrationBadge)
+    .join("");
 
-  const targetRouteId =
-    integrationRouteIds.find(
-      routeId =>
-        targetFeature &&
-        (
-          stopServesRoute(
-            targetFeature,
-            routeId
-          )
-          ||
-          Boolean(
-            getOperationalMapValue(
-              targetFeature,
-              routeId
-            )
-          )
-        )
+  /*
+    Operator-level TRANSJAKARTA + INT_STOP dapat menurunkan badge
+    koridor dari target aktual tanpa memaksa INTEGRASI berisi semua
+    kode koridor.
+  */
+  if (
+    !badgesHTML &&
+    resolved.targetFeature &&
+    placeGroup.services.some(service =>
+      service?.brtOperator ||
+      service?.operatorKey === "TRANSJAKARTA"
     )
-    ||
-    integrationRouteIds[0]
-    ||
-    "";
+  ) {
+    badgesHTML = getStopRoutes(resolved.targetFeature)
+      .filter(routeId => {
+        const route = getRouteById(routeId);
+        return route && getRouteMode(route) === "BRT";
+      })
+      .map(routeId => buildBrtBadge(routeId))
+      .join("");
+  }
 
-  const isClickableTransJakarta =
-    Boolean(
-      placeGroup.placeLabel &&
-      brtServices.length &&
-      targetStopKey &&
-      targetRouteId
-    );
+  const placeHTML = `
+    <span class="integration-place-name-wrap">
+      <span class="integration-place-name">
+        ${escapeHTML(placeLabel)}
+      </span>
+      ${statusPillHTML}
+    </span>
+  `;
 
+  const isClickable = Boolean(
+    resolved.targetStopKey &&
+    resolved.targetRouteId
+  );
 
-  if (isClickableTransJakarta) {
+  if (isClickable) {
     return `
       <button
         type="button"
         class="
           integration-place-row
           integration-place-row-button
-          is-transjakarta
+          is-network-link
           ${placeStatusClass}
         "
-        data-integration-stop-key="${escapeHTML(targetStopKey)}"
-        data-integration-route-id="${escapeHTML(targetRouteId)}"
-        title="Buka ${escapeHTML(placeGroup.placeLabel)}"
-        aria-label="Buka ${escapeHTML(placeGroup.placeLabel)} pada peta"
+        data-integration-stop-key="${escapeHTML(resolved.targetStopKey)}"
+        data-integration-route-id="${escapeHTML(resolved.targetRouteId)}"
+        title="Buka ${escapeHTML(placeLabel)}"
+        aria-label="Buka ${escapeHTML(placeLabel)} pada peta"
       >
-
         <span class="integration-line-badges">
           ${badgesHTML}
         </span>
@@ -13069,27 +17380,172 @@ function buildIntegrationPlaceRow(placeGroup) {
         <span
           class="integration-place-link-arrow"
           aria-hidden="true"
-        >
-          ›
-        </span>
-
+        >›</span>
       </button>
     `;
   }
 
-
+  /*
+    Integrasi ke jaringan yang datanya belum dimuat tetap boleh tampil
+    secara informatif jika INT_NM tersedia, tetapi tanpa chevron/link.
+  */
   return `
     <div class="integration-place-row ${placeStatusClass}">
-
       <div class="integration-line-badges">
         ${badgesHTML}
       </div>
-
       ${placeHTML}
-
     </div>
   `;
 }
+
+
+/*
+  =========================================================
+  URUTAN TITIK INTEGRASI TRANSJAKARTA
+  =========================================================
+
+  Di dalam satu grup operator TransJakarta, titik integrasi
+  diurutkan menurut nomor koridor yang ditampilkan. Contoh:
+
+    1  Halte ASEAN
+    1  Halte Kejaksaan Agung
+    13 Halte CSW
+
+  Bukan menurut alfabet nama halte. Bila dua titik sama-sama
+  berada pada koridor yang sama, urutan sumber INT_NM/INT_STOP
+  dipertahankan melalui firstIndex.
+*/
+function getBrtCorridorSortParts(routeId) {
+  const label = String(
+    routeNumberFromId(routeId) ?? ""
+  )
+    .trim()
+    .toUpperCase();
+
+  const match = label.match(/^(\d+)(.*)$/);
+
+  if (!match) {
+    return {
+      number: Number.POSITIVE_INFINITY,
+      suffix: label
+    };
+  }
+
+  return {
+    number: Number(match[1]),
+    suffix: String(match[2] || "").trim()
+  };
+}
+
+
+function compareBrtRouteIdsForIntegration(a, b) {
+  const pa = getBrtCorridorSortParts(a);
+  const pb = getBrtCorridorSortParts(b);
+
+  if (pa.number !== pb.number) {
+    return pa.number - pb.number;
+  }
+
+  return pa.suffix.localeCompare(
+    pb.suffix,
+    "id",
+    {
+      numeric: true,
+      sensitivity: "base"
+    }
+  );
+}
+
+
+function getIntegrationPlaceBrtRouteIds(placeGroup) {
+  const explicitRouteIds = (placeGroup?.services || [])
+    .flatMap(service => [
+      service?.routeId,
+      (
+        service?.brt &&
+        String(service?.code || "")
+          .toUpperCase()
+          .startsWith("BRT_")
+      )
+        ? service.code
+        : ""
+    ])
+    .map(value => String(value ?? "").trim())
+    .filter(routeId => {
+      const route = getRouteById(routeId);
+      return route && getRouteMode(route) === "BRT";
+    });
+
+  /*
+    Operator-level INTEGRASI=BRT tidak mempunyai routeId eksplisit.
+    Jika INT_STOP menunjuk halte TransJakarta, koridor diturunkan
+    dari ROUTES pada halte target sehingga urutannya tetap benar.
+  */
+  const resolved = resolveIntegrationPlaceTarget(placeGroup);
+
+  const targetRouteIds = resolved?.targetFeature
+    ? getStopRoutes(resolved.targetFeature)
+        .filter(routeId => {
+          const route = getRouteById(routeId);
+          return route && getRouteMode(route) === "BRT";
+        })
+    : [];
+
+  return Array.from(
+    new Set([
+      ...explicitRouteIds,
+      ...targetRouteIds
+    ])
+  )
+    .sort(compareBrtRouteIdsForIntegration);
+}
+
+
+function compareTransJakartaIntegrationPlaces(a, b) {
+  const routesA = getIntegrationPlaceBrtRouteIds(a);
+  const routesB = getIntegrationPlaceBrtRouteIds(b);
+
+  const firstA = routesA[0] || "";
+  const firstB = routesB[0] || "";
+
+  if (firstA || firstB) {
+    if (!firstA) return 1;
+    if (!firstB) return -1;
+
+    const routeDiff = compareBrtRouteIdsForIntegration(
+      firstA,
+      firstB
+    );
+
+    if (routeDiff !== 0) {
+      return routeDiff;
+    }
+  }
+
+  /*
+    Koridor sama: pertahankan urutan yang ditulis di data.
+  */
+  const indexDiff =
+    Number(a?.firstIndex ?? Number.POSITIVE_INFINITY)
+    -
+    Number(b?.firstIndex ?? Number.POSITIVE_INFINITY);
+
+  if (indexDiff !== 0) {
+    return indexDiff;
+  }
+
+  return String(a?.placeLabel || "")
+    .localeCompare(
+      String(b?.placeLabel || ""),
+      "id",
+      {
+        numeric: true,
+        sensitivity: "base"
+      }
+    );
+}
+
 
 function buildIntegrationGroup(group) {
 
@@ -13114,10 +17570,25 @@ function buildIntegrationGroup(group) {
       "";
 
 
-  const placeGroups =
+  let placeGroups =
     groupServicesByRelatedPlace(
       group.services
     );
+
+  /*
+    TransJakarta dibaca sebagai jaringan berbasis koridor. Urutan
+    titik di popup karena itu mengikuti nomor koridor, bukan alfabet
+    nama halte. Operator lain mempertahankan aturan sebelumnya.
+  */
+  if (
+    String(group.operatorKey || "")
+      .trim()
+      .toUpperCase() === "TRANSJAKARTA"
+  ) {
+    placeGroups = placeGroups
+      .slice()
+      .sort(compareTransJakartaIntegrationPlaces);
+  }
 
 
   const placesHTML =
@@ -13125,7 +17596,12 @@ function buildIntegrationGroup(group) {
       .map(
         buildIntegrationPlaceRow
       )
+      .filter(Boolean)
       .join("");
+
+  if (!placesHTML) {
+    return "";
+  }
 
 
   return `
@@ -13197,7 +17673,11 @@ function getStopTypeLabel(feature) {
   );
 
   if (mode === "BRT") {
-    return "HALTE BRT";
+    return isTemporaryStopFeature(
+      feature
+    )
+      ? "HALTE BRT SEMENTARA"
+      : "HALTE BRT";
   }
 
   if (mode === "MRT") {
@@ -13657,8 +18137,9 @@ map
   POPUP INTEGRATION — TRANSJAKARTA CLICK HANDLER
   ==========================================================
 
-  Baru TransJakarta yang aktif.
-  MRT / KRL / LRT / KA Bandara tetap menjadi informasi statis.
+  Titik integrasi yang sudah mempunyai dataset jaringan aktif
+  dapat dibuka langsung. Fasilitas tanpa route/stop dataset
+  (mis. Terminal/KAJJ pada tahap ini) tetap informasi statis.
 */
 map
   .getContainer()
@@ -13668,7 +18149,7 @@ map
       const button =
         event.target
           ?.closest(
-            ".integration-place-row-button.is-transjakarta"
+            ".integration-place-row-button[data-integration-stop-key]"
           );
 
       if (!button) {
@@ -13697,7 +18178,7 @@ map
         event
       );
 
-      openTransJakartaIntegrationStop(
+      openNetworkIntegrationStop(
         stopKey,
         routeId
       );
@@ -13741,6 +18222,10 @@ function getStopStatusClass(feature) {
 
   if (status === "Conceptual") {
     return "is-conceptual";
+  }
+
+  if (status === "Inactive") {
+    return "is-inactive";
   }
 
   return "is-other";
@@ -13864,6 +18349,48 @@ function buildOperationalStopNoticeHTML(
     );
 
   if (
+    isTemporaryStopActiveForRoute(
+      feature,
+      routeId
+    )
+  ) {
+    const replacesId =
+      getStopReplacesId(
+        feature
+      );
+
+    const divId =
+      cleanText(
+        feature
+          ?.properties
+          ?.DIV_ID
+      );
+
+    return `
+      <div class="stop-operational-notice is-temporary is-physical-temporary">
+        <div class="stop-operational-notice-title">
+          Halte sementara
+        </div>
+
+        <div class="stop-operational-notice-text">
+          Titik ini merupakan lokasi fisik sementara
+          ${escapeHTML(routeLabel)}
+          ${
+            replacesId
+              ? `dan menggantikan sementara titik reguler <strong>${escapeHTML(replacesId)}</strong>`
+              : ""
+          }.
+          ${
+            divId
+              ? `<span class="stop-operational-div-id">DIV_ID: ${escapeHTML(divId)}</span>`
+              : ""
+          }
+        </div>
+      </div>
+    `;
+  }
+
+  if (
     operational.state ===
     "not-served"
   ) {
@@ -13924,8 +18451,365 @@ function buildOperationalStopNoticeHTML(
 }
 
 
+/*
+  Kebijakan final:
+  - SRC_URL = URL sumber / provenance.
+  - Google Maps = dibentuk otomatis dari geometry Point.
+*/
+function getStopGoogleMapsUrl(
+  feature
+) {
+  const geometry =
+    feature?.geometry;
+
+  if (
+    !geometry ||
+    geometry.type !== "Point" ||
+    !Array.isArray(
+      geometry.coordinates
+    ) ||
+    geometry.coordinates.length < 2
+  ) {
+    return "";
+  }
+
+  const lng =
+    Number(
+      geometry.coordinates[0]
+    );
+
+  const lat =
+    Number(
+      geometry.coordinates[1]
+    );
+
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    lat < -90 ||
+    lat > 90 ||
+    lng < -180 ||
+    lng > 180
+  ) {
+    return "";
+  }
+
+  /*
+    Google Maps URL dibuat dari koordinat feature.
+    SRC_URL tetap digunakan untuk provenance / sumber data.
+  */
+  return (
+    "https://www.google.com/maps/search/" +
+    "?api=1&query=" +
+    encodeURIComponent(
+      `${lat},${lng}`
+    )
+  );
+}
+
+
+function buildStopLocationHTML(
+  feature
+) {
+  const mapsUrl =
+    getStopGoogleMapsUrl(
+      feature
+    );
+
+  if (!mapsUrl) {
+    return "";
+  }
+
+  return `
+    <div class="stop-popup-section stop-popup-section--location">
+
+      <div class="stop-popup-label">
+        Lokasi
+      </div>
+
+      <a
+        class="stop-popup-external-link stop-popup-maps-link"
+        href="${escapeHTML(mapsUrl)}"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Buka lokasi halte di Google Maps"
+      >
+        <span
+          class="stop-popup-external-link-icon"
+          aria-hidden="true"
+        >
+          ↗
+        </span>
+
+        <span>
+          Google Maps
+        </span>
+      </a>
+
+    </div>
+  `;
+}
+
+
+function getStopSourceTypeLabel(
+  feature
+) {
+  const status =
+    normalizeStatus(
+      feature
+        ?.properties
+        ?.STATUS
+    );
+
+  return {
+    Existing: "Sumber Data",
+    Planned: "Sumber Rencana",
+    Proposed: "Sumber Usulan",
+    Conceptual: "Dasar Analisis",
+    Inactive: "Sumber Data"
+  }[status] || "Sumber Data";
+}
+
+
+function buildStopSourceMetadataHTML(
+  feature
+) {
+  const p =
+    feature?.properties ?? {};
+
+  const sourceRaw =
+    cleanText(
+      p.SOURCE
+      ??
+      p.SRC_NAME
+      ??
+      p.SOURCE_NAME
+    );
+
+  const urlRaw =
+    cleanText(
+      p.SRC_URL
+      ??
+      p.SOURCE_URL
+    );
+
+  const note =
+    cleanText(
+      p.SRC_NOTE
+      ??
+      p.SOURCE_NOTE
+    );
+
+  const sources =
+    splitRouteSourceValues(
+      sourceRaw
+    );
+
+  const urls =
+    splitRouteSourceValues(
+      urlRaw
+    )
+      .map(
+        sanitizeRouteSourceUrl
+      )
+      .filter(Boolean);
+
+  if (
+    !sources.length &&
+    !urls.length &&
+    !note
+  ) {
+    return "";
+  }
+
+  const sourceType =
+    getStopSourceTypeLabel(
+      feature
+    );
+
+  const sourceSummaryTitle =
+    sources.length === 1
+      ? sources[0]
+      : (
+          sources.length > 1
+            ? `${sources.length} sumber`
+            : "Sumber & Dasar Data"
+        );
+
+  const sourceRows = [];
+
+  if (sources.length) {
+    sources.forEach(
+      (source, index) => {
+        /*
+          Hanya pasangkan SOURCE <-> SRC_URL bila jumlahnya sama.
+          Kalau tidak sama, jangan menebak pasangan sumber.
+        */
+        const pairedUrl =
+          urls.length ===
+          sources.length
+            ? urls[index]
+            : "";
+
+        sourceRows.push(`
+          <div class="stop-source-item">
+
+            <div class="stop-source-name">
+              ${escapeHTML(source)}
+            </div>
+
+            ${
+              pairedUrl
+                ? `
+                  <a
+                    class="stop-popup-source-link"
+                    href="${escapeHTML(pairedUrl)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Buka sumber
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                `
+                : ""
+            }
+
+          </div>
+        `);
+      }
+    );
+  }
+
+  const unpairedLinksHTML =
+    urls.length &&
+    urls.length !==
+      sources.length
+      ? `
+        <div class="stop-source-links">
+          ${
+            urls
+              .map(
+                (url, index) => `
+                  <a
+                    class="stop-popup-source-link"
+                    href="${escapeHTML(url)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    ${
+                      urls.length > 1
+                        ? `Buka sumber ${index + 1}`
+                        : "Buka sumber"
+                    }
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                `
+              )
+              .join("")
+          }
+        </div>
+      `
+      : "";
+
+  const noteHTML =
+    note
+      ? `
+        <div class="stop-source-note">
+          <div class="stop-source-note-label">
+            Keterangan
+          </div>
+
+          <div class="stop-source-note-text">
+            ${escapeHTML(note)}
+          </div>
+        </div>
+      `
+      : "";
+
+  return `
+    <details class="stop-source-card">
+
+      <summary class="stop-source-summary">
+
+        <span
+          class="stop-source-summary-icon"
+          aria-hidden="true"
+        >
+          ↗
+        </span>
+
+        <span class="stop-source-summary-copy">
+
+          <span class="stop-source-type">
+            ${escapeHTML(sourceType)}
+          </span>
+
+          <span class="stop-source-title">
+            ${escapeHTML(sourceSummaryTitle)}
+          </span>
+
+        </span>
+
+        <span
+          class="stop-source-chevron"
+          aria-hidden="true"
+        >
+          ›
+        </span>
+
+      </summary>
+
+      <div class="stop-source-body">
+
+        ${
+          sourceRows.length
+            ? `
+              <div class="stop-source-list">
+                ${sourceRows.join("")}
+              </div>
+            `
+            : ""
+        }
+
+        ${unpairedLinksHTML}
+        ${noteHTML}
+
+      </div>
+
+    </details>
+  `;
+}
+
+
 function buildStopPopup(feature, routeId) {
   const p = feature.properties;
+
+  const stopComplexName =
+    getStopComplexName(
+      feature
+    );
+
+  const stopComplexHTML =
+    stopComplexName
+      ? `
+        <div class="stop-popup-complex-note">
+          <span class="stop-popup-complex-label">
+            Kompleks
+          </span>
+
+          <span
+            class="stop-popup-complex-separator"
+            aria-hidden="true"
+          >
+            ·
+          </span>
+
+          <strong>
+            ${escapeHTML(stopComplexName)}
+          </strong>
+        </div>
+      `
+      : "";
 
   const operationalState =
     getOperationalStopState(
@@ -14012,6 +18896,11 @@ function buildStopPopup(feature, routeId) {
       feature
     );
 
+  const integrationTargetMap =
+    getStopIntegrationTargetMap(
+      feature
+    );
+
   const integrationStatusMap =
     getStopIntegrationStatusMap(
       feature
@@ -14035,6 +18924,20 @@ function buildStopPopup(feature, routeId) {
       `
       : "";
 
+  const stopStructure = normalizeStructure(
+    p.STRUCTURE
+  );
+
+  const structureBadgeHTML =
+    normalizeMode(p.MODE) !== "BRT" &&
+    stopStructure !== "UNKNOWN"
+      ? `
+        <span class="stop-popup-structure-pill is-${stopStructure.toLowerCase()}">
+          ${escapeHTML(getStructureLabel(stopStructure))}
+        </span>
+      `
+      : "";
+
   const directionInfo =
     routeId
       ? getStopDirectionInfo(
@@ -14044,53 +18947,23 @@ function buildStopPopup(feature, routeId) {
       : null;
 
   /*
-    Terminus tidak menampilkan Arah Pelayanan.
-
-    Pada terminus, informasi yang relevan adalah
-    Pelayanan Penumpang:
-    - Penaikan & Penurunan
-    - Penaikan saja
-    - Penurunan saja
-
-    Regular / Transit tetap menampilkan Arah Pelayanan.
+    WebGIS ini bersifat infografis. Kondisi dua arah dianggap
+    normal dan tidak perlu diberi blok atribut tersendiri.
+    Hanya pengecualian satu arah yang ditampilkan sebagai pill
+    ringkas di baris status/fungsi halte.
   */
-  const directionHTML =
+  const directionBadgeHTML =
     directionInfo &&
+    directionInfo.isOneWay &&
     !isStopTerminusForRoute(
       feature,
       routeId
     )
       ? `
-        <div class="stop-popup-direction">
-          <div class="stop-popup-direction-label">
-            Arah Pelayanan
-          </div>
-
-          <div
-            class="stop-popup-direction-value ${directionInfo.isOneWay ? "is-one-way" : "is-two-way"}"
-          >
-            <span
-              class="stop-popup-direction-symbol"
-              aria-hidden="true"
-            >
-              ${escapeHTML(directionInfo.symbol)}
-            </span>
-
-            <strong>
-              ${escapeHTML(directionInfo.title)}
-            </strong>
-
-            ${
-              directionInfo.detail
-                ? `
-                  <span class="stop-popup-direction-detail">
-                    · ${escapeHTML(directionInfo.detail)}
-                  </span>
-                `
-                : ""
-            }
-          </div>
-        </div>
+        <span class="stop-popup-direction-pill">
+          <span aria-hidden="true">${escapeHTML(directionInfo.symbol)}</span>
+          <span>${escapeHTML(directionInfo.detail || directionInfo.title)}</span>
+        </span>
       `
       : "";
 
@@ -14298,8 +19171,18 @@ function buildStopPopup(feature, routeId) {
     groupIntegrationsByOperator(
       integrations,
       integrationNameMap,
-      integrationStatusMap
-    );
+      integrationStatusMap,
+      integrationTargetMap
+    )
+      .filter(group =>
+        groupServicesByRelatedPlace(group.services)
+          .some(placeGroup =>
+            Boolean(
+              placeGroup.placeLabel ||
+              resolveIntegrationPlaceTarget(placeGroup).targetFeature
+            )
+          )
+      );
 
   /*
     Popup sederhana dibuat lebih compact di mobile.
@@ -14338,6 +19221,8 @@ function buildStopPopup(feature, routeId) {
             Integrasi
           </div>
 
+          ${buildIntegrationRelationshipHTML(feature)}
+
           ${integrationScenarioNoteHTML}
 
           <div class="stop-popup-integration-scroll">
@@ -14358,6 +19243,48 @@ function buildStopPopup(feature, routeId) {
       `
       :
       "";
+
+  const locationHTML =
+    buildStopLocationHTML(
+      feature
+    );
+
+  const stopSourceHTML =
+    buildStopSourceMetadataHTML(
+      feature
+    );
+
+  const stopActionRowHTML =
+    (
+      locationHTML ||
+      stopSourceHTML
+    )
+      ? `
+        <div class="stop-popup-action-row">
+
+          ${
+            locationHTML
+              ? `
+                <div class="stop-popup-action-cell">
+                  ${locationHTML}
+                </div>
+              `
+              : ""
+          }
+
+          ${
+            stopSourceHTML
+              ? `
+                <div class="stop-popup-action-cell">
+                  ${stopSourceHTML}
+                </div>
+              `
+              : ""
+          }
+
+        </div>
+      `
+      : "";
 
   const adjacentStops =
     routeId
@@ -14408,7 +19335,7 @@ function buildStopPopup(feature, routeId) {
           </span>
         </button>
       `
-      : `<div class="stop-popup-nav-spacer" aria-hidden="true"></div>`;
+      : "";
 
   const nextNavigationHTML =
     nextStop
@@ -14428,12 +19355,29 @@ function buildStopPopup(feature, routeId) {
           <span class="stop-popup-nav-arrow" aria-hidden="true">›</span>
         </button>
       `
-      : `<div class="stop-popup-nav-spacer" aria-hidden="true"></div>`;
+      : "";
+
+  const navigationModeClass =
+    previousStop && nextStop
+      ? "has-both"
+      : (
+          previousStop
+            ? "has-previous-only"
+            : (
+                nextStop
+                  ? "has-next-only"
+                  : "has-none"
+              )
+        );
 
   const navigationHTML =
-    routeId
+    routeId &&
+    (
+      previousStop ||
+      nextStop
+    )
       ? `
-        <div class="stop-popup-navigation">
+        <div class="stop-popup-navigation ${navigationModeClass}">
           ${previousNavigationHTML}
           ${nextNavigationHTML}
         </div>
@@ -14466,9 +19410,11 @@ function buildStopPopup(feature, routeId) {
           </div>
 
           ${roleHTML}
+          ${structureBadgeHTML}
+          ${directionBadgeHTML}
         </div>
 
-        ${directionHTML}
+        ${stopComplexHTML}
 
         ${splitStopNoteHTML}
 
@@ -14483,6 +19429,8 @@ function buildStopPopup(feature, routeId) {
         ${directServiceHTML}
         ${affectedRoutesHTML}
         ${integrationHTML}
+
+        ${stopActionRowHTML}
 
       </div>
 
@@ -16123,6 +21071,8 @@ function updateRouteDetailCardState() {
     "is-overview",
     isAllRoutes
   );
+
+  updateRouteDetailToggleTerminology();
 }
 
 
@@ -16170,7 +21120,7 @@ function renderStopList(routeId) {
   }
 
   const listHTML = entries
-    .map(entry => {
+    .map((entry, entryIndex) => {
       const feature =
         entry.feature;
 
@@ -16199,9 +21149,25 @@ function renderStopList(routeId) {
         entry.logicalKey ||
         getLogicalStopKey(feature);
 
+      const physicalFeatures =
+        Array.isArray(
+          entry.physicalFeatures
+        )
+          ? entry.physicalFeatures
+          : [feature];
+
       const physicalCount =
         Number(
-          entry.physicalCount ?? 1
+          entry.physicalCount
+          ??
+          physicalFeatures.length
+          ??
+          1
+        );
+
+      const physicalSummary =
+        getPhysicalStopSummary(
+          physicalFeatures
         );
 
       const direction =
@@ -16232,11 +21198,23 @@ function renderStopList(routeId) {
 
         Saat K4 aktif -> routeSeq = "01".
       */
-      const routeSeq =
-        getStopSequenceRaw(
+      const explicitDirectionSeq =
+        getActiveDirectionSequenceRaw(
           feature,
           routeId
         );
+
+      const routeSeq =
+        isRouteDirectionEnabled(routeId) &&
+        !hasRouteDiversion(routeId)
+          ? String(entryIndex + 1).padStart(2, "0")
+          : (
+              explicitDirectionSeq ||
+              getStopSequenceRaw(
+                feature,
+                routeId
+              )
+            );
 
       const seqBadgeHTML =
         isTemporaryServed &&
@@ -16302,7 +21280,29 @@ function renderStopList(routeId) {
 
       const rightBadges = [];
 
-      if (direction) {
+      /*
+        Badge arah pada daftar hanya berguna untuk halte yang
+        benar-benar satu arah. Halte dua arah sudah dinormalisasi
+        menjadi direction kosong oleh getDirectionLabel().
+
+        Untuk Terminus / Transit-Terminus, fungsi halte lebih
+        penting daripada arah pada daftar ringkas. Informasi arah
+        titik fisik tetap tersedia di popup bila relevan.
+      */
+      const roleNormalized =
+        String(role ?? "")
+          .trim()
+          .toLowerCase();
+
+      const hideDirectionForRole =
+        roleNormalized === "terminus" ||
+        roleNormalized === "transit-terminus" ||
+        roleNormalized === "terminus sementara";
+
+      if (
+        direction &&
+        !hideDirectionForRole
+      ) {
         rightBadges.push(`
           <span class="stop-direction">
             ${escapeHTML(direction)}
@@ -16333,13 +21333,16 @@ function renderStopList(routeId) {
           </span>
         `);
       }
-      if (physicalCount > 1) {
+      if (
+        physicalCount > 1 &&
+        physicalSummary.short
+      ) {
         rightBadges.push(`
           <span
             class="stop-physical-count-badge"
-            title="${physicalCount} titik fisik dalam satu halte"
+            title="${escapeHTML(physicalSummary.long)}"
           >
-            ${physicalCount} titik
+            ${escapeHTML(physicalSummary.short)}
           </span>
         `);
       }
@@ -16715,6 +21718,11 @@ function selectStop(
   const physicalCount =
     groupFeatures.length;
 
+  const physicalSummary =
+    getPhysicalStopSummary(
+      groupFeatures
+    );
+
   const operationalState =
     getOperationalStopState(
       feature,
@@ -16775,6 +21783,20 @@ function selectStop(
       feature
     );
 
+  const showSelectedRole =
+    role &&
+    role.toLowerCase() !== "reguler" &&
+    role.toLowerCase() !== "regular" &&
+    role.toLowerCase() !== "normal";
+
+  const showSelectedActivity =
+    isStopTerminusForRoute(
+      feature,
+      routeId
+    )
+    ||
+    activityInfo.code !== "BOTH";
+
   selectedStopInfoEl.innerHTML = `
     <div class="eyebrow">
       ${escapeHTML(
@@ -16786,107 +21808,57 @@ function selectStop(
       ${escapeHTML(getStopDisplayName(feature))}
     </h3>
 
-    <div class="selected-stop-row">
-      ${escapeHTML(
-        selectedTerms.orderLabel
-      )}:
-      <strong>
-        ${
-          getStopSequenceRaw(feature, routeId)
-          ? escapeHTML(
-              getStopSequenceRaw(
-                feature,
-                routeId
-              )
-            )
-          : (
-              operationalState.state ===
-              "temporary-served"
-                ? "Sementara"
-                : "Belum diisi"
-            )
-        }
-      </strong>
-    </div>
-
-    <div class="selected-stop-row">
-      ${escapeHTML(
-        selectedTerms.statusLabel
-      )}:
-      <strong class="selected-stop-status ${getStopStatusClass(feature)}">
+    <div class="selected-stop-meta">
+      <span class="selected-stop-status ${getStopStatusClass(feature)}">
         ${escapeHTML(getStopStatusLabel(feature))}
-      </strong>
-    </div>
+      </span>
 
-    ${
-      !isStopTerminusForRoute(
-        feature,
-        routeId
-      )
-        ? `
-          <div class="selected-stop-row">
-            Arah Pelayanan:
-            <strong>
-              ${escapeHTML(directionInfo.symbol)}
-              ${escapeHTML(directionInfo.title)}
-              ${
-                directionInfo.detail
-                  ? ` · ${escapeHTML(directionInfo.detail)}`
-                  : ""
-              }
-            </strong>
-          </div>
-        `
-        : ""
-    }
+      ${
+        showSelectedRole
+          ? `
+            <span class="selected-stop-role ${getOperationalStopRoleClass(feature, routeId)}">
+              ${escapeHTML(role)}
+            </span>
+          `
+          : ""
+      }
 
-    ${
-      isStopTerminusForRoute(
-        feature,
-        routeId
-      )
-      ||
-      activityInfo.code !== "BOTH"
-        ? `
-          <div class="selected-stop-row">
-            Pelayanan Penumpang:
-            <strong>
+      ${
+        directionInfo?.isOneWay &&
+        !isStopTerminusForRoute(
+          feature,
+          routeId
+        )
+          ? `
+            <span class="selected-stop-direction-pill">
+              <span aria-hidden="true">${escapeHTML(directionInfo.symbol)}</span>
+              <span>${escapeHTML(directionInfo.detail || directionInfo.title)}</span>
+            </span>
+          `
+          : ""
+      }
+
+      ${
+        showSelectedActivity
+          ? `
+            <span class="selected-stop-meta-text">
               ${escapeHTML(activityInfo.symbol)}
               ${escapeHTML(activityInfo.title)}
-            </strong>
-          </div>
-        `
-        : ""
-    }
+            </span>
+          `
+          : ""
+      }
 
-    ${
-      physicalCount > 1
-        ? `
-          <div class="selected-stop-row">
-            Titik Fisik:
-            <strong>
-              ${physicalCount} titik dalam satu halte
-            </strong>
-          </div>
-        `
-        : ""
-    }
-
-    ${
-      role &&
-      role.toLowerCase() !== "reguler" &&
-      role.toLowerCase() !== "regular" &&
-      role.toLowerCase() !== "normal"
-        ? `
-          <div class="selected-stop-row">
-            Fungsi:
-            <strong class="selected-stop-role ${getOperationalStopRoleClass(feature, routeId)}">
-              ${escapeHTML(role)}
-            </strong>
-          </div>
-        `
-        : ""
-    }
+      ${
+        physicalCount > 1
+          ? `
+            <span class="selected-stop-meta-text">
+              ${escapeHTML(String(physicalCount))} lokasi fisik
+            </span>
+          `
+          : ""
+      }
+    </div>
 
     ${selectedOperationalNotice}
   `;
@@ -17164,9 +22136,12 @@ function setRouteDetailCollapsed(
       String(!isCollapsed)
     );
 
+  const sectionLabel =
+    getRouteDetailSectionLabel();
+
   const label = isCollapsed
-    ? "Tampilkan bagian koridor"
-    : "Sembunyikan bagian koridor";
+    ? `Tampilkan bagian ${sectionLabel.toLowerCase()}`
+    : `Sembunyikan bagian ${sectionLabel.toLowerCase()}`;
 
   routeDetailToggle
     .setAttribute(
@@ -17179,6 +22154,8 @@ function setRouteDetailCollapsed(
       "aria-label",
       label
     );
+
+  updateRouteDetailToggleTerminology();
 
   if (persist) {
     try {
@@ -17618,6 +22595,58 @@ function fitRouteToScreen(
 }
 
 
+function updateStructureLegend(
+  routeId = ""
+) {
+  if (!structureLegendSection) {
+    return;
+  }
+
+  let show = false;
+
+  if (routeId) {
+    const route = getRouteById(routeId);
+    show = Boolean(
+      route &&
+      getRouteMode(route) === "MRT" &&
+      getRouteFeaturesById(routeId)
+        .some(feature =>
+          ["ELEVATED", "TRANSITION", "UNDERGROUND"]
+            .includes(
+              normalizeStructure(
+                feature?.properties?.STRUCTURE
+              )
+            )
+        )
+    );
+  }
+  else {
+    const selectedMode = normalizeMode(
+      modeSelect?.value
+    );
+
+    show = Boolean(
+      (selectedMode === "MRT" || selectedMode === "ALL") &&
+      routeData?.features?.some(feature =>
+        getRouteMode(feature) === "MRT" &&
+        ["ELEVATED", "TRANSITION", "UNDERGROUND"]
+          .includes(
+            normalizeStructure(
+              feature?.properties?.STRUCTURE
+            )
+          )
+      )
+    );
+  }
+
+  structureLegendSection.hidden = !show;
+
+  if (!show) {
+    structureLegendSection.open = false;
+  }
+}
+
+
 function updateOperationalLegend(
   routeId = ""
 ) {
@@ -17659,6 +22688,8 @@ function showAllRoutes(
   comparisonRouteId = null;
   showRegularRouteComparison = false;
 
+  updateRouteDetailCardState();
+
   clearSelectedStop();
   removeStops();
 
@@ -17667,10 +22698,15 @@ function showAllRoutes(
   const features =
     getFilteredRoutes();
 
-  drawRoutes(features);
+  drawRoutes(
+    expandLogicalRouteGeometryFeatures(
+      features
+    )
+  );
   renderAllRouteInfo();
 
   updateOperationalLegend("");
+  updateStructureLegend("");
 
   updateRouteCompareUI();
   updateRecenterButtonLabel();
@@ -17762,9 +22798,15 @@ function showSingleRoute(
   currentSelectedRouteId =
     String(routeId);
 
+  updateRouteDetailCardState();
+
   clearSelectedStop();
 
   updateOperationalLegend(
+    routeId
+  );
+
+  updateStructureLegend(
     routeId
   );
 
@@ -17817,6 +22859,24 @@ map.on(
   "zoomend",
   () => {
     updateStopZoomVisualState();
+
+    if (routeLayer) {
+      routeLayer.setStyle(
+        routeStyle
+      );
+    }
+
+    if (routeStructureLayer) {
+      routeStructureLayer.setStyle(
+        routeStructureStyle
+      );
+    }
+
+    if (routeHaloLayer) {
+      routeHaloLayer.setStyle(
+        haloStyle
+      );
+    }
   }
 );
 
@@ -18985,6 +24045,60 @@ document
    LOAD DATA
    ========================================================= */
 
+async function fetchGeoJSON(
+  path,
+  {
+    required = false,
+    label = path
+  } = {}
+) {
+  try {
+    const response = await fetch(
+      path,
+      {
+        cache: "no-store"
+      }
+    );
+
+    if (!response.ok) {
+      if (required) {
+        throw new Error(
+          `${label} gagal dimuat (${response.status})`
+        );
+      }
+
+      console.info(
+        `${label} belum tersedia; dataset ini dilewati.`
+      );
+
+      return featureCollection([]);
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data?.features)) {
+      throw new Error(
+        `${label} bukan FeatureCollection GeoJSON yang valid`
+      );
+    }
+
+    return data;
+  }
+  catch (error) {
+    if (required) {
+      throw error;
+    }
+
+    console.warn(
+      `${label} tidak dapat dimuat; BRT tetap dijalankan.`,
+      error
+    );
+
+    return featureCollection([]);
+  }
+}
+
+
 async function loadData() {
   try {
 
@@ -19003,47 +24117,109 @@ async function loadData() {
         false
       );
     }
+
+    /*
+      BRT wajib agar baseline tidak berubah.
+      MRT bersifat optional pilot: bila file belum diletakkan di
+      folder data, WebGIS tetap terbuka sebagai BRT-only.
+    */
     const [
-      routeResponse,
-      stopResponse
-    ] =
-      await Promise.all([
-        fetch(
-          "data/brt_route.geojson",
-          {
-            cache: "no-store"
-          }
-        ),
+      brtRouteRaw,
+      brtStopRaw,
+      mrtRouteRaw,
+      mrtStopRaw
+    ] = await Promise.all([
+      fetchGeoJSON(
+        "data/brt_route.geojson",
+        {
+          required: true,
+          label: "brt_route.geojson"
+        }
+      ),
 
-        fetch(
-          "data/brt_stop.geojson",
-          {
-            cache: "no-store"
-          }
-        )
-      ]);
+      fetchGeoJSON(
+        "data/brt_stop.geojson",
+        {
+          required: true,
+          label: "brt_stop.geojson"
+        }
+      ),
 
-    if (!routeResponse.ok) {
-      throw new Error(
-        "brt_route.geojson gagal dimuat"
+      fetchGeoJSON(
+        "data/mrt_route.geojson",
+        {
+          required: false,
+          label: "mrt_route.geojson"
+        }
+      ),
+
+      fetchGeoJSON(
+        "data/mrt_stop.geojson",
+        {
+          required: false,
+          label: "mrt_stop.geojson"
+        }
+      )
+    ]);
+
+    const brtRoutes =
+      adaptFeatureCollectionForRuntime(
+        brtRouteRaw,
+        {
+          type: "route",
+          datasetKey: "BRT"
+        }
       );
-    }
 
-    if (!stopResponse.ok) {
-      throw new Error(
-        "brt_stop.geojson gagal dimuat"
+    const brtStops =
+      adaptFeatureCollectionForRuntime(
+        brtStopRaw,
+        {
+          type: "stop",
+          datasetKey: "BRT"
+        }
       );
-    }
 
-    routeData =
-      await routeResponse.json();
+    const mrtRoutes =
+      adaptFeatureCollectionForRuntime(
+        mrtRouteRaw,
+        {
+          type: "route",
+          datasetKey: "MRT"
+        }
+      );
 
-    stopData =
-      await stopResponse.json();
+    const mrtStops =
+      adaptFeatureCollectionForRuntime(
+        mrtStopRaw,
+        {
+          type: "stop",
+          datasetKey: "MRT"
+        }
+      );
+
+    routeData = mergeFeatureCollections(
+      brtRoutes,
+      mrtRoutes
+    );
+
+    stopData = mergeFeatureCollections(
+      brtStops,
+      mrtStops
+    );
 
     assignRuntimeStopKeys();
+
+    /*
+      STOP_ROLE rail tidak diinferensikan dari sequence.
+      Ini penting agar dataset testing/parsial tidak membuat
+      stasiun terakhir yang kebetulan tersedia menjadi Terminus.
+    */
+    applyRailStopRolePolicy();
+
     validateRouteData();
     validateStopData();
+    validateMrtData();
 
     modeSelect.value = "ALL";
     statusSelect.value = "Existing";
@@ -19078,13 +24254,18 @@ async function loadData() {
     );
 
     console.log(
-      "Rute:",
+      "Rute total:",
       routeData.features?.length ?? 0
     );
 
     console.log(
-      "Halte/stasiun:",
+      "Halte/stasiun total:",
       stopData.features?.length ?? 0
+    );
+
+    console.log(
+      "MRT pilot:",
+      `${mrtRoutes.features.length} segmen · ${mrtStops.features.length} stasiun`
     );
   }
 
