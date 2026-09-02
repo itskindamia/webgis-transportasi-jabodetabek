@@ -18,7 +18,7 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="css/style.css?v=20260902-multimodal-integration-v26" />
+  <link rel="stylesheet" href="css/style.css?v=20260902-rail-list-badge-fix-v47" />
 </head>
 
 <body>
@@ -66,6 +66,7 @@
           <select id="statusSelect">
             <option value="ALL">Semua Status</option>
             <option value="Existing" selected>Eksisting</option>
+            <option value="Construction" id="constructionStatusOption">Dalam Pembangunan</option>
             <option value="Planned">Rencana</option>
             <option value="Proposed">Usulan</option>
             <option value="Conceptual">Konseptual</option>
@@ -406,7 +407,7 @@
     <header class="right-info-header">
       <div class="right-info-heading">
         <h1>Jaringan Transportasi Umum Jabodetabek</h1>
-        <p>Eksisting · Rencana · Usulan · Konseptual</p>
+        <p>Eksisting · Dalam Pembangunan · Rencana · Usulan · Konseptual</p>
       </div>
 
       <button
@@ -442,6 +443,25 @@
                 />
               </svg>
               <span>Eksisting</span>
+            </div>
+
+            <div class="legend-item" id="constructionLegendItem">
+              <svg class="legend-route-swatch is-construction" viewBox="0 0 54 12" aria-hidden="true">
+                <line
+                  x1="2" y1="6" x2="52" y2="6"
+                  stroke="#555"
+                  stroke-width="7"
+                  stroke-linecap="round"
+                  stroke-dasharray="2 5"
+                />
+                <line
+                  x1="2" y1="6" x2="52" y2="6"
+                  stroke="currentColor"
+                  stroke-width="3.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Dalam Pembangunan</span>
             </div>
 
             <div class="legend-item">
@@ -484,7 +504,7 @@
             </div>
 
             <p class="legend-note">
-              Warna garis mengikuti identitas masing-masing lin atau koridor.
+              Warna garis mengikuti identitas masing-masing lin atau koridor. Status Dalam Pembangunan digunakan untuk moda non-BRT.
             </p>
           </div>
         </details>
@@ -786,13 +806,13 @@
       <div class="info-modal-body" id="infoModalDescription">
         <p>
           WebGIS jaringan transportasi umum Jabodetabek yang menampilkan
-          jaringan <strong>Eksisting</strong>, <strong>Rencana</strong>,
-          <strong>Usulan</strong>, dan <strong>Konseptual</strong>.
+          jaringan <strong>Eksisting</strong>, <strong>Dalam Pembangunan</strong>,
+          <strong>Rencana</strong>, <strong>Usulan</strong>, dan <strong>Konseptual</strong>.
         </p>
 
         <div class="info-release-meta" aria-label="Informasi versi dan pembaruan WebGIS">
           <span class="info-release-meta-label">Versi WebGIS</span>
-          <strong>v0.10</strong>
+          <strong>v0.11</strong>
           <span>·</span>
           <span class="info-release-meta-label">Pembaruan terakhir</span>
           <strong>2 September 2026</strong>
@@ -801,6 +821,11 @@
         <div class="info-modal-notice info-status-notice">
           <p>
             <strong>Eksisting</strong> — jaringan yang telah beroperasi.
+          </p>
+
+          <p>
+            <strong>Dalam Pembangunan</strong> — jaringan moda non-BRT yang
+            telah memasuki tahap konstruksi fisik dan belum beroperasi.
           </p>
 
           <p>
@@ -916,8 +941,9 @@
 
             <ul>
               <li>
-                <strong>Eksisting/Rencana/Usulan/Konseptual</strong>
-                menunjukkan tingkat status jaringan.
+                <strong>Eksisting/Dalam Pembangunan/Rencana/Usulan/Konseptual</strong>
+                menunjukkan tingkat status jaringan. Status Dalam Pembangunan
+                digunakan untuk moda non-BRT.
               </li>
               <li>
                 <strong>Pengalihan sementara</strong> menunjukkan kondisi
@@ -945,6 +971,23 @@
           <summary>Riwayat pembaruan</summary>
 
           <div class="info-changelog-body">
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.11</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Penambahan MRT Jakarta (Lin Utara - Selatan) sebagai moda baru;
+                dukungan struktur jalur elevated, transisi, dan bawah tanah;
+                integrasi multimoda BRT–MRT berbasis target halte/stasiun;
+                popup dan navigasi integrasi dengan perpindahan peta secara halus;
+                label seluruh stasiun pada lin terpilih; lin/rute yang dapat diklik;
+                penyempurnaan logo lin, perhitungan panjang, dan daftar stasiun yang
+                lebih compact; serta penambahan status Dalam Pembangunan untuk
+                moda non-BRT.
+              </span>
+            </div>
+
             <div class="info-changelog-entry">
               <strong>
                 <span class="info-changelog-version">v0.10</span>
@@ -1172,7 +1215,7 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/map.js?v=20260902-multimodal-integration-v26"></script>
+  <script src="js/map.js?v=20260902-rail-list-badge-fix-v47"></script>
 
 </body>
 </html>

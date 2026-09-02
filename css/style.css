@@ -357,12 +357,15 @@ input,
 
 .stop-direction,
 .stop-role {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
   padding: 2px 4px;
   background: #e9e9e9;
   border-radius: 2px;
   font-size: 8px;
-  line-height: 1.2;
+  line-height: 1.1;
   color: #444;
   white-space: nowrap;
 }
@@ -783,9 +786,9 @@ body.basemap-panel-open .floating-zoom {
 }
 
 .brt-route-badge {
-  width: 38px;
-  height: 38px;
-  flex: 0 0 38px;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1952,9 +1955,9 @@ body.basemap-panel-open .floating-zoom {
 
 /* Koridor yang dilayani tetap paling besar */
 .stop-popup-section .brt-route-badges .brt-route-badge {
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
   font-size: 25px;
 }
 
@@ -18990,3 +18993,445 @@ body .route-detail-card:not(.is-overview):not(.is-collapsed)
    No visual override required.
    Integration behavior is handled data-first in js/map.js.
    ========================================================= */
+
+/* =========================================================
+   STOP LABEL STACKING v32
+   Maksimal 2 baris. Pada zoom overview/far label tetap satu
+   baris; stacking aktif pada zoom mid/near agar label panjang
+   lebih ringkas tanpa menambah kepadatan overview.
+   ========================================================= */
+.leaflet-tooltip.route-stop-name-label.is-stacked {
+  text-align: center;
+}
+
+.leaflet-tooltip.route-stop-name-label.is-stacked .stop-label-line {
+  display: inline;
+}
+
+.leaflet-tooltip.route-stop-name-label.is-stacked
+  .stop-label-line + .stop-label-line::before {
+  content: " ";
+}
+
+#map[data-stop-zoom-band="mid"]
+  .leaflet-tooltip.route-stop-name-label.is-stacked,
+#map[data-stop-zoom-band="near"]
+  .leaflet-tooltip.route-stop-name-label.is-stacked {
+  white-space: normal !important;
+  max-width: 150px;
+  line-height: 1.12 !important;
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
+}
+
+#map[data-stop-zoom-band="mid"]
+  .leaflet-tooltip.route-stop-name-label.is-stacked .stop-label-line,
+#map[data-stop-zoom-band="near"]
+  .leaflet-tooltip.route-stop-name-label.is-stacked .stop-label-line {
+  display: block;
+}
+
+#map[data-stop-zoom-band="mid"]
+  .leaflet-tooltip.route-stop-name-label.is-stacked
+    .stop-label-line + .stop-label-line::before,
+#map[data-stop-zoom-band="near"]
+  .leaflet-tooltip.route-stop-name-label.is-stacked
+    .stop-label-line + .stop-label-line::before {
+  content: none;
+}
+
+#map[data-stop-zoom-band="far"]
+  .leaflet-tooltip.route-stop-name-label.is-stacked {
+  white-space: nowrap !important;
+  max-width: none;
+}
+
+@media (max-width: 760px) {
+  #map[data-stop-zoom-band="mid"]
+    .leaflet-tooltip.route-stop-name-label.is-stacked,
+  #map[data-stop-zoom-band="near"]
+    .leaflet-tooltip.route-stop-name-label.is-stacked {
+    max-width: 132px;
+  }
+}
+
+/* =========================================================
+   STOP LABEL STACKING HOTFIX v33
+   Kunci setiap hasil split sebagai satu baris utuh. Leaflet
+   tidak boleh membungkus lagi kata-kata di dalam baris.
+   ========================================================= */
+#map[data-stop-zoom-band="mid"]
+  .leaflet-tooltip.route-stop-name-label.is-stacked,
+#map[data-stop-zoom-band="near"]
+  .leaflet-tooltip.route-stop-name-label.is-stacked {
+  width: max-content !important;
+  max-width: none !important;
+}
+
+#map[data-stop-zoom-band="mid"]
+  .leaflet-tooltip.route-stop-name-label.is-stacked .stop-label-line,
+#map[data-stop-zoom-band="near"]
+  .leaflet-tooltip.route-stop-name-label.is-stacked .stop-label-line {
+  display: block !important;
+  white-space: nowrap !important;
+  width: max-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* =========================================================
+   STOP LABEL STACKING — ALL VISIBLE ZOOMS v34
+   Label panjang tetap maksimal 2 baris pada far/mid/near.
+   Setiap hasil split dikunci sebagai satu baris sehingga
+   browser tidak membungkusnya menjadi 3+ baris.
+   ========================================================= */
+.leaflet-tooltip.route-stop-name-label.is-stacked {
+  white-space: normal !important;
+  width: max-content !important;
+  max-width: none !important;
+  text-align: center !important;
+  line-height: 1.12 !important;
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
+}
+
+.leaflet-tooltip.route-stop-name-label.is-stacked .stop-label-line {
+  display: block !important;
+  white-space: nowrap !important;
+  width: max-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.leaflet-tooltip.route-stop-name-label.is-stacked
+  .stop-label-line + .stop-label-line::before {
+  content: none !important;
+}
+
+/* =========================================================
+   SELECTED ROUTE — ALL STOP LABELS + CLICKABLE ROUTE v35
+   ========================================================= */
+
+/* Pada overview rute terpilih semua label dipertahankan,
+   sehingga ukuran far sedikit diringkas agar tetap lapang. */
+#map[data-stop-zoom-band="far"]
+  .leaflet-tooltip.route-stop-name-label {
+  font-size: 9.6px !important;
+  padding: 2px 4px !important;
+  background: rgba(255,255,255,.76) !important;
+}
+
+#map[data-stop-zoom-band="far"]
+  .leaflet-tooltip.route-stop-name-label.is-stacked {
+  line-height: 1.08 !important;
+}
+
+/* Feedback bahwa garis rute/lin memang interaktif. */
+.leaflet-container.is-route-hover {
+  cursor: pointer !important;
+}
+
+/* =========================================================
+   ROUTE CLICK TARGET — SVG ROBUST HIT AREA v37
+   ========================================================= */
+.route-click-target {
+  pointer-events: stroke !important;
+  cursor: pointer !important;
+}
+
+
+/* =========================================================
+   MRT LINE ASSET SIZE v41
+   Memakai aset asli di assets/lines; hanya ukuran visualnya
+   disetarakan dengan badge koridor TransJakarta.
+   ========================================================= */
+.stop-popup-route-button .rail-line-badge-image {
+  width: 36px !important;
+  height: 36px !important;
+  max-width: 36px !important;
+  max-height: 36px !important;
+  object-fit: contain !important;
+}
+
+.stop-popup-route-button .rail-line-badge-wrap {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+}
+
+.stop-popup.is-compact .stop-popup-route-button .rail-line-badge-image {
+  width: 38px !important;
+  height: 38px !important;
+  max-width: 38px !important;
+  max-height: 38px !important;
+}
+
+.stop-popup.is-compact .stop-popup-route-button .rail-line-badge-wrap {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+}
+
+/* Integrasi tetap lebih kecil agar hierarki popup terjaga. */
+.stop-popup-section--integration .integration-line-badges .rail-line-badge-image,
+.integration-line-badges .rail-line-badge-image {
+  width: 20px !important;
+  height: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+}
+
+/* =========================================================
+   STATUS — DALAM PEMBANGUNAN v42
+   Berlaku untuk moda non-BRT.
+   ========================================================= */
+.stop-popup-status.is-construction,
+.selected-stop-status.is-construction,
+.stop-status-badge.is-construction,
+.route-status.is-construction {
+  color: #8a4b00;
+  background: #fff0df;
+  border-color: #f0c99d;
+}
+
+.integration-place-status.is-construction {
+  color: #8a4b00;
+  background: #fff0df;
+}
+
+.integration-badge-state.is-construction {
+  opacity: .78;
+}
+
+.integration-place-row.is-construction .integration-place-name {
+  opacity: 1;
+  color: #2e2e2e !important;
+}
+
+.stop-popup-route-button.is-construction-route:not(.is-active) {
+  box-shadow: 0 0 0 1.5px rgba(183, 102, 18, .34);
+}
+
+.stop-popup-route-button.is-construction-route:hover:not(:disabled) {
+  background: rgba(183, 102, 18, .08);
+}
+
+.stop-popup-route-button.is-construction-route.is-active {
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px #9a5a12;
+}
+
+/* Native select: opsi Construction disembunyikan/disable via JS
+   ketika Moda = BRT. */
+#constructionStatusOption[hidden] {
+  display: none !important;
+}
+
+/* =========================================================
+   DESKTOP STOP LIST — ADAPTIVE COMPACT v43
+   Row biasa dipadatkan; row dengan metadata kompleks tetap
+   mendapat ruang tambahan otomatis.
+   ========================================================= */
+@media (min-width: 761px) {
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .stop-list-heading {
+    margin-bottom: 1px !important;
+    font-size: 9.5px !important;
+    line-height: 1.15 !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .stop-list-help {
+    margin-bottom: 3px !important;
+    font-size: 9.5px !important;
+    line-height: 1.25 !important;
+  }
+
+  .stop-list-scroll {
+    padding-right: 2px !important;
+  }
+
+  /* Row standar: compact tetapi masih nyaman untuk pointer desktop. */
+  .stop-list-item:not(.is-complex-row) {
+    min-height: 27px !important;
+    margin: 0 !important;
+    padding: 3px 5px !important;
+    gap: 4px !important;
+    border-radius: 6px !important;
+    font-size: 10.4px !important;
+    line-height: 1.15 !important;
+  }
+
+  .stop-list-item:not(.is-complex-row) .stop-list-item-left {
+    gap: 4px !important;
+  }
+
+  .stop-list-item:not(.is-complex-row) .stop-list-badges {
+    gap: 2px !important;
+  }
+
+  /* Sequence sedikit lebih kecil agar nama mendapat ruang utama. */
+  .stop-list-sequence {
+    width: 21px !important;
+    min-width: 21px !important;
+    flex-basis: 21px !important;
+  }
+
+  .stop-list-sequence .stop-seq-badge {
+    min-width: 20px !important;
+    height: 16px !important;
+    padding: 0 3px !important;
+    border-radius: 4px !important;
+    font-size: 7.6px !important;
+  }
+
+  /* Badge rute pada daftar dipadatkan sedikit; popup tidak berubah. */
+  .stop-list-route-badge {
+    width: 16px !important;
+    height: 16px !important;
+    flex: 0 0 16px !important;
+    font-size: 9.8px !important;
+  }
+
+  .stop-list-route-badge.is-double-digit {
+    font-size: 8.1px !important;
+  }
+
+  .stop-list-route-badges {
+    gap: 2px !important;
+  }
+
+  .stop-list-name {
+    font-size: 10.4px !important;
+    line-height: 1.15 !important;
+  }
+
+  /* Metadata satu tingkat tetap ringkas dan sejajar dengan nama. */
+  .stop-list-badges .stop-role,
+  .stop-list-badges .stop-direction,
+  .stop-list-badges .stop-operational-badge,
+  .stop-list-badges .stop-status-badge,
+  .stop-list-badges .stop-physical-count-badge {
+    min-height: 15px !important;
+    padding: 1px 4px !important;
+    border-radius: 4px !important;
+    font-size: 7.7px !important;
+    line-height: 1.05 !important;
+  }
+
+  /* Row kompleks tetap adaptif: baris kedua tidak dipaksa masuk 27 px. */
+  .stop-list-item.is-complex-row {
+    min-height: 34px !important;
+    margin: 0 !important;
+    padding: 4px 5px !important;
+    row-gap: 2px !important;
+    border-radius: 6px !important;
+    font-size: 10.4px !important;
+    line-height: 1.15 !important;
+  }
+
+  .stop-list-item.is-complex-row .stop-list-item-left {
+    gap: 4px !important;
+  }
+
+  .stop-list-item.is-complex-row .stop-list-badges {
+    margin-left: 25px !important;
+    gap: 2px !important;
+  }
+
+  /* Selected row tetap compact; hanya background yang menegaskan state. */
+  .stop-list-item.is-active,
+  .stop-list-item[aria-selected="true"] {
+    transform: none !important;
+  }
+}
+
+
+/* =========================================================
+   STOP LIST — RAIL LINE BADGE v46
+   Daftar stasiun/halte kini menampilkan badge lin di sisi kiri
+   seperti daftar koridor BRT. Badge fungsi (Transit/Terminus)
+   tetap berada di sisi kanan.
+   ========================================================= */
+.stop-list-route-badge.is-rail {
+  width: auto !important;
+  height: auto !important;
+  flex: 0 0 auto !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.stop-list-route-badge.is-rail .rail-line-badge-wrap {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+}
+
+.stop-list-route-badge.is-rail .rail-line-badge-image {
+  width: 16px !important;
+  height: 16px !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  object-fit: contain !important;
+}
+
+.stop-list-route-badge.is-rail .rail-line-badge-fallback {
+  width: 16px !important;
+  height: 16px !important;
+  flex: 0 0 16px !important;
+  border-width: 1.5px !important;
+  font-size: 7px !important;
+  line-height: 1 !important;
+}
+
+/* =========================================================
+   STOP LIST — ROLE BADGE EDGE ALIGNMENT v48
+   Transit / Terminus didorong ke pojok kanan baris,
+   tidak harus menempel ke nama halte/stasiun.
+   Hanya diterapkan pada item yang memang hanya punya
+   satu role badge sederhana.
+   ========================================================= */
+.stop-list-item.has-edge-role-badge {
+  position: relative;
+  padding-right: 72px !important;
+}
+
+.stop-list-item.has-edge-role-badge .stop-list-badges {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: auto !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  justify-content: flex-end !important;
+  flex-wrap: nowrap !important;
+}
+
+.stop-list-item.has-edge-role-badge .stop-list-name {
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .stop-list-item.has-edge-role-badge {
+    padding-right: 68px !important;
+  }
+}
+
+/* =========================================================
+   CLICKABLE MAP STOP / STATION LABELS v50
+   Nama halte/stasiun permanent di peta dapat diklik.
+   ========================================================= */
+.leaflet-tooltip.route-stop-name-label.is-clickable-stop-label {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: none;
+}
+
+.leaflet-tooltip.route-stop-name-label.is-clickable-stop-label:hover {
+  background: rgba(255,255,255,.94) !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,.16) !important;
+}

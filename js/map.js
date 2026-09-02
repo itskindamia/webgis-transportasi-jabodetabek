@@ -323,6 +323,24 @@ map.getPane("routeHaloPane").style.zIndex = 450;
 map.createPane("routePane");
 map.getPane("routePane").style.zIndex = 460;
 
+/*
+  Area klik garis rute dibuat sedikit lebih lebar daripada
+  simbol visual agar rute/lin mudah dipilih tanpa mempertebal
+  kartografi jaringan.
+*/
+map.createPane("routeClickPane");
+map.getPane("routeClickPane").style.zIndex = 640;
+
+/*
+  Hit-area rute sengaja memakai SVG meskipun peta utama
+  preferCanvas=true. Pointer event pada stroke SVG jauh lebih
+  konsisten untuk garis transparan/lebar dibanding Canvas.
+*/
+const routeClickRenderer = L.svg({
+  pane: "routeClickPane",
+  padding: 0.5
+});
+
 map.createPane("stopPane");
 map.getPane("stopPane").style.zIndex = 470;
 
@@ -438,6 +456,8 @@ currentBasemap.addTo(map);
 
 const modeSelect = document.getElementById("modeSelect");
 const statusSelect = document.getElementById("statusSelect");
+const constructionStatusOption = document.getElementById("constructionStatusOption");
+const constructionLegendItem = document.getElementById("constructionLegendItem");
 const routeSelect = document.getElementById("routeSelect");
 const routeSelectLabel = document.getElementById("routeSelectLabel");
 
@@ -965,6 +985,7 @@ let stopData = null;
 
 let routeHaloLayer = null;
 let routeLayer = null;
+let routeClickLayer = null;
 let routeStructureLayer = null;
 let stopLayer = null;
 let stopHitLayer = null;
@@ -1043,6 +1064,7 @@ function getRouteDirectionRuntimeCacheKey(routeId) {
     side,
     showProposedStops ? "P1" : "P0",
     showConceptualStops ? "C1" : "C0",
+    `S:${normalizeStatus(statusSelect?.value || "ALL")}`,
     divId,
     minuteStamp
   ].join("|");
@@ -1194,6 +1216,91 @@ function escapeHTML(value) {
     .replaceAll("'", "&#039;");
 }
 
+function buildStackedStopLabel(name) {
+  const text = cleanText(name);
+
+  if (!text) {
+    return {
+      html: "",
+      isStacked: false
+    };
+  }
+
+  const words = text
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (words.length <= 1 || text.length <= 20) {
+    return {
+      html: escapeHTML(text),
+      isStacked: false
+    };
+  }
+
+  /*
+    Maksimal dua baris. Titik pecah dicari pada spasi yang
+    menghasilkan dua bagian paling seimbang, sehingga label
+    panjang tetap ringkas tanpa menjadi tiga baris.
+  */
+  let bestSplitIndex = 1;
+  let bestScore = Number.POSITIVE_INFINITY;
+
+  for (
+    let splitIndex = 1;
+    splitIndex < words.length;
+    splitIndex += 1
+  ) {
+    const firstLine =
+      words.slice(0, splitIndex).join(" ");
+
+    const secondLine =
+      words.slice(splitIndex).join(" ");
+
+    const longestLine = Math.max(
+      firstLine.length,
+      secondLine.length
+    );
+
+    const imbalance = Math.abs(
+      firstLine.length - secondLine.length
+    );
+
+    const veryShortPenalty =
+      Math.min(firstLine.length, secondLine.length) < 5
+        ? 8
+        : 0;
+
+    const score =
+      longestLine
+      + (imbalance * 0.35)
+      + veryShortPenalty;
+
+    if (score < bestScore) {
+      bestScore = score;
+      bestSplitIndex = splitIndex;
+    }
+  }
+
+  const lines = [
+    words
+      .slice(0, bestSplitIndex)
+      .join(" "),
+    words
+      .slice(bestSplitIndex)
+      .join(" ")
+  ];
+
+  return {
+    html: lines
+      .map(
+        (item, index) =>
+          `<span class="stop-label-line stop-label-line-${index + 1}">${escapeHTML(item)}</span>`
+      )
+      .join(""),
+    isStacked: true
+  };
+}
+
 function cleanText(value) {
   const text = String(value ?? "").trim();
 
@@ -1231,6 +1338,7 @@ function normalizeStatus(value) {
   /*
     Status baku WebGIS:
     Existing
+    Construction
     Planned
     Proposed
     Conceptual
@@ -1240,6 +1348,12 @@ function normalizeStatus(value) {
   const aliases = {
     "Eksisting": "Existing",
     "Existing": "Existing",
+
+    "Dalam Pembangunan": "Construction",
+    "Construction": "Construction",
+    "Under Construction": "Construction",
+    "Konstruksi": "Construction",
+    "Sedang Dibangun": "Construction",
 
     "Rencana": "Planned",
     "Rencana Resmi": "Planned",
@@ -1269,7 +1383,7 @@ function normalizeStatus(value) {
 /*
   Label status yang ditampilkan kepada pengguna.
   Nilai internal tetap memakai:
-  Existing / Planned / Proposed / Conceptual
+  Existing / Construction / Planned / Proposed / Conceptual
   supaya filtering dan styling stabil.
 
   GeoJSON boleh memakai nilai Inggris maupun Indonesia.
@@ -1280,6 +1394,7 @@ function getStatusLabel(value) {
 
   const labels = {
     Existing: "Eksisting",
+    Construction: "Dalam Pembangunan",
     Planned: "Rencana",
     Proposed: "Usulan",
     Conceptual: "Konseptual",
@@ -1287,6 +1402,93 @@ function getStatusLabel(value) {
   };
 
   return labels[status] ?? status;
+}
+
+function isConstructionStatusAllowedForMode(mode) {
+  const normalizedMode = normalizeMode(mode);
+  return normalizedMode !== "BRT";
+}
+
+function updateStatusAvailabilityForMode({ coerce = true } = {}) {
+  if (!statusSelect || !constructionStatusOption) {
+    return;
+  }
+
+  const mode = normalizeMode(modeSelect?.value || "ALL");
+  const constructionAllowed =
+    mode === "ALL" || isConstructionStatusAllowedForMode(mode);
+
+  constructionStatusOption.hidden = !constructionAllowed;
+  constructionStatusOption.disabled = !constructionAllowed;
+
+  if (constructionLegendItem) {
+    constructionLegendItem.hidden = !constructionAllowed;
+  }
+
+  if (
+    coerce &&
+    !constructionAllowed &&
+    statusSelect.value === "Construction"
+  ) {
+    statusSelect.value = "Existing";
+  }
+}
+
+function getRouteFeaturesForCurrentStatus(routeId) {
+  const features = getRouteFeaturesById(routeId);
+  const selectedStatus = normalizeStatus(statusSelect?.value || "ALL");
+
+  if (!selectedStatus || selectedStatus === "ALL") {
+    return features.filter(feature =>
+      normalizeStatus(feature?.properties?.STATUS) !== "Construction" ||
+      isConstructionStatusAllowedForMode(getRouteMode(feature))
+    );
+  }
+
+  return features.filter(feature => {
+    const mode = getRouteMode(feature);
+    const status = normalizeStatus(feature?.properties?.STATUS);
+
+    if (status === "Construction" && !isConstructionStatusAllowedForMode(mode)) {
+      return false;
+    }
+
+    return status === selectedStatus;
+  });
+}
+
+function getRouteStatusSummary(routeId) {
+  const selectedStatus = normalizeStatus(statusSelect?.value || "ALL");
+
+  if (selectedStatus && selectedStatus !== "ALL") {
+    return getStatusLabel(selectedStatus);
+  }
+
+  const order = {
+    Existing: 10,
+    Construction: 20,
+    Planned: 30,
+    Proposed: 40,
+    Conceptual: 50,
+    Inactive: 60
+  };
+
+  const statuses = Array.from(
+    new Set(
+      getRouteFeaturesById(routeId)
+        .filter(feature =>
+          normalizeStatus(feature?.properties?.STATUS) !== "Construction" ||
+          isConstructionStatusAllowedForMode(getRouteMode(feature))
+        )
+        .map(feature => normalizeStatus(feature?.properties?.STATUS))
+        .filter(Boolean)
+    )
+  );
+
+  return statuses
+    .sort((a, b) => (order[a] ?? 999) - (order[b] ?? 999))
+    .map(getStatusLabel)
+    .join(" · ");
 }
 
 
@@ -1380,7 +1582,7 @@ function getStructureLabel(value) {
 function getRouteStructureSummary(routeId) {
   const structures = Array.from(
     new Set(
-      getRouteFeaturesById(routeId)
+      getRouteFeaturesForCurrentStatus(routeId)
         .map(feature =>
           normalizeStructure(
             feature?.properties?.STRUCTURE
@@ -2114,27 +2316,41 @@ function getRegularRouteFeature(routeId) {
   Identitas lin tetap satu; hanya geometri yang dipisah.
 */
 function getActiveRouteGeometryFeatures(routeId) {
-  const diversion =
-    getDiversionRouteFeature(
-      routeId
-    );
+  const selectedStatus =
+    normalizeStatus(statusSelect?.value || "ALL");
 
-  if (diversion) {
+  const statusMatches = feature => {
+    const mode = getRouteMode(feature);
+    const status = normalizeStatus(feature?.properties?.STATUS);
+
+    if (status === "Construction" && !isConstructionStatusAllowedForMode(mode)) {
+      return false;
+    }
+
+    return (
+      selectedStatus === "ALL" ||
+      !selectedStatus ||
+      status === selectedStatus
+    );
+  };
+
+  const diversion =
+    getDiversionRouteFeature(routeId);
+
+  if (diversion && statusMatches(diversion)) {
     return [diversion];
   }
 
   const regular =
-    getRegularRouteFeatures(
-      routeId
-    );
+    getRegularRouteFeatures(routeId)
+      .filter(statusMatches);
 
   if (regular.length) {
     return regular;
   }
 
-  return getRouteFeaturesById(
-    routeId
-  );
+  return getRouteFeaturesById(routeId)
+    .filter(statusMatches);
 }
 
 
@@ -2362,20 +2578,43 @@ function getRouteById(routeId) {
     return null;
   }
 
+  const allFeatures =
+    getRouteFeaturesById(routeId);
+
+  if (!allFeatures.length) {
+    return null;
+  }
+
+  const selectedStatus =
+    normalizeStatus(statusSelect?.value || "ALL");
+
+  const filtered =
+    selectedStatus !== "ALL"
+      ? allFeatures.filter(feature =>
+          normalizeStatus(feature?.properties?.STATUS) === selectedStatus &&
+          !(
+            selectedStatus === "Construction" &&
+            !isConstructionStatusAllowedForMode(getRouteMode(feature))
+          )
+        )
+      : allFeatures.filter(feature =>
+          normalizeStatus(feature?.properties?.STATUS) !== "Construction" ||
+          isConstructionStatusAllowedForMode(getRouteMode(feature))
+        );
+
+  const pool = filtered.length
+    ? filtered
+    : allFeatures;
+
+  const activeDiversion = pool
+    .filter(feature => normalizeRouteVariant(feature) === "DIVERSION")
+    .filter(feature => isFeatureWithinValidity(feature))[0];
+
   return (
-    getDiversionRouteFeature(
-      routeId
-    )
-    ||
-    getRegularRouteFeature(
-      routeId
-    )
-    ||
-    getRouteFeaturesById(
-      routeId
-    )[0]
-    ||
-    null
+    activeDiversion
+    || pool.find(feature => normalizeRouteVariant(feature) === "REGULAR")
+    || pool[0]
+    || null
   );
 }
 
@@ -5661,6 +5900,7 @@ function normalizeIntegrationStatus(value) {
 
   return [
     "Existing",
+    "Construction",
     "Planned",
     "Proposed",
     "Conceptual"
@@ -6085,6 +6325,7 @@ function getIntegrationStatusPriority(value) {
 
   return {
     Existing: 10,
+    Construction: 15,
     Planned: 20,
     Proposed: 30,
     Conceptual: 40
@@ -6099,6 +6340,7 @@ function getIntegrationStatusClass(value) {
 
   return {
     Existing: "is-existing",
+    Construction: "is-construction",
     Planned: "is-planned",
     Proposed: "is-proposed",
     Conceptual: "is-conceptual"
@@ -6313,6 +6555,29 @@ function getVisibleStopsForRoute(
         if (
           isConceptualStop(feature) &&
           !showConceptualStops
+        ) {
+          return false;
+        }
+
+        const routeMode =
+          getRouteMode(
+            getRouteById(routeId)
+          );
+
+        const selectedStatus =
+          normalizeStatus(statusSelect?.value || "ALL");
+
+        if (
+          routeMode !== "BRT" &&
+          selectedStatus !== "ALL" &&
+          normalizeStatus(feature?.properties?.STATUS) !== selectedStatus
+        ) {
+          return false;
+        }
+
+        if (
+          normalizeStatus(feature?.properties?.STATUS) === "Construction" &&
+          !isConstructionStatusAllowedForMode(routeMode)
         ) {
           return false;
         }
@@ -6568,7 +6833,8 @@ map
       selectStop(
         stopKey,
         routeId,
-        false
+        false,
+        0.62
       );
     },
     true
@@ -10367,6 +10633,7 @@ function applyUrlStateAfterDataLoad() {
       )
     ) {
       modeSelect.value = mode;
+      updateStatusAvailabilityForMode();
     }
 
     if (
@@ -10380,6 +10647,8 @@ function applyUrlStateAfterDataLoad() {
     ) {
       statusSelect.value =
         status;
+
+      updateStatusAvailabilityForMode();
     }
 
     if (
@@ -10411,10 +10680,14 @@ function applyUrlStateAfterDataLoad() {
       modeSelect.value =
         getRouteMode(route);
 
-      statusSelect.value =
-        normalizeStatus(
-          route.properties.STATUS
-        );
+      updateStatusAvailabilityForMode();
+
+      if (!status) {
+        statusSelect.value =
+          normalizeStatus(
+            route.properties.STATUS
+          );
+      }
 
       populateRouteDropdown();
 
@@ -12037,9 +12310,14 @@ function getFilteredRoutes() {
         selectedStatus === "ALL" ||
         status === selectedStatus;
 
+      const constructionAllowed =
+        status !== "Construction" ||
+        isConstructionStatusAllowedForMode(mode);
+
       return (
         modeMatch &&
-        statusMatch
+        statusMatch &&
+        constructionAllowed
       );
     })
     .forEach(feature => {
@@ -12095,6 +12373,10 @@ function getFilteredRoutes() {
   Existing
   - garis solid
 
+  Construction (non-BRT)
+  - garis utama solid
+  - casing luar putus pendek sebagai penanda konstruksi
+
   Planned
   - dash panjang
   - rencana resmi / proyek yang telah direncanakan
@@ -12117,21 +12399,31 @@ function getRouteStatusStyle(feature) {
 
   switch (status) {
 
+    case "Construction":
+      return {
+        dashArray: null,
+        haloDashArray: "2 5",
+        opacity: 0.98
+      };
+
     case "Planned":
       return {
         dashArray: "12 7",
+        haloDashArray: "12 7",
         opacity: 0.95
       };
 
     case "Proposed":
       return {
         dashArray: "7 6",
+        haloDashArray: "7 6",
         opacity: 0.88
       };
 
     case "Conceptual":
       return {
         dashArray: "2 6",
+        haloDashArray: "2 6",
         opacity: 0.78
       };
 
@@ -12139,6 +12431,7 @@ function getRouteStatusStyle(feature) {
     default:
       return {
         dashArray: null,
+        haloDashArray: null,
         opacity: 1
       };
   }
@@ -12246,9 +12539,11 @@ function routeStyle(feature) {
 
 function hasVisibleStructurePattern(feature) {
   if (
-    normalizeStatus(
-      feature?.properties?.STATUS
-    ) !== "Existing"
+    !["Existing", "Construction"].includes(
+      normalizeStatus(
+        feature?.properties?.STATUS
+      )
+    )
   ) {
     return false;
   }
@@ -12268,7 +12563,7 @@ function hasVisibleStructurePattern(feature) {
   Struktur jalur tidak mengganti bahasa visual STATUS.
   Garis utama tetap solid/dash sesuai Existing/Rencana/Usulan.
 
-  Untuk MRT eksisting, lapisan tipis di tengah garis memberi
+  Untuk rail Eksisting/Dalam Pembangunan, lapisan tipis di tengah garis memberi
   pola tambahan:
   - Elevated   : tanpa pola tambahan
   - Transition : dash panjang tipis
@@ -12381,6 +12676,7 @@ function haloStyle(feature) {
       dan Conceptual tidak terlihat solid dari belakang.
     */
     dashArray:
+      statusStyle.haloDashArray ??
       statusStyle.dashArray,
 
     lineCap: "round",
@@ -12435,7 +12731,7 @@ function bindRoutePopup(feature, layer) {
     structure !== "UNKNOWN"
       ? `
         <div class="route-popup-row">
-          <div class="route-popup-label">Struktur jalur</div>
+          <div class="route-popup-label">Struktur segmen</div>
           <div class="route-popup-value">
             ${escapeHTML(getStructureLabel(structure))}
           </div>
@@ -12582,9 +12878,9 @@ function bindRoutePopup(feature, layer) {
     - zoom ke keseluruhan rute
   */
   layer.on("click", event => {
-    if (event) {
+    if (event?.originalEvent) {
       L.DomEvent.stopPropagation(
-        event
+        event.originalEvent
       );
     }
 
@@ -12662,47 +12958,74 @@ function bindRoutePopup(feature, layer) {
       map.closePopup();
     }
 
-    showSingleRoute(
-      routeId
-    );
+    const sameRoute =
+      String(
+        currentSelectedRouteId ?? ""
+      ) === String(routeId);
 
     /*
-      route layer digambar ulang oleh showSingleRoute().
-      Popup bawaan layer lama ikut terhapus. Karena itu,
-      setelah redraw selesai:
-      1. fit rute;
-      2. buka kembali popup rute pada lokasi klik.
-
-      Dengan demikian klik trase selalu benar-benar
-      menghasilkan popup, termasuk Koridor 15–19.
+      Jika trase yang diklik memang sudah aktif, tidak perlu
+      redraw, fitBounds, atau mengubah zoom. Cukup tampilkan
+      popup di lokasi klik sehingga feedback terasa langsung.
     */
+    if (sameRoute) {
+      if (
+        !shouldShowPlanIntroFirst &&
+        clickedLatLng &&
+        clickedRoutePopupHTML
+      ) {
+        L.popup({
+          maxWidth: 320,
+          autoPan: true,
+          keepInView: true
+        })
+          .setLatLng(
+            clickedLatLng
+          )
+          .setContent(
+            clickedRoutePopupHTML
+          )
+          .openOn(
+            map
+          );
+      }
+
+      return;
+    }
+
+    /*
+      Klik trase lain memilih lin/koridor tersebut tetapi
+      mempertahankan zoom pengguna. Karena titik yang diklik
+      sudah berada di layar, tidak ada alasan melakukan zoom
+      mendadak setelah pemilihan.
+    */
+    showSingleRoute(
+      routeId,
+      true,
+      false
+    );
+
     requestAnimationFrame(
       () => {
-        fitRouteToScreen();
-
         if (
           !shouldShowPlanIntroFirst &&
           clickedLatLng &&
           clickedRoutePopupHTML
         ) {
-          requestAnimationFrame(
-            () => {
-              L.popup({
-                maxWidth: 320,
-                autoPan: true,
-                keepInView: true
-              })
-                .setLatLng(
-                  clickedLatLng
-                )
-                .setContent(
-                  clickedRoutePopupHTML
-                )
-                .openOn(
-                  map
-                );
-            }
-          );
+          L.popup({
+            maxWidth: 320,
+            autoPan: true,
+            keepInView: true
+          })
+            .setLatLng(
+              clickedLatLng
+            )
+            .setContent(
+              clickedRoutePopupHTML
+            )
+            .openOn(
+              map
+            );
         }
       }
     );
@@ -12714,6 +13037,15 @@ function bindRoutePopup(feature, layer) {
    ========================================================= */
 
 function removeRouteLayers() {
+  map.getContainer()?.classList.remove(
+    "is-route-hover"
+  );
+
+  if (routeClickLayer) {
+    map.removeLayer(routeClickLayer);
+    routeClickLayer = null;
+  }
+
   if (routeHaloLayer) {
     map.removeLayer(routeHaloLayer);
     routeHaloLayer = null;
@@ -12728,6 +13060,46 @@ function removeRouteLayers() {
     map.removeLayer(routeStructureLayer);
     routeStructureLayer = null;
   }
+}
+
+function routeClickStyle() {
+  return {
+    pane: "routeClickPane",
+    renderer: routeClickRenderer,
+    className: "route-click-target",
+    color: "#000000",
+    weight: 24,
+    opacity: 0.001,
+    lineCap: "round",
+    lineJoin: "round",
+    interactive: true,
+    bubblingMouseEvents: false
+  };
+}
+
+function bindRouteClickTarget(feature, layer) {
+  bindRoutePopup(
+    feature,
+    layer
+  );
+
+  layer.on(
+    "mouseover",
+    () => {
+      map.getContainer()?.classList.add(
+        "is-route-hover"
+      );
+    }
+  );
+
+  layer.on(
+    "mouseout",
+    () => {
+      map.getContainer()?.classList.remove(
+        "is-route-hover"
+      );
+    }
+  );
 }
 
 function drawRoutes(features) {
@@ -12769,6 +13141,23 @@ function drawRoutes(features) {
       }
     ).addTo(map);
   }
+
+  /*
+    Layer transparan khusus interaksi. Garis visual tetap tipis,
+    tetapi target klik menjadi ±22 px sehingga koridor/lin mudah
+    dipilih pada desktop maupun perangkat sentuh.
+  */
+  routeClickLayer = L.geoJSON(
+    fc,
+    {
+      pane: "routeClickPane",
+      renderer: routeClickRenderer,
+      bubblingMouseEvents: false,
+      style: routeClickStyle,
+      onEachFeature:
+        bindRouteClickTarget
+    }
+  ).addTo(map);
 }
 
 
@@ -13478,6 +13867,9 @@ function getRouteSourceTypeLabel(feature) {
   return {
     Existing:
       "Sumber Data",
+
+    Construction:
+      "Sumber Pembangunan",
 
     Planned:
       "Sumber Rencana",
@@ -15474,7 +15866,7 @@ function renderRouteInfo(feature) {
 
       <div class="route-meta-row">
         <div class="route-meta-label">Status</div>
-        <div>${escapeHTML(getStatusLabel(p.STATUS))}</div>
+        <div>${escapeHTML(getRouteStatusSummary(routeId) || getStatusLabel(p.STATUS))}</div>
       </div>
 
       ${structureSummaryHTML}
@@ -15683,6 +16075,8 @@ routeInfoEl
    ========================================================= */
 
 function populateRouteDropdown() {
+  updateStatusAvailabilityForMode();
+
   const selectedMode =
     normalizeMode(
       modeSelect?.value
@@ -15793,18 +16187,15 @@ function buildSmallRouteBadge(
   routeId,
   feature = null
 ) {
-  if (
-    !String(routeId)
-      .toUpperCase()
-      .startsWith("BRT_")
-  ) {
+  const route =
+    getRouteById(routeId);
+
+  if (!route) {
     return "";
   }
 
-  const number =
-    routeNumberFromId(
-      routeId
-    );
+  const mode =
+    getRouteMode(route);
 
   const operational =
     feature
@@ -15818,9 +16209,20 @@ function buildSmallRouteBadge(
           label: ""
         };
 
+  const status =
+    normalizeStatus(
+      route.properties.STATUS
+    );
+
   const titleParts = [
-    `Koridor ${number}`
+    getRouteTitle(route)
   ];
+
+  if (status) {
+    titleParts.push(
+      getStatusLabel(status)
+    );
+  }
 
   if (operational.label) {
     titleParts.push(
@@ -15828,22 +16230,51 @@ function buildSmallRouteBadge(
     );
   }
 
+  if (mode === "BRT") {
+    const number =
+      routeNumberFromId(
+        routeId
+      );
+
+    return `
+      <span
+        class="
+          stop-list-route-badge
+          ${Number(number) >= 10 ? "is-double-digit" : ""}
+          ${operational.className}
+        "
+        style="
+          background:
+          ${escapeHTML(getRouteColor(routeId))};
+        "
+        title="${escapeHTML(
+          titleParts.join(" · ")
+        )}"
+      >
+        ${escapeHTML(number)}
+      </span>
+    `;
+  }
+
+  const lineBadgeHTML =
+    buildLineBadge(routeId);
+
+  if (!lineBadgeHTML) {
+    return "";
+  }
+
   return `
     <span
       class="
         stop-list-route-badge
-        ${Number(number) >= 10 ? "is-double-digit" : ""}
+        is-rail
         ${operational.className}
-      "
-      style="
-        background:
-        ${escapeHTML(getRouteColor(routeId))};
       "
       title="${escapeHTML(
         titleParts.join(" · ")
       )}"
     >
-      ${escapeHTML(number)}
+      ${lineBadgeHTML}
     </span>
   `;
 }
@@ -15880,12 +16311,6 @@ function getStopListVisibleRoutes(
 ) {
   const allRoutes =
     getStopRoutes(feature)
-      .filter(
-        routeId =>
-          String(routeId)
-            .toUpperCase()
-            .startsWith("BRT_")
-      )
       .filter(
         routeId =>
           Boolean(
@@ -17133,21 +17558,28 @@ function openNetworkIntegrationStop(
   routeSelect.value =
     String(routeId);
 
+  /*
+    Navigasi dari popup Integrasi tidak melakukan fit/zoom ulang
+    terhadap rute target. Pertahankan level zoom user saat ini
+    agar perpindahan terasa seperti sliding di atas peta.
+  */
   showSingleRoute(
     routeId,
+    false,
     false
   );
 
   /*
     Marker target sudah dibuat oleh showSingleRoute().
-    Pilih titik dan buka popup-nya.
+    selectStop(..., false) mempertahankan zoom dan melakukan
+    pan halus sebelum popup target dibuka.
   */
   requestAnimationFrame(
     () => {
       selectStop(
         stopKey,
         routeId,
-        true
+        false
       );
 
       requestAnimationFrame(
@@ -17715,8 +18147,9 @@ function buildLineBadge(id) {
   }
 
   /*
-    Kalau file badge gambar belum tersedia, browser akan
-    menyembunyikan gambar dan menampilkan badge teks fallback.
+    Badge lin selalu memprioritaskan aset visual yang tersedia
+    di assets/lines/. Fallback teks hanya dipakai bila file aset
+    gagal dimuat atau belum tersedia.
   */
   if (image) {
     return `
@@ -17751,6 +18184,7 @@ function buildLineBadge(id) {
 }
 
 
+
 /*
   Badge rute pada bagian "yang dilayani" dibuat clickable.
   Hanya rute yang benar-benar ada di ROUTES halte/stasiun
@@ -17780,8 +18214,10 @@ function buildDirectServiceRouteButton(
     );
 
   const statusClass =
-    routeStatus === "Planned"
-      ? "is-planned-route"
+    routeStatus === "Construction"
+      ? "is-construction-route"
+      : routeStatus === "Planned"
+        ? "is-planned-route"
       : routeStatus === "Proposed"
         ? "is-proposed-route"
         : routeStatus === "Conceptual"
@@ -18022,20 +18458,27 @@ function switchRouteFromStopPopup(
   routeSelect.value =
     String(routeId);
 
+  /*
+    Perpindahan antar koridor/lin dari badge pelayanan tidak
+    boleh mengubah skala peta secara tiba-tiba.
+
+    Rute baru tetap digambar ulang, tetapi fitBounds dinonaktifkan.
+    Setelah marker tersedia kembali, titik yang sama dipilih dengan
+    mode pan/sliding sehingga zoom pengguna dipertahankan.
+  */
   showSingleRoute(
-    routeId
+    routeId,
+    true,
+    false
   );
 
-  /*
-    showSingleRoute() menggambar ulang marker + popup.
-    Pada frame berikutnya pilih kembali titik fisik yang sama.
-  */
   requestAnimationFrame(
     () => {
       selectStop(
         stopKey,
         routeId,
-        true
+        false,
+        0.56
       );
 
       requestAnimationFrame(
@@ -18210,6 +18653,10 @@ function getStopStatusClass(feature) {
 
   if (status === "Existing") {
     return "is-existing";
+  }
+
+  if (status === "Construction") {
+    return "is-construction";
   }
 
   if (status === "Planned") {
@@ -18563,6 +19010,7 @@ function getStopSourceTypeLabel(
 
   return {
     Existing: "Sumber Data",
+    Construction: "Sumber Pembangunan",
     Planned: "Sumber Rencana",
     Proposed: "Sumber Usulan",
     Conceptual: "Dasar Analisis",
@@ -19817,6 +20265,16 @@ function getVisibleStopLabelMarkerKeys(
   const zoomBand =
     getStopZoomBand();
 
+  /*
+    Ketika satu rute/lin sedang dipilih, semua halte/stasiun
+    logis ditampilkan. Decluttering berbasis hide hanya dipakai
+    untuk konteks selain selected-route. Penyesuaian posisi
+    dilakukan oleh getStopLabelPlacement().
+  */
+  const forceAllSelectedRouteLabels =
+    String(routeId ?? "") ===
+    String(currentSelectedRouteId ?? "");
+
   const candidates = [];
 
   markerGroups.forEach(
@@ -19911,6 +20369,7 @@ function getVisibleStopLabelMarkerKeys(
           config.stride === 0;
 
       const eligible =
+        forceAllSelectedRouteLabels ||
         zoomBand === "near" ||
         isSelected ||
         isTerminus ||
@@ -19982,6 +20441,7 @@ function getVisibleStopLabelMarkerKeys(
   candidates.forEach(
     candidate => {
       if (
+        forceAllSelectedRouteLabels ||
         zoomBand === "near" ||
         candidate.isSelected
       ) {
@@ -20062,6 +20522,55 @@ function updateStopLabelVisibility() {
 }
 
 
+function refreshStopLabelPlacements() {
+  if (
+    !currentSelectedRouteId ||
+    !stopMarkerByKey.size
+  ) {
+    return;
+  }
+
+  stopMarkerByKey.forEach(
+    (marker, stopKey) => {
+      const feature =
+        getStopByKey(
+          stopKey
+        );
+
+      const tooltip =
+        marker?.getTooltip?.();
+
+      if (
+        !feature ||
+        !tooltip
+      ) {
+        return;
+      }
+
+      const placement =
+        getStopLabelPlacement(
+          feature,
+          currentSelectedRouteId
+        );
+
+      tooltip.options.direction =
+        placement.direction;
+
+      tooltip.options.offset =
+        L.point(
+          placement.offset[0],
+          placement.offset[1]
+        );
+
+      if (
+        marker.isTooltipOpen?.()
+      ) {
+        tooltip.update();
+      }
+    }
+  );
+}
+
 function updateStopZoomVisualState() {
   const mapElement =
     map.getContainer();
@@ -20116,6 +20625,7 @@ function updateStopZoomVisualState() {
     }
   );
 
+  refreshStopLabelPlacements();
   updateStopLabelVisibility();
 }
 
@@ -20571,7 +21081,7 @@ function getStopLabelPlacement(
 
   const fallback = {
     direction: "right",
-    offset: [8, 0]
+    offset: [5, 0]
   };
 
   if (currentIndex === -1) {
@@ -20669,16 +21179,59 @@ function getStopLabelPlacement(
     Math.abs(dy);
 
   /*
-    Stagger label antar-halte supaya tidak saling menimpa.
-    Tier memberi jarak tambahan setiap beberapa halte.
+    Semua label pada rute terpilih dipertahankan. Agar tidak
+    menumpuk, posisi dibuat stagger kiri/kanan atau atas/bawah
+    dan diberi sedikit pergeseran searah trase (tangent shift).
   */
+  const zoomBand =
+    getStopZoomBand();
+
+  const stopCount =
+    stops.length;
+
+  const tierCount =
+    stopCount >= 20
+      ? 4
+      : 3;
+
   const tier =
+    Math.floor(
+      currentIndex / 2
+    ) % tierCount;
+
+  const baseDistance =
+    zoomBand === "far"
+      ? 7
+      : zoomBand === "mid"
+        ? 6
+        : 5;
+
+  const tierStep =
+    zoomBand === "far"
+      ? 3
+      : zoomBand === "mid"
+        ? 3
+        : 2;
+
+  const distance =
+    baseDistance +
+    tier * tierStep;
+
+  const tangentCycle =
     Math.floor(
       currentIndex / 2
     ) % 3;
 
-  const distance =
-    12 + tier * 8;
+  const tangentUnit =
+    zoomBand === "far"
+      ? 5
+      : zoomBand === "mid"
+        ? 4
+        : 3;
+
+  const tangentShift =
+    (tangentCycle - 1) *
+    tangentUnit;
 
   if (
     isMostlyHorizontal
@@ -20692,7 +21245,7 @@ function getStopLabelPlacement(
           ? "top"
           : "bottom",
       offset: [
-        0,
+        tangentShift,
         placeTop
           ? -distance
           : distance
@@ -20712,7 +21265,7 @@ function getStopLabelPlacement(
       placeLeft
         ? -distance
         : distance,
-      0
+      tangentShift
     ]
   };
 }
@@ -20909,12 +21462,15 @@ function drawStops(routeId) {
             routeId
           );
 
-        layer.bindTooltip(
-          escapeHTML(
+        const stackedLabel =
+          buildStackedStopLabel(
             getStopDisplayName(
               feature
             )
-          ),
+          );
+
+        layer.bindTooltip(
+          stackedLabel.html,
           {
             permanent: true,
             direction:
@@ -20925,10 +21481,50 @@ function drawStops(routeId) {
               labelOperationalState.state === "not-served"
                 ? 0.55
                 : 0.96,
-            interactive: false,
-            className: labelClasses
+            interactive: true,
+            className: [
+              labelClasses,
+              "is-clickable-stop-label",
+              stackedLabel.isStacked
+                ? "is-stacked"
+                : ""
+            ]
+              .filter(Boolean)
+              .join(" ")
           }
         );
+
+        /*
+          Nama halte/stasiun pada peta adalah target klik kedua
+          selain marker. Klik label mempertahankan zoom saat ini,
+          lalu menggunakan pan/sliding ringan bila titik perlu
+          diposisikan lebih dekat ke pusat sebelum popup dibuka.
+        */
+        const stopTooltip =
+          layer.getTooltip();
+
+        if (stopTooltip) {
+          stopTooltip.on(
+            "click",
+            event => {
+              if (event?.originalEvent) {
+                L.DomEvent.stopPropagation(
+                  event.originalEvent
+                );
+                L.DomEvent.preventDefault(
+                  event.originalEvent
+                );
+              }
+
+              selectStop(
+                stopKey,
+                routeId,
+                false,
+                0.34
+              );
+            }
+          );
+        }
 
         /*
           Tombol sebelumnya/berikutnya dibuat di dalam HTML
@@ -21367,6 +21963,13 @@ function renderStopList(routeId) {
         visibleRouteIds.length > 2 ||
         physicalCount > 1;
 
+      const hasOnlyRoleBadge =
+        rightBadges.length === 1 &&
+        (role === "Transit" ||
+          role === "Terminus" ||
+          role === "Transit-Terminus" ||
+          role === "Terminus Sementara");
+
       return `
         <div
           class="
@@ -21375,6 +21978,7 @@ function renderStopList(routeId) {
             ${isTemporaryServed ? "is-operational-temporary" : ""}
             ${isTemporaryTerminus ? "is-operational-temp-terminus" : ""}
             ${isComplexListRow ? "is-complex-row" : ""}
+            ${hasOnlyRoleBadge ? "has-edge-role-badge" : ""}
           "
           data-stop-key="${escapeHTML(stopKey)}"
           data-stop-logical-key="${escapeHTML(logicalKey)}"
@@ -21534,7 +22138,8 @@ function clearSelectedStop() {
 function selectStop(
   stopKey,
   routeId,
-  zoomIn = true
+  zoomIn = true,
+  panDuration = 0.42
 ) {
   /*
     Memilih halte baru berarti user kembali berinteraksi
@@ -21679,7 +22284,11 @@ function selectStop(
         targetLatLng,
         {
           animate: true,
-          duration: 0.42,
+          duration:
+            Math.max(
+              0.2,
+              Number(panDuration) || 0.42
+            ),
           easeLinearity: 0.22
         }
       );
@@ -21690,7 +22299,12 @@ function selectStop(
       */
       setTimeout(
         openOnce,
-        460
+        Math.max(
+          260,
+          Math.round(
+            (Number(panDuration) || 0.42) * 1000 + 80
+          )
+        )
       );
     }
   }
@@ -22733,7 +23347,8 @@ function showAllRoutes(
 
 function showSingleRoute(
   routeId,
-  resetOptionalStops = true
+  resetOptionalStops = true,
+  fitToRoute = true
 ) {
   dismissedStopLogicalKey = "";
 
@@ -22788,7 +23403,11 @@ function showSingleRoute(
       );
 
     const showOptionalByDefault =
-      routeStatus !== "Existing";
+      [
+        "Planned",
+        "Proposed",
+        "Conceptual"
+      ].includes(routeStatus);
 
     setNonExistingStopsVisible(
       showOptionalByDefault
@@ -22833,9 +23452,15 @@ function showSingleRoute(
 
   /*
     Setelah daftar + marker halte selesai dibuat,
-    zoom rute agar pas dengan area layar yang terlihat.
+    secara default zoom rute agar pas dengan area layar.
+
+    Navigasi melalui integrasi dapat menonaktifkan fit ini agar
+    zoom saat ini dipertahankan dan kamera hanya bergeser halus
+    (sliding/pan) menuju halte/stasiun target.
   */
-  fitRouteToScreen();
+  if (fitToRoute) {
+    fitRouteToScreen();
+  }
 
   /*
     Untuk BRT 15–19, tampilkan pengantar compact satu kali
@@ -22900,7 +23525,10 @@ function refreshFilters() {
 
 modeSelect.addEventListener(
   "change",
-  refreshFilters
+  () => {
+    updateStatusAvailabilityForMode();
+    refreshFilters();
+  }
 );
 
 statusSelect.addEventListener(
@@ -24223,6 +24851,7 @@ async function loadData() {
 
     modeSelect.value = "ALL";
     statusSelect.value = "Existing";
+    updateStatusAvailabilityForMode();
 
     applyUrlStateAfterDataLoad();
     updateScale();
