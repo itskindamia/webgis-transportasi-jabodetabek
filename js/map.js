@@ -3,12 +3,13 @@
    DATASET RUNTIME MULTIMODA:
    - data/brt_route.geojson   (wajib)
    - data/brt_stop.geojson    (wajib)
-   - data/mrt_route.geojson   (opsional / pilot)
-   - data/mrt_stop.geojson    (opsional / pilot)
+   - data/rail_route.geojson  (opsional / multimoda rel)
+   - data/rail_stop.geojson   (opsional / multimoda rel)
 
    BRT tetap memakai schema v2.0 yang sudah ada.
-   MRT dibaca melalui adapter runtime sehingga file sumber
-   tidak perlu dipaksa mengikuti seluruh field khusus BRT.
+   MRT, KRL, dan LRT dibaca dari dua dataset RAIL yang sama
+   melalui adapter runtime. MODE / LINE_ID / OPERATOR / STATUS
+   pada setiap feature menentukan jaringan yang ditampilkan.
 
    Field halte:
    ROUTES     = rute yang benar-benar melayani halte
@@ -65,6 +66,21 @@
 
 const STOP_ZOOM = 18;
 
+const APP_DEBUG = false;
+
+function debugLog(...args) {
+  if (APP_DEBUG) globalThis.console.log(...args);
+}
+
+function debugGroup(...args) {
+  if (APP_DEBUG) globalThis.console.groupCollapsed(...args);
+}
+
+function debugGroupEnd() {
+  if (APP_DEBUG) globalThis.console.groupEnd();
+}
+
+
 const BASEMAP_PREVIEWS = {
   light:
     "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/14/8474/13053",
@@ -116,8 +132,12 @@ const LINE_BADGE_IMAGES = {
   MRT_EW: "assets/lines/mrt-ew.png",
   MRT_OR: "assets/lines/mrt-or.svg",
 
-  LRT_JKT_PDV: "assets/lines/lrt-jakarta-pdv.png",
-  LRT_JKT: "assets/lines/lrt-jakarta-pdv.png",
+  /*
+    Aset badge PDV belum tersedia dalam paket. Nilai kosong sengaja
+    memakai fallback teks dan mencegah request 404 berulang.
+  */
+  LRT_JKT_PDV: "",
+  LRT_JKT: "",
   LRT_JKT_S: "assets/lines/lrt-jakarta-s.svg",
   LRT_JKT_U: "assets/lines/lrt-jakarta-u.png",
 
@@ -310,12 +330,14 @@ const map = L.map("map", {
 }).setView([-6.20, 106.83], 11);
 
 L.control.attribution({
-  position: "topright"
+  position: "bottomleft",
+  prefix: '<a href="https://leafletjs.com/" target="_blank" rel="noopener noreferrer">Leaflet</a>'
 }).addTo(map);
 
 /* =========================================================
    PANES
    ========================================================= */
+
 
 map.createPane("routeHaloPane");
 map.getPane("routeHaloPane").style.zIndex = 450;
@@ -384,15 +406,18 @@ const lightCanvas = L.tileLayer(
   {
     maxNativeZoom: 16,
     maxZoom: 20,
-    attribution: "Tiles &copy; Esri"
+    attribution:
+      'Esri, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>, and the GIS user community'
   }
 );
 
 const osm = L.tileLayer(
-  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
   {
+    maxNativeZoom: 19,
     maxZoom: 20,
-    attribution: "&copy; OpenStreetMap contributors"
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>'
   }
 );
 
@@ -400,7 +425,8 @@ const satellite = L.tileLayer(
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
   {
     maxZoom: 20,
-    attribution: "Tiles &copy; Esri"
+    attribution:
+      "Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community"
   }
 );
 
@@ -427,8 +453,9 @@ const BASEMAP_PREVIEW_CONFIG = {
 
   osm: {
     url:
-      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     options: {
+      maxNativeZoom: 19,
       maxZoom: 20
     }
   },
@@ -516,6 +543,11 @@ const poiSearchClear =
     "poiSearchClear"
   );
 
+const poiSearchSubmit =
+  document.getElementById(
+    "poiSearchSubmit"
+  );
+
 const poiSearchResults =
   document.getElementById(
     "poiSearchResults"
@@ -534,6 +566,11 @@ const globalSearchInput =
 const globalSearchClear =
   document.getElementById(
     "globalSearchClear"
+  );
+
+const globalSearchSubmit =
+  document.getElementById(
+    "globalSearchSubmit"
   );
 
 const globalSearchResults =
@@ -757,7 +794,7 @@ const gpsButton = document.getElementById("gpsButton");
 const homeButton = document.getElementById("homeButton");
 
 /* =========================================================
-   BRT_STOP SCHEMA v2.0 — FINAL 28 FIELDS
+   BRT_STOP SCHEMA v2.0 — FINAL 31 FIELDS
    ========================================================= */
 
 const BRT_STOP_SCHEMA_V20_FIELDS = [
@@ -784,11 +821,14 @@ const BRT_STOP_SCHEMA_V20_FIELDS = [
   "VALID_TO",
   "INTEGRASI",
   "INT_NM",
+  "INT_STOP",
   "INT_STATUS",
   "SOURCE",
   "SRC_URL",
   "SRC_NOTE",
-  "REMARK"
+  "REMARK",
+  "SEQ_A_MAP",
+  "SEQ_B_MAP"
 ];
 
 
@@ -812,7 +852,7 @@ const BRT_STOP_SCHEMA_V20_DOMAINS = {
     "Eksisting",
     "Rencana",
     "Usulan",
-    "Konseptual",
+    "Gagasan",
     "Nonaktif"
   ],
 
@@ -991,6 +1031,8 @@ let stopLayer = null;
 let stopHitLayer = null;
 
 /*
+
+/*
   Untuk koridor yang sedang mengalami pengalihan:
   false = hanya kondisi operasional/pengalihan
   true  = tampilkan juga trase reguler sebagai pembanding
@@ -1100,12 +1142,12 @@ let dismissedStopLogicalKey = "";
 let comparisonRouteId = null;
 
 /*
-  Halte/stasiun Usulan dan Konseptual bersifat opsional.
+  Halte/stasiun Usulan dan Gagasan bersifat opsional.
 
   Default ketika koridor/lin dipilih:
-  - Rute Eksisting  -> Usulan OFF, Konseptual OFF
-  - Rute non-Eksisting (Rencana/Usulan/Konseptual)
-                    -> Usulan ON, Konseptual ON
+  - Rute Eksisting  -> Usulan OFF, Gagasan OFF
+  - Rute non-Eksisting (Rencana/Usulan/Gagasan)
+                    -> Usulan ON, Gagasan ON
 
   Dengan demikian koridor yang berstatus Rencana seperti
   Koridor 15–19 langsung menampilkan titik pengembangannya.
@@ -1116,7 +1158,7 @@ let showConceptualStops = false;
 /*
   Satu kontrol UI mengatur seluruh titik non-eksisting.
   Variabel lama tetap dipakai oleh filter internal supaya
-  logika status Usulan/Konseptual yang sudah ada tetap stabil.
+  logika status Usulan/Gagasan yang sudah ada tetap stabil.
 */
 function setNonExistingStopsVisible(visible) {
   const nextValue = Boolean(visible);
@@ -1137,14 +1179,25 @@ let lastGpsLocation = null;
 
 let poiMarker = null;
 let poiSearchAbortController = null;
-let poiSearchDebounceId = null;
 
 let globalSearchAbortController = null;
-let globalSearchDebounceId = null;
 let globalSearchLocalResults = [];
 let globalSearchRouteResults = [];
 let globalSearchPoiResults = [];
 let globalSearchPoiLoading = false;
+
+/*
+  Nominatim publik hanya dipanggil setelah tindakan eksplisit user.
+  Seluruh komponen pencarian berbagi satu limiter dan cache agar total
+  aplikasi tetap berada di bawah satu request per detik.
+*/
+const NOMINATIM_ENDPOINT =
+  "https://nominatim.openstreetmap.org/search";
+const NOMINATIM_MIN_INTERVAL_MS = 1100;
+const NOMINATIM_CACHE_LIMIT = 100;
+const nominatimResponseCache = new Map();
+let nominatimLastRequestAt = 0;
+let nominatimRequestQueue = Promise.resolve();
 
 let suppressUrlStateSync = false;
 
@@ -1152,7 +1205,7 @@ let lastFocusedBeforeInfoModal = null;
 
 /*
   Startup experience selalu dijalankan setiap page load:
-  Informasi & Disclaimer -> Cara Menggunakan.
+  Informasi & Catatan -> Cara Menggunakan.
 
   Nilai localStorage lama tetap dipertahankan untuk
   kompatibilitas, tetapi tidak lagi dipakai untuk menentukan
@@ -1197,6 +1250,20 @@ let productTourDemoMarker = null;
 let productTourDemoPulse = null;
 let productTourDemoTimerId = null;
 let productTourDemoPulseAnimationId = null;
+
+/*
+  Tip 2 memakai dua fokus berurutan pada desktop:
+  1) titik + nama halte di peta
+  2) baris halte/stasiun pada daftar kiri
+
+  Demo daftar hanya disisipkan ketika startup masih berada
+  pada tampilan Semua Lin/Koridor (stopList memang kosong).
+  Jika user membuka tutorial secara manual saat suatu rute
+  aktif, daftar asli dipakai tanpa ditimpa.
+*/
+let productTourStopHighlightPhase = "map";
+let productTourStopHighlightTimerId = null;
+let productTourInjectedListDemo = false;
 
 let lastResponsiveIsMobile =
   window.matchMedia(
@@ -1366,6 +1433,7 @@ function normalizeStatus(value) {
     "Usulan Institusional": "Proposed",
 
     "Conceptual": "Conceptual",
+    "Gagasan": "Conceptual",
     "Konseptual": "Conceptual",
     "Konsep": "Conceptual",
     "Usulan Personal": "Conceptual",
@@ -1397,7 +1465,7 @@ function getStatusLabel(value) {
     Construction: "Dalam Pembangunan",
     Planned: "Rencana",
     Proposed: "Usulan",
-    Conceptual: "Konseptual",
+    Conceptual: "Gagasan",
     Inactive: "Nonaktif"
   };
 
@@ -1501,13 +1569,15 @@ function featureCollection(features) {
 
 
 /* =========================================================
-   MULTIMODAL DATA ADAPTER — MRT PILOT
+   MULTIMODAL DATA ADAPTER — RAIL
    =========================================================
 
    Tujuan:
    - BRT tetap memakai schema v2.0 tanpa perubahan sumber.
-   - MRT boleh memakai field yang lebih natural untuk rail:
-       LINE_ID, LINE_NAME, LINES, STRUCTURE, OPERATOR.
+   - MRT, KRL, dan LRT memakai schema rail yang seragam:
+       LINE_ID, LINE_NAME, MODE, OPERATOR, STATUS, STRUCTURE.
+   - Semua moda rel boleh berada dalam rail_route.geojson dan
+     rail_stop.geojson yang sama.
    - Adapter hanya menambah alias pada objek runtime.
    - GeoJSON asli tidak diubah / ditulis ulang.
 */
@@ -1567,7 +1637,7 @@ function getStructureLabel(value) {
   const structure = normalizeStructure(value);
 
   const labels = {
-    ELEVATED: "Elevated",
+    ELEVATED: "Layang",
     TRANSITION: "Transisi",
     UNDERGROUND: "Bawah tanah",
     AT_GRADE: "Permukaan",
@@ -1623,6 +1693,14 @@ function getDefaultOperator(mode) {
     return "MRT Jakarta";
   }
 
+  if (normalized === "KRL") {
+    return "KAI Commuter";
+  }
+
+  /*
+    LRT tidak diberi default karena operatornya bisa LRT Jakarta
+    atau LRT Jabodebek. Isi OPERATOR secara eksplisit di GeoJSON.
+  */
   return "";
 }
 
@@ -1631,8 +1709,7 @@ function adaptRouteFeatureForRuntime(feature, datasetKey = "") {
   const p = { ...original };
 
   const mode = normalizeMode(
-    p.MODE ||
-    (String(datasetKey).toUpperCase() === "MRT" ? "MRT" : "")
+    p.MODE || ""
   );
 
   const routeId = cleanText(
@@ -1679,8 +1756,7 @@ function adaptStopFeatureForRuntime(feature, datasetKey = "") {
   const p = { ...original };
 
   const mode = normalizeMode(
-    p.MODE ||
-    (String(datasetKey).toUpperCase() === "MRT" ? "MRT" : "")
+    p.MODE || ""
   );
 
   const routes = normalizeDelimitedIds(
@@ -2180,43 +2256,278 @@ function getRouteDisplayName(feature) {
 }
 
 
+function getRouteRelation(feature) {
+  const p = feature?.properties ?? {};
+
+  return cleanText(
+    p.RELATION ??
+    p.RELASI ??
+    p.ROUTE_REL ??
+    p.RELATION_NM ??
+    p.RELASI_NM
+  );
+}
+
+
+function normalizeRouteNameForDisplay(value) {
+  return cleanText(value)
+    .replace(/\s*[–—-]\s*/g, " - ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+
+/*
+  RELASI EFEKTIF UNTUK MODA REL
+  =========================================================
+
+  Satu LINE_ID dapat terdiri atas beberapa tahap/status, misalnya:
+    MRT_NS Existing      : Lebak Bulus - Bundaran HI
+    MRT_NS Construction  : Bundaran HI - Kota
+
+  Saat satu status dipilih, relasi mengikuti feature pada status itu.
+  Saat beberapa status tampil bersamaan (Status = ALL), relasi yang
+  saling tersambung digabung menjadi ujung-ke-ujung:
+    Lebak Bulus - Bundaran HI
+    Bundaran HI - Kota
+    => Lebak Bulus - Kota
+
+  RELATION tetap menjadi metadata eksplisit pada rail_route.geojson.
+  Jika RELATION belum tersedia, script memakai stasiun pertama/terakhir
+  yang sedang terlihat sebagai fallback. Ini hanya fallback tampilan dan
+  tidak mengubah data sumber.
+*/
+function parseRouteRelationEndpoints(value) {
+  const normalized = normalizeRouteNameForDisplay(value);
+
+  if (!normalized) {
+    return null;
+  }
+
+  const parts = normalized
+    .split(/\s+-\s+/)
+    .map(cleanText)
+    .filter(Boolean);
+
+  if (parts.length !== 2) {
+    return null;
+  }
+
+  return {
+    from: parts[0],
+    to: parts[1],
+    text: `${parts[0]} - ${parts[1]}`
+  };
+}
+
+
+function mergeConnectedRouteRelations(relations) {
+  const parsed = (relations || [])
+    .map(parseRouteRelationEndpoints)
+    .filter(Boolean);
+
+  if (!parsed.length) {
+    return "";
+  }
+
+  /* Hilangkan edge duplikat, termasuk jika arahnya terbalik. */
+  const uniqueEdges = [];
+  const edgeKeys = new Set();
+
+  parsed.forEach(item => {
+    const key = [item.from, item.to]
+      .map(value => value.toLocaleLowerCase("id"))
+      .sort()
+      .join("||");
+
+    if (!edgeKeys.has(key)) {
+      edgeKeys.add(key);
+      uniqueEdges.push(item);
+    }
+  });
+
+  if (uniqueEdges.length === 1) {
+    return uniqueEdges[0].text;
+  }
+
+  const adjacency = new Map();
+  const canonicalName = new Map();
+
+  const addNode = value => {
+    const key = value.toLocaleLowerCase("id");
+    if (!adjacency.has(key)) {
+      adjacency.set(key, new Set());
+      canonicalName.set(key, value);
+    }
+    return key;
+  };
+
+  uniqueEdges.forEach(item => {
+    const a = addNode(item.from);
+    const b = addNode(item.to);
+    adjacency.get(a).add(b);
+    adjacency.get(b).add(a);
+  });
+
+  /*
+    Gabungkan hanya bila seluruh edge membentuk satu jaringan sederhana
+    dengan tepat dua ujung. Ini mencegah hasil palsu pada lin bercabang
+    atau loop.
+  */
+  const firstNode = adjacency.keys().next().value;
+  const visited = new Set();
+  const stack = firstNode ? [firstNode] : [];
+
+  while (stack.length) {
+    const node = stack.pop();
+    if (visited.has(node)) continue;
+    visited.add(node);
+    (adjacency.get(node) || []).forEach(next => {
+      if (!visited.has(next)) stack.push(next);
+    });
+  }
+
+  const endpoints = Array.from(adjacency.entries())
+    .filter(([, neighbors]) => neighbors.size === 1)
+    .map(([key]) => key);
+
+  const isSingleConnectedPath =
+    visited.size === adjacency.size &&
+    endpoints.length === 2 &&
+    Array.from(adjacency.values()).every(neighbors => neighbors.size <= 2);
+
+  if (isSingleConnectedPath) {
+    /*
+      Orientasi mengikuti relation pertama agar nama ujung tidak tiba-tiba
+      terbalik ketika status ALL dipakai.
+    */
+    const first = uniqueEdges[0];
+    const firstFromKey = first.from.toLocaleLowerCase("id");
+    const start = endpoints.includes(firstFromKey)
+      ? firstFromKey
+      : endpoints[0];
+    const end = endpoints.find(key => key !== start);
+
+    return `${canonicalName.get(start)} - ${canonicalName.get(end)}`;
+  }
+
+  /*
+    Cabang/loop/disconnected tidak dipaksa menjadi satu relasi palsu.
+    Tampilkan metadata relasi unik apa adanya.
+  */
+  return uniqueEdges
+    .map(item => item.text)
+    .join(" · ");
+}
+
+
+function getEffectiveRouteRelation(feature) {
+  if (!feature) {
+    return "";
+  }
+
+  const mode = getRouteMode(feature);
+
+  /* BRT tetap memakai NAME sebagai pasangan asal–tujuan. */
+  if (mode === "BRT") {
+    return normalizeRouteNameForDisplay(getRouteDisplayName(feature));
+  }
+
+  const routeId = getRouteId(feature);
+
+  if (!routeId) {
+    return normalizeRouteNameForDisplay(getRouteRelation(feature));
+  }
+
+  const activeFeatures = getRouteFeaturesForCurrentStatus(routeId);
+  const relations = activeFeatures
+    .map(getRouteRelation)
+    .map(normalizeRouteNameForDisplay)
+    .filter(Boolean);
+
+  if (relations.length) {
+    return mergeConnectedRouteRelations(relations);
+  }
+
+  /*
+    Fallback untuk dataset rail yang belum memiliki RELATION.
+    Karena STOP_ROLE tetap attribute-driven, fallback ini hanya menentukan
+    teks relasi, bukan fungsi terminus.
+  */
+  const visibleStops = getVisibleStopsForRoute(routeId);
+
+  if (visibleStops.length >= 2) {
+    const firstName = normalizeRouteNameForDisplay(
+      getStopDisplayName(visibleStops[0])
+    );
+    const lastName = normalizeRouteNameForDisplay(
+      getStopDisplayName(visibleStops[visibleStops.length - 1])
+    );
+
+    if (firstName && lastName && firstName !== lastName) {
+      return `${firstName} - ${lastName}`;
+    }
+  }
+
+  return normalizeRouteNameForDisplay(getRouteRelation(feature));
+}
+
+
 function getRouteTitle(feature) {
   const p = feature?.properties ?? {};
   const mode = getRouteMode(feature);
-  const routeName =
-    getRouteDisplayName(feature);
+  const routeName = normalizeRouteNameForDisplay(
+    getRouteDisplayName(feature)
+  );
 
+  /*
+    Format nama rute di UI:
+      Nama rute (relasi)
+
+    BRT tetap memakai NAME sebagai relasi, misalnya:
+      Koridor 13 (Ciledug - Tegal Mampang)
+
+    Untuk moda rel, RELATION dapat berbeda per tahap/status pada
+    LINE_ID yang sama, misalnya:
+      MRT_NS / Existing      = Lebak Bulus - Bundaran HI
+      MRT_NS / Construction  = Bundaran HI - Kota
+
+    Jika Status = ALL, relasi yang tersambung digabung otomatis menjadi:
+      MRT Jakarta Lin Utara - Selatan (Lebak Bulus - Kota)
+
+    Nilai LINE_NAME, RELATION, STATUS, dan LINE_ID pada GeoJSON tidak
+    diubah; penggabungan hanya berlaku pada teks UI.
+  */
   if (mode === "BRT") {
     return `Koridor ${p.LINE} (${routeName})`;
   }
 
-  const operator = cleanText(
-    p.OPERATOR
-  );
+  const operator = cleanText(p.OPERATOR);
+  const relation = getEffectiveRouteRelation(feature);
 
-  /*
-    MRT memakai format operator + nama lin di dalam kurung agar
-    konsisten di dropdown, panel rute, dan label aksesibilitas, mis.:
-    MRT Jakarta (Lin Utara - Selatan).
+  let baseName = routeName;
 
-    Nama lin dinormalisasi hanya untuk tampilan; nilai LINE_NAME dan
-    LINE_ID pada GeoJSON tidak diubah.
-  */
+  // MRT tetap membawa identitas operator pada nama rute, tetapi tidak
+  // lagi memakai tanda kurung untuk nama lin karena tanda kurung
+  // dicadangkan untuk relasi asal–tujuan.
   if (mode === "MRT" && operator && routeName) {
-    const mrtRouteName = routeName
-      .replace(/\s*[–—-]\s*/g, " - ")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    return `${operator} (${mrtRouteName})`;
+    const routeLower = routeName.toLowerCase();
+    const operatorLower = operator.toLowerCase();
+    baseName = routeLower.includes(operatorLower)
+      ? routeName
+      : `${operator} ${routeName}`;
   }
 
-  if (operator && routeName) {
-    return `${operator} — ${routeName}`;
+  if (!baseName && operator) {
+    baseName = operator;
   }
 
-  if (routeName) {
-    return routeName;
+  if (baseName && relation) {
+    return `${baseName} (${relation})`;
+  }
+
+  if (baseName) {
+    return baseName;
   }
 
   if (hasText(p.LINE)) {
@@ -6160,9 +6471,9 @@ function getLinkType(feature) {
 
 function getLinkTypeLabel(value) {
   return {
-    CONCOURSE: "Concourse",
+    CONCOURSE: "Area penghubung",
     BRIDGE: "Jembatan",
-    UNDERPASS: "Underpass",
+    UNDERPASS: "Terowongan pejalan kaki",
     CROSSING: "Penyeberangan",
     NONE: "Tidak ada koneksi khusus",
     UNKNOWN: "Belum diketahui"
@@ -6691,6 +7002,63 @@ function navigateToStopFromPopup(
         });
     }
   );
+}
+
+
+/*
+  Sinkronkan affordance scroll hanya ketika daftar integrasi
+  benar-benar lebih tinggi dari ruang yang tersedia. Fade kecil
+  di bagian bawah hilang otomatis saat pengguna mencapai akhir.
+*/
+function syncStopPopupIntegrationOverflow(popupElement) {
+  const section =
+    popupElement?.querySelector(
+      ".stop-popup-section--integration"
+    );
+
+  const scroller =
+    section?.querySelector(
+      ".stop-popup-integration-scroll"
+    );
+
+  if (!section || !scroller) {
+    return;
+  }
+
+  const updateState = () => {
+    const overflow =
+      scroller.scrollHeight >
+      scroller.clientHeight + 2;
+
+    const atBottom =
+      !overflow ||
+      scroller.scrollTop +
+        scroller.clientHeight >=
+        scroller.scrollHeight - 2;
+
+    section.classList.toggle(
+      "has-scroll-overflow",
+      overflow
+    );
+
+    section.classList.toggle(
+      "is-scroll-end",
+      atBottom
+    );
+  };
+
+  updateState();
+
+  if (!scroller.dataset.overflowBound) {
+    scroller.dataset.overflowBound = "true";
+    scroller.addEventListener(
+      "scroll",
+      updateState,
+      { passive: true }
+    );
+  }
+
+  requestAnimationFrame(updateState);
 }
 
 
@@ -7406,7 +7774,7 @@ function openStopFromSearch(
 
   /*
     Jika hasil pencarian merupakan titik non-eksisting,
-    aktifkan kontrol gabungan Usulan + Konseptual.
+    aktifkan kontrol gabungan Usulan + Gagasan.
   */
   if (
     isProposedStop(feature) ||
@@ -7555,6 +7923,170 @@ document.addEventListener(
 /* =========================================================
    POI SEARCH
    ========================================================= */
+
+function createAbortError() {
+  return new DOMException(
+    "Request dibatalkan.",
+    "AbortError"
+  );
+}
+
+
+function waitWithAbort(
+  duration,
+  signal
+) {
+  if (signal?.aborted) {
+    return Promise.reject(
+      createAbortError()
+    );
+  }
+
+  if (duration <= 0) {
+    return Promise.resolve();
+  }
+
+  return new Promise(
+    (resolve, reject) => {
+      const timeoutId =
+        setTimeout(
+          () => {
+            signal?.removeEventListener(
+              "abort",
+              abort
+            );
+
+            resolve();
+          },
+          duration
+        );
+
+      const abort =
+        () => {
+          clearTimeout(timeoutId);
+          reject(createAbortError());
+        };
+
+      signal?.addEventListener(
+        "abort",
+        abort,
+        { once: true }
+      );
+    }
+  );
+}
+
+
+async function requestNominatim(
+  params,
+  signal
+) {
+  const cacheKey =
+    params.toString();
+
+  if (
+    nominatimResponseCache.has(
+      cacheKey
+    )
+  ) {
+    return nominatimResponseCache.get(
+      cacheKey
+    );
+  }
+
+  const execute =
+    async () => {
+      const waitDuration =
+        Math.max(
+          0,
+          NOMINATIM_MIN_INTERVAL_MS -
+            (
+              Date.now() -
+              nominatimLastRequestAt
+            )
+        );
+
+      await waitWithAbort(
+        waitDuration,
+        signal
+      );
+
+      if (signal?.aborted) {
+        throw createAbortError();
+      }
+
+      nominatimLastRequestAt =
+        Date.now();
+
+      const response =
+        await fetch(
+          `${NOMINATIM_ENDPOINT}?${cacheKey}`,
+          {
+            signal,
+            cache: "default",
+            headers: {
+              Accept:
+                "application/json"
+            }
+          }
+        );
+
+      if (!response.ok) {
+        const error =
+          new Error(
+            `Nominatim HTTP ${response.status}`
+          );
+
+        error.code =
+          `HTTP_${response.status}`;
+
+        throw error;
+      }
+
+      const results =
+        await response.json();
+
+      const normalizedResults =
+        Array.isArray(results)
+          ? results
+          : [];
+
+      nominatimResponseCache.set(
+        cacheKey,
+        normalizedResults
+      );
+
+      if (
+        nominatimResponseCache.size >
+        NOMINATIM_CACHE_LIMIT
+      ) {
+        const oldestKey =
+          nominatimResponseCache
+            .keys()
+            .next()
+            .value;
+
+        nominatimResponseCache.delete(
+          oldestKey
+        );
+      }
+
+      return normalizedResults;
+    };
+
+  const queuedRequest =
+    nominatimRequestQueue.then(
+      execute,
+      execute
+    );
+
+  nominatimRequestQueue =
+    queuedRequest.catch(
+      () => undefined
+    );
+
+  return queuedRequest;
+}
 
 function closePoiSearchResults() {
   if (!poiSearchResults) {
@@ -7808,8 +8340,10 @@ async function searchPoi(
   try {
     /*
       Nominatim publik dibatasi secara konservatif:
-      - pencarian hanya setelah 3 karakter
-      - debounce dari input
+      - pencarian hanya setelah tindakan eksplisit user
+      - minimal 3 karakter
+      - limiter bersama maksimal satu request per 1,1 detik
+      - hasil query disimpan dalam cache sesi
       - request sebelumnya dibatalkan
       - limit kecil
       - area dibatasi pada Jabodetabek dan sekitarnya
@@ -7828,28 +8362,11 @@ async function searchPoi(
         bounded: "1"
       });
 
-    const response =
-      await fetch(
-        `https://nominatim.openstreetmap.org/search?${params.toString()}`,
-        {
-          signal:
-            poiSearchAbortController.signal,
-
-          headers: {
-            Accept:
-              "application/json"
-          }
-        }
-      );
-
-    if (!response.ok) {
-      throw new Error(
-        `Nominatim HTTP ${response.status}`
-      );
-    }
-
     const results =
-      await response.json();
+      await requestNominatim(
+        params,
+        poiSearchAbortController.signal
+      );
 
     if (
       !Array.isArray(results) ||
@@ -8077,31 +8594,11 @@ poiSearchInput
     () => {
       updatePoiSearchClearButton();
 
-      clearTimeout(
-        poiSearchDebounceId
-      );
-
-      const value =
-        poiSearchInput.value;
-
-      if (
-        String(value)
-          .trim()
-          .length < 3
-      ) {
-        closePoiSearchResults();
-        return;
-      }
-
-      poiSearchDebounceId =
-        setTimeout(
-          () => {
-            searchPoi(
-              value
-            );
-          },
-          700
-        );
+      /*
+        Tidak ada request saat mengetik. Ini sengaja mencegah
+        client-side autocomplete pada layanan publik Nominatim.
+      */
+      closePoiSearchResults();
     }
   );
 
@@ -8114,37 +8611,29 @@ poiSearchInput
         event.key === "Escape"
       ) {
         closePoiSearchResults();
+        return;
+      }
+
+      if (
+        event.key === "Enter"
+      ) {
+        event.preventDefault();
+
+        searchPoi(
+          poiSearchInput.value
+        );
       }
     }
   );
 
 
-poiSearchInput
+poiSearchSubmit
   ?.addEventListener(
-    "focus",
+    "click",
     () => {
-      const value =
-        String(
-          poiSearchInput.value
-        ).trim();
-
-      if (
-        value.length >= 3
-      ) {
-        clearTimeout(
-          poiSearchDebounceId
-        );
-
-        poiSearchDebounceId =
-          setTimeout(
-            () => {
-              searchPoi(
-                value
-              );
-            },
-            250
-          );
-      }
+      searchPoi(
+        poiSearchInput?.value
+      );
     }
   );
 
@@ -8191,7 +8680,7 @@ const PRODUCT_TOUR_STEPS = [
   {
     title: "Klik halte atau stasiun",
     text:
-      "Klik titik di peta atau nama halte/stasiun pada daftar untuk membuka informasi titik, integrasi, dan urutan perjalanan.",
+      "Klik titik atau nama halte/stasiun di peta maupun daftar untuk membuka informasi titik, integrasi, dan urutan perjalanan.",
     target: "tutorial-stop",
     visual: "stop"
   },
@@ -8262,7 +8751,7 @@ function buildProductTourVisual(type) {
         <span class="tour-mini-route-line"></span>
         <span class="tour-mini-marker"></span>
         <span class="tour-mini-stop-label">
-          Klik halte/stasiun
+          Klik titik atau nama
         </span>
       </div>
     `;
@@ -8377,6 +8866,311 @@ function clearProductTourDemoTimer() {
 
     productTourDemoTimerId = null;
   }
+}
+
+
+function clearProductTourStopHighlightTimer() {
+  if (
+    productTourStopHighlightTimerId !== null
+  ) {
+    clearTimeout(
+      productTourStopHighlightTimerId
+    );
+
+    productTourStopHighlightTimerId = null;
+  }
+}
+
+
+function clearProductTourListFocus() {
+  document
+    .querySelectorAll(
+      ".product-tour-list-focus"
+    )
+    .forEach(
+      element =>
+        element.classList.remove(
+          "product-tour-list-focus"
+        )
+    );
+}
+
+
+function clearProductTourListDemo() {
+  clearProductTourStopHighlightTimer();
+  clearProductTourListFocus();
+
+  routeDetailCard
+    ?.classList
+    .remove(
+      "product-tour-list-demo-open"
+    );
+
+  if (
+    productTourInjectedListDemo
+  ) {
+    stopListEl.innerHTML = "";
+    productTourInjectedListDemo = false;
+  }
+
+  productTourStopHighlightPhase =
+    "map";
+}
+
+
+function ensureProductTourListDemo() {
+  if (isMobileLayout()) {
+    return null;
+  }
+
+  /*
+    Bila daftar asli sudah tersedia (misalnya tutorial dibuka
+    manual ketika satu rute aktif), jangan mengubah isinya.
+  */
+  const existingItems =
+    Array.from(
+      stopListEl
+        ?.querySelectorAll(
+          ".stop-list-item"
+        ) || []
+    );
+
+  if (existingItems.length) {
+    return existingItems[0];
+  }
+
+  const feature =
+    getProductTourDemoStopFeature();
+
+  if (!feature || !stopListEl) {
+    return null;
+  }
+
+  const routeId = "BRT_01";
+  const routeSeq =
+    getStopSequenceRaw(
+      feature,
+      routeId
+    ) || "";
+
+  const role =
+    getOperationalStopRole(
+      feature,
+      routeId
+    );
+
+  const roleClass =
+    getOperationalStopRoleClass(
+      feature,
+      routeId
+    );
+
+  const roleHTML =
+    role &&
+    ![
+      "reguler",
+      "regular",
+      "normal"
+    ].includes(
+      String(role)
+        .trim()
+        .toLowerCase()
+    )
+      ? `
+        <span class="stop-role ${escapeHTML(roleClass)}">
+          ${escapeHTML(role)}
+        </span>
+      `
+      : "";
+
+  stopListEl.innerHTML = `
+    <div class="stop-list-heading">
+      HALTE
+    </div>
+
+    <div class="stop-list-help">
+      Klik nama halte untuk zoom ke lokasi.
+    </div>
+
+    <div class="stop-list-scroll product-tour-demo-stop-list-scroll">
+      <div
+        class="stop-list-item product-tour-demo-stop-list-item ${roleHTML ? "has-edge-role-badge" : ""}"
+        aria-hidden="true"
+      >
+        <div class="stop-list-item-left">
+          <span class="stop-list-sequence">
+            <span class="stop-seq-badge">
+              ${escapeHTML(routeSeq || "01")}
+            </span>
+          </span>
+
+          <span class="stop-list-route-badges">
+            ${buildSmallRouteBadge(routeId, feature)}
+          </span>
+
+          <span class="stop-list-name">
+            ${escapeHTML(getStopDisplayName(feature))}
+          </span>
+        </div>
+
+        <span class="stop-list-badges">
+          ${roleHTML}
+        </span>
+      </div>
+    </div>
+  `;
+
+  productTourInjectedListDemo = true;
+
+  routeDetailCard
+    ?.classList
+    .add(
+      "product-tour-list-demo-open"
+    );
+
+  return stopListEl
+    .querySelector(
+      ".product-tour-demo-stop-list-item"
+    );
+}
+
+
+function getProductTourListTargetElement() {
+  if (isMobileLayout()) {
+    return null;
+  }
+
+  const items =
+    Array.from(
+      stopListEl
+        ?.querySelectorAll(
+          ".stop-list-item"
+        ) || []
+    );
+
+  if (!items.length) {
+    return ensureProductTourListDemo();
+  }
+
+  /*
+    Utamakan baris terpilih yang terlihat. Jika tidak ada,
+    pilih baris pertama yang sedang berada dalam viewport
+    daftar. Ini menjaga tutorial manual tetap relevan meski
+    user sebelumnya sudah menggulir daftar.
+  */
+  const scrollRect =
+    stopListEl
+      .querySelector(
+        ".stop-list-scroll"
+      )
+      ?.getBoundingClientRect();
+
+  const isVisible =
+    element => {
+      const rect =
+        element
+          .getBoundingClientRect();
+
+      if (!scrollRect) {
+        return (
+          rect.bottom > 0 &&
+          rect.top < window.innerHeight
+        );
+      }
+
+      return (
+        rect.bottom > scrollRect.top &&
+        rect.top < scrollRect.bottom
+      );
+    };
+
+  return (
+    items.find(
+      item =>
+        item.classList.contains(
+          "is-selected"
+        ) &&
+        isVisible(item)
+    )
+    ||
+    items.find(isVisible)
+    ||
+    items[0]
+  );
+}
+
+
+function setProductTourStopHighlightPhase(
+  phase
+) {
+  productTourStopHighlightPhase =
+    phase === "list"
+      ? "list"
+      : "map";
+
+  clearProductTourListFocus();
+
+  if (
+    productTourStopHighlightPhase ===
+    "list"
+  ) {
+    const target =
+      getProductTourListTargetElement();
+
+    target
+      ?.classList
+      .add(
+        "product-tour-list-focus"
+      );
+  }
+
+  positionProductTour();
+}
+
+
+function scheduleProductTourStopHighlightSequence() {
+  clearProductTourStopHighlightTimer();
+
+  if (isMobileLayout()) {
+    productTourStopHighlightPhase =
+      "map";
+    return;
+  }
+
+  ensureProductTourListDemo();
+  setProductTourStopHighlightPhase(
+    "map"
+  );
+
+  /*
+    Fase pertama memberi waktu user melihat bahwa titik/nama
+    di peta dapat dipilih. Sesudah itu spotlight meluncur ke
+    baris daftar dan berhenti di sana sampai user menekan
+    Berikutnya / Sebelumnya.
+  */
+  productTourStopHighlightTimerId =
+    setTimeout(
+      () => {
+        productTourStopHighlightTimerId =
+          null;
+
+        if (
+          !productTour ||
+          productTour.hidden ||
+          PRODUCT_TOUR_STEPS[
+            productTourIndex
+          ]?.target !==
+            "tutorial-stop"
+        ) {
+          return;
+        }
+
+        setProductTourStopHighlightPhase(
+          "list"
+        );
+      },
+      1850
+    );
 }
 
 
@@ -8508,6 +9302,7 @@ function removeProductTourDemoLayers({
   closePopup = true
 } = {}) {
   clearProductTourDemoTimer();
+  clearProductTourListDemo();
   stopProductTourDemoPulseAnimation();
 
   if (
@@ -8810,6 +9605,127 @@ function prepareProductTourStopDemo({
 }
 
 
+function getProductTourMapStopTargetRect() {
+  const latlng =
+    getProductTourDemoStopLatLng();
+
+  const mapElement =
+    document.getElementById(
+      "map"
+    );
+
+  if (
+    !latlng ||
+    !mapElement
+  ) {
+    return null;
+  }
+
+  const mapRect =
+    mapElement
+      .getBoundingClientRect();
+
+  const point =
+    map.latLngToContainerPoint(
+      latlng
+    );
+
+  const markerRadius =
+    isMobileLayout()
+      ? 30
+      : 34;
+
+  let left =
+    mapRect.left +
+    point.x -
+    markerRadius;
+
+  let top =
+    mapRect.top +
+    point.y -
+    markerRadius;
+
+  let right =
+    mapRect.left +
+    point.x +
+    markerRadius;
+
+  let bottom =
+    mapRect.top +
+    point.y +
+    markerRadius;
+
+  /*
+    Masukkan label permanen Monumen Nasional ke area
+    spotlight agar frame tidak memotong teks tutorial.
+  */
+  const tooltip =
+    document.querySelector(
+      ".leaflet-tooltip.product-tour-map-stop-tooltip"
+    );
+
+  if (tooltip) {
+    const tooltipRect =
+      tooltip.getBoundingClientRect();
+
+    left = Math.min(
+      left,
+      tooltipRect.left
+    );
+
+    top = Math.min(
+      top,
+      tooltipRect.top
+    );
+
+    right = Math.max(
+      right,
+      tooltipRect.right
+    );
+
+    bottom = Math.max(
+      bottom,
+      tooltipRect.bottom
+    );
+  }
+
+  return {
+    left,
+    top,
+    width: right - left,
+    height: bottom - top
+  };
+}
+
+
+function getProductTourListTargetRect() {
+  const element =
+    getProductTourListTargetElement();
+
+  if (!element) {
+    return null;
+  }
+
+  const rect =
+    element
+      .getBoundingClientRect();
+
+  if (
+    rect.width <= 0 ||
+    rect.height <= 0
+  ) {
+    return null;
+  }
+
+  return {
+    left: rect.left,
+    top: rect.top,
+    width: rect.width,
+    height: rect.height
+  };
+}
+
+
 function getProductTourTargetRect(step) {
   if (!step) {
     return null;
@@ -8858,95 +9774,19 @@ function getProductTourTargetRect(step) {
   }
 
   if (step.target === "tutorial-stop") {
-    const latlng =
-      getProductTourDemoStopLatLng();
-
-    const mapElement =
-      document.getElementById(
-        "map"
-      );
-
     if (
-      !latlng ||
-      !mapElement
+      !isMobileLayout() &&
+      productTourStopHighlightPhase ===
+        "list"
     ) {
-      return null;
-    }
-
-    const mapRect =
-      mapElement
-        .getBoundingClientRect();
-
-    const point =
-      map.latLngToContainerPoint(
-        latlng
-      );
-
-    const markerRadius =
-      isMobileLayout()
-        ? 30
-        : 34;
-
-    let left =
-      mapRect.left +
-      point.x -
-      markerRadius;
-
-    let top =
-      mapRect.top +
-      point.y -
-      markerRadius;
-
-    let right =
-      mapRect.left +
-      point.x +
-      markerRadius;
-
-    let bottom =
-      mapRect.top +
-      point.y +
-      markerRadius;
-
-    /*
-      Masukkan label permanen Monumen Nasional ke area
-      spotlight agar frame tidak memotong teks tutorial.
-    */
-    const tooltip =
-      document.querySelector(
-        ".leaflet-tooltip.product-tour-map-stop-tooltip"
-      );
-
-    if (tooltip) {
-      const tooltipRect =
-        tooltip.getBoundingClientRect();
-
-      left = Math.min(
-        left,
-        tooltipRect.left
-      );
-
-      top = Math.min(
-        top,
-        tooltipRect.top
-      );
-
-      right = Math.max(
-        right,
-        tooltipRect.right
-      );
-
-      bottom = Math.max(
-        bottom,
-        tooltipRect.bottom
+      return (
+        getProductTourListTargetRect()
+        ||
+        getProductTourMapStopTargetRect()
       );
     }
 
-    return {
-      left,
-      top,
-      width: right - left,
-      height: bottom - top
-    };
+    return getProductTourMapStopTargetRect();
   }
 
   if (
@@ -9038,6 +9878,20 @@ function positionProductTour() {
     getProductTourTargetRect(
       step
     );
+
+  /*
+    Pada Tip 2 spotlight boleh pindah dari peta ke daftar,
+    tetapi kartu penjelasan tetap berlabuh pada posisi demo
+    peta. Dengan begitu hanya fokusnya yang bergerak dan kartu
+    tidak ikut meloncat ke sisi kiri layar.
+  */
+  const cardAnchorRect =
+    step.target === "tutorial-stop"
+      ? (
+          getProductTourMapStopTargetRect()
+          || targetRect
+        )
+      : targetRect;
 
   if (targetRect) {
     const padding =
@@ -9142,10 +9996,10 @@ function positionProductTour() {
       window.innerWidth - 32
     );
 
-  if (targetRect) {
+  if (cardAnchorRect) {
     const preferredLeft =
-      targetRect.left +
-      targetRect.width +
+      cardAnchorRect.left +
+      cardAnchorRect.width +
       18;
 
     const canFitRight =
@@ -9158,7 +10012,7 @@ function positionProductTour() {
         ? `${preferredLeft}px`
         : `${Math.max(
             16,
-            targetRect.left -
+            cardAnchorRect.left -
             cardWidth -
             18
           )}px`;
@@ -9167,7 +10021,7 @@ function positionProductTour() {
       `${Math.max(
         16,
         Math.min(
-          targetRect.top,
+          cardAnchorRect.top,
           window.innerHeight -
           360
         )
@@ -9277,6 +10131,8 @@ function prepareProductTourStep(step) {
     prepareProductTourStopDemo({
       openPopup: false
     });
+
+    scheduleProductTourStopHighlightSequence();
 
     return;
   }
@@ -9618,10 +10474,6 @@ function clearGlobalSearch(
   globalSearchRouteResults = [];
   globalSearchPoiResults = [];
   globalSearchPoiLoading = false;
-
-  clearTimeout(
-    globalSearchDebounceId
-  );
 
   if (
     globalSearchAbortController
@@ -10199,28 +11051,11 @@ async function fetchGlobalPoiResults(
         bounded: "1"
       });
 
-    const response =
-      await fetch(
-        `https://nominatim.openstreetmap.org/search?${params.toString()}`,
-        {
-          signal:
-            globalSearchAbortController.signal,
-
-          headers: {
-            Accept:
-              "application/json"
-          }
-        }
-      );
-
-    if (!response.ok) {
-      throw new Error(
-        `Nominatim HTTP ${response.status}`
-      );
-    }
-
     const results =
-      await response.json();
+      await requestNominatim(
+        params,
+        globalSearchAbortController.signal
+      );
 
     /*
       Abaikan response lama bila user sudah mengetik
@@ -10275,10 +11110,6 @@ function updateGlobalSearch(
       query ?? ""
     ).trim();
 
-  clearTimeout(
-    globalSearchDebounceId
-  );
-
   if (
     globalSearchAbortController
   ) {
@@ -10315,29 +11146,21 @@ function updateGlobalSearch(
   }
 
   renderGlobalSearchResults();
+}
 
-  /*
-    Search tempat menggunakan request eksternal,
-    jadi baru dijalankan mulai 3 karakter + debounce.
-  */
-  if (
-    cleanQuery.length >= 3
-  ) {
-    globalSearchPoiLoading =
-      true;
 
-    renderGlobalSearchResults();
+function submitGlobalPoiSearch() {
+  const query =
+    String(
+      globalSearchInput?.value ?? ""
+    ).trim();
 
-    globalSearchDebounceId =
-      setTimeout(
-        () => {
-          fetchGlobalPoiResults(
-            cleanQuery
-          );
-        },
-        650
-      );
+  if (query.length < 3) {
+    updateGlobalSearch(query);
+    return;
   }
+
+  fetchGlobalPoiResults(query);
 }
 
 
@@ -10383,18 +11206,17 @@ globalSearchInput
       if (
         event.key === "Enter"
       ) {
-        const firstResult =
-          globalSearchResults
-            ?.querySelector(
-              ".global-search-result"
-            );
-
-        if (firstResult) {
-          event.preventDefault();
-          firstResult.click();
-        }
+        event.preventDefault();
+        submitGlobalPoiSearch();
       }
     }
+  );
+
+
+globalSearchSubmit
+  ?.addEventListener(
+    "click",
+    submitGlobalPoiSearch
   );
 
 
@@ -11214,11 +12036,11 @@ function validateRouteData() {
     }
   );
 
-  console.groupCollapsed(
+  debugGroup(
     "Validasi brt_route.geojson"
   );
 
-  console.log(
+  debugLog(
     "Jumlah fitur rute:",
     routeFeatures.length
   );
@@ -11258,7 +12080,7 @@ function validateRouteData() {
     );
   }
 
-  console.groupEnd();
+  debugGroupEnd();
 }
 
 
@@ -11294,7 +12116,7 @@ function validateStopData() {
 
   const temporaryMissingDivId = [];
   const temporaryMissingReplaces = [];
-  const transitPaidAreaIssues = [];
+  const paidLinkSemanticIssues = [];
 
   const integrationNameWithoutService = [];
   const integrationTargetWithoutService = [];
@@ -11454,6 +12276,41 @@ function validateStopData() {
         );
       }
 
+      if (
+        paidLink === "YES"
+        &&
+        (
+          !linkType
+          ||
+          [
+            "NONE",
+            "UNKNOWN"
+          ].includes(linkType)
+        )
+      ) {
+        paidLinkSemanticIssues.push(
+          `${stopName} → PAID_LINK=YES, LINK_TYPE=${linkType || "(kosong)"}`
+        );
+      }
+
+      if (
+        [
+          "NO",
+          "NA"
+        ].includes(paidLink)
+        &&
+        linkType
+        &&
+        ![
+          "NONE",
+          "UNKNOWN"
+        ].includes(linkType)
+      ) {
+        paidLinkSemanticIssues.push(
+          `${stopName} → PAID_LINK=${paidLink}, LINK_TYPE=${linkType}`
+        );
+      }
+
       const intRaw =
         cleanText(
           p.INT_STATUS
@@ -11500,19 +12357,6 @@ function validateStopData() {
         ) {
           temporaryMissingReplaces.push(
             stopName
-          );
-        }
-      }
-
-      if (
-        [
-          "Transit",
-          "Transit-Terminus"
-        ].includes(role)
-      ) {
-        if (paidLink !== "YES") {
-          transitPaidAreaIssues.push(
-            `${stopName} → STOP_ROLE=${role}, PAID_LINK=${paidLink || "(kosong)"}`
           );
         }
       }
@@ -11820,21 +12664,21 @@ function validateStopData() {
           field
       );
 
-  console.groupCollapsed(
+  debugGroup(
     "Validasi brt_stop.geojson · Pedoman BRT v2.0"
   );
 
-  console.log(
+  debugLog(
     "Jumlah feature point:",
     stopFeatures.length
   );
 
-  console.log(
+  debugLog(
     "Jumlah halte logis (COUNT DISTINCT STOP_ID):",
     logicalIds.size
   );
 
-  console.log(
+  debugLog(
     "Schema target BRT_Stop v2.0:",
     BRT_STOP_SCHEMA_V20_FIELDS
   );
@@ -11849,7 +12693,7 @@ function validateStopData() {
   }
   else {
     console.info(
-      "Schema BRT_Stop v2.0 lengkap: 28 field ditemukan."
+      "Schema BRT_Stop v2.0 lengkap: 31 field ditemukan."
     );
   }
 
@@ -11857,7 +12701,7 @@ function validateStopData() {
     featureSchemaGaps.length
   ) {
     console.info(
-      "Feature yang belum membawa seluruh 28 property v2.0:",
+      "Feature yang belum membawa seluruh 31 property v2.0:",
       featureSchemaGaps
     );
   }
@@ -11948,10 +12792,10 @@ function validateStopData() {
     );
   }
 
-  if (transitPaidAreaIssues.length) {
+  if (paidLinkSemanticIssues.length) {
     console.warn(
-      "STOP_ROLE Transit/Transit-Terminus belum konsisten dengan PAID_LINK=YES:",
-      transitPaidAreaIssues
+      "Konsistensi PAID_LINK dan LINK_TYPE perlu diperiksa:",
+      paidLinkSemanticIssues
     );
   }
 
@@ -12023,28 +12867,45 @@ function validateStopData() {
     );
   }
 
-  console.groupEnd();
+  debugGroupEnd();
 }
 
 /* =========================================================
-   MRT PILOT VALIDATION
+   RAIL DATA VALIDATION
    ========================================================= */
 
-function validateMrtData() {
+function validateRailData() {
   const routes = routeData?.features?.filter(
-    feature => getRouteMode(feature) === "MRT"
+    feature =>
+      String(feature?.properties?._DATASET ?? "").toUpperCase() === "RAIL"
   ) ?? [];
 
   const stops = stopData?.features?.filter(
-    feature => normalizeMode(feature?.properties?.MODE) === "MRT"
+    feature =>
+      String(feature?.properties?._DATASET ?? "").toUpperCase() === "RAIL"
   ) ?? [];
 
   if (!routes.length && !stops.length) {
     console.info(
-      "MRT pilot: mrt_route.geojson / mrt_stop.geojson belum dimuat. BRT tetap berjalan."
+      "RAIL: rail_route.geojson / rail_stop.geojson belum dimuat. BRT tetap berjalan."
     );
     return;
   }
+
+  const supportedModes = new Set([
+    "MRT",
+    "KRL",
+    "LRT"
+  ]);
+
+  const validStructures = new Set([
+    "ELEVATED",
+    "TRANSITION",
+    "UNDERGROUND",
+    "AT_GRADE",
+    "MIXED",
+    "UNKNOWN"
+  ]);
 
   const routeIssues = [];
   const geomIds = new Map();
@@ -12053,7 +12914,19 @@ function validateMrtData() {
     const p = feature?.properties ?? {};
     const routeId = getRouteId(feature);
     const geomId = cleanText(p.GEOM_ID);
+    const mode = normalizeMode(p.MODE);
     const structure = normalizeStructure(p.STRUCTURE);
+
+    if (!mode) {
+      routeIssues.push(
+        `${routeId || `route feature ${index + 1}`}: MODE kosong`
+      );
+    }
+    else if (!supportedModes.has(mode)) {
+      routeIssues.push(
+        `${routeId || `route feature ${index + 1}`}: MODE=${p.MODE} belum dikenali sebagai MRT/KRL/LRT`
+      );
+    }
 
     if (!routeId) {
       routeIssues.push(`route feature ${index + 1}: LINE_ID/ID kosong`);
@@ -12066,12 +12939,27 @@ function validateMrtData() {
       geomIds.set(geomId, (geomIds.get(geomId) ?? 0) + 1);
     }
 
-    if (!feature?.geometry || !["LineString", "MultiLineString"].includes(feature.geometry.type)) {
-      routeIssues.push(`${routeId || `feature ${index + 1}`}: geometri bukan LineString/MultiLineString`);
+    if (!cleanText(p.LINE_NAME ?? p.NAME ?? p.ROUTE_NAME)) {
+      routeIssues.push(`${routeId || `feature ${index + 1}`}: LINE_NAME kosong`);
     }
 
-    if (!["ELEVATED", "TRANSITION", "UNDERGROUND", "AT_GRADE", "MIXED", "UNKNOWN"].includes(structure)) {
-      routeIssues.push(`${routeId || `feature ${index + 1}`}: STRUCTURE=${p.STRUCTURE}`);
+    if (!cleanText(p.OPERATOR)) {
+      routeIssues.push(`${routeId || `feature ${index + 1}`}: OPERATOR kosong`);
+    }
+
+    if (
+      !feature?.geometry ||
+      !["LineString", "MultiLineString"].includes(feature.geometry.type)
+    ) {
+      routeIssues.push(
+        `${routeId || `feature ${index + 1}`}: geometri bukan LineString/MultiLineString`
+      );
+    }
+
+    if (!validStructures.has(structure)) {
+      routeIssues.push(
+        `${routeId || `feature ${index + 1}`}: STRUCTURE=${p.STRUCTURE}`
+      );
     }
   });
 
@@ -12090,7 +12978,19 @@ function validateMrtData() {
     const stopName = getStopDisplayName(feature) || `feature ${index + 1}`;
     const stopId = cleanText(p.STOP_ID);
     const geomId = cleanText(p.GEOM_ID);
+    const mode = normalizeMode(p.MODE);
     const routesForStop = getStopRoutes(feature);
+
+    if (!mode) {
+      stopIssues.push(`${stopName}: MODE kosong`);
+    }
+    else if (!supportedModes.has(mode)) {
+      stopIssues.push(`${stopName}: MODE=${p.MODE} belum dikenali sebagai MRT/KRL/LRT`);
+    }
+
+    if (!cleanText(p.OPERATOR)) {
+      stopIssues.push(`${stopName}: OPERATOR kosong`);
+    }
 
     if (!stopId) {
       stopIssues.push(`${stopName}: STOP_ID kosong`);
@@ -12112,8 +13012,19 @@ function validateMrtData() {
     }
 
     routesForStop.forEach(routeId => {
-      if (!getRouteById(routeId)) {
-        stopIssues.push(`${stopName}: lin ${routeId} tidak ditemukan di mrt_route`);
+      const targetRoute = getRouteById(routeId);
+
+      if (!targetRoute) {
+        stopIssues.push(
+          `${stopName}: lin ${routeId} tidak ditemukan di rail_route`
+        );
+      }
+      else if (
+        String(targetRoute?.properties?._DATASET ?? "").toUpperCase() !== "RAIL"
+      ) {
+        stopIssues.push(
+          `${stopName}: lin ${routeId} menunjuk dataset non-RAIL`
+        );
       }
 
       if (!getStopSequenceRaw(feature, routeId)) {
@@ -12234,36 +13145,54 @@ function validateMrtData() {
       stopIssues.push(`GEOM_ID stasiun duplikat: ${geomId} (${count})`)
     );
 
-  console.groupCollapsed("Validasi MRT pilot");
-  console.log("Segmen rute MRT:", routes.length);
-  console.log("Stasiun MRT:", stops.length);
-  console.log(
+  const routeCountByMode = routes.reduce((acc, feature) => {
+    const mode = getRouteMode(feature) || "UNKNOWN";
+    acc[mode] = (acc[mode] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const stopCountByMode = stops.reduce((acc, feature) => {
+    const mode = normalizeMode(feature?.properties?.MODE) || "UNKNOWN";
+    acc[mode] = (acc[mode] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  debugGroup("Validasi dataset RAIL");
+  debugLog("Segmen rail:", routes.length, routeCountByMode);
+  debugLog("Stasiun rail:", stops.length, stopCountByMode);
+  debugLog(
     "Struktur:",
-    Array.from(new Set(routes.map(feature => normalizeStructure(feature?.properties?.STRUCTURE))))
+    Array.from(
+      new Set(
+        routes.map(feature =>
+          normalizeStructure(feature?.properties?.STRUCTURE)
+        )
+      )
+    )
   );
 
   if (routeIssues.length) {
-    console.warn("Catatan mrt_route.geojson:", routeIssues);
+    console.warn("Catatan rail_route.geojson:", routeIssues);
   }
   else if (routes.length) {
-    console.info("mrt_route.geojson: struktur dasar valid.");
+    console.info("rail_route.geojson: struktur dasar valid.");
   }
 
   if (stopIssues.length) {
-    console.warn("Catatan mrt_stop.geojson:", stopIssues);
+    console.warn("Catatan rail_stop.geojson:", stopIssues);
   }
   else if (stops.length) {
-    console.info("mrt_stop.geojson: struktur dasar valid.");
+    console.info("rail_stop.geojson: struktur dasar valid.");
   }
 
   if (integrationIssues.length) {
-    console.warn("Catatan integrasi MRT:", integrationIssues);
+    console.warn("Catatan integrasi RAIL:", integrationIssues);
   }
   else if (stops.length) {
-    console.info("Integrasi MRT: tidak ada target kosong/rusak yang terdeteksi.");
+    console.info("Integrasi RAIL: tidak ada target kosong/rusak yang terdeteksi.");
   }
 
-  console.groupEnd();
+  debugGroupEnd();
 }
 
 
@@ -12373,7 +13302,7 @@ function getFilteredRoutes() {
   Existing
   - garis solid
 
-  Construction (non-BRT)
+  Construction status
   - garis utama solid
   - casing luar putus pendek sebagai penanda konstruksi
 
@@ -12425,6 +13354,13 @@ function getRouteStatusStyle(feature) {
         dashArray: "2 6",
         haloDashArray: "2 6",
         opacity: 0.78
+      };
+
+    case "Inactive":
+      return {
+        dashArray: null,
+        haloDashArray: null,
+        opacity: 0.42
       };
 
     case "Existing":
@@ -13371,10 +14307,10 @@ const ROUTE_PLAN_INFO = {
       "Manggarai – UI",
 
     rtrw:
-      "Manggarai – Universitas Indonesia (Elevated)",
+      "Manggarai – Universitas Indonesia (Layang)",
 
     note:
-      "RTRW Jakarta 2024–2044 mencantumkan Koridor 19 sebagai jaringan elevated."
+      "RTRW Jakarta 2024–2044 mencantumkan Koridor 19 sebagai jaringan layang."
   }
 
 };
@@ -15812,7 +16748,7 @@ function renderRouteInfo(feature) {
             </div>
 
             <div class="optional-stop-control-hint">
-              Mencakup status Usulan dan Konseptual.
+              Mencakup status Usulan dan Gagasan.
             </div>
           </div>
 
@@ -16365,7 +17301,7 @@ function getStopListVisibleRoutes(
   }
 
   /*
-    Saat rute aktif Rencana / Usulan / Konseptual:
+    Saat rute aktif Rencana / Usulan / Gagasan:
     semua koneksi tetap ditampilkan.
   */
   return allRoutes;
@@ -18500,6 +19436,7 @@ function switchRouteFromStopPopup(
   );
 }
 
+
 /*
   ==========================================================
   POPUP ROUTE BADGE — DELEGATED CLICK HANDLER
@@ -19183,7 +20120,7 @@ function buildStopSourceMetadataHTML(
           class="stop-source-summary-icon"
           aria-hidden="true"
         >
-          ↗
+          i
         </span>
 
         <span class="stop-source-summary-copy">
@@ -19227,6 +20164,7 @@ function buildStopSourceMetadataHTML(
     </details>
   `;
 }
+
 
 
 function buildStopPopup(feature, routeId) {
@@ -19687,6 +20625,11 @@ function buildStopPopup(feature, routeId) {
             </div>
           </div>
 
+          <div
+            class="stop-popup-integration-fade"
+            aria-hidden="true"
+          ></div>
+
         </div>
       `
       :
@@ -19775,6 +20718,7 @@ function buildStopPopup(feature, routeId) {
           data-stop-key="${escapeHTML(getStopKey(previousStop))}"
           data-route-id="${escapeHTML(routeId)}"
           title="Halte/stasiun sebelumnya: ${escapeHTML(previousName)}"
+          aria-label="Sebelumnya: ${escapeHTML(previousName)}"
         >
           <span class="stop-popup-nav-arrow" aria-hidden="true">‹</span>
           <span class="stop-popup-nav-text">
@@ -19795,6 +20739,7 @@ function buildStopPopup(feature, routeId) {
           data-stop-key="${escapeHTML(getStopKey(nextStop))}"
           data-route-id="${escapeHTML(routeId)}"
           title="Halte/stasiun berikutnya: ${escapeHTML(nextName)}"
+          aria-label="Berikutnya: ${escapeHTML(nextName)}"
         >
           <span class="stop-popup-nav-text">
             <span class="stop-popup-nav-label">Berikutnya</span>
@@ -21558,6 +22503,10 @@ function drawStops(routeId) {
               return;
             }
 
+            syncStopPopupIntegrationOverflow(
+              popupElement
+            );
+
           }
         );
 
@@ -21945,7 +22894,7 @@ function renderStopList(routeId) {
 
       /*
         Status Eksisting tidak perlu diulang di setiap baris.
-        Rencana / Usulan / Konseptual ditampilkan agar halte khusus langsung terbaca.
+        Rencana / Usulan / Gagasan ditampilkan agar halte khusus langsung terbaca.
       */
       if (
         getStopStatus(feature)
@@ -21984,7 +22933,11 @@ function renderStopList(routeId) {
           data-stop-logical-key="${escapeHTML(logicalKey)}"
           tabindex="0"
           role="button"
-          ${isNotServed ? 'aria-label="Buka informasi halte yang sementara tidak dilayani"' : ""}
+          aria-label="${escapeHTML(
+            isNotServed
+              ? `Buka informasi ${getStopDisplayName(feature)}; sementara tidak dilayani`
+              : `Pilih ${getStopDisplayName(feature)}`
+          )}"
         >
 
           <div class="stop-list-item-left">
@@ -22127,12 +23080,14 @@ function clearSelectedStop() {
     .querySelectorAll(
       ".stop-list-item"
     )
-    .forEach(
-      item =>
-        item.classList.remove(
-          "is-selected"
-        )
-    );
+    .forEach(item => {
+      item.classList.remove(
+        "is-selected"
+      );
+      item.removeAttribute(
+        "aria-current"
+      );
+    });
 }
 
 function selectStop(
@@ -22181,6 +23136,12 @@ function selectStop(
 
   currentSelectedRouteId =
     String(routeId);
+  marker.setPopupContent(
+    safeBuildStopPopup(
+      feature,
+      routeId
+    )
+  );
 
   /*
     Selected stop selalu tampil walaupun labelnya sebelumnya
@@ -22418,60 +23379,62 @@ function selectStop(
       )}
     </div>
 
-    <h3 class="selected-stop-title">
-      ${escapeHTML(getStopDisplayName(feature))}
-    </h3>
+    <div class="selected-stop-summary-line">
+      <h3 class="selected-stop-title">
+        ${escapeHTML(getStopDisplayName(feature))}
+      </h3>
 
-    <div class="selected-stop-meta">
-      <span class="selected-stop-status ${getStopStatusClass(feature)}">
-        ${escapeHTML(getStopStatusLabel(feature))}
-      </span>
+      <div class="selected-stop-meta">
+        <span class="selected-stop-status ${getStopStatusClass(feature)}">
+          ${escapeHTML(getStopStatusLabel(feature))}
+        </span>
 
-      ${
-        showSelectedRole
-          ? `
-            <span class="selected-stop-role ${getOperationalStopRoleClass(feature, routeId)}">
-              ${escapeHTML(role)}
-            </span>
-          `
-          : ""
-      }
+        ${
+          showSelectedRole
+            ? `
+              <span class="selected-stop-role ${getOperationalStopRoleClass(feature, routeId)}">
+                ${escapeHTML(role)}
+              </span>
+            `
+            : ""
+        }
 
-      ${
-        directionInfo?.isOneWay &&
-        !isStopTerminusForRoute(
-          feature,
-          routeId
-        )
-          ? `
-            <span class="selected-stop-direction-pill">
-              <span aria-hidden="true">${escapeHTML(directionInfo.symbol)}</span>
-              <span>${escapeHTML(directionInfo.detail || directionInfo.title)}</span>
-            </span>
-          `
-          : ""
-      }
+        ${
+          directionInfo?.isOneWay &&
+          !isStopTerminusForRoute(
+            feature,
+            routeId
+          )
+            ? `
+              <span class="selected-stop-direction-pill">
+                <span aria-hidden="true">${escapeHTML(directionInfo.symbol)}</span>
+                <span>${escapeHTML(directionInfo.detail || directionInfo.title)}</span>
+              </span>
+            `
+            : ""
+        }
 
-      ${
-        showSelectedActivity
-          ? `
-            <span class="selected-stop-meta-text">
-              ${escapeHTML(activityInfo.symbol)}
-              ${escapeHTML(activityInfo.title)}
-            </span>
-          `
-          : ""
-      }
+        ${
+          showSelectedActivity
+            ? `
+              <span class="selected-stop-meta-text">
+                ${escapeHTML(activityInfo.symbol)}
+                ${escapeHTML(activityInfo.title)}
+              </span>
+            `
+            : ""
+        }
 
-      ${
-        physicalCount > 1
-          ? `
-            <span class="selected-stop-meta-text">
-              ${escapeHTML(String(physicalCount))} lokasi fisik
-            </span>
-          `
-          : ""
-      }
+        ${
+          physicalCount > 1
+            ? `
+              <span class="selected-stop-meta-text">
+                ${escapeHTML(String(physicalCount))} lokasi fisik
+              </span>
+            `
+            : ""
+        }
+      </div>
     </div>
 
     ${selectedOperationalNotice}
@@ -22482,14 +23445,28 @@ function selectStop(
       ".stop-list-item"
     )
     .forEach(item => {
-      item.classList.toggle(
-        "is-selected",
+      const isSelected =
         (
           item.dataset.stopLogicalKey ||
           `STOP:${item.dataset.stopKey}`
         ) ===
-        getLogicalStopKey(feature)
+        getLogicalStopKey(feature);
+
+      item.classList.toggle(
+        "is-selected",
+        isSelected
       );
+
+      if (isSelected) {
+        item.setAttribute(
+          "aria-current",
+          "true"
+        );
+      } else {
+        item.removeAttribute(
+          "aria-current"
+        );
+      }
     });
 
   syncUrlState();
@@ -23385,11 +24362,11 @@ function showSingleRoute(
   }
 
   /*
-    Default visibilitas titik Usulan/Konseptual mengikuti
+    Default visibilitas titik Usulan/Gagasan mengikuti
     status rutenya.
 
     - Eksisting -> OFF
-    - Rencana / Usulan / Konseptual -> ON
+    - Rencana / Usulan / Gagasan -> ON
 
     Pemanggil khusus seperti hasil pencarian dapat memakai
     resetOptionalStops = false supaya kategori yang baru saja
@@ -24684,7 +25661,8 @@ async function fetchGeoJSON(
     const response = await fetch(
       path,
       {
-        cache: "no-store"
+        /* Revalidasi ETag tanpa memaksa unduh penuh setiap reload. */
+        cache: "no-cache"
       }
     );
 
@@ -24748,14 +25726,17 @@ async function loadData() {
 
     /*
       BRT wajib agar baseline tidak berubah.
-      MRT bersifat optional pilot: bila file belum diletakkan di
-      folder data, WebGIS tetap terbuka sebagai BRT-only.
+      RAIL bersifat optional: bila rail_route.geojson / rail_stop.geojson
+      belum diletakkan di folder data, WebGIS tetap terbuka sebagai BRT-only.
+
+      Semua MRT, KRL, dan LRT berada di dua file RAIL yang sama.
+      Script tidak perlu menambah request baru ketika moda/lin bertambah.
     */
     const [
       brtRouteRaw,
       brtStopRaw,
-      mrtRouteRaw,
-      mrtStopRaw
+      railRouteRaw,
+      railStopRaw
     ] = await Promise.all([
       fetchGeoJSON(
         "data/brt_route.geojson",
@@ -24774,18 +25755,18 @@ async function loadData() {
       ),
 
       fetchGeoJSON(
-        "data/mrt_route.geojson",
+        "data/rail_route.geojson",
         {
           required: false,
-          label: "mrt_route.geojson"
+          label: "rail_route.geojson"
         }
       ),
 
       fetchGeoJSON(
-        "data/mrt_stop.geojson",
+        "data/rail_stop.geojson",
         {
           required: false,
-          label: "mrt_stop.geojson"
+          label: "rail_stop.geojson"
         }
       )
     ]);
@@ -24808,32 +25789,32 @@ async function loadData() {
         }
       );
 
-    const mrtRoutes =
+    const railRoutes =
       adaptFeatureCollectionForRuntime(
-        mrtRouteRaw,
+        railRouteRaw,
         {
           type: "route",
-          datasetKey: "MRT"
+          datasetKey: "RAIL"
         }
       );
 
-    const mrtStops =
+    const railStops =
       adaptFeatureCollectionForRuntime(
-        mrtStopRaw,
+        railStopRaw,
         {
           type: "stop",
-          datasetKey: "MRT"
+          datasetKey: "RAIL"
         }
       );
 
     routeData = mergeFeatureCollections(
       brtRoutes,
-      mrtRoutes
+      railRoutes
     );
 
     stopData = mergeFeatureCollections(
       brtStops,
-      mrtStops
+      railStops
     );
 
     assignRuntimeStopKeys();
@@ -24847,7 +25828,7 @@ async function loadData() {
 
     validateRouteData();
     validateStopData();
-    validateMrtData();
+    validateRailData();
 
     modeSelect.value = "ALL";
     statusSelect.value = "Existing";
@@ -24855,15 +25836,6 @@ async function loadData() {
 
     applyUrlStateAfterDataLoad();
     updateScale();
-
-    /*
-      GPS mencoba aktif setelah load.
-      Browser tetap meminta izin user.
-    */
-    setTimeout(
-      () => startGps(false),
-      600
-    );
 
     setTimeout(
       () => map.invalidateSize(),
@@ -24882,19 +25854,19 @@ async function loadData() {
       250
     );
 
-    console.log(
+    debugLog(
       "Rute total:",
       routeData.features?.length ?? 0
     );
 
-    console.log(
+    debugLog(
       "Halte/stasiun total:",
       stopData.features?.length ?? 0
     );
 
-    console.log(
-      "MRT pilot:",
-      `${mrtRoutes.features.length} segmen · ${mrtStops.features.length} stasiun`
+    debugLog(
+      "RAIL:",
+      `${railRoutes.features.length} segmen · ${railStops.features.length} stasiun`
     );
   }
 

@@ -3,11 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://unpkg.com https://tile.openstreetmap.org https://server.arcgisonline.com; connect-src 'self' https://nominatim.openstreetmap.org; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+  />
+  <meta
+    name="description"
+    content="Peta interaktif jaringan BRT, MRT, LRT, dan KRL Jabodetabek untuk eksplorasi jaringan, halte/stasiun, serta integrasi antarmoda."
+  />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>Jaringan Transportasi Umum Jabodetabek</title>
 
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin="anonymous"
   />
 
   <!-- PT Sans hanya untuk badge nomor koridor -->
@@ -18,11 +29,15 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="css/style.css?v=20260902-rail-list-badge-fix-v47" />
+  <link rel="stylesheet" href="css/style.css?v=20260902-v0.13.10" />
 </head>
 
 <body>
-  <div id="map"></div>
+  <div
+    id="map"
+    role="application"
+    aria-label="Peta interaktif jaringan transportasi umum Jabodetabek"
+  ></div>
 
   <!-- Tombol panel rute khusus ponsel -->
   <button
@@ -69,7 +84,7 @@
             <option value="Construction" id="constructionStatusOption">Dalam Pembangunan</option>
             <option value="Planned">Rencana</option>
             <option value="Proposed">Usulan</option>
-            <option value="Conceptual">Konseptual</option>
+            <option value="Conceptual">Gagasan</option>
             <option value="Inactive">Nonaktif</option>
           </select>
         </div>
@@ -110,7 +125,7 @@
       </div>
 
       <div class="form-field poi-search-field">
-        <label for="poiSearchInput">Cari Tempat / POI</label>
+        <label for="poiSearchInput">Cari Tempat</label>
 
         <div class="poi-search-input-wrap">
           <input
@@ -119,7 +134,7 @@
             placeholder="Cari tempat, gedung, kawasan…"
             autocomplete="off"
             spellcheck="false"
-            aria-label="Cari tempat atau POI"
+            aria-label="Cari tempat"
             aria-controls="poiSearchResults"
             aria-expanded="false"
           />
@@ -132,18 +147,26 @@
             title="Hapus pencarian"
             hidden
           >×</button>
+
+          <button
+            type="button"
+            class="poi-search-submit"
+            id="poiSearchSubmit"
+            aria-label="Cari tempat"
+            title="Cari tempat"
+          >Cari</button>
         </div>
 
         <div
           class="poi-search-results"
           id="poiSearchResults"
           role="listbox"
-          aria-label="Hasil pencarian tempat atau POI"
+          aria-label="Hasil pencarian tempat"
           hidden
         ></div>
 
         <div class="poi-search-attribution">
-          Pencarian tempat menggunakan OpenStreetMap Nominatim.
+          Tekan Enter atau Cari · OpenStreetMap Nominatim.
         </div>
       </div>
 
@@ -290,14 +313,14 @@
       aria-label="Buka pilihan peta dasar"
     >
       <img id="currentBasemapThumb" class="toolbar-thumbnail" alt="Peta dasar" />
-      <span class="mobile-toolbar-label">Basemap</span>
+      <span class="mobile-toolbar-label">Peta Dasar</span>
     </button>
 
     <button
       type="button"
       class="toolbar-button info-button"
       id="infoButton"
-      title="Informasi dan Disclaimer"
+      title="Informasi dan Catatan"
       aria-label="Buka informasi dan disclaimer"
     >
       <svg viewBox="0 0 24 24" class="toolbar-icon" aria-hidden="true">
@@ -328,7 +351,7 @@
 
     <button
       type="button"
-      class="toolbar-button gps-button is-pending"
+      class="toolbar-button gps-button"
       id="gpsButton"
       title="Lokasi saya"
       aria-label="Tampilkan lokasi saya"
@@ -407,7 +430,7 @@
     <header class="right-info-header">
       <div class="right-info-heading">
         <h1>Jaringan Transportasi Umum Jabodetabek</h1>
-        <p>Eksisting · Dalam Pembangunan · Rencana · Usulan · Konseptual</p>
+        <p>Eksisting · Dalam Pembangunan · Rencana · Usulan · Gagasan</p>
       </div>
 
       <button
@@ -500,11 +523,24 @@
                   stroke-dasharray="2 6"
                 />
               </svg>
-              <span>Konseptual</span>
+              <span>Gagasan</span>
+            </div>
+
+            <div class="legend-item">
+              <svg class="legend-route-swatch is-inactive" viewBox="0 0 54 10" aria-hidden="true">
+                <line
+                  x1="2" y1="5" x2="52" y2="5"
+                  stroke="currentColor"
+                  stroke-width="4"
+                  stroke-linecap="round"
+                  opacity="0.42"
+                />
+              </svg>
+              <span>Nonaktif</span>
             </div>
 
             <p class="legend-note">
-              Warna garis mengikuti identitas masing-masing lin atau koridor. Status Dalam Pembangunan digunakan untuk moda non-BRT.
+              Warna garis mengikuti identitas masing-masing lin atau koridor. Status Dalam Pembangunan menunjukkan jaringan yang telah memasuki tahap konstruksi fisik dan belum beroperasi; jaringan Nonaktif ditampilkan lebih redup.
             </p>
           </div>
         </details>
@@ -525,7 +561,7 @@
               <svg class="legend-route-swatch" viewBox="0 0 54 10" aria-hidden="true">
                 <line x1="2" y1="5" x2="52" y2="5" stroke="#ca2047" stroke-width="4" stroke-linecap="round" />
               </svg>
-              <span>Elevated</span>
+              <span>Layang</span>
             </div>
 
             <div class="legend-item">
@@ -545,7 +581,7 @@
             </div>
 
             <p class="legend-note">
-              Pola struktur hanya melengkapi garis status; warna tetap mengikuti identitas lin.
+              Pola struktur hanya melengkapi garis status; warna tetap mengikuti identitas lin. Struktur ditampilkan jika informasi tersedia.
             </p>
           </div>
         </details>
@@ -607,22 +643,22 @@
             <div class="legend-mode-grid">
               <div class="legend-mode-item">
                 <span class="legend-mode-code">BRT</span>
-                <span>Bus Rapid Transit</span>
+                <span>Bus koridor</span>
               </div>
 
               <div class="legend-mode-item">
                 <span class="legend-mode-code">MRT</span>
-                <span>Mass Rapid Transit</span>
+                <span>Moda Raya Terpadu</span>
               </div>
 
               <div class="legend-mode-item">
                 <span class="legend-mode-code">LRT</span>
-                <span>Light Rail Transit</span>
+                <span>Lintas Rel Terpadu</span>
               </div>
 
               <div class="legend-mode-item">
                 <span class="legend-mode-code">KRL</span>
-                <span>Commuter Rail</span>
+                <span>Kereta Rel Listrik</span>
               </div>
             </div>
           </div>
@@ -645,7 +681,7 @@
           id="rightInfoAboutButton"
         >
           <span class="right-info-action-icon" aria-hidden="true">ⓘ</span>
-          <span>Informasi &amp; Disclaimer</span>
+          <span>Informasi &amp; Catatan</span>
         </button>
       </section>
     </div>
@@ -685,7 +721,7 @@
       <input
         type="search"
         id="globalSearchInput"
-        placeholder="Halte, stasiun, koridor, atau tempat…"
+        placeholder="Halte, stasiun, koridor, tempat…"
         autocomplete="off"
         spellcheck="false"
         aria-label="Cari halte, stasiun, koridor, atau tempat"
@@ -701,6 +737,14 @@
         title="Hapus pencarian"
         hidden
       >×</button>
+
+      <button
+        type="button"
+        class="global-search-submit"
+        id="globalSearchSubmit"
+        aria-label="Cari tempat secara daring"
+        title="Cari tempat secara daring"
+      >Cari</button>
     </div>
 
     <div
@@ -712,14 +756,14 @@
     ></div>
 
     <div class="global-search-source">
-      Rute dan halte/stasiun dari data WebGIS · tempat dari OpenStreetMap
+      Rute dan halte/stasiun dicari langsung · tekan Enter/Cari untuk tempat dari OpenStreetMap
     </div>
   </section>
 
   <!-- Basemap panel -->
   <section class="basemap-panel" id="basemapPanel" hidden>
     <div class="basemap-header">
-      <h2>Pilih Basemap</h2>
+      <h2>Pilih Peta Dasar</h2>
       <button
         type="button"
         class="basemap-close"
@@ -731,16 +775,16 @@
     <div
       class="basemap-carousel"
       id="basemapCarousel"
-      aria-label="Pilihan basemap"
+      aria-label="Pilihan peta dasar"
     >
       <button
         type="button"
         class="basemap-option active"
         data-basemap="light"
-        title="Light"
+        title="Terang"
       >
         <div class="basemap-preview-map" id="previewLight"></div>
-        <span class="basemap-option-label">Light</span>
+        <span class="basemap-option-label">Terang</span>
       </button>
 
       <button
@@ -756,15 +800,15 @@
         type="button"
         class="basemap-option"
         data-basemap="satellite"
-        title="Satellite"
+        title="Satelit"
       >
         <div class="basemap-preview-map" id="previewSatellite"></div>
-        <span class="basemap-option-label">Satellite</span>
+        <span class="basemap-option-label">Satelit</span>
       </button>
     </div>
 
     <div class="basemap-opacity-row">
-      <span>Opacity</span>
+      <span>Kejelasan peta dasar</span>
 
       <div class="opacity-grid">
         <button type="button" data-opacity="25">25%</button>
@@ -775,7 +819,7 @@
     </div>
   </section>
 
-  <!-- Informasi / Disclaimer -->
+  <!-- Informasi / Catatan -->
   <div
     class="info-modal-backdrop"
     id="infoModalBackdrop"
@@ -807,12 +851,13 @@
         <p>
           WebGIS jaringan transportasi umum Jabodetabek yang menampilkan
           jaringan <strong>Eksisting</strong>, <strong>Dalam Pembangunan</strong>,
-          <strong>Rencana</strong>, <strong>Usulan</strong>, dan <strong>Konseptual</strong>.
+          <strong>Rencana</strong>, <strong>Usulan</strong>, <strong>Gagasan</strong>,
+          dan <strong>Nonaktif</strong>.
         </p>
 
         <div class="info-release-meta" aria-label="Informasi versi dan pembaruan WebGIS">
           <span class="info-release-meta-label">Versi WebGIS</span>
-          <strong>v0.11</strong>
+          <strong>v0.13.10</strong>
           <span>·</span>
           <span class="info-release-meta-label">Pembaruan terakhir</span>
           <strong>2 September 2026</strong>
@@ -824,24 +869,29 @@
           </p>
 
           <p>
-            <strong>Dalam Pembangunan</strong> — jaringan moda non-BRT yang
-            telah memasuki tahap konstruksi fisik dan belum beroperasi.
+            <strong>Dalam Pembangunan</strong> — jaringan moda yang telah
+            memasuki tahap konstruksi fisik dan belum beroperasi.
           </p>
 
           <p>
-            <strong>Rencana</strong> — jaringan yang tercantum dalam rencana,
-            kebijakan, atau program/proyek resmi.
+            <strong>Rencana</strong> — jaringan yang tercantum dalam rencana atau
+            program/proyek resmi.
           </p>
 
           <p>
-            <strong>Usulan</strong> — proposal atau skenario dari studi atau
+            <strong>Usulan</strong> — usulan atau skenario dari studi atau
             institusi, termasuk usulan reaktivasi halte/stasiun.
           </p>
 
           <p>
-            <strong>Konseptual</strong> — skenario pengembangan yang disusun
-            untuk WebGIS dan bukan rencana resmi pemerintah atau operator
-            transportasi.
+            <strong>Gagasan</strong> — ide pengembangan jaringan yang disusun
+            untuk eksplorasi dalam WebGIS dan bukan merupakan rencana resmi
+            pemerintah atau operator transportasi.
+          </p>
+
+          <p>
+            <strong>Nonaktif</strong> — jaringan atau layanan yang tidak lagi
+            beroperasi, tetapi tetap disimpan sebagai informasi jaringan.
           </p>
         </div>
 
@@ -928,6 +978,46 @@
           </div>
         </details>
 
+        <details class="info-privacy-details info-accordion-details">
+          <summary>Privasi &amp; layanan pihak ketiga</summary>
+
+          <div class="info-privacy-body">
+            <p>
+              WebGIS ini tidak memerlukan akun dan tidak menyimpan riwayat
+              lokasi pengguna pada server pengelola WebGIS. Preferensi
+              antarmuka tertentu hanya disimpan secara lokal di browser.
+            </p>
+
+            <ul>
+              <li>
+                Pencarian tempat baru dikirim ke
+                <strong>OpenStreetMap Nominatim</strong> setelah pengguna
+                menekan Enter atau tombol Cari. Teks pencarian, alamat IP,
+                dan referer dapat diproses oleh penyedia layanan tersebut.
+              </li>
+              <li>
+                Lokasi perangkat hanya diminta setelah pengguna menekan
+                tombol <strong>Lokasi Saya</strong> dan memberikan izin melalui
+                browser. Koordinat lokasi tidak dikirim ke pengelola WebGIS.
+              </li>
+              <li>
+                Peta dasar, font, dan pustaka antarmuka dapat dimuat dari
+                OpenStreetMap, Esri, Google Fonts, dan unpkg serta tunduk pada
+                kebijakan masing-masing.
+              </li>
+            </ul>
+
+            <p>
+              Kebijakan terkait dapat dibaca pada
+              <a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noopener noreferrer">Kebijakan Nominatim</a>,
+              <a href="https://operations.osmfoundation.org/policies/tiles/" target="_blank" rel="noopener noreferrer">Kebijakan Tile OSM</a>, dan
+              <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener noreferrer">Kebijakan Privasi OSMF</a>.
+              Masalah teknis atau permintaan penghapusan dapat disampaikan melalui
+              <a href="https://github.com/itskindamia/webgis-transportasi-jabodetabek/issues" target="_blank" rel="noopener noreferrer">repositori proyek</a>.
+            </p>
+          </div>
+        </details>
+
         <details class="info-methodology-details">
           <summary>Metodologi &amp; struktur informasi</summary>
 
@@ -941,9 +1031,10 @@
 
             <ul>
               <li>
-                <strong>Eksisting/Dalam Pembangunan/Rencana/Usulan/Konseptual</strong>
+                <strong>Eksisting/Dalam Pembangunan/Rencana/Usulan/Gagasan/Nonaktif</strong>
                 menunjukkan tingkat status jaringan. Status Dalam Pembangunan
-                digunakan untuk moda non-BRT.
+                digunakan untuk jaringan yang telah memasuki tahap konstruksi fisik
+                dan belum beroperasi.
               </li>
               <li>
                 <strong>Pengalihan sementara</strong> menunjukkan kondisi
@@ -973,18 +1064,163 @@
           <div class="info-changelog-body">
             <div class="info-changelog-entry">
               <strong>
+                <span class="info-changelog-version">v0.13.10</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Penyederhanaan nomenklatur status: label Konseptual diganti menjadi
+                Gagasan agar lebih mudah dipahami pengguna umum. Nilai internal
+                Conceptual dan data lama tetap didukung untuk kompatibilitas.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.13.9</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Penyempurnaan nomenklatur status jaringan: definisi Dalam Pembangunan
+                kini dijelaskan berdasarkan tahap konstruksi fisik dan tidak lagi
+                dikaitkan dengan kelompok moda tertentu.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.13.8</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Perbaikan visual pada panel Informasi & Catatan: garis/border atas
+                kartu Kredit Aset Visual dipulihkan agar konsisten dengan accordion
+                Privasi, Metodologi, dan Riwayat pembaruan.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.13.7</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Hardening rilis: dokumentasi QA dipindahkan ke folder docs agar
+                root proyek lebih bersih, keluaran debug rutin dinonaktifkan pada
+                mode produksi, dan audit rilis diperketat tanpa mengubah tampilan,
+                data, integrasi, atau logika navigasi.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.13.6</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Stabilisasi antarmuka: placeholder pencarian dipersingkat agar
+                tidak terpotong pada panel kanan, state halte terpilih diperjelas
+                untuk pembaca layar, dan fokus keyboard pada daftar halte serta
+                tombol popup diperkuat tanpa mengubah data atau urutan navigasi.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.13.5</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Polishing antarmuka: kartu Sumber Data pada popup dibuat setara
+                dengan Google Maps, label Sebelumnya/Berikutnya diperjelas,
+                microcopy popup ditingkatkan keterbacaannya, dan kartu Halte
+                Terpilih dipadatkan agar daftar halte mendapat ruang lebih besar.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.13.4</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Penyempurnaan popup halte/stasiun: navigasi tunggal pada terminus
+                kini memenuhi lebar footer, kartu sumber dipadatkan, dan daftar
+                integrasi memberi indikator scroll halus hanya ketika kontennya
+                benar-benar melebihi ruang tersedia. Audit urutan navigasi BRT
+                juga ditambahkan ke paket pengujian.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.13.3</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Penghapusan fitur Radius Jangkauan 400/600/800 m dari popup dan
+                peta agar antarmuka kembali fokus pada jaringan, pelayanan, dan
+                integrasi antarmoda. Tata letak popup juga diperkuat agar footer
+                Sebelumnya/Berikutnya tetap berada di dalam kartu pada layar pendek.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.13.2</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Penghapusan fitur Jangkauan Jalan Kaki eksperimental beserta
+                koneksi layanan Valhalla karena layanan demo tidak cukup stabil
+                untuk penggunaan publik. Radius Jangkauan geometris 400, 600,
+                dan 800 m tetap tersedia.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.13.1</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Penyesuaian kepatuhan layanan pihak ketiga: pencarian tempat
+                hanya setelah tindakan eksplisit pengguna, pembatasan dan
+                cache request Nominatim, akses lokasi hanya setelah tombol
+                Lokasi Saya ditekan, atribusi peta yang selalu terlihat,
+                perbaikan cache versi, aset, CSS, schema, dan sequence data.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.12</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Penambahan Radius Jangkauan halte/stasiun 400 m, 600 m, dan
+                800 m dengan pilihan tampilan seluruh radius; radius mengikuti
+                titik terpilih dan menyesuaikan tampilan peta secara halus;
+                penyempurnaan nama rute dengan relasi efektif menurut bagian
+                jaringan yang terlihat; nama halte/stasiun pada peta yang dapat
+                diklik; penyempurnaan tutorial pemilihan titik dari peta maupun
+                daftar; serta penyelarasan istilah antarmuka ke bahasa Indonesia.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>
                 <span class="info-changelog-version">v0.11</span>
                 <span class="info-changelog-date">2 September 2026</span>
               </strong>
               <span>
                 Penambahan MRT Jakarta (Lin Utara - Selatan) sebagai moda baru;
-                dukungan struktur jalur elevated, transisi, dan bawah tanah;
-                integrasi multimoda BRT–MRT berbasis target halte/stasiun;
-                popup dan navigasi integrasi dengan perpindahan peta secara halus;
+                dukungan struktur jalur layang, transisi, dan bawah tanah;
+                integrasi multimoda BRT–MRT berbasis halte/stasiun tujuan;
+                jendela informasi dan navigasi integrasi dengan perpindahan peta secara halus;
                 label seluruh stasiun pada lin terpilih; lin/rute yang dapat diklik;
                 penyempurnaan logo lin, perhitungan panjang, dan daftar stasiun yang
-                lebih compact; serta penambahan status Dalam Pembangunan untuk
-                moda non-BRT.
+                lebih ringkas; serta penambahan status Dalam Pembangunan untuk
+                jaringan yang telah memasuki tahap konstruksi fisik.
               </span>
             </div>
 
@@ -994,8 +1230,8 @@
                 <span class="info-changelog-date">2 September 2026</span>
               </strong>
               <span>
-                Penambahan toggle arah perjalanan lintas koridor; penyempurnaan urutan halte
-                dua arah; popup dan integrasi yang lebih ringkas; penyelarasan badge koridor;
+                Penambahan tombol arah perjalanan lintas koridor; penyempurnaan urutan halte
+                dua arah; jendela informasi dan integrasi yang lebih ringkas; penyelarasan ikon koridor;
                 perbaikan tutorial; serta penyempurnaan antarmuka desktop dan struktur informasi.
               </span>
             </div>
@@ -1007,12 +1243,12 @@
               </strong>
               <span>
                 Penyempurnaan pengalihan Koridor 2, 3, dan 8; halte terpisah;
-                badge kondisi operasional; popup integrasi; tutorial;
-                ringkasan rute; shareable URL; status integrasi;
-                metadata sumber/dasar data; pencarian POI langsung ke lokasi;
-                recenter kontekstual; perbandingan dua rute dengan
-                kontrol pembanding ringkas; decluttering label halte adaptif;
-                lifecycle marker POI; compact polish desktop untuk browser zoom 100%; dukungan schema BRT v2.0 (GEOM_ID fisik, STOP_VAR, paid-area, diversion berbasis data, lokasi Google Maps, metadata sumber halte, dan validasi schema final BRT_Stop 28 field); dan penyempurnaan antarmuka desktop.
+                penanda kondisi operasional; jendela informasi integrasi; tutorial;
+                ringkasan rute; tautan yang dapat dibagikan; status integrasi;
+                metadata sumber/dasar data; pencarian tempat langsung ke lokasi;
+                pemusatan ulang kontekstual; perbandingan dua rute dengan
+                kontrol pembanding ringkas; pengurangan tumpang tindih label halte secara adaptif;
+                pengelolaan penanda tempat; penyempurnaan tampilan desktop pada pembesaran browser 100%; dukungan skema BRT v2.0 (GEOM_ID fisik, STOP_VAR, area berbayar, pengalihan berbasis data, lokasi Google Maps, metadata sumber halte, dan validasi skema BRT_Stop); dan penyempurnaan antarmuka desktop.
               </span>
             </div>
 
@@ -1046,7 +1282,7 @@
               <div class="info-guide-number">2</div>
               <div>
                 <strong>Pilih halte atau stasiun</strong>
-                <span>Klik titik di peta atau nama pada daftar untuk melihat detail.</span>
+                <span>Klik titik atau nama halte/stasiun di peta maupun daftar untuk melihat detail.</span>
               </div>
             </div>
 
@@ -1054,7 +1290,7 @@
               <div class="info-guide-number">3</div>
               <div>
                 <strong>Berpindah rute</strong>
-                <span>Klik badge nomor koridor/lin di popup untuk membuka rute tersebut.</span>
+                <span>Klik ikon nomor koridor/lin di jendela informasi untuk membuka rute tersebut.</span>
               </div>
             </div>
 
@@ -1214,8 +1450,12 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/map.js?v=20260902-rail-list-badge-fix-v47"></script>
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin="anonymous"
+  ></script>
+  <script src="js/map.js?v=20260902-v0.13.10"></script>
 
 </body>
 </html>
