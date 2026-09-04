@@ -29,7 +29,7 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="css/style.css?v=20260902-v0.13.10" />
+  <link rel="stylesheet" href="css/style.css?v=20260903-v0.13.25" />
 </head>
 
 <body>
@@ -430,7 +430,6 @@
     <header class="right-info-header">
       <div class="right-info-heading">
         <h1>Jaringan Transportasi Umum Jabodetabek</h1>
-        <p>Eksisting · Dalam Pembangunan · Rencana · Usulan · Gagasan</p>
       </div>
 
       <button
@@ -755,9 +754,6 @@
       hidden
     ></div>
 
-    <div class="global-search-source">
-      Rute dan halte/stasiun dicari langsung · tekan Enter/Cari untuk tempat dari OpenStreetMap
-    </div>
   </section>
 
   <!-- Basemap panel -->
@@ -857,10 +853,10 @@
 
         <div class="info-release-meta" aria-label="Informasi versi dan pembaruan WebGIS">
           <span class="info-release-meta-label">Versi WebGIS</span>
-          <strong>v0.13.10</strong>
+          <strong>v0.13.25</strong>
           <span>·</span>
           <span class="info-release-meta-label">Pembaruan terakhir</span>
-          <strong>2 September 2026</strong>
+          <strong>3 September 2026</strong>
         </div>
 
         <div class="info-modal-notice info-status-notice">
@@ -1062,6 +1058,41 @@
           <summary>Riwayat pembaruan</summary>
 
           <div class="info-changelog-body">
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.13.25</span>
+                <span class="info-changelog-date">3 September 2026</span>
+              </strong>
+              <span>
+                Penyempurnaan badge identitas rute pada panel kiri: angka koridor BRT
+                dua digit diperkecil agar proporsinya seimbang dengan badge satu digit.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.13.12</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Koreksi isolasi status operasional antar moda: fallback pengalihan
+                BRT tidak lagi diterapkan ke stasiun rail yang kebetulan memiliki
+                nama sama dengan halte BRT.
+              </span>
+            </div>
+
+            <div class="info-changelog-entry">
+              <strong>
+                <span class="info-changelog-version">v0.13.11</span>
+                <span class="info-changelog-date">2 September 2026</span>
+              </strong>
+              <span>
+                Finalisasi baseline desktop: tata letak desktop dibekukan setelah
+                audit panel, popup, pencarian, legenda, modal informasi, dan navigasi
+                halte/stasiun. Tidak ada perubahan data atau logika jaringan.
+              </span>
+            </div>
+
             <div class="info-changelog-entry">
               <strong>
                 <span class="info-changelog-version">v0.13.10</span>
@@ -1281,13 +1312,21 @@
             <div class="info-guide-item">
               <div class="info-guide-number">2</div>
               <div>
-                <strong>Pilih halte atau stasiun</strong>
-                <span>Klik titik atau nama halte/stasiun di peta maupun daftar untuk melihat detail.</span>
+                <strong>Klik halte atau stasiun</strong>
+                <span>Klik titik halte/stasiun di peta untuk melihat detail.</span>
               </div>
             </div>
 
             <div class="info-guide-item">
               <div class="info-guide-number">3</div>
+              <div>
+                <strong>Pilih dari daftar</strong>
+                <span>Kamu juga bisa klik nama halte/stasiun pada daftar di panel kiri.</span>
+              </div>
+            </div>
+
+            <div class="info-guide-item">
+              <div class="info-guide-number">4</div>
               <div>
                 <strong>Berpindah rute</strong>
                 <span>Klik ikon nomor koridor/lin di jendela informasi untuk membuka rute tersebut.</span>
@@ -1295,7 +1334,7 @@
             </div>
 
             <div class="info-guide-item">
-              <div class="info-guide-number">4</div>
+              <div class="info-guide-number">5</div>
               <div>
                 <strong>Cari tujuan</strong>
                 <span>Gunakan Cari Lokasi untuk menemukan halte, stasiun, atau tempat.</span>
@@ -1338,7 +1377,7 @@
       aria-labelledby="productTourTitle"
     >
       <div class="product-tour-progress" id="productTourProgress">
-        TIP 1 DARI 4
+        TIP 1 DARI 5
       </div>
 
       <h2 id="productTourTitle">Pilih jaringan</h2>
@@ -1455,7 +1494,7 @@
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin="anonymous"
   ></script>
-  <script src="js/map.js?v=20260902-v0.13.10"></script>
+  <script src="js/map.js?v=20260903-v0.13.25"></script>
 
 </body>
 </html>

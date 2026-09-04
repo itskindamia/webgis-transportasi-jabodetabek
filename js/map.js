@@ -1861,13 +1861,21 @@ function mergeFeatureCollections(...collections) {
 }
 
 /*
-  STOP_ROLE rail sepenuhnya attribute-driven.
+  STOP_ROLE rail memakai dua lapis informasi:
 
-  Penting untuk dataset parsial/testing:
-  sequence terbesar yang sedang tersedia TIDAK boleh otomatis
-  dianggap terminus. Karena itu tidak ada inferensi endpoint rail
-  pada runtime. Bila suatu stasiun merupakan terminus, isi
-  STOP_ROLE = Terminus / Transit-Terminus pada GeoJSON.
+  1. atribut STOP_ROLE tetap menjadi role dasar stasiun;
+  2. role Terminus dihitung ulang secara KONTEKSTUAL dari stasiun
+     pertama/terakhir yang sedang terlihat untuk lin dan filter
+     status aktif.
+
+  Dengan demikian satu stasiun dapat berubah peran tanpa mengubah
+  GeoJSON. Contoh MRT_NS:
+    - filter Eksisting  -> Lebak Bulus + Bundaran HI = Terminus;
+    - Semua Status     -> Lebak Bulus + Kota = Terminus.
+
+  Fungsi ini sengaja tidak memutasi GeoJSON. Penentuan endpoint
+  dilakukan saat getStopRoleForRoute() dipanggil agar selalu mengikuti
+  filter yang sedang aktif.
 */
 function applyRailStopRolePolicy() {
   return;
@@ -2537,8 +2545,124 @@ function getRouteTitle(feature) {
   return mode || "Lin";
 }
 
-function getRouteOptionText(feature) {
+function getRouteSystemName(feature) {
+  if (!feature) {
+    return "";
+  }
+
+  const mode = getRouteMode(feature);
+
+  if (mode === "BRT") {
+    return "";
+  }
+
+  return cleanText(
+    feature?.properties?.OPERATOR
+  );
+}
+
+
+function getRailLineBaseName(feature) {
+  if (!feature) {
+    return "";
+  }
+
+  const mode = getRouteMode(feature);
+  const operator = getRouteSystemName(feature);
+  let name = normalizeRouteNameForDisplay(
+    getRouteDisplayName(feature)
+  );
+
+  if (mode === "BRT") {
+    return name;
+  }
+
+  /*
+    LINE_NAME lama kadang sudah memuat nama operator/sistem,
+    misalnya "MRT Jakarta Lin Utara - Selatan". Pada UI rail,
+    operator ditampilkan sebagai tingkat hierarki tersendiri,
+    sehingga prefix tersebut dihilangkan dari nama lin agar
+    tidak terbaca dua kali.
+  */
+  if (operator && name) {
+    const lowerName = name.toLocaleLowerCase("id");
+    const lowerOperator = operator.toLocaleLowerCase("id");
+
+    if (lowerName.startsWith(`${lowerOperator} `)) {
+      name = name.slice(operator.length).trim();
+    }
+  }
+
+  return cleanText(name);
+}
+
+
+function getRailLineTitle(feature) {
+  if (!feature) {
+    return "";
+  }
+
+  if (getRouteMode(feature) === "BRT") {
+    return getRouteTitle(feature);
+  }
+
+  const baseName = getRailLineBaseName(feature);
+  const relation = getEffectiveRouteRelation(feature);
+
+  if (baseName && relation) {
+    return `${baseName} (${relation})`;
+  }
+
+  if (baseName) {
+    return baseName;
+  }
+
+  if (relation) {
+    return relation;
+  }
+
   return getRouteTitle(feature);
+}
+
+
+function getRouteHeadingParts(feature) {
+  if (!feature) {
+    return {
+      systemName: "",
+      lineName: "",
+      relation: "",
+      badgeHTML: ""
+    };
+  }
+
+  const mode = getRouteMode(feature);
+  const routeId = getRouteId(feature);
+  const p = feature?.properties ?? {};
+
+  if (mode === "BRT") {
+    const lineNumber = cleanText(p.LINE) || routeNumberFromId(routeId);
+
+    return {
+      systemName: cleanText(p.OPERATOR) || "TransJakarta",
+      lineName: lineNumber ? `Koridor ${lineNumber}` : "Koridor",
+      relation: normalizeRouteNameForDisplay(getRouteDisplayName(feature)),
+      badgeHTML: buildBrtBadge(routeId)
+    };
+  }
+
+  return {
+    systemName: getRouteSystemName(feature),
+    lineName: getRailLineBaseName(feature) || getRouteTitle(feature),
+    relation: getEffectiveRouteRelation(feature),
+    badgeHTML: buildLineBadge(routeId)
+  };
+}
+
+
+function getRouteOptionText(feature) {
+  return getRouteMode(feature) === "BRT"
+    ? getRouteTitle(feature)
+    : getRailLineTitle(feature);
 }
 
 
@@ -5873,7 +5997,7 @@ function isStopTerminusForRoute(
 }
 
 
-function getStopRoleForRoute(
+function getAttributedStopRoleForRoute(
   feature,
   routeId
 ) {
@@ -5906,9 +6030,6 @@ function getStopRoleForRoute(
   /*
     Fallback sementara untuk GeoJSON lama yang masih berisi
     satu nilai sederhana seperti "Transit" atau "Terminus".
-
-    Begitu seluruh STOP_ROLE sudah dikonversi ke format map,
-    fallback ini tidak lagi diperlukan tetapi aman dibiarkan.
   */
   const legacyRole =
     cleanText(
@@ -5926,6 +6047,224 @@ function getStopRoleForRoute(
   }
 
   return "";
+}
+
+
+function isContextualRailRoute(routeId) {
+  const route =
+    getRouteById(routeId)
+    ||
+    getRouteFeaturesById(routeId)[0];
+
+  const mode =
+    normalizeMode(
+      route?.properties?.MODE
+    );
+
+  return [
+    "MRT",
+    "LRT",
+    "KRL",
+    "RAIL",
+    "KA_BANDARA",
+    "AIRPORT_RAIL"
+  ].includes(mode);
+}
+
+
+function getContextualRailVisibleLogicalKeys(routeId) {
+  const route =
+    getRouteById(routeId)
+    ||
+    getRouteFeaturesById(routeId)[0];
+
+  const routeMode =
+    normalizeMode(
+      route?.properties?.MODE
+    );
+
+  const selectedStatus =
+    normalizeStatus(
+      statusSelect?.value || "ALL"
+    );
+
+  const seen = new Set();
+  const logicalKeys = [];
+
+  /*
+    Jalur rail tidak membutuhkan logika arah BRT untuk menentukan
+    endpoint. Filter dibuat langsung dari status + sequence sehingga
+    penentuan Terminus tidak dapat berputar kembali ke STOP_ROLE.
+  */
+  getStopsForRoute(routeId)
+    .filter(feature => {
+      if (
+        isTemporaryStopFeature(feature) &&
+        !isTemporaryStopActiveForRoute(
+          feature,
+          routeId
+        )
+      ) {
+        return false;
+      }
+
+      if (
+        isProposedStop(feature) &&
+        !showProposedStops
+      ) {
+        return false;
+      }
+
+      if (
+        isConceptualStop(feature) &&
+        !showConceptualStops
+      ) {
+        return false;
+      }
+
+      const stopStatus =
+        normalizeStatus(
+          feature?.properties?.STATUS
+        );
+
+      if (
+        selectedStatus !== "ALL" &&
+        stopStatus !== selectedStatus
+      ) {
+        return false;
+      }
+
+      if (
+        stopStatus === "Construction" &&
+        !isConstructionStatusAllowedForMode(
+          routeMode
+        )
+      ) {
+        return false;
+      }
+
+      return true;
+    })
+    .forEach(feature => {
+      const key =
+        getLogicalStopKey(feature);
+
+      if (!key || seen.has(key)) {
+        return;
+      }
+
+      seen.add(key);
+      logicalKeys.push(key);
+    });
+
+  return logicalKeys;
+}
+
+
+function getContextualRailStopRole(
+  feature,
+  routeId,
+  attributedRole = ""
+) {
+  const baseRole =
+    normalizeStopRole(
+      attributedRole
+    );
+
+  if (
+    !feature ||
+    !routeId ||
+    !isContextualRailRoute(routeId)
+  ) {
+    return baseRole;
+  }
+
+  /*
+    Daftar LOGIS mengikuti STOP_ID. Jadi dua GEOM_ID yang mewakili
+    satu stasiun tidak menghasilkan dua endpoint atau dua Terminus.
+  */
+  const logicalKeys =
+    getContextualRailVisibleLogicalKeys(
+      routeId
+    );
+
+  if (logicalKeys.length < 2) {
+    return baseRole;
+  }
+
+  const logicalKey =
+    getLogicalStopKey(feature);
+
+  const currentIndex =
+    logicalKeys.indexOf(
+      logicalKey
+    );
+
+  /*
+    Feature yang tidak termasuk tampilan aktif tidak perlu
+    dipaksa mengikuti endpoint konteks saat ini.
+  */
+  if (currentIndex === -1) {
+    return baseRole;
+  }
+
+  const isEndpoint =
+    currentIndex === 0 ||
+    currentIndex === logicalKeys.length - 1;
+
+  if (isEndpoint) {
+    /*
+      Transit tetap dipertahankan bila endpoint juga merupakan
+      simpul perpindahan antarlayanan.
+    */
+    if (
+      baseRole === "Transit" ||
+      baseRole === "Transit-Terminus"
+    ) {
+      return "Transit-Terminus";
+    }
+
+    return "Terminus";
+  }
+
+  /*
+    Terminus atribut yang kini berada di tengah lin harus turun
+    menjadi role non-terminus. Bila sebelumnya Transit-Terminus,
+    sifat Transit tetap dipertahankan.
+  */
+  if (baseRole === "Transit-Terminus") {
+    return "Transit";
+  }
+
+  if (baseRole === "Terminus") {
+    return "Regular";
+  }
+
+  return baseRole;
+}
+
+
+function getStopRoleForRoute(
+  feature,
+  routeId
+) {
+  const attributedRole =
+    getAttributedStopRoleForRoute(
+      feature,
+      routeId
+    );
+
+  if (
+    isContextualRailRoute(routeId)
+  ) {
+    return getContextualRailStopRole(
+      feature,
+      routeId,
+      attributedRole
+    );
+  }
+
+  return attributedRole;
 }
 
 
@@ -6793,7 +7132,7 @@ function getStopsForRoute(routeId) {
 
 /*
   =========================================================
-  VISIBILITAS HALTE / STASIUN USULAN & KONSEPTUAL
+  VISIBILITAS HALTE / STASIUN USULAN & GAGASAN
   =========================================================
 */
 
@@ -8680,9 +9019,16 @@ const PRODUCT_TOUR_STEPS = [
   {
     title: "Klik halte atau stasiun",
     text:
-      "Klik titik atau nama halte/stasiun di peta maupun daftar untuk membuka informasi titik, integrasi, dan urutan perjalanan.",
+      "Klik titik halte/stasiun di peta untuk membuka informasi titik, integrasi, dan urutan perjalanan.",
     target: "tutorial-stop",
     visual: "stop"
+  },
+  {
+    title: "Pilih dari daftar",
+    text:
+      "Selain dari peta, kamu juga bisa klik nama halte/stasiun pada daftar di panel kiri.",
+    target: "tutorial-stop-list",
+    visual: "stop-list"
   },
   {
     title: "Berpindah rute dari popup",
@@ -8751,8 +9097,18 @@ function buildProductTourVisual(type) {
         <span class="tour-mini-route-line"></span>
         <span class="tour-mini-marker"></span>
         <span class="tour-mini-stop-label">
-          Klik titik atau nama
+          Klik titik pada peta
         </span>
+      </div>
+    `;
+  }
+
+  if (type === "stop-list") {
+    return `
+      <div class="tour-mini-stop-list">
+        <span class="tour-mini-stop-list-seq">14</span>
+        <span class="tour-mini-stop-list-badge">1</span>
+        <span class="tour-mini-stop-list-name">Monumen Nasional</span>
       </div>
     `;
   }
@@ -9774,19 +10130,15 @@ function getProductTourTargetRect(step) {
   }
 
   if (step.target === "tutorial-stop") {
-    if (
-      !isMobileLayout() &&
-      productTourStopHighlightPhase ===
-        "list"
-    ) {
-      return (
-        getProductTourListTargetRect()
-        ||
-        getProductTourMapStopTargetRect()
-      );
-    }
-
     return getProductTourMapStopTargetRect();
+  }
+
+  if (step.target === "tutorial-stop-list") {
+    return (
+      getProductTourListTargetRect()
+      ||
+      getProductTourMapStopTargetRect()
+    );
   }
 
   if (
@@ -9891,11 +10243,17 @@ function positionProductTour() {
           getProductTourMapStopTargetRect()
           || targetRect
         )
-      : targetRect;
+      : step.target === "tutorial-stop-list"
+        ? (
+            getProductTourListTargetRect()
+            || targetRect
+          )
+        : targetRect;
 
   if (targetRect) {
     const padding =
-      step.target === "tutorial-stop"
+      step.target === "tutorial-stop" ||
+      step.target === "tutorial-stop-list"
         ? 10
         : step.target === "tutorial-route-badges"
           ? 8
@@ -9905,6 +10263,7 @@ function positionProductTour() {
       "--tour-dim-opacity",
       (
         step.target === "tutorial-stop" ||
+        step.target === "tutorial-stop-list" ||
         step.target === "tutorial-route-badges"
       )
         ? "0.36"
@@ -10084,6 +10443,14 @@ function prepareProductTourStep(step) {
     }
     else if (
       step.target ===
+      "tutorial-stop-list"
+    ) {
+      prepareProductTourStopDemo({
+        openPopup: false
+      });
+    }
+    else if (
+      step.target ===
       "tutorial-route-badges"
     ) {
       prepareProductTourStopDemo({
@@ -10132,7 +10499,25 @@ function prepareProductTourStep(step) {
       openPopup: false
     });
 
-    scheduleProductTourStopHighlightSequence();
+    setProductTourStopHighlightPhase(
+      "map"
+    );
+
+    return;
+  }
+
+  if (
+    step.target ===
+    "tutorial-stop-list"
+  ) {
+    prepareProductTourStopDemo({
+      openPopup: false
+    });
+
+    ensureProductTourListDemo();
+    setProductTourStopHighlightPhase(
+      "list"
+    );
 
     return;
   }
@@ -13316,7 +13701,7 @@ function getFilteredRoutes() {
 
   Conceptual
   - dash sangat pendek
-  - skenario konseptual penyusun WebGIS
+  - gagasan/skenario eksploratif penyusun WebGIS
 
   Warna tetap mengikuti COLOR masing-masing lin/koridor.
 */
@@ -14357,28 +14742,35 @@ function shouldShowPlannedRouteBadgeInContext(
 
 
 /*
-  Integrasi yang melibatkan K15–19 tidak ditampilkan.
+  Integrasi pada Koridor 15–19 tetap ditampilkan jika memang
+  tersedia pada data halte.
 
-  - Pada koridor eksisting, kode integrasi K15–19 dibuang.
-  - Saat K15–19 aktif, seluruh bagian Integrasi disembunyikan
-    karena hubungan integrasinya masih merupakan bagian dari
-    skenario visualisasi WebGIS.
+  - Saat K15–19 aktif, semua relasi integrasi milik halte aktif
+    boleh tampil. Halte sudah diberi penanda Gagasan sehingga
+    pengguna tetap mendapat konteks bahwa titiknya merupakan
+    bagian dari skenario visualisasi WebGIS.
+  - Saat koridor lain aktif, kode integrasi K15–19 tetap
+    disembunyikan agar koridor Gagasan tidak terlihat sebagai
+    jaringan integrasi eksisting pada konteks rute lain.
 */
 function getVisibleStopIntegrationsForContext(
   feature,
   activeRouteId
 ) {
+  const integrations =
+    getStopIntegrations(
+      feature
+    );
+
   if (
     isPlannedBRTVisualizationRoute(
       activeRouteId
     )
   ) {
-    return [];
+    return integrations;
   }
 
-  return getStopIntegrations(
-    feature
-  ).filter(
+  return integrations.filter(
     integrationId =>
       !isPlannedBRTVisualizationRoute(
         integrationId
@@ -15399,6 +15791,31 @@ function getOperationalStopState(
     };
   }
 
+  /*
+    ROUTE_ALERTS di bawah adalah fallback berbasis NAMA HALTE
+    dan seluruh konfigurasi saat ini memang khusus BRT.
+
+    Feature rail dengan nama sama (mis. MRT Monumen Nasional)
+    tidak boleh mewarisi status operasi BRT. OPS_MAP / field
+    operasional eksplisit di atas tetap boleh dipakai lintas moda.
+  */
+  const featureMode =
+    normalizeMode(
+      feature
+        ?.properties
+        ?.MODE
+    );
+
+  if (
+    featureMode &&
+    featureMode !== "BRT"
+  ) {
+    return {
+      state: "regular",
+      temporaryTerminus: false
+    };
+  }
+
   const config =
     getRouteOperationalConfig(
       routeId
@@ -15921,18 +16338,39 @@ function getOperationalRouteIdsForStop(
   const ids =
     new Set();
 
-  /*
-    ROUTE_ALERTS menjadi fallback untuk data lama.
-  */
-  Object.keys(
-    ROUTE_ALERTS || {}
-  )
-    .forEach(
-      routeId =>
-        ids.add(
-          String(routeId)
-        )
+  const featureMode =
+    normalizeMode(
+      feature
+        ?.properties
+        ?.MODE
     );
+
+  /*
+    ROUTE_ALERTS adalah fallback legacy khusus operasi BRT.
+
+    Jangan menerapkannya ke feature rail hanya karena nama
+    stasiunnya sama dengan halte BRT. Tanpa guard ini, contoh
+    Stasiun MRT Monumen Nasional ikut dianggap TEMP_TERMINUS
+    BRT_02/BRT_03 dan badge Koridor 2/3 salah muncul pada bagian
+    "Lin / Koridor yang dilayani".
+
+    MODE kosong tetap diizinkan agar data BRT legacy yang belum
+    memiliki field MODE tidak langsung kehilangan fallback.
+  */
+  if (
+    !featureMode ||
+    featureMode === "BRT"
+  ) {
+    Object.keys(
+      ROUTE_ALERTS || {}
+    )
+      .forEach(
+        routeId =>
+          ids.add(
+            String(routeId)
+          )
+      );
+  }
 
   /*
     OPS_MAP dapat membawa route operasional yang tidak ada
@@ -16774,23 +17212,58 @@ function renderRouteInfo(feature) {
       `
       : "";
 
-  const routeTitle =
-    getRouteTitle(feature);
+  const routeHeading =
+    getRouteHeadingParts(feature);
+
+  const routeSystemHTML =
+    routeHeading.systemName
+      ? `
+        <div class="route-system-name">
+          ${escapeHTML(routeHeading.systemName)}
+        </div>
+      `
+      : "";
+
+  const routeLineName =
+    routeHeading.lineName ||
+    (
+      getRouteMode(feature) === "BRT"
+        ? getRouteTitle(feature)
+        : getRailLineTitle(feature)
+    );
 
   const routeTitleLength =
-    Array.from(routeTitle).length;
+    Array.from(routeLineName).length;
 
   const routeTitleClass =
-    routeTitleLength >= 38
-      ? "route-title is-very-long"
-      : routeTitleLength >= 30
-        ? "route-title is-long"
-        : "route-title";
+    routeTitleLength >= 30
+      ? "route-title is-long"
+      : "route-title";
+
+  const routeRelationHTML =
+    routeHeading.relation
+      ? `
+        <div class="route-heading-relation">
+          ${escapeHTML(routeHeading.relation)}
+        </div>
+      `
+      : "";
 
   routeInfoEl.innerHTML = `
-    <h2 class="${routeTitleClass}">
-      ${escapeHTML(routeTitle)}
-    </h2>
+    ${routeSystemHTML}
+
+    <div class="route-heading-main">
+      <div class="route-heading-badge" aria-hidden="true">
+        ${routeHeading.badgeHTML || ""}
+      </div>
+
+      <div class="route-heading-copy">
+        <h2 class="${routeTitleClass}">
+          ${escapeHTML(routeLineName)}
+        </h2>
+        ${routeRelationHTML}
+      </div>
+    </div>
 
     ${buildRouteDirectionControlHTML(routeId)}
 
@@ -17053,26 +17526,65 @@ function populateRouteDropdown() {
   const features =
     getFilteredRoutes();
 
-  features.forEach(
-    feature => {
-      const option =
-        document.createElement(
-          "option"
+  if (["MRT", "LRT", "KRL"].includes(selectedMode)) {
+    const groups = new Map();
+
+    features.forEach(feature => {
+      const operator =
+        getRouteSystemName(feature)
+        || selectedMode;
+
+      if (!groups.has(operator)) {
+        groups.set(operator, []);
+      }
+
+      groups.get(operator).push(feature);
+    });
+
+    groups.forEach((groupFeatures, operator) => {
+      const optgroup =
+        document.createElement("optgroup");
+
+      optgroup.label = operator;
+
+      groupFeatures.forEach(feature => {
+        const option =
+          document.createElement("option");
+
+        option.value =
+          getRouteId(feature);
+
+        option.textContent =
+          getRouteOptionText(feature);
+
+        optgroup.appendChild(option);
+      });
+
+      routeSelect.appendChild(optgroup);
+    });
+  }
+  else {
+    features.forEach(
+      feature => {
+        const option =
+          document.createElement(
+            "option"
+          );
+
+        option.value =
+          getRouteId(feature);
+
+        option.textContent =
+          getRouteOptionText(
+            feature
+          );
+
+        routeSelect.appendChild(
+          option
         );
-
-      option.value =
-        getRouteId(feature);
-
-      option.textContent =
-        getRouteOptionText(
-          feature
-        );
-
-      routeSelect.appendChild(
-        option
-      );
-    }
-  );
+      }
+    );
+  }
 
   routeSelect.value = "ALL";
 }
@@ -18636,26 +19148,168 @@ function resolveIntegrationPlaceTarget(placeGroup) {
 }
 
 
+function getIntegrationTargetDisplayStatus(
+  resolved
+) {
+  const targetFeature =
+    resolved?.targetFeature;
+
+  if (!targetFeature) {
+    return "";
+  }
+
+  /*
+    Status yang ditampilkan pada nama titik integrasi mengikuti
+    status titik target (halte/stasiun), bukan status jaringan
+    yang sedang dipilih pengguna pada filter asal.
+
+    Contoh:
+      Stasiun Kota (Dalam Pembangunan)
+      Stasiun X (Rencana)
+      Stasiun Y (Usulan)
+
+    Eksisting tidak diberi sufiks agar daftar tetap ringkas.
+  */
+  const featureStatus =
+    normalizeStatus(
+      targetFeature?.properties?.STATUS
+    );
+
+  if (
+    featureStatus &&
+    featureStatus !== "Existing"
+  ) {
+    return featureStatus;
+  }
+
+  /*
+    Fallback bila feature target belum memiliki STATUS:
+    gunakan status route target yang berhasil di-resolve.
+  */
+  const targetRoute =
+    resolved?.targetRouteId
+      ? getRouteById(
+          resolved.targetRouteId
+        )
+      : null;
+
+  const routeStatus =
+    normalizeStatus(
+      targetRoute?.properties?.STATUS
+    );
+
+  return (
+    routeStatus &&
+    routeStatus !== "Existing"
+  )
+    ? routeStatus
+    : "";
+}
+
+
+function appendIntegrationTargetStatusToLabel(
+  label,
+  status
+) {
+  const cleanLabel =
+    String(label || "").trim();
+
+  const normalized =
+    normalizeStatus(status);
+
+  if (
+    !cleanLabel ||
+    !normalized ||
+    normalized === "Existing"
+  ) {
+    return cleanLabel;
+  }
+
+  const statusLabel =
+    getStatusLabel(normalized);
+
+  /* Hindari duplikasi bila sumber data sudah menulis status. */
+  const suffix = `(${statusLabel})`;
+
+  if (
+    cleanLabel
+      .toLocaleLowerCase("id-ID")
+      .endsWith(
+        suffix.toLocaleLowerCase("id-ID")
+      )
+  ) {
+    return cleanLabel;
+  }
+
+  return `${cleanLabel} ${suffix}`;
+}
+
+
 function buildIntegrationPlaceRow(placeGroup) {
+  /*
+    Terminal adalah fasilitas fisik yang berbeda dari halte/stasiun.
+    Walaupun data legacy kadang mengisi INT_STOP dengan STOP_ID halte
+    terdekat, terminal tidak boleh mewarisi badge koridor, status halte,
+    atau navigasi ke halte tersebut.
+
+    Contoh yang benar:
+      Terminal Bus
+      Terminal Pasar Minggu
+
+    Bukan:
+      [19] Terminal Pasar Minggu (Gagasan) >
+  */
+  const isTerminalFacility =
+    (placeGroup?.services || [])
+      .some(service => Boolean(service?.terminal));
+
+  const resolved =
+    isTerminalFacility
+      ? {
+          targetFeature: null,
+          targetStopKey: "",
+          targetRouteId: "",
+          routeIds: [],
+          expectedModes: []
+        }
+      : resolveIntegrationPlaceTarget(
+          placeGroup
+        );
+
+  const targetDisplayStatus =
+    isTerminalFacility
+      ? ""
+      : getIntegrationTargetDisplayStatus(
+          resolved
+        );
+
+  /*
+    Jika target aktual diketahui dan non-eksisting, status target
+    menjadi status visual baris. Jika tidak, pertahankan status
+    integrasi legacy agar data lama tetap kompatibel.
+  */
   const placeStatus =
+    targetDisplayStatus ||
     normalizeIntegrationStatus(
       placeGroup.integrationStatus
-    ) || "Existing";
+    ) ||
+    "Existing";
 
   const placeStatusClass =
     getIntegrationStatusClass(
       placeStatus
     );
 
+  /*
+    Target aktual memakai keterangan dalam kurung pada nama titik.
+    Pill legacy hanya dipakai bila target feature tidak tersedia.
+  */
   const statusPillHTML =
-    buildIntegrationStatusPill(
-      placeStatus
-    );
-
-  const resolved =
-    resolveIntegrationPlaceTarget(
-      placeGroup
-    );
+    targetDisplayStatus
+      ? ""
+      : buildIntegrationStatusPill(
+          placeStatus
+        );
 
   let placeLabel =
     String(placeGroup.placeLabel || "").trim();
@@ -18684,29 +19338,89 @@ function buildIntegrationPlaceRow(placeGroup) {
     return "";
   }
 
+  placeLabel =
+    appendIntegrationTargetStatusToLabel(
+      placeLabel,
+      targetDisplayStatus
+    );
+
   let badgesHTML = placeGroup.services
     .map(buildIntegrationBadge)
     .join("");
 
   /*
-    Operator-level TRANSJAKARTA + INT_STOP dapat menurunkan badge
-    koridor dari target aktual tanpa memaksa INTEGRASI berisi semua
-    kode koridor.
+    Integrasi tingkat operator + INT_STOP dapat menurunkan badge
+    lin/koridor dari feature target aktual. Ini penting ketika
+    INTEGRASI hanya menyebut operator (mis. MRT) sementara titik
+    target dilayani oleh lin tertentu (mis. MRT_NS).
+
+    Badge diturunkan dari ROUTES pada target, bukan dari status filter
+    yang sedang aktif. Dengan demikian lin Dalam Pembangunan tetap
+    dapat dikenali sebagai integrasi dari moda lain.
   */
   if (
+    !isTerminalFacility &&
     !badgesHTML &&
-    resolved.targetFeature &&
-    placeGroup.services.some(service =>
-      service?.brtOperator ||
-      service?.operatorKey === "TRANSJAKARTA"
-    )
+    resolved.targetFeature
   ) {
-    badgesHTML = getStopRoutes(resolved.targetFeature)
+    const operatorKeys = new Set(
+      placeGroup.services
+        .map(service => String(service?.operatorKey || "").trim().toUpperCase())
+        .filter(Boolean)
+    );
+
+    const expectedModes = new Set(
+      getIntegrationExpectedModes(placeGroup.services)
+    );
+
+    const inferredRouteIds = getStopRoutes(resolved.targetFeature)
       .filter(routeId => {
         const route = getRouteById(routeId);
-        return route && getRouteMode(route) === "BRT";
+
+        if (!route) {
+          return false;
+        }
+
+        const mode = getRouteMode(route);
+
+        if (
+          expectedModes.size &&
+          !expectedModes.has(mode)
+        ) {
+          return false;
+        }
+
+        if (operatorKeys.has("TRANSJAKARTA")) {
+          return mode === "BRT";
+        }
+
+        if (operatorKeys.has("MRT_JAKARTA")) {
+          return mode === "MRT";
+        }
+
+        if (operatorKeys.has("KRL")) {
+          return mode === "KRL";
+        }
+
+        if (
+          operatorKeys.has("LRT_JAKARTA") ||
+          operatorKeys.has("LRT_JABODEBEK")
+        ) {
+          return mode === "LRT";
+        }
+
+        return true;
+      });
+
+    badgesHTML = inferredRouteIds
+      .map(routeId => {
+        const route = getRouteById(routeId);
+        const mode = route ? getRouteMode(route) : "";
+
+        return mode === "BRT"
+          ? buildBrtBadge(routeId)
+          : buildLineBadge(routeId);
       })
-      .map(routeId => buildBrtBadge(routeId))
       .join("");
   }
 
@@ -18720,6 +19434,7 @@ function buildIntegrationPlaceRow(placeGroup) {
   `;
 
   const isClickable = Boolean(
+    !isTerminalFacility &&
     resolved.targetStopKey &&
     resolved.targetRouteId
   );
@@ -19938,21 +20653,13 @@ function buildStopLocationHTML(
 function getStopSourceTypeLabel(
   feature
 ) {
-  const status =
-    normalizeStatus(
-      feature
-        ?.properties
-        ?.STATUS
-    );
-
-  return {
-    Existing: "Sumber Data",
-    Construction: "Sumber Pembangunan",
-    Planned: "Sumber Rencana",
-    Proposed: "Sumber Usulan",
-    Conceptual: "Dasar Analisis",
-    Inactive: "Sumber Data"
-  }[status] || "Sumber Data";
+  /*
+    Label tombol sumber pada popup halte/stasiun sengaja dibuat
+    generik dan konsisten untuk semua status. Konteks sumber
+    pembangunan/rencana/usulan tetap terbaca dari isi metadata
+    setelah kartu dibuka, tanpa membuat label aksi terpotong.
+  */
+  return "Sumber Data";
 }
 
 
@@ -20592,8 +21299,10 @@ function buildStopPopup(feature, routeId) {
 
 
   /*
-    Catatan integrasi K15–19 tidak diperlukan lagi karena
-    relasi integrasi K15–19 sekarang tidak ditampilkan.
+    Pada K15–19, konteks Gagasan sudah dijelaskan melalui
+    catatan halte skenario di bagian atas popup. Integrasi yang
+    tersedia tetap ditampilkan tanpa menambah catatan kedua agar
+    popup tidak berulang.
   */
   const integrationScenarioNoteHTML = "";
 
@@ -23364,6 +24073,15 @@ function selectStop(
     role.toLowerCase() !== "regular" &&
     role.toLowerCase() !== "normal";
 
+  const selectedStructure =
+    normalizeStructure(
+      p.STRUCTURE
+    );
+
+  const showSelectedStructure =
+    normalizeMode(p.MODE) !== "BRT" &&
+    selectedStructure !== "UNKNOWN";
+
   const showSelectedActivity =
     isStopTerminusForRoute(
       feature,
@@ -23394,6 +24112,16 @@ function selectStop(
             ? `
               <span class="selected-stop-role ${getOperationalStopRoleClass(feature, routeId)}">
                 ${escapeHTML(role)}
+              </span>
+            `
+            : ""
+        }
+
+        ${
+          showSelectedStructure
+            ? `
+              <span class="selected-stop-structure is-${selectedStructure.toLowerCase()}">
+                ${escapeHTML(getStructureLabel(selectedStructure))}
               </span>
             `
             : ""
@@ -25820,9 +26548,9 @@ async function loadData() {
     assignRuntimeStopKeys();
 
     /*
-      STOP_ROLE rail tidak diinferensikan dari sequence.
-      Ini penting agar dataset testing/parsial tidak membuat
-      stasiun terakhir yang kebetulan tersedia menjadi Terminus.
+      STOP_ROLE rail tidak dimutasi saat load. Terminus rail
+      dihitung kontekstual dari endpoint stasiun yang sedang
+      terlihat untuk lin + filter Status aktif.
     */
     applyRailStopRolePolicy();
 

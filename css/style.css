@@ -9450,7 +9450,7 @@ details.legend-collapsible-section:not([open])
 }
 
 /* =========================================================
-   HALTE / STASIUN USULAN & KONSEPTUAL — SHOW / HIDE
+   HALTE / STASIUN USULAN & GAGASAN — SHOW / HIDE
    ========================================================= */
 
 .optional-stop-controls:empty {
@@ -18575,6 +18575,7 @@ body .route-detail-card:not(.is-overview):not(.is-collapsed)
 
 .selected-stop-meta .selected-stop-status,
 .selected-stop-meta .selected-stop-role,
+.selected-stop-meta .selected-stop-structure,
 .selected-stop-meta .selected-stop-direction-pill,
 .selected-stop-meta-text {
   min-height: 18px;
@@ -18593,6 +18594,18 @@ body .route-detail-card:not(.is-overview):not(.is-collapsed)
   border: 1px solid #e0e4e8;
   background: #f5f6f7;
   color: #626a73;
+}
+
+/* Struktur stasiun pada kartu Stasiun Terpilih mengikuti urutan
+   Status → Peran → Struktur, selaras dengan popup utama. */
+.selected-stop-structure {
+  border: 1px solid #dde2e6;
+  background: #f7f8f9;
+  color: #59616a;
+}
+
+.selected-stop-structure.is-underground {
+  border-style: dashed;
 }
 
 /* Metadata hubungan integrasi cukup satu baris pendek. */
@@ -18685,6 +18698,7 @@ body .route-detail-card:not(.is-overview):not(.is-collapsed)
   /* Samakan ukuran metadata selected-stop dengan badge pada daftar halte. */
   .selected-stop-meta .selected-stop-status,
   .selected-stop-meta .selected-stop-role,
+  .selected-stop-meta .selected-stop-structure,
   .selected-stop-meta .selected-stop-direction-pill,
   .selected-stop-meta-text,
   .stop-list-badges .stop-role,
@@ -19954,6 +19968,7 @@ a:focus-visible {
 
   .selected-stop-meta .selected-stop-status,
   .selected-stop-meta .selected-stop-role,
+  .selected-stop-meta .selected-stop-structure,
   .selected-stop-meta .selected-stop-direction-pill,
   .selected-stop-meta-text {
     min-height: 16px !important;
@@ -20019,4 +20034,182 @@ a:focus-visible {
   .global-search-input-wrap input {
     font-size: 12px !important;
   }
+}
+
+
+/* v0.13.14 — desktop tutorial refinement */
+.right-info-heading > p {
+  display: none;
+}
+
+.tour-mini-stop-list {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(25, 35, 52, 0.12);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.tour-mini-stop-list-seq {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #f4f6f8;
+  color: #55606f;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tour-mini-stop-list-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: #d92d27;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "PT Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: inset 0 0 0 2px #ffffff;
+}
+
+.tour-mini-stop-list-name {
+  min-width: 0;
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+
+/* v0.13.19 — terminal integration semantics handled in map.js; no visual override required. */
+
+
+/* v0.13.20 — hierarchy operator/system → rail line */
+.route-info .route-system-name {
+  margin: 0 0 3px;
+  color: #4f5965;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+@media (min-width: 761px) {
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-info .route-system-name {
+    margin-bottom: 4px !important;
+    font-size: 12.5px !important;
+    line-height: 1.2 !important;
+    font-weight: 700 !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-info .route-system-name + h2.route-title {
+    margin-top: 0 !important;
+  }
+}
+
+
+/* v0.13.21 — route identity hierarchy with line/corridor badge */
+.route-info .route-heading-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+  margin: 0 0 8px;
+}
+
+.route-info .route-heading-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding-top: 1px;
+}
+
+.route-info .route-heading-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.route-info .route-heading-main h2.route-title {
+  margin: 0 !important;
+  line-height: 1.15 !important;
+}
+
+.route-info .route-heading-relation {
+  margin-top: 2px;
+  color: #3f4751;
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+/* Badge identitas di judul dibuat sedikit lebih besar dari badge daftar,
+   tetapi lebih ringkas daripada badge besar di popup. */
+.route-info .route-heading-badge .brt-route-badge {
+  width: 26px;
+  height: 26px;
+  flex-basis: 26px;
+  font-size: 16px;
+  letter-spacing: -0.4px;
+}
+
+.route-info .route-heading-badge .brt-route-badge.is-double-digit {
+  /* Badge BRT dua digit dibuat lebih kecil agar proporsional terhadap judul. */
+  font-size: 12px;
+  letter-spacing: -0.25px;
+}
+
+.route-info .route-heading-badge .rail-line-badge-image,
+.route-info .route-heading-badge .rail-line-badge-fallback {
+  width: 30px;
+  height: 30px;
+  flex-basis: 30px;
+}
+
+.route-info .route-heading-badge .rail-line-badge-fallback {
+  font-size: 11px;
+}
+
+@media (min-width: 761px) {
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-info .route-system-name {
+    margin-bottom: 5px !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-info .route-heading-main {
+    margin-bottom: 9px;
+  }
+}
+
+
+/* v0.13.23 — compact BRT route badge in desktop route heading */
+
+
+/* v0.13.25 — BRT panel badge: numeral proportion follows popup badge */
+.route-info .route-heading-badge .brt-route-badge {
+  font-size: 14px !important;
+  line-height: 1 !important;
+  letter-spacing: -0.35px !important;
+}
+
+.route-info .route-heading-badge .brt-route-badge.is-double-digit {
+  font-size: 13.5px !important;
+  line-height: 1 !important;
+  letter-spacing: -0.7px !important;
 }
