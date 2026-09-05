@@ -27140,3 +27140,39 @@ restoreRouteDetailCollapseState();
   }
 })();
 
+/* =========================================================
+   WEBGIS LABEL RESTORE ON POPUP CLOSE — v0.9
+   Bug fix:
+   - sebelumnya label titik yang popup-nya ditutup dimasukkan
+     ke dismissedStopLogicalKey dan sengaja disembunyikan;
+   - sekarang setelah popup ditutup label kembali mengikuti
+     aturan decluttering normal pada zoom/route aktif.
+   ========================================================= */
+(() => {
+  "use strict";
+
+  if (typeof map === "undefined" || !map?.on) return;
+
+  map.on("popupclose", () => {
+    /*
+      Handler popup milik marker berjalan lebih dulu dan pada
+      build lama dapat mengisi dismissedStopLogicalKey.
+      Tunda satu tick agar state selection selesai dibersihkan,
+      lalu hapus suppression label dan hitung ulang label normal.
+
+      Aman saat navigasi Sebelumnya/Berikutnya:
+      selectStop() sendiri sudah mengosongkan dismissedStopLogicalKey,
+      sehingga popup lama tidak akan mengganggu titik baru.
+    */
+    setTimeout(() => {
+      if (typeof dismissedStopLogicalKey !== "undefined") {
+        dismissedStopLogicalKey = "";
+      }
+
+      if (typeof updateStopLabelVisibility === "function") {
+        updateStopLabelVisibility();
+      }
+    }, 0);
+  });
+})();
+
