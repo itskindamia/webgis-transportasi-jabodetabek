@@ -20213,3 +20213,300 @@ a:focus-visible {
   line-height: 1 !important;
   letter-spacing: -0.7px !important;
 }
+
+/* =========================================================
+   WEBGIS TYPOGRAPHY READABILITY — v0.7
+   5 September 2026
+
+   Tujuan:
+   - menaikkan keterbacaan microtext;
+   - tidak membesarkan popup/card;
+   - tidak mengubah ukuran badge, ikon, marker, atau navbar.
+   ========================================================= */
+
+/* Identitas halte / stasiun */
+.stop-popup .stop-popup-eyebrow {
+  font-size: 8.5px !important;
+  line-height: 1.18 !important;
+}
+
+.stop-popup .stop-popup-status,
+.stop-popup .stop-popup-role {
+  font-size: 9px !important;
+  line-height: 1.18 !important;
+}
+
+/* Kompleks / kelompok halte */
+.stop-popup .stop-popup-complex-note,
+.stop-popup .stop-popup-complex-note strong {
+  font-size: 8.5px !important;
+  line-height: 1.2 !important;
+}
+
+.stop-popup .stop-popup-complex-label {
+  font-size: 8.5px !important;
+  line-height: 1.15 !important;
+}
+
+/* Arah / pelayanan */
+.stop-popup .stop-popup-direction-label,
+.stop-popup .stop-popup-activity-label {
+  font-size: 8.5px !important;
+  line-height: 1.16 !important;
+}
+
+.stop-popup .stop-popup-direction-value,
+.stop-popup .stop-popup-activity-value {
+  font-size: 10px !important;
+  line-height: 1.24 !important;
+}
+
+/* Catatan kecil di dalam popup */
+.stop-popup .stop-popup-route-hint,
+.stop-popup .stop-popup-affected-route-note,
+.stop-popup .stop-popup-route-state-note,
+.stop-popup .stop-popup-scenario-note,
+.stop-popup .stop-operational-notice-text,
+.stop-popup .stop-popup-split-note-text,
+.stop-popup .stop-popup-scenario-note-text {
+  font-size: 9px !important;
+  line-height: 1.3 !important;
+}
+
+/* Integrasi: pertahankan hierarchy operator > nama titik */
+.stop-popup .stop-popup-section--integration
+  .integration-group .integration-operator {
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+}
+
+.stop-popup .stop-popup-section--integration
+  .integration-place-name {
+  font-size: 10px !important;
+  line-height: 1.22 !important;
+}
+
+.stop-popup .stop-popup-section--integration
+  .integration-place-name.is-missing {
+  font-size: 9px !important;
+}
+
+.stop-popup .integration-place-status {
+  font-size: 9px !important;
+}
+
+/* Google Maps / sumber data */
+.stop-popup .stop-popup-action-cell
+  .stop-popup-external-link {
+  font-size: 9px !important;
+  line-height: 1.15 !important;
+}
+
+.stop-popup .stop-popup-action-cell
+  .stop-source-type {
+  font-size: 7.5px !important;
+  line-height: 1.08 !important;
+}
+
+.stop-popup .stop-popup-action-cell
+  .stop-source-title {
+  font-size: 8.5px !important;
+  line-height: 1.12 !important;
+}
+
+.stop-popup .stop-source-name {
+  font-size: 9px !important;
+  line-height: 1.28 !important;
+}
+
+.stop-popup .stop-popup-source-link,
+.stop-popup .stop-source-note-text {
+  font-size: 8.5px !important;
+  line-height: 1.25 !important;
+}
+
+/* Previous / Next: target klik dan ukuran card tetap */
+.stop-popup .stop-popup-nav-label {
+  font-size: 8px !important;
+  line-height: 1.08 !important;
+}
+
+.stop-popup .stop-popup-nav-name {
+  font-size: 9.5px !important;
+  line-height: 1.15 !important;
+}
+
+/* Mobile bottom navigation: hanya teks yang dibesarkan */
+@media (max-width: 760px) {
+  .mobile-toolbar-label {
+    font-size: 9.5px !important;
+    line-height: 1.08 !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .mobile-toolbar-label {
+    font-size: 8.5px !important;
+  }
+}
+
+/* Changelog: satu versi = satu blok, beberapa perubahan = list */
+.info-changelog-entry .info-changelog-list {
+  margin: 4px 0 0 16px;
+  padding: 0;
+}
+.info-changelog-entry .info-changelog-list li {
+  margin: 2px 0;
+}
+
+/* =========================================================
+   GAGASAN WEBGIS — public-facing separation
+   Nilai internal data tidak diubah.
+   ========================================================= */
+.webgis-exploration-label {
+  margin: 8px 0 4px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(0,0,0,.10);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: .02em;
+  color: rgba(31,31,31,.66);
+}
+
+.webgis-concept-note {
+  margin-top: 7px;
+  padding: 6px 7px;
+  border-radius: 6px;
+  background: rgba(0,0,0,.045);
+  font-size: 8.5px;
+  line-height: 1.3;
+  color: rgba(31,31,31,.76);
+}
+
+/* Jika layer memiliki metadata/class status, buat skenario sedikit subordinat.
+   Selector sengaja dibatasi pada pane peta agar badge/filter tidak ikut pudar. */
+.leaflet-overlay-pane path[data-status="Gagasan"],
+.leaflet-overlay-pane path[data-status="Conceptual"],
+.leaflet-overlay-pane path[data-status="Konseptual"],
+.leaflet-overlay-pane .status-gagasan,
+.leaflet-overlay-pane .status-conceptual,
+.leaflet-overlay-pane .route-gagasan,
+.leaflet-overlay-pane .route-conceptual {
+  opacity: .72 !important;
+}
+
+/* =========================================================
+   INTEGRATION POPUP POLISH — v0.8
+   ========================================================= */
+
+/* KAJJ tidak memakai logo publik khusus. Hilangkan slot simbol seluruhnya agar
+   header "KA Jarak Jauh" mulai dari tepi kiri dan tidak tampak seperti logo gagal dimuat. */
+.stop-popup .integration-group--kajj .integration-symbol,
+.stop-popup .integration-group--kajj .webgis-kajj-logo-hidden {
+  display: none !important;
+}
+
+.stop-popup .integration-group--kajj .integration-group-header {
+  grid-template-columns: minmax(0, 1fr) !important;
+  column-gap: 0 !important;
+}
+
+/* Jika struktur header memakai flex pada baseline tertentu, removal simbol sudah cukup;
+   aturan ini memastikan operator tidak menyisakan offset buatan. */
+.stop-popup .integration-group--kajj .integration-operator {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* Baseline tertentu menaruh slot logo pada wrapper/header, bukan pada .integration-symbol.
+   Nol-kan juga wrapper tersebut agar KA Jarak Jauh benar-benar mulai dari tepi kiri. */
+.stop-popup .integration-group--kajj,
+.stop-popup .integration-group--kajj .integration-group-header,
+.stop-popup .integration-group--kajj .integration-operator-row,
+.stop-popup .integration-group--kajj .integration-operator-wrap,
+.stop-popup .integration-group--kajj .integration-header {
+  --integration-logo-width: 0px !important;
+}
+
+.stop-popup .integration-group--kajj .integration-group-header,
+.stop-popup .integration-group--kajj .integration-operator-row,
+.stop-popup .integration-group--kajj .integration-operator-wrap,
+.stop-popup .integration-group--kajj .integration-header {
+  grid-template-columns: minmax(0, 1fr) !important;
+  column-gap: 0 !important;
+  gap: 0 !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* Status titik integrasi dipisahkan dari nama stasiun. */
+.stop-popup .integration-place-status-chip {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 5px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: rgba(31,31,31,.07);
+  color: rgba(31,31,31,.68);
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1.15;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Sedikit rapatkan peralihan Koridor yang dilayani -> Integrasi. */
+.stop-popup .stop-popup-section--routes,
+.stop-popup .stop-popup-section--route,
+.stop-popup .stop-popup-section--served-routes {
+  margin-bottom: 6px !important;
+}
+
+.stop-popup .stop-popup-section--routes + .stop-popup-section--integration,
+.stop-popup .stop-popup-section--route + .stop-popup-section--integration,
+.stop-popup .stop-popup-section--served-routes + .stop-popup-section--integration {
+  margin-top: 0 !important;
+}
+
+/* =========================================================
+   WEBGIS INTEGRATION CSS FIX — v0.8
+   - KA Jarak Jauh tanpa slot logo kosong
+   - status titik integrasi tetap compact
+   ========================================================= */
+.stop-popup .integration-group--kajj .integration-symbol,
+.stop-popup .integration-group--kajj .webgis-kajj-logo-hidden {
+  display: none !important;
+}
+
+.stop-popup .integration-group--kajj .integration-group-header {
+  grid-template-columns: minmax(0, 1fr) !important;
+  column-gap: 0 !important;
+}
+
+.stop-popup .integration-group--kajj .integration-operator {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* Baseline tertentu menaruh slot logo pada wrapper/header, bukan pada .integration-symbol.
+   Nol-kan juga wrapper tersebut agar KA Jarak Jauh benar-benar mulai dari tepi kiri. */
+.stop-popup .integration-group--kajj,
+.stop-popup .integration-group--kajj .integration-group-header,
+.stop-popup .integration-group--kajj .integration-operator-row,
+.stop-popup .integration-group--kajj .integration-operator-wrap,
+.stop-popup .integration-group--kajj .integration-header {
+  --integration-logo-width: 0px !important;
+}
+
+.stop-popup .integration-group--kajj .integration-group-header,
+.stop-popup .integration-group--kajj .integration-operator-row,
+.stop-popup .integration-group--kajj .integration-operator-wrap,
+.stop-popup .integration-group--kajj .integration-header {
+  grid-template-columns: minmax(0, 1fr) !important;
+  column-gap: 0 !important;
+  gap: 0 !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+

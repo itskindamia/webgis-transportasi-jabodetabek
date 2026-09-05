@@ -1,64 +1,34 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta
-    http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://unpkg.com https://tile.openstreetmap.org https://server.arcgisonline.com; connect-src 'self' https://nominatim.openstreetmap.org; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
-  />
-  <meta
-    name="description"
-    content="Peta interaktif jaringan BRT, MRT, LRT, dan KRL Jabodetabek untuk eksplorasi jaringan, halte/stasiun, serta integrasi antarmoda."
-  />
-  <meta name="referrer" content="strict-origin-when-cross-origin" />
+<html lang="id"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://unpkg.com https://tile.openstreetmap.org https://server.arcgisonline.com; connect-src 'self' https://nominatim.openstreetmap.org; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+  <meta name="description" content="Peta interaktif jaringan BRT, MRT, LRT, dan KRL Jabodetabek untuk eksplorasi jaringan, halte/stasiun, serta integrasi antarmoda.">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Jaringan Transportasi Umum Jabodetabek</title>
 
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin="anonymous"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 
   <!-- PT Sans hanya untuk badge nomor koridor -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&amp;display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/style.css?v=20260903-v0.13.25" />
+  <link rel="stylesheet" href="css/style.css?v=20260905-v0.8-fix2">
 </head>
 
 <body>
-  <div
-    id="map"
-    role="application"
-    aria-label="Peta interaktif jaringan transportasi umum Jabodetabek"
-  ></div>
+  <div id="map" role="application" aria-label="Peta interaktif jaringan transportasi umum Jabodetabek"></div>
 
   <!-- Tombol panel rute khusus ponsel -->
-  <button
-    type="button"
-    class="mobile-filter-toggle"
-    id="mobileFilterToggle"
-    aria-label="Buka panel rute"
-    aria-expanded="false"
-  >
+  <button type="button" class="mobile-filter-toggle" id="mobileFilterToggle" aria-label="Buka panel rute" aria-expanded="false">
     <span class="mobile-filter-toggle-icon" aria-hidden="true">☰</span>
     <span>Rute</span>
   </button>
 
   <!-- Filter -->
   <aside class="filter-panel" id="filterPanel">
-    <button
-      type="button"
-      class="mobile-filter-close"
-      id="mobileFilterClose"
-      aria-label="Tutup panel rute"
-    >×</button>
+    <button type="button" class="mobile-filter-close" id="mobileFilterClose" aria-label="Tutup panel rute">×</button>
 
     <div class="filter-panel-content">
 
@@ -68,7 +38,7 @@
         <div class="form-field">
           <label for="modeSelect">Moda</label>
           <select id="modeSelect">
-            <option value="ALL" selected>Semua Moda</option>
+            <option value="ALL" selected="">Semua Moda</option>
             <option value="BRT">BRT</option>
             <option value="MRT">MRT</option>
             <option value="LRT">LRT</option>
@@ -80,11 +50,11 @@
           <label for="statusSelect">Status</label>
           <select id="statusSelect">
             <option value="ALL">Semua Status</option>
-            <option value="Existing" selected>Eksisting</option>
+            <option value="Existing" selected="">Eksisting</option>
             <option value="Construction" id="constructionStatusOption">Dalam Pembangunan</option>
             <option value="Planned">Rencana</option>
             <option value="Proposed">Usulan</option>
-            <option value="Conceptual">Gagasan</option>
+            <option value="Conceptual">Gagasan WebGIS</option>
             <option value="Inactive">Nonaktif</option>
           </select>
         </div>
@@ -94,76 +64,26 @@
         <label for="stopSearchInput">Cari Halte / Stasiun</label>
 
         <div class="stop-search-input-wrap">
-          <input
-            type="search"
-            id="stopSearchInput"
-            placeholder="Cari halte atau stasiun…"
-            autocomplete="off"
-            spellcheck="false"
-            aria-label="Cari halte atau stasiun"
-            aria-controls="stopSearchResults"
-            aria-expanded="false"
-          />
+          <input type="search" id="stopSearchInput" placeholder="Cari halte atau stasiun…" autocomplete="off" spellcheck="false" aria-label="Cari halte atau stasiun" aria-controls="stopSearchResults" aria-expanded="false">
 
-          <button
-            type="button"
-            class="stop-search-clear"
-            id="stopSearchClear"
-            aria-label="Hapus pencarian"
-            title="Hapus pencarian"
-            hidden
-          >×</button>
+          <button type="button" class="stop-search-clear" id="stopSearchClear" aria-label="Hapus pencarian" title="Hapus pencarian" hidden="">×</button>
         </div>
 
-        <div
-          class="stop-search-results"
-          id="stopSearchResults"
-          role="listbox"
-          aria-label="Hasil pencarian halte atau stasiun"
-          hidden
-        ></div>
+        <div class="stop-search-results" id="stopSearchResults" role="listbox" aria-label="Hasil pencarian halte atau stasiun" hidden=""></div>
       </div>
 
       <div class="form-field poi-search-field">
         <label for="poiSearchInput">Cari Tempat</label>
 
         <div class="poi-search-input-wrap">
-          <input
-            type="search"
-            id="poiSearchInput"
-            placeholder="Cari tempat, gedung, kawasan…"
-            autocomplete="off"
-            spellcheck="false"
-            aria-label="Cari tempat"
-            aria-controls="poiSearchResults"
-            aria-expanded="false"
-          />
+          <input type="search" id="poiSearchInput" placeholder="Cari tempat, gedung, kawasan…" autocomplete="off" spellcheck="false" aria-label="Cari tempat" aria-controls="poiSearchResults" aria-expanded="false">
 
-          <button
-            type="button"
-            class="poi-search-clear"
-            id="poiSearchClear"
-            aria-label="Hapus pencarian tempat"
-            title="Hapus pencarian"
-            hidden
-          >×</button>
+          <button type="button" class="poi-search-clear" id="poiSearchClear" aria-label="Hapus pencarian tempat" title="Hapus pencarian" hidden="">×</button>
 
-          <button
-            type="button"
-            class="poi-search-submit"
-            id="poiSearchSubmit"
-            aria-label="Cari tempat"
-            title="Cari tempat"
-          >Cari</button>
+          <button type="button" class="poi-search-submit" id="poiSearchSubmit" aria-label="Cari tempat" title="Cari tempat">Cari</button>
         </div>
 
-        <div
-          class="poi-search-results"
-          id="poiSearchResults"
-          role="listbox"
-          aria-label="Hasil pencarian tempat"
-          hidden
-        ></div>
+        <div class="poi-search-results" id="poiSearchResults" role="listbox" aria-label="Hasil pencarian tempat" hidden=""></div>
 
         <div class="poi-search-attribution">
           Tekan Enter atau Cari · OpenStreetMap Nominatim.
@@ -177,51 +97,25 @@
         </select>
       </div>
 
-      <div
-        class="route-compare-control"
-        id="routeCompareControl"
-        hidden
-      >
-        <button
-          type="button"
-          class="route-compare-add"
-          id="routeCompareAdd"
-          aria-expanded="false"
-          aria-controls="routeComparePicker"
-        >
+      <div class="route-compare-control" id="routeCompareControl" hidden="">
+        <button type="button" class="route-compare-add" id="routeCompareAdd" aria-expanded="false" aria-controls="routeComparePicker">
           <span aria-hidden="true">＋</span>
           Bandingkan rute
         </button>
 
-        <div
-          class="route-compare-picker"
-          id="routeComparePicker"
-          hidden
-        >
+        <div class="route-compare-picker" id="routeComparePicker" hidden="">
           <label for="comparisonRouteSelect">
             Rute pembanding
           </label>
 
           <div class="route-compare-picker-row">
-            <span
-              class="route-compare-inline-swatch"
-              id="routeCompareInlineSwatch"
-              aria-hidden="true"
-              hidden
-            ></span>
+            <span class="route-compare-inline-swatch" id="routeCompareInlineSwatch" aria-hidden="true" hidden=""></span>
 
             <select id="comparisonRouteSelect">
               <option value="">Pilih rute…</option>
             </select>
 
-            <button
-              type="button"
-              class="route-compare-clear"
-              id="routeCompareClear"
-              title="Hapus rute pembanding"
-              aria-label="Hapus rute pembanding"
-              hidden
-            >
+            <button type="button" class="route-compare-clear" id="routeCompareClear" title="Hapus rute pembanding" aria-label="Hapus rute pembanding" hidden="">
               ×
             </button>
           </div>
@@ -232,15 +126,7 @@
 
       <section class="route-detail-card" id="routeDetailCard">
 
-        <button
-          type="button"
-          class="route-detail-toggle"
-          id="routeDetailToggle"
-          aria-expanded="true"
-          aria-controls="routeDetailBody"
-          title="Sembunyikan bagian lin / koridor"
-          aria-label="Sembunyikan bagian lin / koridor"
-        >
+        <button type="button" class="route-detail-toggle" id="routeDetailToggle" aria-expanded="true" aria-controls="routeDetailBody" title="Sembunyikan bagian lin / koridor" aria-label="Sembunyikan bagian lin / koridor">
           <span class="route-detail-toggle-label">Lin / Koridor</span>
           <span class="route-detail-toggle-chevron" aria-hidden="true">⌃</span>
         </button>
@@ -252,7 +138,7 @@
             <p>Menyiapkan rute dan halte/stasiun.</p>
           </section>
 
-          <section id="selectedStopInfo" class="selected-stop-card" hidden></section>
+          <section id="selectedStopInfo" class="selected-stop-card" hidden=""></section>
           <section id="stopList" class="stop-list"></section>
         </div>
 
@@ -262,166 +148,66 @@
   </aside>
 
   <!-- Collapse / expand panel kiri (desktop) -->
-  <button
-    type="button"
-    class="desktop-panel-handle left-panel-collapse"
-    id="leftPanelCollapse"
-    title="Sembunyikan panel kontrol"
-    aria-label="Sembunyikan panel kontrol"
-  >‹</button>
+  <button type="button" class="desktop-panel-handle left-panel-collapse" id="leftPanelCollapse" title="Sembunyikan panel kontrol" aria-label="Sembunyikan panel kontrol">‹</button>
 
-  <button
-    type="button"
-    class="desktop-panel-handle left-panel-restore"
-    id="leftPanelRestore"
-    title="Tampilkan panel kontrol"
-    aria-label="Tampilkan panel kontrol"
-    hidden
-  >›</button>
+  <button type="button" class="desktop-panel-handle left-panel-restore" id="leftPanelRestore" title="Tampilkan panel kontrol" aria-label="Tampilkan panel kontrol" hidden="">›</button>
 
   <!-- Toolbar kanan bawah -->
   <div class="bottom-toolbar" id="bottomToolbar">
 
-    <button
-      type="button"
-      class="toolbar-button mobile-bottom-route"
-      id="mobileBottomRouteButton"
-      title="Rute"
-      aria-label="Buka panel rute"
-      aria-expanded="false"
-    >
+    <button type="button" class="toolbar-button mobile-bottom-route" id="mobileBottomRouteButton" title="Rute" aria-label="Buka panel rute" aria-expanded="false">
       <svg viewBox="0 0 24 24" class="toolbar-icon" aria-hidden="true">
-        <circle cx="6" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
-        <circle cx="18" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
-        <circle cx="8" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
-        <path
-          d="M7.8 7.2l8.2-.1 M16.7 8.6L9.3 16.4"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.7"
-          stroke-linecap="round"
-        />
+        <circle cx="6" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.7"></circle>
+        <circle cx="18" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="1.7"></circle>
+        <circle cx="8" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.7"></circle>
+        <path d="M7.8 7.2l8.2-.1 M16.7 8.6L9.3 16.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
       </svg>
       <span class="mobile-toolbar-label">Rute</span>
     </button>
 
-    <button
-      type="button"
-      class="toolbar-button basemap-main-button"
-      id="basemapButton"
-      title="Peta Dasar"
-      aria-label="Buka pilihan peta dasar"
-    >
-      <img id="currentBasemapThumb" class="toolbar-thumbnail" alt="Peta dasar" />
+    <button type="button" class="toolbar-button basemap-main-button" id="basemapButton" title="Peta Dasar" aria-label="Buka pilihan peta dasar">
+      <img id="currentBasemapThumb" class="toolbar-thumbnail" alt="Peta dasar">
       <span class="mobile-toolbar-label">Peta Dasar</span>
     </button>
 
-    <button
-      type="button"
-      class="toolbar-button info-button"
-      id="infoButton"
-      title="Informasi dan Catatan"
-      aria-label="Buka informasi dan disclaimer"
-    >
+    <button type="button" class="toolbar-button info-button" id="infoButton" title="Informasi dan Catatan" aria-label="Buka informasi dan disclaimer">
       <svg viewBox="0 0 24 24" class="toolbar-icon" aria-hidden="true">
-        <circle
-          cx="12"
-          cy="12"
-          r="8.5"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-        />
-        <path
-          d="M12 10.5v6"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-        />
-        <circle
-          cx="12"
-          cy="7.5"
-          r="1"
-          fill="currentColor"
-        />
+        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+        <path d="M12 10.5v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+        <circle cx="12" cy="7.5" r="1" fill="currentColor"></circle>
       </svg>
       <span class="mobile-toolbar-label">Info</span>
     </button>
 
-    <button
-      type="button"
-      class="toolbar-button gps-button"
-      id="gpsButton"
-      title="Lokasi saya"
-      aria-label="Tampilkan lokasi saya"
-    >
+    <button type="button" class="toolbar-button gps-button" id="gpsButton" title="Lokasi saya" aria-label="Tampilkan lokasi saya">
       <svg viewBox="0 0 24 24" class="toolbar-icon" aria-hidden="true">
-        <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
-        <circle cx="12" cy="12" r="2.2" fill="currentColor"/>
-        <path
-          d="M12 2v3 M12 19v3 M2 12h3 M19 12h3"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
+        <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"></circle>
+        <circle cx="12" cy="12" r="2.2" fill="currentColor"></circle>
+        <path d="M12 2v3 M12 19v3 M2 12h3 M19 12h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
       </svg>
       <span class="mobile-toolbar-label">Lokasi Saya</span>
     </button>
 
     <div class="toolbar-scale" id="numericScale">1 : -</div>
 
-    <button
-      type="button"
-      class="toolbar-button"
-      id="homeButton"
-      title="Pusatkan kembali peta"
-      aria-label="Pusatkan kembali peta"
-    >
+    <button type="button" class="toolbar-button" id="homeButton" title="Pusatkan kembali peta" aria-label="Pusatkan kembali peta">
       <svg viewBox="0 0 24 24" class="toolbar-icon" aria-hidden="true">
-        <path
-          d="M5 8V5h3 M16 5h3v3 M19 16v3h-3 M8 19H5v-3"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-        />
+        <path d="M5 8V5h3 M16 5h3v3 M19 16v3h-3 M8 19H5v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
       </svg>
     </button>
 
   </div>
 
   <!-- Stack navigasi kanan bawah: North + Zoom -->
-  <div
-    class="lower-right-nav-stack"
-    id="lowerRightNavStack"
-    aria-label="Kontrol orientasi dan zoom"
-  >
-    <button
-      type="button"
-      class="floating-north"
-      id="northButton"
-      title="Kembalikan orientasi utara ke atas"
-      aria-label="Kembalikan orientasi utara ke atas"
-    >
+  <div class="lower-right-nav-stack" id="lowerRightNavStack" aria-label="Kontrol orientasi dan zoom">
+    <button type="button" class="floating-north" id="northButton" title="Kembalikan orientasi utara ke atas" aria-label="Kembalikan orientasi utara ke atas">
       <span class="floating-north-n">N</span>
       <span class="floating-north-arrow" id="northArrowGlyph">▲</span>
     </button>
 
     <div class="floating-zoom" id="floatingZoom" aria-label="Kontrol zoom">
-      <button
-        type="button"
-        id="zoomInButton"
-        title="Perbesar"
-        aria-label="Perbesar"
-      >+</button>
-      <button
-        type="button"
-        id="zoomOutButton"
-        title="Perkecil"
-        aria-label="Perkecil"
-      >−</button>
+      <button type="button" id="zoomInButton" title="Perbesar" aria-label="Perbesar">+</button>
+      <button type="button" id="zoomOutButton" title="Perkecil" aria-label="Perkecil">−</button>
     </div>
   </div>
 
@@ -432,108 +218,59 @@
         <h1>Jaringan Transportasi Umum Jabodetabek</h1>
       </div>
 
-      <button
-        type="button"
-        class="mobile-info-close"
-        id="mobileInfoClose"
-        aria-label="Tutup panel informasi"
-      >×</button>
+      <button type="button" class="mobile-info-close" id="mobileInfoClose" aria-label="Tutup panel informasi">×</button>
     </header>
 
     <div class="right-info-body">
       <section class="right-info-section">
         <div class="right-info-section-title">Legenda</div>
 
-        <details
-          class="legend-section legend-collapsible-section"
-          data-legend-section="status"
-          open
-        >
+        <details class="legend-section legend-collapsible-section" data-legend-section="status" open="">
           <summary class="legend-section-toggle">
             <span class="legend-section-title">Status Jaringan</span>
             <span class="legend-section-chevron" aria-hidden="true">⌃</span>
           </summary>
 
-          <div class="legend-section-content">
+          <div class="webgis-exploration-label">Eksplorasi WebGIS</div><div class="legend-section-content">
             <div class="legend-item">
               <svg class="legend-route-swatch" viewBox="0 0 54 10" aria-hidden="true">
-                <line
-                  x1="2" y1="5" x2="52" y2="5"
-                  stroke="currentColor"
-                  stroke-width="4"
-                  stroke-linecap="round"
-                />
+                <line x1="2" y1="5" x2="52" y2="5" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
               </svg>
               <span>Eksisting</span>
             </div>
 
             <div class="legend-item" id="constructionLegendItem">
               <svg class="legend-route-swatch is-construction" viewBox="0 0 54 12" aria-hidden="true">
-                <line
-                  x1="2" y1="6" x2="52" y2="6"
-                  stroke="#555"
-                  stroke-width="7"
-                  stroke-linecap="round"
-                  stroke-dasharray="2 5"
-                />
-                <line
-                  x1="2" y1="6" x2="52" y2="6"
-                  stroke="currentColor"
-                  stroke-width="3.5"
-                  stroke-linecap="round"
-                />
+                <line x1="2" y1="6" x2="52" y2="6" stroke="#555" stroke-width="7" stroke-linecap="round" stroke-dasharray="2 5"></line>
+                <line x1="2" y1="6" x2="52" y2="6" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"></line>
               </svg>
               <span>Dalam Pembangunan</span>
             </div>
 
             <div class="legend-item">
               <svg class="legend-route-swatch" viewBox="0 0 54 10" aria-hidden="true">
-                <line
-                  x1="2" y1="5" x2="52" y2="5"
-                  stroke="currentColor"
-                  stroke-width="4"
-                  stroke-linecap="round"
-                  stroke-dasharray="12 7"
-                />
+                <line x1="2" y1="5" x2="52" y2="5" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="12 7"></line>
               </svg>
               <span>Rencana</span>
             </div>
 
             <div class="legend-item">
               <svg class="legend-route-swatch is-proposed" viewBox="0 0 54 10" aria-hidden="true">
-                <line
-                  x1="2" y1="5" x2="52" y2="5"
-                  stroke="currentColor"
-                  stroke-width="4"
-                  stroke-linecap="round"
-                  stroke-dasharray="7 6"
-                />
+                <line x1="2" y1="5" x2="52" y2="5" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="7 6"></line>
               </svg>
               <span>Usulan</span>
             </div>
 
             <div class="legend-item">
               <svg class="legend-route-swatch is-conceptual" viewBox="0 0 54 10" aria-hidden="true">
-                <line
-                  x1="2" y1="5" x2="52" y2="5"
-                  stroke="currentColor"
-                  stroke-width="4"
-                  stroke-linecap="round"
-                  stroke-dasharray="2 6"
-                />
+                <line x1="2" y1="5" x2="52" y2="5" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 6"></line>
               </svg>
-              <span>Gagasan</span>
+              <span>Gagasan WebGIS</span>
             </div>
 
             <div class="legend-item">
               <svg class="legend-route-swatch is-inactive" viewBox="0 0 54 10" aria-hidden="true">
-                <line
-                  x1="2" y1="5" x2="52" y2="5"
-                  stroke="currentColor"
-                  stroke-width="4"
-                  stroke-linecap="round"
-                  opacity="0.42"
-                />
+                <line x1="2" y1="5" x2="52" y2="5" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.42"></line>
               </svg>
               <span>Nonaktif</span>
             </div>
@@ -544,12 +281,7 @@
           </div>
         </details>
 
-        <details
-          class="legend-section legend-structure-section legend-collapsible-section"
-          id="structureLegendSection"
-          data-legend-section="structure"
-          hidden
-        >
+        <details class="legend-section legend-structure-section legend-collapsible-section" id="structureLegendSection" data-legend-section="structure" hidden="">
           <summary class="legend-section-toggle">
             <span class="legend-section-title">Struktur Jalur</span>
             <span class="legend-section-chevron" aria-hidden="true">⌃</span>
@@ -558,23 +290,23 @@
           <div class="legend-section-content">
             <div class="legend-item">
               <svg class="legend-route-swatch" viewBox="0 0 54 10" aria-hidden="true">
-                <line x1="2" y1="5" x2="52" y2="5" stroke="#ca2047" stroke-width="4" stroke-linecap="round" />
+                <line x1="2" y1="5" x2="52" y2="5" stroke="#ca2047" stroke-width="4" stroke-linecap="round"></line>
               </svg>
               <span>Layang</span>
             </div>
 
             <div class="legend-item">
               <svg class="legend-route-swatch" viewBox="0 0 54 10" aria-hidden="true">
-                <line x1="2" y1="5" x2="52" y2="5" stroke="#ca2047" stroke-width="4" stroke-linecap="round" />
-                <line x1="2" y1="5" x2="52" y2="5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="9 4" />
+                <line x1="2" y1="5" x2="52" y2="5" stroke="#ca2047" stroke-width="4" stroke-linecap="round"></line>
+                <line x1="2" y1="5" x2="52" y2="5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="9 4"></line>
               </svg>
               <span>Transisi</span>
             </div>
 
             <div class="legend-item">
               <svg class="legend-route-swatch" viewBox="0 0 54 10" aria-hidden="true">
-                <line x1="2" y1="5" x2="52" y2="5" stroke="#ca2047" stroke-width="4" stroke-linecap="round" />
-                <line x1="2" y1="5" x2="52" y2="5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="1 6" />
+                <line x1="2" y1="5" x2="52" y2="5" stroke="#ca2047" stroke-width="4" stroke-linecap="round"></line>
+                <line x1="2" y1="5" x2="52" y2="5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="1 6"></line>
               </svg>
               <span>Bawah tanah</span>
             </div>
@@ -585,12 +317,7 @@
           </div>
         </details>
 
-        <details
-          class="legend-section legend-operational-section legend-collapsible-section"
-          id="operationalLegendSection"
-          data-legend-section="operational"
-          hidden
-        >
+        <details class="legend-section legend-operational-section legend-collapsible-section" id="operationalLegendSection" data-legend-section="operational" hidden="">
           <summary class="legend-section-toggle">
             <span class="legend-section-title">Kondisi Operasional</span>
             <span class="legend-section-chevron" aria-hidden="true">⌃</span>
@@ -629,10 +356,7 @@
           </div>
         </details>
 
-        <details
-          class="legend-section legend-mode-section legend-collapsible-section"
-          data-legend-section="mode"
-        >
+        <details class="legend-section legend-mode-section legend-collapsible-section" data-legend-section="mode">
           <summary class="legend-section-toggle">
             <span class="legend-section-title">Moda</span>
             <span class="legend-section-chevron" aria-hidden="true">⌃</span>
@@ -665,20 +389,12 @@
       </section>
 
       <section class="right-info-section right-info-help">
-        <button
-          type="button"
-          class="right-info-action"
-          id="rightInfoGuideButton"
-        >
+        <button type="button" class="right-info-action" id="rightInfoGuideButton">
           <span class="right-info-action-icon" aria-hidden="true">?</span>
           <span>Cara Menggunakan</span>
         </button>
 
-        <button
-          type="button"
-          class="right-info-action"
-          id="rightInfoAboutButton"
-        >
+        <button type="button" class="right-info-action" id="rightInfoAboutButton">
           <span class="right-info-action-icon" aria-hidden="true">ⓘ</span>
           <span>Informasi &amp; Catatan</span>
         </button>
@@ -687,117 +403,44 @@
   </aside>
 
   <!-- Pencarian global -->
-  <section
-    class="global-search-panel"
-    id="globalSearchPanel"
-    aria-label="Pencarian lokasi"
-  >
+  <section class="global-search-panel" id="globalSearchPanel" aria-label="Pencarian lokasi">
     <label for="globalSearchInput">Cari Lokasi</label>
 
     <div class="global-search-input-wrap">
-      <svg
-        viewBox="0 0 24 24"
-        class="global-search-icon"
-        aria-hidden="true"
-      >
-        <circle
-          cx="10.5"
-          cy="10.5"
-          r="6.2"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-        />
-        <path
-          d="M15.2 15.2L20 20"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-        />
+      <svg viewBox="0 0 24 24" class="global-search-icon" aria-hidden="true">
+        <circle cx="10.5" cy="10.5" r="6.2" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+        <path d="M15.2 15.2L20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
       </svg>
 
-      <input
-        type="search"
-        id="globalSearchInput"
-        placeholder="Halte, stasiun, koridor, tempat…"
-        autocomplete="off"
-        spellcheck="false"
-        aria-label="Cari halte, stasiun, koridor, atau tempat"
-        aria-controls="globalSearchResults"
-        aria-expanded="false"
-      />
+      <input type="search" id="globalSearchInput" placeholder="Halte, stasiun, koridor, tempat…" autocomplete="off" spellcheck="false" aria-label="Cari halte, stasiun, koridor, atau tempat" aria-controls="globalSearchResults" aria-expanded="false">
 
-      <button
-        type="button"
-        class="global-search-clear"
-        id="globalSearchClear"
-        aria-label="Hapus pencarian"
-        title="Hapus pencarian"
-        hidden
-      >×</button>
+      <button type="button" class="global-search-clear" id="globalSearchClear" aria-label="Hapus pencarian" title="Hapus pencarian" hidden="">×</button>
 
-      <button
-        type="button"
-        class="global-search-submit"
-        id="globalSearchSubmit"
-        aria-label="Cari tempat secara daring"
-        title="Cari tempat secara daring"
-      >Cari</button>
+      <button type="button" class="global-search-submit" id="globalSearchSubmit" aria-label="Cari tempat secara daring" title="Cari tempat secara daring">Cari</button>
     </div>
 
-    <div
-      class="global-search-results"
-      id="globalSearchResults"
-      role="listbox"
-      aria-label="Hasil pencarian lokasi"
-      hidden
-    ></div>
+    <div class="global-search-results" id="globalSearchResults" role="listbox" aria-label="Hasil pencarian lokasi" hidden=""></div>
 
   </section>
 
   <!-- Basemap panel -->
-  <section class="basemap-panel" id="basemapPanel" hidden>
+  <section class="basemap-panel" id="basemapPanel" hidden="">
     <div class="basemap-header">
       <h2>Pilih Peta Dasar</h2>
-      <button
-        type="button"
-        class="basemap-close"
-        id="basemapClose"
-        aria-label="Tutup"
-      >×</button>
+      <button type="button" class="basemap-close" id="basemapClose" aria-label="Tutup">×</button>
     </div>
 
-    <div
-      class="basemap-carousel"
-      id="basemapCarousel"
-      aria-label="Pilihan peta dasar"
-    >
-      <button
-        type="button"
-        class="basemap-option active"
-        data-basemap="light"
-        title="Terang"
-      >
+    <div class="basemap-carousel" id="basemapCarousel" aria-label="Pilihan peta dasar">
+      <button type="button" class="basemap-option active" data-basemap="light" title="Terang">
         <div class="basemap-preview-map" id="previewLight"></div>
         <span class="basemap-option-label">Terang</span>
       </button>
 
-      <button
-        type="button"
-        class="basemap-option"
-        data-basemap="osm"
-        title="OpenStreetMap"
-      >
+      <button type="button" class="basemap-option" data-basemap="osm" title="OpenStreetMap">
         <div class="basemap-preview-map" id="previewOsm"></div>
         <span class="basemap-option-label">OSM</span>
       </button>
-      <button
-        type="button"
-        class="basemap-option"
-        data-basemap="satellite"
-        title="Satelit"
-      >
+      <button type="button" class="basemap-option" data-basemap="satellite" title="Satelit">
         <div class="basemap-preview-map" id="previewSatellite"></div>
         <span class="basemap-option-label">Satelit</span>
       </button>
@@ -816,47 +459,31 @@
   </section>
 
   <!-- Informasi / Catatan -->
-  <div
-    class="info-modal-backdrop"
-    id="infoModalBackdrop"
-    hidden
-  >
-    <section
-      class="info-modal"
-      id="infoModal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="infoModalTitle"
-      aria-describedby="infoModalDescription"
-    >
+  <div class="info-modal-backdrop" id="infoModalBackdrop" hidden="">
+    <section class="info-modal" id="infoModal" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle" aria-describedby="infoModalDescription">
       <div class="info-modal-header">
         <div>
           <div class="info-modal-eyebrow">INFORMASI</div>
           <h2 id="infoModalTitle">Tentang Peta</h2>
         </div>
 
-        <button
-          type="button"
-          class="info-modal-close"
-          id="infoModalClose"
-          aria-label="Tutup informasi"
-        >×</button>
+        <button type="button" class="info-modal-close" id="infoModalClose" aria-label="Tutup informasi">×</button>
       </div>
 
       <div class="info-modal-body" id="infoModalDescription">
         <p>
           WebGIS jaringan transportasi umum Jabodetabek yang menampilkan
           jaringan <strong>Eksisting</strong>, <strong>Dalam Pembangunan</strong>,
-          <strong>Rencana</strong>, <strong>Usulan</strong>, <strong>Gagasan</strong>,
+          <strong>Rencana</strong>, <strong>Usulan</strong>, <strong>Gagasan WebGIS</strong>,
           dan <strong>Nonaktif</strong>.
         </p>
 
         <div class="info-release-meta" aria-label="Informasi versi dan pembaruan WebGIS">
           <span class="info-release-meta-label">Versi WebGIS</span>
-          <strong>v0.13.25</strong>
+          <strong>v0.8</strong>
           <span>·</span>
           <span class="info-release-meta-label">Pembaruan terakhir</span>
-          <strong>3 September 2026</strong>
+          <strong>5 September 2026</strong>
         </div>
 
         <div class="info-modal-notice info-status-notice">
@@ -880,7 +507,7 @@
           </p>
 
           <p>
-            <strong>Gagasan</strong> — ide pengembangan jaringan yang disusun
+            <strong>Gagasan WebGIS</strong> — ide pengembangan jaringan yang disusun
             untuk eksplorasi dalam WebGIS dan bukan merupakan rencana resmi
             pemerintah atau operator transportasi.
           </p>
@@ -903,19 +530,11 @@
           <div class="visual-asset-credits-body">
             <p>
               Sejumlah ikon lin transportasi pada WebGIS ini menggunakan karya
-              <a
-                href="https://transportforjakarta.or.id/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href="https://transportforjakarta.or.id/" target="_blank" rel="noopener noreferrer">
                 Transport for Jakarta – FDTJ
               </a>
               yang tersedia berdasarkan
-              <a
-                href="https://creativecommons.org/licenses/by-sa/4.0/"
-                target="_blank"
-                rel="license noopener noreferrer"
-              >
+              <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="license noopener noreferrer">
                 Creative Commons Attribution-ShareAlike 4.0 International
                 (CC BY-SA 4.0)
               </a>.
@@ -924,20 +543,11 @@
 
             <p>
               Ikon LRT Jakarta Lin S versi vektor dikreditkan kepada
-              <a
-                href="https://commons.wikimedia.org/wiki/User:Vulphere"
-                target="_blank"
-                rel="noopener noreferrer"
-              >Vulphere</a>, berdasarkan karya Transport for Jakarta – FDTJ.
+              <a href="https://commons.wikimedia.org/wiki/User:Vulphere" target="_blank" rel="noopener noreferrer">Vulphere</a>, berdasarkan karya Transport for Jakarta – FDTJ.
             </p>
 
             <p>
-              <a
-                href="https://www.flaticon.com/free-icons/terminal"
-                title="terminal icons"
-                target="_blank"
-                rel="noopener noreferrer"
-              >Terminal icons created by rcherem - Flaticon</a>.
+              <a href="https://www.flaticon.com/free-icons/terminal" title="terminal icons" target="_blank" rel="noopener noreferrer">Terminal icons created by rcherem - Flaticon</a>.
             </p>
 
             <p class="visual-asset-trademark-note">
@@ -1027,7 +637,7 @@
 
             <ul>
               <li>
-                <strong>Eksisting/Dalam Pembangunan/Rencana/Usulan/Gagasan/Nonaktif</strong>
+                <strong>Eksisting/Dalam Pembangunan/Rencana/Usulan/Gagasan WebGIS/Nonaktif</strong>
                 menunjukkan tingkat status jaringan. Status Dalam Pembangunan
                 digunakan untuk jaringan yang telah memasuki tahap konstruksi fisik
                 dan belum beroperasi.
@@ -1057,244 +667,7 @@
         <details class="info-changelog-details">
           <summary>Riwayat pembaruan</summary>
 
-          <div class="info-changelog-body">
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.13.25</span>
-                <span class="info-changelog-date">3 September 2026</span>
-              </strong>
-              <span>
-                Penyempurnaan badge identitas rute pada panel kiri: angka koridor BRT
-                dua digit diperkecil agar proporsinya seimbang dengan badge satu digit.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.13.12</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Koreksi isolasi status operasional antar moda: fallback pengalihan
-                BRT tidak lagi diterapkan ke stasiun rail yang kebetulan memiliki
-                nama sama dengan halte BRT.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.13.11</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Finalisasi baseline desktop: tata letak desktop dibekukan setelah
-                audit panel, popup, pencarian, legenda, modal informasi, dan navigasi
-                halte/stasiun. Tidak ada perubahan data atau logika jaringan.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.13.10</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Penyederhanaan nomenklatur status: label Konseptual diganti menjadi
-                Gagasan agar lebih mudah dipahami pengguna umum. Nilai internal
-                Conceptual dan data lama tetap didukung untuk kompatibilitas.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.13.9</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Penyempurnaan nomenklatur status jaringan: definisi Dalam Pembangunan
-                kini dijelaskan berdasarkan tahap konstruksi fisik dan tidak lagi
-                dikaitkan dengan kelompok moda tertentu.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.13.8</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Perbaikan visual pada panel Informasi & Catatan: garis/border atas
-                kartu Kredit Aset Visual dipulihkan agar konsisten dengan accordion
-                Privasi, Metodologi, dan Riwayat pembaruan.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.13.7</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Hardening rilis: dokumentasi QA dipindahkan ke folder docs agar
-                root proyek lebih bersih, keluaran debug rutin dinonaktifkan pada
-                mode produksi, dan audit rilis diperketat tanpa mengubah tampilan,
-                data, integrasi, atau logika navigasi.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.13.6</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Stabilisasi antarmuka: placeholder pencarian dipersingkat agar
-                tidak terpotong pada panel kanan, state halte terpilih diperjelas
-                untuk pembaca layar, dan fokus keyboard pada daftar halte serta
-                tombol popup diperkuat tanpa mengubah data atau urutan navigasi.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.13.5</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Polishing antarmuka: kartu Sumber Data pada popup dibuat setara
-                dengan Google Maps, label Sebelumnya/Berikutnya diperjelas,
-                microcopy popup ditingkatkan keterbacaannya, dan kartu Halte
-                Terpilih dipadatkan agar daftar halte mendapat ruang lebih besar.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.13.4</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Penyempurnaan popup halte/stasiun: navigasi tunggal pada terminus
-                kini memenuhi lebar footer, kartu sumber dipadatkan, dan daftar
-                integrasi memberi indikator scroll halus hanya ketika kontennya
-                benar-benar melebihi ruang tersedia. Audit urutan navigasi BRT
-                juga ditambahkan ke paket pengujian.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.13.3</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Penghapusan fitur Radius Jangkauan 400/600/800 m dari popup dan
-                peta agar antarmuka kembali fokus pada jaringan, pelayanan, dan
-                integrasi antarmoda. Tata letak popup juga diperkuat agar footer
-                Sebelumnya/Berikutnya tetap berada di dalam kartu pada layar pendek.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.13.2</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Penghapusan fitur Jangkauan Jalan Kaki eksperimental beserta
-                koneksi layanan Valhalla karena layanan demo tidak cukup stabil
-                untuk penggunaan publik. Radius Jangkauan geometris 400, 600,
-                dan 800 m tetap tersedia.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.13.1</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Penyesuaian kepatuhan layanan pihak ketiga: pencarian tempat
-                hanya setelah tindakan eksplisit pengguna, pembatasan dan
-                cache request Nominatim, akses lokasi hanya setelah tombol
-                Lokasi Saya ditekan, atribusi peta yang selalu terlihat,
-                perbaikan cache versi, aset, CSS, schema, dan sequence data.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.12</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Penambahan Radius Jangkauan halte/stasiun 400 m, 600 m, dan
-                800 m dengan pilihan tampilan seluruh radius; radius mengikuti
-                titik terpilih dan menyesuaikan tampilan peta secara halus;
-                penyempurnaan nama rute dengan relasi efektif menurut bagian
-                jaringan yang terlihat; nama halte/stasiun pada peta yang dapat
-                diklik; penyempurnaan tutorial pemilihan titik dari peta maupun
-                daftar; serta penyelarasan istilah antarmuka ke bahasa Indonesia.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.11</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Penambahan MRT Jakarta (Lin Utara - Selatan) sebagai moda baru;
-                dukungan struktur jalur layang, transisi, dan bawah tanah;
-                integrasi multimoda BRT–MRT berbasis halte/stasiun tujuan;
-                jendela informasi dan navigasi integrasi dengan perpindahan peta secara halus;
-                label seluruh stasiun pada lin terpilih; lin/rute yang dapat diklik;
-                penyempurnaan logo lin, perhitungan panjang, dan daftar stasiun yang
-                lebih ringkas; serta penambahan status Dalam Pembangunan untuk
-                jaringan yang telah memasuki tahap konstruksi fisik.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.10</span>
-                <span class="info-changelog-date">2 September 2026</span>
-              </strong>
-              <span>
-                Penambahan tombol arah perjalanan lintas koridor; penyempurnaan urutan halte
-                dua arah; jendela informasi dan integrasi yang lebih ringkas; penyelarasan ikon koridor;
-                perbaikan tutorial; serta penyempurnaan antarmuka desktop dan struktur informasi.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.9</span>
-                <span class="info-changelog-date">31 Agustus 2026</span>
-              </strong>
-              <span>
-                Penyempurnaan pengalihan Koridor 2, 3, dan 8; halte terpisah;
-                penanda kondisi operasional; jendela informasi integrasi; tutorial;
-                ringkasan rute; tautan yang dapat dibagikan; status integrasi;
-                metadata sumber/dasar data; pencarian tempat langsung ke lokasi;
-                pemusatan ulang kontekstual; perbandingan dua rute dengan
-                kontrol pembanding ringkas; pengurangan tumpang tindih label halte secara adaptif;
-                pengelolaan penanda tempat; penyempurnaan tampilan desktop pada pembesaran browser 100%; dukungan skema BRT v2.0 (GEOM_ID fisik, STOP_VAR, area berbayar, pengalihan berbasis data, lokasi Google Maps, metadata sumber halte, dan validasi skema BRT_Stop); dan penyempurnaan antarmuka desktop.
-              </span>
-            </div>
-
-            <div class="info-changelog-entry">
-              <strong>
-                <span class="info-changelog-version">v0.8</span>
-                <span class="info-changelog-date">Agustus 2026</span>
-              </strong>
-              <span>
-                Penambahan Koridor BRT 15–19 sebagai jaringan berstatus
-                Rencana dengan trase dan halte sebagai skenario visualisasi,
-                serta penyempurnaan klasifikasi status jaringan.
-              </span>
-            </div>
-          </div>
+          <div class="info-changelog-body"><div class="info-changelog-entry"><strong><span class="info-changelog-version">v0.8</span><span class="info-changelog-date">5 September 2026</span></strong><ul class="info-changelog-list"><li>Penyempurnaan popup integrasi: label publik KAJJ diringkas menjadi KA Jarak Jauh serta logo dan ruang kosongnya dihilangkan dari header kategori.</li><li>Navigasi integrasi memprioritaskan INT_STOP; bila data lama belum memiliki INT_STOP, fallback nama dibatasi ketat di dalam operator/moda yang sama sehingga Stasiun Manggarai tidak dapat jatuh ke Halte BRT Manggarai.</li><li>Status titik integrasi seperti Dalam Pembangunan dipisahkan dari nama stasiun menjadi label kecil agar nama tujuan lebih ringkas dan mudah dibaca.</li><li>Jarak antara bagian Koridor yang dilayani dan Integrasi dipadatkan tanpa mengubah ukuran popup.</li></ul></div><div class="info-changelog-entry"><strong><span class="info-changelog-version">v0.7</span><span class="info-changelog-date">2–5 September 2026</span></strong><ul class="info-changelog-list"><li>Penyesuaian kepatuhan layanan pihak ketiga: pencarian tempat hanya setelah tindakan eksplisit pengguna, pembatasan dan cache request Nominatim, akses lokasi hanya setelah tombol Lokasi Saya ditekan, atribusi peta yang selalu terlihat, serta perbaikan cache versi, aset, CSS, schema, dan sequence data.</li><li>Pengujian fitur Jangkauan Jalan Kaki dan Radius Jangkauan 400/600/800 m, kemudian penghapusan keduanya agar antarmuka kembali fokus pada jaringan, pelayanan, dan integrasi antarmoda.</li><li>Penyempurnaan popup halte/stasiun: navigasi terminus, kartu sumber, indikator scroll integrasi, label Sebelumnya/Berikutnya, microcopy, kartu Halte Terpilih, dan ketahanan footer pada layar pendek.</li><li>Stabilisasi antarmuka dan aksesibilitas: placeholder pencarian, state halte terpilih untuk pembaca layar, fokus keyboard, serta hardening rilis dan pembersihan dokumentasi QA tanpa mengubah data jaringan.</li><li>Pemulihan konsistensi visual pada panel Informasi &amp; Catatan serta penyempurnaan nomenklatur status Dalam Pembangunan berdasarkan tahap konstruksi fisik.</li><li>Penyederhanaan nomenklatur status gagasan menjadi Gagasan WebGIS untuk tampilan publik; nilai internal Conceptual dan data lama tetap didukung untuk kompatibilitas.</li><li>Finalisasi baseline desktop setelah audit panel, popup, pencarian, legenda, modal informasi, dan navigasi halte/stasiun.</li><li>Koreksi isolasi status operasional antar moda agar fallback pengalihan BRT tidak diterapkan ke stasiun rail yang memiliki nama sama dengan halte BRT.</li><li>Penyempurnaan badge identitas rute pada panel kiri, terutama proporsi angka koridor BRT dua digit.</li><li>Penyempurnaan keterbacaan microtext popup halte/stasiun dan label bottom navigation mobile tanpa mengubah ukuran popup, badge, ikon, marker, maupun tinggi navbar.</li><li>Perapian riwayat perubahan: seluruh turunan versi v0.13.x dikelompokkan menjadi satu release publik v0.7 dan entri duplikat dihapus.</li><li>Gagasan WebGIS dipisahkan sebagai Eksplorasi WebGIS dan diberi disclaimer bahwa skenario tersebut bukan rencana resmi pemerintah/operator.</li></ul></div><div class="info-changelog-entry"><strong><span class="info-changelog-version">v0.6</span><span class="info-changelog-date">2 September 2026</span></strong><ul class="info-changelog-list"><li>Penambahan Radius Jangkauan halte/stasiun 400 m, 600 m, dan 800 m dengan pilihan tampilan seluruh radius; radius mengikuti titik terpilih dan menyesuaikan tampilan peta secara halus; penyempurnaan nama rute dengan relasi efektif menurut bagian jaringan yang terlihat; nama halte/stasiun pada peta yang dapat diklik; penyempurnaan tutorial pemilihan titik dari peta maupun daftar; serta penyelarasan istilah antarmuka ke bahasa Indonesia.</li></ul></div><div class="info-changelog-entry"><strong><span class="info-changelog-version">v0.5</span><span class="info-changelog-date">2 September 2026</span></strong><ul class="info-changelog-list"><li>Penambahan MRT Jakarta (Lin Utara–Selatan) sebagai moda baru; dukungan struktur jalur layang, transisi, dan bawah tanah; integrasi multimoda BRT–MRT berbasis halte/stasiun tujuan; jendela informasi dan navigasi integrasi dengan perpindahan peta secara halus; label seluruh stasiun pada lin terpilih; lin/rute yang dapat diklik; penyempurnaan logo lin, perhitungan panjang, dan daftar stasiun yang lebih ringkas; serta penambahan status Dalam Pembangunan untuk jaringan yang telah memasuki tahap konstruksi fisik.</li></ul></div><div class="info-changelog-entry"><strong><span class="info-changelog-version">v0.4</span><span class="info-changelog-date">2 September 2026</span></strong><ul class="info-changelog-list"><li>Penambahan tombol arah perjalanan lintas koridor; penyempurnaan urutan halte dua arah; jendela informasi dan integrasi yang lebih ringkas; penyelarasan ikon koridor; perbaikan tutorial; serta penyempurnaan antarmuka desktop dan struktur informasi.</li></ul></div><div class="info-changelog-entry"><strong><span class="info-changelog-version">v0.3</span><span class="info-changelog-date">31 Agustus 2026</span></strong><ul class="info-changelog-list"><li>Penyempurnaan pengalihan Koridor 2, 3, dan 8; halte terpisah; penanda kondisi operasional; jendela informasi integrasi; tutorial; ringkasan rute; tautan yang dapat dibagikan; status integrasi; metadata sumber/dasar data; pencarian tempat langsung ke lokasi; pemusatan ulang kontekstual; perbandingan dua rute; pengurangan tumpang tindih label halte secara adaptif; pengelolaan penanda tempat; penyempurnaan tampilan desktop; dukungan skema BRT v2.0; dan penyempurnaan antarmuka desktop.</li></ul></div><div class="info-changelog-entry"><strong><span class="info-changelog-version">v0.2</span><span class="info-changelog-date">Agustus 2026</span></strong><ul class="info-changelog-list"><li>Penambahan Koridor BRT 15–19 sebagai jaringan berstatus Rencana dengan trase dan halte sebagai skenario visualisasi, serta penyempurnaan klasifikasi status jaringan.</li></ul></div><div class="info-changelog-entry"><strong><span class="info-changelog-version">v0.1</span><span class="info-changelog-date">28 Agustus 2026</span></strong><ul class="info-changelog-list"><li>Awal pengembangan WebGIS Jaringan Transportasi Umum Jabodetabek.</li></ul></div></div>
         </details>
 
         <section class="info-guide-section">
@@ -1345,11 +718,7 @@
       </div>
 
       <div class="info-modal-footer">
-        <button
-          type="button"
-          class="info-modal-primary"
-          id="infoModalAccept"
-        >
+        <button type="button" class="info-modal-primary" id="infoModalAccept">
           Saya Mengerti
         </button>
       </div>
@@ -1357,25 +726,10 @@
   </div>
 
   <!-- First-visit walkthrough -->
-  <div
-    class="product-tour"
-    id="productTour"
-    hidden
-    aria-live="polite"
-  >
-    <div
-      class="product-tour-spotlight"
-      id="productTourSpotlight"
-      aria-hidden="true"
-    ></div>
+  <div class="product-tour" id="productTour" hidden="" aria-live="polite">
+    <div class="product-tour-spotlight" id="productTourSpotlight" aria-hidden="true"></div>
 
-    <section
-      class="product-tour-card"
-      id="productTourCard"
-      role="dialog"
-      aria-modal="false"
-      aria-labelledby="productTourTitle"
-    >
+    <section class="product-tour-card" id="productTourCard" role="dialog" aria-modal="false" aria-labelledby="productTourTitle">
       <div class="product-tour-progress" id="productTourProgress">
         TIP 1 DARI 5
       </div>
@@ -1384,36 +738,19 @@
 
       <p id="productTourText"></p>
 
-      <div
-        class="product-tour-visual"
-        id="productTourVisual"
-        aria-hidden="true"
-      ></div>
+      <div class="product-tour-visual" id="productTourVisual" aria-hidden="true"></div>
 
       <div class="product-tour-footer">
-        <button
-          type="button"
-          class="product-tour-skip"
-          id="productTourSkip"
-        >
+        <button type="button" class="product-tour-skip" id="productTourSkip">
           Lewati
         </button>
 
         <div class="product-tour-nav">
-          <button
-            type="button"
-            class="product-tour-secondary"
-            id="productTourPrevious"
-            hidden
-          >
+          <button type="button" class="product-tour-secondary" id="productTourPrevious" hidden="">
             Sebelumnya
           </button>
 
-          <button
-            type="button"
-            class="product-tour-primary"
-            id="productTourNext"
-          >
+          <button type="button" class="product-tour-primary" id="productTourNext">
             Berikutnya
           </button>
         </div>
@@ -1424,23 +761,10 @@
   <!-- =====================================================
        BRT 15–19 — ROUTE INTRO
        ===================================================== -->
-  <div
-    id="routePlanIntro"
-    class="route-plan-intro-overlay"
-    hidden
-    role="dialog"
-    aria-modal="false"
-    aria-labelledby="routePlanIntroTitle"
-  >
+  <div id="routePlanIntro" class="route-plan-intro-overlay" hidden="" role="dialog" aria-modal="false" aria-labelledby="routePlanIntroTitle">
     <div class="route-plan-intro-card">
 
-      <button
-        id="routePlanIntroClose"
-        class="route-plan-intro-close"
-        type="button"
-        aria-label="Tutup pengantar koridor"
-        title="Tutup"
-      >
+      <button id="routePlanIntroClose" class="route-plan-intro-close" type="button" aria-label="Tutup pengantar koridor" title="Tutup">
         ×
       </button>
 
@@ -1448,39 +772,21 @@
         Rencana
       </div>
 
-      <div
-        id="routePlanIntroTitle"
-        class="route-plan-intro-title"
-      >
+      <div id="routePlanIntroTitle" class="route-plan-intro-title">
         Koridor
       </div>
 
-      <div
-        id="routePlanIntroText"
-        class="route-plan-intro-text"
-      ></div>
+      <div id="routePlanIntroText" class="route-plan-intro-text"></div>
 
-      <div
-        id="routePlanIntroExtra"
-        class="route-plan-intro-extra"
-        hidden
-      ></div>
+      <div id="routePlanIntroExtra" class="route-plan-intro-extra" hidden=""></div>
 
       <div class="route-plan-intro-actions">
 
-        <button
-          id="routePlanIntroSource"
-          class="route-plan-intro-source"
-          type="button"
-        >
+        <button id="routePlanIntroSource" class="route-plan-intro-source" type="button">
           Lihat Dasar Rencana
         </button>
 
-        <button
-          id="routePlanIntroDismiss"
-          class="route-plan-intro-dismiss"
-          type="button"
-        >
+        <button id="routePlanIntroDismiss" class="route-plan-intro-dismiss" type="button">
           Tutup
         </button>
 
@@ -1489,12 +795,9 @@
     </div>
   </div>
 
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin="anonymous"
-  ></script>
-  <script src="js/map.js?v=20260903-v0.13.25"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+  <script src="js/map.js?v=20260905-v0.8-fix2"></script>
 
-</body>
-</html>
+
+
+</body></html>

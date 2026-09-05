@@ -26634,3 +26634,509 @@ restoreRouteDetailCollapseState();
     }
   }
 );
+
+/* =========================================================
+   WEBGIS GAGASAN WEBGIS PUBLIC LABEL — v0.7
+   UI-only compatibility patch.
+   Internal data values remain Conceptual/Konseptual/Gagasan.
+   ========================================================= */
+(() => {
+  "use strict";
+
+  const PUBLIC_LABEL = "Gagasan WebGIS";
+  const EXPLORATION_LABEL = "Eksplorasi WebGIS";
+  const DISCLAIMER = "Skenario eksplorasi yang disusun untuk WebGIS ini; bukan rencana resmi pemerintah/operator.";
+
+  function replaceVisibleText(root) {
+    if (!root) return;
+    const target = root.nodeType === 9 ? root.body : root;
+    if (!target) return;
+
+    const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+
+    for (const node of nodes) {
+      const parent = node.parentElement;
+      if (!parent || parent.closest("script,style,noscript,template")) continue;
+      const current = node.nodeValue || "";
+      const next = current.replace(/\bGagasan\b(?!\s+WebGIS)/g, PUBLIC_LABEL);
+      if (next !== current) node.nodeValue = next;
+    }
+  }
+
+  function addPopupDisclaimer(root) {
+    const scope = root?.querySelectorAll ? root : document;
+    const popups = [];
+    if (root?.matches?.(".leaflet-popup-content,.stop-popup,.route-popup")) popups.push(root);
+    popups.push(...scope.querySelectorAll?.(".leaflet-popup-content,.stop-popup,.route-popup") || []);
+
+    for (const popup of new Set(popups)) {
+      const text = popup.textContent || "";
+      if (!text.includes(PUBLIC_LABEL) || popup.querySelector(".webgis-concept-note")) continue;
+
+      const note = document.createElement("div");
+      note.className = "webgis-concept-note";
+      note.textContent = DISCLAIMER;
+
+      const sourceSection = popup.querySelector(
+        ".stop-popup-section--source,.stop-popup-source,.route-popup-source,[class*=source]"
+      );
+      if (sourceSection?.parentNode) sourceSection.parentNode.insertBefore(note, sourceSection);
+      else popup.appendChild(note);
+    }
+  }
+
+  function ensureExplorationLegend() {
+    const leaves = Array.from(document.querySelectorAll("span,div,label,p,strong"))
+      .filter(el => (el.textContent || "").trim() === PUBLIC_LABEL);
+
+    for (const el of leaves) {
+      let ancestor = el.parentElement;
+      let legend = null;
+      for (let depth = 0; ancestor && depth < 6; depth++, ancestor = ancestor.parentElement) {
+        const signature = ((ancestor.id || "") + " " + (ancestor.className || "")).toLowerCase();
+        if (signature.includes("legend")) legend = ancestor;
+      }
+      if (!legend || legend.querySelector(".webgis-exploration-label")) continue;
+
+      let item = el;
+      while (item.parentElement && item.parentElement !== legend) item = item.parentElement;
+      const heading = document.createElement("div");
+      heading.className = "webgis-exploration-label";
+      heading.textContent = EXPLORATION_LABEL;
+      legend.insertBefore(heading, item);
+      return;
+    }
+  }
+
+  function setDefaultOffOnce() {
+    for (const label of document.querySelectorAll("label")) {
+      if (!(label.textContent || "").includes(PUBLIC_LABEL)) continue;
+      const input = label.control ||
+        (label.htmlFor ? document.getElementById(label.htmlFor) : null) ||
+        label.querySelector('input[type="checkbox"],input[type="radio"]');
+      if (input && input.checked) {
+        input.checked = false;
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+  }
+
+  function refresh(root = document) {
+    replaceVisibleText(root);
+    addPopupDisclaimer(root);
+    ensureExplorationLegend();
+  }
+
+  function start() {
+    refresh(document);
+    // Dilakukan sekali setelah bootstrap UI agar status gagasan tidak menyala sebagai default.
+    setTimeout(setDefaultOffOnce, 150);
+    setTimeout(() => refresh(document), 250);
+
+    const observer = new MutationObserver(mutations => {
+      for (const mutation of mutations) {
+        if (mutation.type === "characterData") {
+          refresh(mutation.target.parentElement || document);
+          continue;
+        }
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType === 1) refresh(node);
+          else if (node.parentElement) refresh(node.parentElement);
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+  } else {
+    start();
+  }
+})();
+
+/* =========================================================
+   WEBGIS INTEGRATION TARGET FIX — v0.8
+   - KAJJ public label -> KA Jarak Jauh
+   - KAJJ logo hidden while preserving alignment
+   - integration status separated from station name
+   ========================================================= */
+(() => {
+  "use strict";
+
+  const STATUS_RE = /^(.*?)(?:\s*\((Dalam Pembangunan|Rencana|Usulan|Gagasan(?: WebGIS)?|Konseptual|Conceptual|Nonaktif)\))\s*$/i;
+
+  function normalizeStatusLabel(value) {
+    const v = (value || "").trim();
+    if (/^(Gagasan|Konseptual|Conceptual)(?: WebGIS)?$/i.test(v)) return "Gagasan WebGIS";
+    return v;
+  }
+
+  function polishKajj(scope) {
+    const root = scope?.querySelectorAll ? scope : document;
+    const groups = [];
+    if (scope?.matches?.(".integration-group")) groups.push(scope);
+    groups.push(...(root.querySelectorAll?.(".integration-group") || []));
+
+    for (const group of new Set(groups)) {
+      const operator = group.querySelector(".integration-operator");
+      if (!operator) continue;
+      const label = (operator.textContent || "").trim();
+      if (!/^(Kereta Api Jarak Jauh|KA Jarak Jauh|KAJJ)$/i.test(label)) continue;
+
+      group.classList.add("integration-group--kajj");
+      operator.textContent = "KA Jarak Jauh";
+
+      // KAJJ adalah kategori layanan, bukan brand dengan logo khusus di popup.
+      // Hapus slot simbol seluruhnya agar tidak ada ruang kosong di kiri header.
+      const operatorRow = operator.parentElement;
+      if (!operatorRow) continue;
+      const symbol = operatorRow.querySelector(".integration-symbol");
+      if (symbol) symbol.remove();
+      const visualCandidates = Array.from(operatorRow.querySelectorAll("img,picture"));
+      for (const visual of visualCandidates) {
+        if (operator.contains(visual)) continue;
+        visual.remove();
+      }
+    }
+  }
+
+  function separateIntegrationStatuses(scope) {
+    const root = scope?.querySelectorAll ? scope : document;
+    const names = [];
+    if (scope?.matches?.(".integration-place-name")) names.push(scope);
+    names.push(...(root.querySelectorAll?.(".integration-place-name") || []));
+
+    for (const nameEl of new Set(names)) {
+      if (nameEl.dataset.webgisStatusSeparated === "1") continue;
+      const raw = (nameEl.textContent || "").trim();
+      const match = raw.match(STATUS_RE);
+      if (!match) continue;
+
+      const baseName = (match[1] || "").trim();
+      const status = normalizeStatusLabel(match[2]);
+      if (!baseName || !status) continue;
+
+      nameEl.textContent = baseName;
+      const chip = document.createElement("span");
+      chip.className = "integration-place-status-chip";
+      chip.textContent = status;
+      nameEl.appendChild(chip);
+      nameEl.dataset.webgisStatusSeparated = "1";
+    }
+  }
+
+  function normalizePlaceName(value) {
+    return String(value ?? "")
+      .replace(/(Dalam Pembangunan|Rencana|Usulan|Gagasan(?: WebGIS)?|Konseptual|Conceptual|Nonaktif)/gi, "")
+      .replace(/^(Halte|Stasiun|Terminal)s+/i, "")
+      .replace(/s+/g, " ")
+      .trim()
+      .toLowerCase();
+  }
+
+  function parseIntegrationMultiMap(value) {
+    const result = new Map();
+    String(value ?? "")
+      .split(";")
+      .map(item => item.trim())
+      .filter(Boolean)
+      .forEach(item => {
+        const i = item.indexOf(":");
+        if (i < 0) return;
+        const key = item.slice(0, i).trim();
+        const val = item.slice(i + 1).trim();
+        if (!key || !val) return;
+        if (!result.has(key)) result.set(key, []);
+        result.get(key).push(val);
+      });
+    return result;
+  }
+
+  function getRowPlaceName(row) {
+    const name = row?.querySelector?.(".integration-place-name");
+    if (!name) return "";
+    const clone = name.cloneNode(true);
+    clone.querySelectorAll?.(".integration-place-status-chip,.integration-place-status")
+      .forEach(node => node.remove());
+    return normalizePlaceName(clone.textContent || "");
+  }
+
+  function getSourceFeatureForIntegrationRow(row) {
+    const popup = row?.closest?.(".stop-popup");
+    const key = popup?.dataset?.stopKey || currentSelectedStopKey || "";
+    if (!key || typeof getStopByKey !== "function") return null;
+    return getStopByKey(key);
+  }
+
+  function getOperatorKeyFromGroup(group) {
+    const label = (group?.querySelector?.(".integration-operator")?.textContent || "").trim();
+    if (/^(KA Jarak Jauh|Kereta Api Jarak Jauh|KAJJ)$/i.test(label)) return "KAI_KAJJ";
+    if (/^KRL/i.test(label)) return "KRL";
+    if (/^KA Bandara$/i.test(label)) return "KAI_BANDARA";
+    if (/^MRT/i.test(label)) return "MRT_JAKARTA";
+    if (/^LRT Jabodebek$/i.test(label)) return "LRT_JABODEBEK";
+    if (/^LRT Jakarta$/i.test(label)) return "LRT_JAKARTA";
+    if (/^TransJakarta$/i.test(label)) return "TRANSJAKARTA";
+    if (/^Terminal Bus$/i.test(label)) return "TERMINAL";
+    return "";
+  }
+
+  function codeMatchesOperator(code, operatorKey) {
+    try {
+      const info = typeof getIntegrationInfo === "function" ? getIntegrationInfo(code) : null;
+      if (info?.operatorKey) return String(info.operatorKey) === String(operatorKey);
+    } catch (_) {}
+
+    const c = String(code || "").toUpperCase();
+    if (operatorKey === "TRANSJAKARTA") return c.startsWith("BRT_");
+    if (operatorKey === "KRL") return c.startsWith("KRL_");
+    if (operatorKey === "KAI_KAJJ") return c.includes("KAJJ") || c === "KAI_KAJJ";
+    if (operatorKey === "KAI_BANDARA") return c.includes("BANDARA");
+    if (operatorKey === "MRT_JAKARTA") return c.startsWith("MRT_");
+    if (operatorKey === "LRT_JABODEBEK") return c.startsWith("LRT_JB_");
+    if (operatorKey === "LRT_JAKARTA") return c.startsWith("LRT_JKT_") || c === "LRT_JKT";
+    if (operatorKey === "TERMINAL") return c === "TERMINAL";
+    return false;
+  }
+
+  function featureMatchesOperator(feature, operatorKey) {
+    const p = feature?.properties || {};
+    const mode = String(p.MODE || "").toUpperCase();
+    const operator = String(p.OPERATOR || "").toLowerCase();
+    const lines = String(p.LINES || p.ROUTES || "").toUpperCase();
+
+    if (operatorKey === "TRANSJAKARTA") return mode === "BRT";
+    if (mode === "BRT") return false;
+    if (operatorKey === "KRL") return mode === "KRL" || operator.includes("commuter");
+    if (operatorKey === "KAI_KAJJ") {
+      const isAirport = mode.includes("BANDARA") || lines.includes("BANDARA") || operator.includes("bandara");
+      const isCommuter = mode === "KRL" || operator.includes("commuter");
+      return !isAirport && !isCommuter && (
+        mode.includes("KAJJ") || lines.includes("KAJJ") || operator.includes("jarak jauh") ||
+        mode === "KA" || mode === "KAI" || mode === "KERETA API"
+      );
+    }
+    if (operatorKey === "KAI_BANDARA") return mode.includes("BANDARA") || lines.includes("BANDARA") || operator.includes("bandara");
+    if (operatorKey === "MRT_JAKARTA") return mode === "MRT" || operator.includes("mrt");
+    if (operatorKey === "LRT_JABODEBEK") return (mode === "LRT" || mode.includes("LRT")) && (operator.includes("jabodebek") || lines.includes("LRT_JB_"));
+    if (operatorKey === "LRT_JAKARTA") return (mode === "LRT" || mode.includes("LRT")) && (operator.includes("lrt jakarta") || lines.includes("LRT_JKT"));
+    if (operatorKey === "TERMINAL") return mode === "TERMINAL" || operator.includes("terminal");
+    return true;
+  }
+
+  function findStopFeatureByExplicitRef(ref, operatorKey) {
+    if (!stopData?.features || !ref) return null;
+    const wanted = String(ref).trim().toLowerCase();
+    const matches = stopData.features.filter(feature => {
+      const p = feature?.properties || {};
+      return [p.STOP_ID, p.GEOM_ID, p.ID]
+        .filter(v => v != null)
+        .some(v => String(v).trim().toLowerCase() === wanted);
+    });
+    return matches.find(feature => featureMatchesOperator(feature, operatorKey)) || null;
+  }
+
+  function findStopFeatureByNameWithinOperator(name, operatorKey) {
+    if (!stopData?.features || !name || !operatorKey) return null;
+    const wanted = normalizePlaceName(name);
+    if (!wanted) return null;
+
+    const matches = stopData.features.filter(feature => {
+      if (!featureMatchesOperator(feature, operatorKey)) return false;
+      const p = feature?.properties || {};
+      const labels = [p.DISPLAY_NM, p.STOP_NAME, p.NAME, p.STATION_NAME]
+        .filter(v => v != null)
+        .map(normalizePlaceName);
+      return labels.includes(wanted);
+    });
+
+    // Hanya gunakan fallback nama bila target dalam operator yang benar tidak ambigu.
+    return matches.length === 1 ? matches[0] : null;
+  }
+
+  function getTargetRouteId(feature, candidateCodes, currentValue = "") {
+    const current = String(currentValue || "").trim();
+    if (current && typeof getRouteById === "function" && getRouteById(current)) {
+      const currentRoute = getRouteById(current);
+      if (String(currentRoute?.properties?.MODE || "").toUpperCase() !== "BRT" || String(feature?.properties?.MODE || "").toUpperCase() === "BRT") {
+        return current;
+      }
+    }
+
+    const ids = [];
+    for (const code of candidateCodes) ids.push(String(code || "").trim());
+    String(feature?.properties?.LINES || feature?.properties?.ROUTES || "")
+      .split(";")
+      .map(v => v.trim())
+      .filter(Boolean)
+      .forEach(v => ids.push(v));
+
+    const seqRaw = String(feature?.properties?.SEQ_MAP || "");
+    seqRaw.split(";").forEach(item => {
+      const i = item.indexOf(":");
+      if (i > 0) ids.push(item.slice(0, i).trim());
+    });
+
+    for (const id of [...new Set(ids.filter(Boolean))]) {
+      try {
+        if (typeof getRouteById === "function" && getRouteById(id)) return id;
+      } catch (_) {}
+    }
+    return "";
+  }
+
+  function disableWrongIntegrationRow(row) {
+    if (!row) return;
+    row.removeAttribute("data-integration-stop-key");
+    row.removeAttribute("data-integration-route-id");
+    row.dataset.webgisIntegrationDisabled = "1";
+    row.querySelector?.(".integration-place-link-arrow")?.remove();
+    if (row instanceof HTMLButtonElement) {
+      row.disabled = true;
+      row.setAttribute("aria-disabled", "true");
+    }
+  }
+
+  function repairIntegrationTargets(scope) {
+    const root = scope?.querySelectorAll ? scope : document;
+    const rows = [];
+    if (scope?.matches?.(".integration-place-row-button")) rows.push(scope);
+    rows.push(...(root.querySelectorAll?.(".integration-place-row-button") || []));
+
+    for (const row of new Set(rows)) {
+      const group = row.closest(".integration-group");
+      const operatorKey = getOperatorKeyFromGroup(group);
+      if (!operatorKey || operatorKey === "TRANSJAKARTA") continue;
+
+      const source = getSourceFeatureForIntegrationRow(row);
+      if (!source) continue;
+      const p = source.properties || {};
+      const codes = String(p.INTEGRASI || "")
+        .split(";")
+        .map(v => v.trim())
+        .filter(code => code && codeMatchesOperator(code, operatorKey));
+      if (!codes.length) continue;
+
+      const names = parseIntegrationMultiMap(p.INT_NM);
+      const stops = parseIntegrationMultiMap(p.INT_STOP);
+      const rowName = getRowPlaceName(row);
+      let resolved = null;
+      let resolvedCode = "";
+
+      for (const code of codes) {
+        const codeNames = names.get(code) || [];
+        const codeStops = stops.get(code) || [];
+        if (!codeStops.length) continue;
+
+        let indexes = codeStops.map((_, i) => i);
+        if (rowName && codeNames.length) {
+          const matched = codeNames
+            .map((name, i) => [normalizePlaceName(name), i])
+            .filter(([name]) => name === rowName)
+            .map(([, i]) => i);
+          if (matched.length) indexes = matched;
+          else if (group?.querySelectorAll?.(".integration-place-row-button")?.length > 1) continue;
+        }
+
+        for (const index of indexes) {
+          const ref = codeStops[index] || codeStops[0];
+          const candidate = findStopFeatureByExplicitRef(ref, operatorKey);
+          if (candidate) {
+            resolved = candidate;
+            resolvedCode = code;
+            break;
+          }
+        }
+        if (resolved) break;
+      }
+
+      // Jika INT_STOP belum terisi pada data lama, fallback nama hanya boleh dilakukan
+      // DI DALAM operator/moda yang sama. Ini aman untuk kasus Manggarai karena
+      // Halte BRT otomatis tersaring keluar untuk grup KA/KRL/LRT/MRT.
+      if (!resolved && rowName) {
+        const byName = findStopFeatureByNameWithinOperator(rowName, operatorKey);
+        if (byName) {
+          resolved = byName;
+          resolvedCode = codes[0] || "";
+        }
+      }
+
+      if (resolved) {
+        const key = typeof getStopKey === "function" ? getStopKey(resolved) : "";
+        if (key) {
+          row.dataset.integrationStopKey = String(key);
+          row.dataset.stopKey = String(key);
+        }
+        const resolvedStopId = resolved?.properties?.STOP_ID || resolved?.properties?.GEOM_ID || "";
+        if (resolvedStopId) row.dataset.integrationStopId = String(resolvedStopId);
+        if (resolved?.properties?.MODE) row.dataset.integrationTargetMode = String(resolved.properties.MODE);
+        const routeId = getTargetRouteId(resolved, [resolvedCode, ...codes], row.dataset.integrationRouteId || "");
+        if (routeId) row.dataset.integrationRouteId = routeId;
+        else row.removeAttribute("data-integration-route-id");
+        row.dataset.webgisOperatorKey = operatorKey;
+        row.dataset.webgisTargetRepaired = "1";
+        if (row instanceof HTMLButtonElement) {
+          row.disabled = false;
+          row.removeAttribute("aria-disabled");
+        }
+        continue;
+      }
+
+      // Tidak ditemukan target aman pada operator/moda yang benar. Jangan biarkan
+      // handler lama melakukan fallback nama lintas moda (mis. Stasiun Manggarai -> Halte BRT).
+      disableWrongIntegrationRow(row);
+    }
+  }
+
+  function refresh(scope = document) {
+    polishKajj(scope);
+    separateIntegrationStatuses(scope);
+    repairIntegrationTargets(scope);
+  }
+
+  function start() {
+    refresh(document);
+    const observer = new MutationObserver(mutations => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType === 1) refresh(node);
+          else if (node.parentElement) refresh(node.parentElement);
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  // Jalankan sebelum delegated handler di container peta. Jika suatu integrasi non-BRT
+  // masih menunjuk halte BRT, blok kliknya agar fallback nama tidak pernah membuka moda salah.
+  document.addEventListener("click", event => {
+    const row = event.target?.closest?.(".integration-place-row-button");
+    if (!row) return;
+    const group = row.closest(".integration-group");
+    const operatorKey = getOperatorKeyFromGroup(group);
+    if (!operatorKey || operatorKey === "TRANSJAKARTA") return;
+
+    // Hanya izinkan handler asli berjalan jika patch sudah menemukan target eksplisit/
+    // fallback-nama-dalam-operator yang aman. Jika belum, blok total agar tidak jatuh ke BRT.
+    const target = row.dataset.integrationStopKey && typeof getStopByKey === "function"
+      ? getStopByKey(row.dataset.integrationStopKey)
+      : null;
+    const targetMode = String(target?.properties?.MODE || "").toUpperCase();
+    const safe = row.dataset.webgisTargetRepaired === "1" && target && targetMode !== "BRT";
+    if (!safe) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      event.stopPropagation();
+    }
+  }, true);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+  } else {
+    start();
+  }
+})();
+
