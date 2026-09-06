@@ -1,24 +1,30 @@
-# QA Navigasi Popup — v0.13.10
+# QA Navigasi Popup — v0.12
 
-Audit data otomatis dijalankan pada 19 koridor BRT dan 395 entri halte logis lintas-koridor. Tidak ditemukan benturan sequence antarhalte logis pada field navigasi yang terisi.
+`tools/audit-navigation.mjs` memeriksa sequence BRT yang menjadi dasar tombol **Sebelumnya/Berikutnya**.
 
-## Matriks uji browser yang disarankan
+## Status dataset pada 5 September 2026
 
-| Kasus | Contoh | Hasil yang diharapkan |
-|---|---|---|
-| Terminus arah maju | Galunggung, Koridor 4 arah Pulo Gadung → Galunggung | Hanya **Sebelumnya**, selebar footer |
-| Terminus arah balik | Galunggung setelah arah dibalik | Hanya **Berikutnya**, selebar footer |
-| Halte tengah | Manggarai, Koridor 4 | **Sebelumnya** dan **Berikutnya** tampil 50:50 |
-| Split stop | Halte dengan dua titik fisik satu `STOP_GROUP` | Navigasi bergerak per halte logis, bukan menduplikasi titik fisik |
-| Koridor dua arah baru | Koridor 1 (`SEQ_A_MAP`/`SEQ_B_MAP`) | Urutan mengikuti side aktif |
-| Koridor legacy | Koridor 2–19 | Urutan `SEQ_MAP` dibalik secara konsisten saat arah dibalik |
-| Pengalihan | Koridor yang memiliki diversion aktif | Halte `NOT_SERVED` tidak masuk Previous/Next; halte sementara yang aktif dapat masuk |
-| Popup kompleks | Galunggung/Dukuh Atas | Integrasi dapat di-scroll; footer tetap terlihat |
+Audit masih menemukan dua konflik data yang **tidak diperbaiki pada v0.12 karena GeoJSON sengaja tidak diubah**:
 
-Jalankan audit data dengan:
+- `BRT_11` — `SEQ_MAP` sequence `16` dipakai dua halte logis: `BRT067` dan `BRT215`.
+- `BRT_16` — `SEQ_MAP` sequence `22` dipakai dua halte logis: `BRT016` dan `BRT200`.
+
+Sampai data tersebut diperbaiki, audit navigasi memang seharusnya tetap gagal; jangan mengubah script audit hanya untuk menyembunyikan konflik.
+
+## Matriks uji browser
+
+| Kasus | Hasil yang diharapkan |
+|---|---|
+| Terminus | hanya satu tombol navigasi, selebar footer |
+| Halte tengah | Sebelumnya dan Berikutnya tampil 50:50 |
+| Split stop | navigasi bergerak per halte logis, bukan per titik fisik |
+| Koridor directional | urutan mengikuti `SEQ_A_MAP`/`SEQ_B_MAP` ketika tersedia |
+| Koridor legacy | `SEQ_MAP` dibalik secara konsisten saat arah dibalik |
+| Pengalihan | titik yang tidak dilayani tidak masuk urutan aktif |
+| Popup kompleks | daftar integrasi dapat di-scroll dan footer tetap terlihat |
+
+Jalankan:
 
 ```bash
 node tools/audit-navigation.mjs
 ```
-
-> v0.13.7: Logika navigasi tidak diubah; QA ini dijalankan ulang setelah polishing UI.

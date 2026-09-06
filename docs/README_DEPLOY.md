@@ -1,55 +1,30 @@
-# WebGIS Transportasi Jabodetabek v0.13.10
+# WebGIS Transportasi Jabodetabek v0.12
 
-Paket ini adalah versi lengkap WebGIS statis untuk GitHub Pages. Salin seluruh
-isi direktori ini ke root situs agar `index.html`, `css/`, `js/`, `data/`, dan
-`assets/` tetap berada pada struktur yang sama.
+Paket ini adalah versi lengkap WebGIS statis untuk GitHub Pages. Salin seluruh isi direktori ke root situs agar struktur `index.html`, `css/`, `js/`, `data/`, dan `assets/` tetap sama.
 
-## Perubahan v0.13.10
+## Perubahan v0.12
 
-- Mengganti label publik status **Konseptual** menjadi **Gagasan** agar lebih mudah dipahami pengguna umum.
-- Definisi **Gagasan**: ide pengembangan jaringan yang disusun untuk eksplorasi dalam WebGIS dan bukan merupakan rencana resmi pemerintah atau operator transportasi.
-- Nilai internal `Conceptual` serta nilai data lama `Konseptual` tetap didukung untuk kompatibilitas, sehingga GeoJSON tidak perlu dimigrasikan pada rilis ini.
-- Tidak ada perubahan integrasi, sequence, geometri, maupun logika navigasi.
+- Badge **Gagasan WebGIS** pada integrasi memakai penjelasan ringkas yang muncul di atas badge dan tidak lagi mendorong/menutupi tombol aksi popup.
+- Disclaimer besar tetap dipakai hanya bila titik utama memang berstatus Gagasan WebGIS.
 
-## Perubahan v0.13.9
 
-- Menetralkan definisi status **Dalam Pembangunan** menjadi “jaringan moda yang telah memasuki tahap konstruksi fisik dan belum beroperasi”.
-- Menghapus pemakaian istilah **non-BRT** sebagai kategori umum pada penjelasan status, legenda, dan metodologi agar istilah tersebut tetap dapat digunakan secara spesifik untuk layanan TransJakarta non-BRT.
-- Tidak ada perubahan GeoJSON, integrasi, sequence, status data, maupun logika navigasi.
-
-## Perubahan v0.13.8
-
-- Memulihkan border atas accordion **Kredit Aset Visual** pada panel **Informasi & Catatan** agar konsisten dengan tiga accordion lainnya.
-- Tidak ada perubahan GeoJSON, integrasi, sequence, status, maupun logika navigasi.
-
-## Perubahan v0.13.7
-
-- Dokumentasi QA dan deployment dipindahkan ke folder `docs/` agar root situs lebih ringkas.
-- Log validasi rutin JavaScript dibungkam pada mode produksi melalui `APP_DEBUG = false`; warning/error data tetap aktif.
-- Audit rilis memeriksa mode debug produksi dan keberadaan dokumen inti.
-- Tidak ada perubahan GeoJSON, integrasi, sequence, status, maupun tata letak antarmuka.
+- Legenda **Struktur Jalur Kereta** kini berlaku khusus untuk rail: Layang, Permukaan, Transisi, dan Bawah tanah.
+- BRT tidak menerima treatment struktur rail.
+- Layang dan Permukaan dibedakan secara halus lewat bobot/casing garis tanpa mengubah warna lin atau pola status.
+- Perbaikan runtime/integrasi dari v0.10 tetap dipertahankan.
+- **Tidak ada perubahan GeoJSON pada v0.12.** Konflik sequence BRT, kelengkapan Lin Cibubur, dan kelengkapan `SRC_URL` rail tetap dilaporkan sebagai pekerjaan data terpisah.
 
 ## Menjalankan dan menguji
 
-Jalankan melalui HTTP lokal, bukan dengan membuka `index.html` memakai skema
-`file://`. Contoh:
+Jalankan melalui HTTP lokal, bukan `file://`. Contoh:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Lalu buka `http://localhost:8000/`. Sebelum publikasi, uji sekurangnya:
-
-1. pemuatan semua rute dan halte/stasiun;
-2. pencarian lokal serta pencarian tempat melalui tombol **Cari** atau Enter;
-3. tombol **Lokasi Saya** dan alur izin browser;
-4. popup halte/stasiun kompleks, termasuk footer **Sebelumnya/Berikutnya** pada viewport pendek;
-5. atribusi OpenStreetMap dan Leaflet pada desktop serta ponsel;
-6. konsol browser untuk error data, JavaScript, atau aset yang hilang.
+Lalu buka `http://localhost:8000/` dan lakukan hard reload (`Ctrl+F5`).
 
 ## Audit sebelum rilis
-
-Selain pemeriksaan browser, jalankan:
 
 ```bash
 node tools/audit.mjs
@@ -57,34 +32,23 @@ node tools/audit-navigation.mjs
 node --check js/map.js
 ```
 
-`audit-navigation.mjs` memeriksa sequence BRT yang menjadi dasar urutan
-Sebelumnya/Berikutnya dan menolak benturan sequence antarhalte logis.
+- `audit.mjs` memblokir rilis untuk masalah runtime/kode dan menampilkan kekurangan GeoJSON sebagai **catatan data**.
+- `audit-navigation.mjs` tetap ketat terhadap benturan sequence BRT. Jika audit ini gagal, perbaikan harus dilakukan pada GeoJSON; script tidak menutup-nutupi konflik data.
 
-## Ketentuan operasional layanan pihak ketiga
+## Checklist browser
 
-- **OpenStreetMap Standard Tiles** memakai URL resmi dan atribusi yang terlihat.
-  Jangan menyembunyikan atribusi, melakukan bulk download, atau menghindari
-  cache HTTP bawaan browser.
-- **Nominatim publik** hanya dipanggil setelah tindakan eksplisit pengguna,
-  diserialkan dengan jeda sedikit di atas satu detik, dan memiliki cache sesi.
-  Jangan mengaktifkan kembali autocomplete jaringan pada setiap ketikan.
-- **Geolocation** hanya diminta setelah pengguna menekan tombol **Lokasi Saya**.
-  Pertahankan penjelasan privasi di dalam aplikasi.
+1. Semua moda/rute dapat dimuat tanpa error JavaScript.
+2. Popup halte/stasiun dapat dibuka dan ditutup; label titik kembali mengikuti decluttering normal setelah popup ditutup.
+3. Integrasi Manggarai/Kota tidak jatuh ke halte atau moda lain hanya karena nama sama.
+4. Kategori **KA Jarak Jauh** tampil tanpa logo/slot kosong.
+5. Pencarian tempat hanya mengirim request setelah Enter/tombol Cari.
+6. Tombol Lokasi Saya meminta izin hanya setelah diklik.
+7. Atribusi peta tetap terlihat pada desktop dan mobile.
 
-Kebijakan penyedia dapat berubah. Tinjau kembali tautan pada
-`../THIRD_PARTY_NOTICES.md` sebelum setiap rilis besar.
+## Batasan data yang masih terbuka
 
-## Batasan
+Rilis v0.12 tidak memodifikasi data. Karena itu beberapa catatan masih dapat muncul, antara lain migrasi schema BRT yang belum merata, dua konflik sequence navigasi BRT, cabang Lin Cibubur yang belum lengkap, dan `SRC_URL` rail yang masih kosong.
 
-WebGIS ini bersifat informatif dan bukan sumber resmi operator. Fokus versi
-ini adalah visualisasi jaringan, pelayanan, serta integrasi antarmoda; fitur
-radius/buffer akses halte dan stasiun tidak ditampilkan. Paket ini meningkatkan
-kepatuhan teknis dan transparansi, tetapi bukan opini atau jaminan hukum.
+## Batas penggunaan
 
-## Lisensi proyek
-
-Lisensi kode aplikasi belum dinyatakan dalam paket sumber. Tanpa file `LICENSE`
-yang dipilih pemegang hak, hak cipta kode tetap pada pemegang hak dan tidak ada
-lisensi penggunaan ulang yang diberikan secara tersirat. Komponen pihak ketiga
-tetap mengikuti lisensi masing-masing sebagaimana dicatat dalam
-`../THIRD_PARTY_NOTICES.md`.
+WebGIS ini bersifat informatif dan bukan sumber resmi operator. Nilai `SOURCE`/`SRC_URL` merupakan catatan provenance dan tidak otomatis membuktikan lisensi penggunaan data.

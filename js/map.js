@@ -292,9 +292,9 @@ const TRANSIT_ROUTE_LABELS = {
   },
 
   KAI_KAJJ: {
-    operator: "Kereta Api Jarak Jauh",
+    operator: "KA Jarak Jauh",
     route: "",
-    logo: TRANSIT_LOGOS.KAI
+    logo: null
   },
 
   KAI_BANDARA: {
@@ -1399,6 +1399,34 @@ function normalizeMode(value) {
   return String(value ?? "").trim().toUpperCase();
 }
 
+function isRailModeValue(value) {
+  const mode = normalizeMode(value);
+
+  return [
+    "MRT",
+    "LRT",
+    "KRL",
+    "RAIL",
+    "KA_BANDARA",
+    "KAI_BANDARA",
+    "AIRPORT_RAIL",
+    "KAJJ",
+    "KAI_KAJJ",
+    "KA",
+    "KAI"
+  ].includes(mode);
+}
+
+function isRailFeature(feature) {
+  const dataset = String(
+    feature?.properties?._DATASET ?? ""
+  ).trim().toUpperCase();
+
+  return dataset === "RAIL" || isRailModeValue(
+    feature?.properties?.MODE
+  );
+}
+
 function normalizeStatus(value) {
   const text = String(value ?? "").trim();
 
@@ -1465,7 +1493,7 @@ function getStatusLabel(value) {
     Construction: "Dalam Pembangunan",
     Planned: "Rencana",
     Proposed: "Usulan",
-    Conceptual: "Gagasan",
+    Conceptual: "Gagasan WebGIS",
     Inactive: "Nonaktif"
   };
 
@@ -7044,12 +7072,25 @@ function buildIntegrationStatusPill(status) {
     return "";
   }
 
+  const publicLabel = getStatusLabel(normalized);
+  const conceptualNote =
+    normalized === "Conceptual"
+      ? "Skenario eksplorasi WebGIS; bukan rencana resmi pemerintah/operator."
+      : "";
+
   return `
     <span
       class="integration-place-status ${getIntegrationStatusClass(normalized)}"
-      title="Status integrasi: ${escapeHTML(getStatusLabel(normalized))}"
+      title="${escapeHTML(
+        conceptualNote || `Status integrasi: ${publicLabel}`
+      )}"
+      ${
+        conceptualNote
+          ? `data-webgis-concept-help="${escapeHTML(conceptualNote)}"`
+          : ""
+      }
     >
-      ${escapeHTML(getStatusLabel(normalized))}
+      ${escapeHTML(publicLabel)}
     </span>
   `;
 }
@@ -13814,6 +13855,36 @@ function routeStyle(feature) {
       feature
     );
 
+  const structure = normalizeStructure(
+    feature?.properties?.STRUCTURE
+  );
+
+  /*
+    Struktur jalur hanya memengaruhi treatment rute RAIL.
+    BRT tetap memakai bobot garis yang sama seperti sebelumnya.
+
+    - Layang     : bobot utama normal + casing halo lebih tegas.
+    - Permukaan  : sedikit lebih tipis agar terbaca berbeda dari layang.
+    - Transisi   : berada di antara keduanya dan mendapat pola tambahan.
+    - Bawah tanah: sedikit lebih tipis dan mendapat pola titik tambahan.
+  */
+  const railStructureWeightScale =
+    !isRailFeature(feature)
+      ? 1
+      : (
+          structure === "AT_GRADE"
+            ? 0.86
+            : (
+                structure === "UNDERGROUND"
+                  ? 0.92
+                  : (
+                      structure === "TRANSITION"
+                        ? 0.96
+                        : 1
+                    )
+              )
+        );
+
   return {
     pane: "routePane",
 
@@ -13830,7 +13901,7 @@ function routeStyle(feature) {
                 ? 3.6
                 : 4.4
             )
-      ) * zoomWeightScale,
+      ) * zoomWeightScale * railStructureWeightScale,
 
     /*
       - Trase REGULAR pembanding pengalihan dibuat sangat redup.
@@ -13859,6 +13930,10 @@ function routeStyle(feature) {
 
 
 function hasVisibleStructurePattern(feature) {
+  if (!isRailFeature(feature)) {
+    return false;
+  }
+
   if (
     !["Existing", "Construction"].includes(
       normalizeStatus(
@@ -13884,14 +13959,16 @@ function hasVisibleStructurePattern(feature) {
   Struktur jalur tidak mengganti bahasa visual STATUS.
   Garis utama tetap solid/dash sesuai Existing/Rencana/Usulan.
 
-  Untuk rail Eksisting/Dalam Pembangunan, lapisan tipis di tengah garis memberi
-  pola tambahan:
-  - Elevated   : tanpa pola tambahan
+  Untuk rail, bobot/casing membantu membedakan Layang dan Permukaan.
+  Pada rail Eksisting/Dalam Pembangunan, lapisan tipis di tengah garis memberi
+  pola tambahan untuk Transisi dan Bawah tanah:
+  - Elevated   : bobot normal + casing halo lebih tegas
+  - At-grade   : garis utama sedikit lebih tipis
   - Transition : dash panjang tipis
   - Underground: titik/dash pendek tipis
 
-  Dengan cara ini warna identitas lin tetap utuh dan dash status
-  tidak ditimpa oleh klasifikasi struktur.
+  BRT tidak menerima treatment struktur rail. Warna identitas lin tetap utuh
+  dan pola STATUS tetap menjadi bahasa visual utama.
 */
 function routeStructureStyle(feature) {
   const structure = normalizeStructure(
@@ -13956,6 +14033,40 @@ function haloStyle(feature) {
       feature
     );
 
+  const structure = normalizeStructure(
+    feature?.properties?.STRUCTURE
+  );
+
+  const railHaloWeightScale =
+    !isRailFeature(feature)
+      ? 1
+      : (
+          structure === "ELEVATED"
+            ? 1.10
+            : (
+                structure === "AT_GRADE"
+                  ? 0.84
+                  : (
+                      structure === "UNDERGROUND"
+                        ? 0.92
+                        : 0.98
+                    )
+              )
+        );
+
+  const railHaloOpacityScale =
+    !isRailFeature(feature)
+      ? 1
+      : (
+          structure === "ELEVATED"
+            ? 1.08
+            : (
+                structure === "AT_GRADE"
+                  ? 0.78
+                  : 0.94
+              )
+        );
+
   return {
     pane: "routeHaloPane",
 
@@ -13973,24 +14084,29 @@ function haloStyle(feature) {
                 ? 6.2
                 : 7.4
             )
-      ) * zoomWeightScale,
+      ) * zoomWeightScale * railHaloWeightScale,
 
     opacity:
-      comparison
-        ? 0.12
-        : (
-            routeComparison
-              ? (
-                  currentBasemapType === "satellite"
-                    ? 0.66
-                    : 0.34
-                )
-              : (
-                  currentBasemapType === "satellite"
-                    ? 0.90
-                    : 0.55
-                )
-          ),
+      Math.min(
+        1,
+        (
+          comparison
+            ? 0.12
+            : (
+                routeComparison
+                  ? (
+                      currentBasemapType === "satellite"
+                        ? 0.66
+                        : 0.34
+                    )
+                  : (
+                      currentBasemapType === "satellite"
+                        ? 0.90
+                        : 0.55
+                    )
+              )
+        ) * railHaloOpacityScale
+      ),
 
     /*
       Halo mengikuti pola garis utama agar rute Planned
@@ -14444,9 +14560,8 @@ function drawRoutes(features) {
   ).addTo(map);
 
   /*
-    Layer pola struktur hanya dibuat bila memang ada segmen
-    transition/underground. Overview BRT murni tidak mendapat
-    layer ekstra.
+    Layer pola struktur hanya dibuat bila memang ada segmen rail
+    transition/underground. BRT tidak pernah mendapat layer struktur rail.
   */
   const hasStructurePattern =
     (features || []).some(
@@ -18071,9 +18186,9 @@ function getIntegrationInfo(id) {
     return {
       code,
       operatorKey: "KAI_KAJJ",
-      operator: "Kereta Api Jarak Jauh",
+      operator: "KA Jarak Jauh",
       route: "",
-      logo: TRANSIT_LOGOS.KAI,
+      logo: null,
       kajj: true
     };
 
@@ -19692,9 +19807,11 @@ function buildIntegrationGroup(group) {
 
       <div class="integration-group-header">
 
-        <div class="integration-symbol">
-          ${logoHTML}
-        </div>
+        ${group.logo ? `
+          <div class="integration-symbol">
+            ${logoHTML}
+          </div>
+        ` : ""}
 
         <div class="integration-operator">
           ${escapeHTML(
@@ -24921,22 +25038,30 @@ function updateStructureLegend(
     return;
   }
 
+  const supportedStructures = new Set([
+    "ELEVATED",
+    "AT_GRADE",
+    "TRANSITION",
+    "UNDERGROUND"
+  ]);
+
   let show = false;
 
   if (routeId) {
     const route = getRouteById(routeId);
+    const routeFeatures = getRouteFeaturesById(routeId);
+
     show = Boolean(
       route &&
-      getRouteMode(route) === "MRT" &&
-      getRouteFeaturesById(routeId)
-        .some(feature =>
-          ["ELEVATED", "TRANSITION", "UNDERGROUND"]
-            .includes(
-              normalizeStructure(
-                feature?.properties?.STRUCTURE
-              )
-            )
+      isRailFeature(route) &&
+      routeFeatures.some(feature =>
+        isRailFeature(feature) &&
+        supportedStructures.has(
+          normalizeStructure(
+            feature?.properties?.STRUCTURE
+          )
         )
+      )
     );
   }
   else {
@@ -24944,16 +25069,19 @@ function updateStructureLegend(
       modeSelect?.value
     );
 
+    const modeAllowsRail =
+      selectedMode === "ALL" ||
+      isRailModeValue(selectedMode);
+
     show = Boolean(
-      (selectedMode === "MRT" || selectedMode === "ALL") &&
+      modeAllowsRail &&
       routeData?.features?.some(feature =>
-        getRouteMode(feature) === "MRT" &&
-        ["ELEVATED", "TRANSITION", "UNDERGROUND"]
-          .includes(
-            normalizeStructure(
-              feature?.properties?.STRUCTURE
-            )
+        isRailFeature(feature) &&
+        supportedStructures.has(
+          normalizeStructure(
+            feature?.properties?.STRUCTURE
           )
+        )
       )
     );
   }
@@ -26672,8 +26800,20 @@ restoreRouteDetailCollapseState();
     popups.push(...scope.querySelectorAll?.(".leaflet-popup-content,.stop-popup,.route-popup") || []);
 
     for (const popup of new Set(popups)) {
-      const text = popup.textContent || "";
-      if (!text.includes(PUBLIC_LABEL) || popup.querySelector(".webgis-concept-note")) continue;
+      if (popup.querySelector(".webgis-concept-note")) continue;
+
+      /*
+        Jangan membuat disclaimer besar hanya karena ada integrasi
+        berstatus Gagasan WebGIS. Untuk kasus tersebut penjelasan
+        melekat langsung pada badge status integrasi.
+      */
+      const nonIntegrationClone = popup.cloneNode(true);
+      nonIntegrationClone
+        .querySelectorAll?.(".stop-popup-section--integration")
+        .forEach(section => section.remove());
+
+      const primaryText = nonIntegrationClone.textContent || "";
+      if (!primaryText.includes(PUBLIC_LABEL)) continue;
 
       const note = document.createElement("div");
       note.className = "webgis-concept-note";
@@ -26830,9 +26970,9 @@ restoreRouteDetailCollapseState();
 
   function normalizePlaceName(value) {
     return String(value ?? "")
-      .replace(/(Dalam Pembangunan|Rencana|Usulan|Gagasan(?: WebGIS)?|Konseptual|Conceptual|Nonaktif)/gi, "")
-      .replace(/^(Halte|Stasiun|Terminal)s+/i, "")
-      .replace(/s+/g, " ")
+      .replace(/\b(Dalam Pembangunan|Rencana|Usulan|Gagasan(?: WebGIS)?|Konseptual|Conceptual|Nonaktif)\b/gi, "")
+      .replace(/^(Halte|Stasiun|Terminal)\s+/i, "")
+      .replace(/\s+/g, " ")
       .trim()
       .toLowerCase();
   }
@@ -26874,9 +27014,9 @@ restoreRouteDetailCollapseState();
   function getOperatorKeyFromGroup(group) {
     const label = (group?.querySelector?.(".integration-operator")?.textContent || "").trim();
     if (/^(KA Jarak Jauh|Kereta Api Jarak Jauh|KAJJ)$/i.test(label)) return "KAI_KAJJ";
-    if (/^KRL/i.test(label)) return "KRL";
+    if (/^KRL\b/i.test(label)) return "KRL";
     if (/^KA Bandara$/i.test(label)) return "KAI_BANDARA";
-    if (/^MRT/i.test(label)) return "MRT_JAKARTA";
+    if (/^MRT\b/i.test(label)) return "MRT_JAKARTA";
     if (/^LRT Jabodebek$/i.test(label)) return "LRT_JABODEBEK";
     if (/^LRT Jakarta$/i.test(label)) return "LRT_JAKARTA";
     if (/^TransJakarta$/i.test(label)) return "TRANSJAKARTA";
@@ -27132,6 +27272,60 @@ restoreRouteDetailCollapseState();
       event.stopPropagation();
     }
   }, true);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+  } else {
+    start();
+  }
+})();
+
+/* =========================================================
+   WEBGIS CONCEPTUAL INTEGRATION HELP — v0.12
+   - badge Gagasan WebGIS membawa penjelasan ringkas sendiri;
+   - disclaimer besar tidak muncul jika gagasan hanya berada
+     pada titik integrasi, bukan pada halte/stasiun utama.
+   ========================================================= */
+(() => {
+  "use strict";
+
+  function removeIntegrationOnlyConceptNotes(scope = document) {
+    const root = scope?.querySelectorAll ? scope : document;
+    const popups = [];
+    if (scope?.matches?.(".stop-popup")) popups.push(scope);
+    popups.push(...(root.querySelectorAll?.(".stop-popup") || []));
+
+    for (const popup of new Set(popups)) {
+      const note = popup.querySelector(".webgis-concept-note");
+      if (!note) continue;
+
+      const clone = popup.cloneNode(true);
+      clone
+        .querySelectorAll?.(".stop-popup-section--integration,.webgis-concept-note")
+        .forEach(node => node.remove());
+
+      if (!(clone.textContent || "").includes("Gagasan WebGIS")) {
+        note.remove();
+      }
+    }
+  }
+
+  function refresh(scope = document) {
+    removeIntegrationOnlyConceptNotes(scope);
+  }
+
+  function start() {
+    refresh(document);
+    const observer = new MutationObserver(mutations => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType === 1) refresh(node);
+          else if (node.parentElement) refresh(node.parentElement);
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start, { once: true });

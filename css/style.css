@@ -20510,3 +20510,75 @@ a:focus-visible {
   padding-left: 0 !important;
 }
 
+
+
+/* =========================================================
+   GAGASAN WEBGIS — COMPACT INTEGRATION HELP v0.12
+   Penjelasan melekat pada badge dan muncul ke atas, sehingga
+   tidak mengambil ruang tombol aksi/navigasi popup.
+   ========================================================= */
+.stop-popup .integration-place-status.is-conceptual[data-webgis-concept-help] {
+  position: relative;
+  cursor: help;
+  pointer-events: auto !important;
+  z-index: 8;
+}
+
+.stop-popup .integration-place-status.is-conceptual[data-webgis-concept-help]::after {
+  content: attr(data-webgis-concept-help);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 7px);
+  width: 158px;
+  max-width: min(158px, 55vw);
+  padding: 6px 7px;
+  border-radius: 6px;
+  background: rgba(35, 39, 43, .96);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .18);
+  color: #fff;
+  font-size: 8.5px;
+  font-weight: 500;
+  line-height: 1.28;
+  white-space: normal;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, 3px);
+  transition: opacity .12s ease, transform .12s ease, visibility .12s ease;
+  z-index: 80;
+}
+
+.stop-popup .integration-place-status.is-conceptual[data-webgis-concept-help]::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 3px);
+  width: 7px;
+  height: 7px;
+  background: rgba(35, 39, 43, .96);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) rotate(45deg);
+  transition: opacity .12s ease, visibility .12s ease;
+  z-index: 79;
+}
+
+.stop-popup .integration-place-status.is-conceptual[data-webgis-concept-help]:hover::after,
+.stop-popup .integration-place-status.is-conceptual[data-webgis-concept-help]:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.stop-popup .integration-place-status.is-conceptual[data-webgis-concept-help]:hover::after {
+  transform: translate(-50%, 0);
+}
+
+/* Pada layar sempit pertahankan popover ringkas. */
+@media (max-width: 520px) {
+  .stop-popup .integration-place-status.is-conceptual[data-webgis-concept-help]::after {
+    width: 145px;
+    max-width: 52vw;
+    font-size: 8px;
+  }
+}
