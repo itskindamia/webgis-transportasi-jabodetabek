@@ -1,10 +1,10 @@
-# QA Navigasi Popup — v0.12
+# QA Navigasi Popup — v0.13
 
 `tools/audit-navigation.mjs` memeriksa sequence BRT yang menjadi dasar tombol **Sebelumnya/Berikutnya**.
 
 ## Status dataset pada 5 September 2026
 
-Audit masih menemukan dua konflik data yang **tidak diperbaiki pada v0.12 karena GeoJSON sengaja tidak diubah**:
+Audit masih menemukan dua konflik data yang **tidak diperbaiki pada v0.13 karena GeoJSON sengaja tidak diubah**:
 
 - `BRT_11` — `SEQ_MAP` sequence `16` dipakai dua halte logis: `BRT067` dan `BRT215`.
 - `BRT_16` — `SEQ_MAP` sequence `22` dipakai dua halte logis: `BRT016` dan `BRT200`.

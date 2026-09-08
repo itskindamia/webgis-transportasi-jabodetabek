@@ -149,7 +149,7 @@ const LINE_BADGE_IMAGES = {
 
   KRL_BO: "assets/lines/krl-bo.svg",
   KRL_CK: "assets/lines/krl-ck.png",
-  KRL_RA: "assets/lines/krl-ra.png",
+  KRL_RK: "assets/lines/krl-rk.png",
   KRL_TA: "assets/lines/krl-ta.png",
   KRL_TP: "assets/lines/krl-tp.png",
 
@@ -180,7 +180,7 @@ const LINE_BADGE_TEXT = {
 
   KRL_BO: "BO",
   KRL_CK: "CK",
-  KRL_RA: "RA",
+  KRL_RK: "RK",
   KRL_TA: "TA",
   KRL_TP: "TP",
 
@@ -273,7 +273,7 @@ const TRANSIT_ROUTE_LABELS = {
     logo: TRANSIT_LOGOS.KRL
   },
 
-  KRL_RA: {
+  KRL_RK: {
     operator: "KRL Commuter Line",
     route: "Rangkasbitung Line",
     logo: TRANSIT_LOGOS.KRL
@@ -18138,7 +18138,7 @@ function getIntegrationInfo(id) {
   }
 
 
-  if (code === "KRL_RA") {
+  if (code === "KRL_RK") {
 
     return {
       code,
@@ -27281,7 +27281,7 @@ restoreRouteDetailCollapseState();
 })();
 
 /* =========================================================
-   WEBGIS CONCEPTUAL INTEGRATION HELP — v0.12
+   WEBGIS CONCEPTUAL INTEGRATION HELP — v0.13
    - badge Gagasan WebGIS membawa penjelasan ringkas sendiri;
    - disclaimer besar tidak muncul jika gagasan hanya berada
      pada titik integrasi, bukan pada halte/stasiun utama.

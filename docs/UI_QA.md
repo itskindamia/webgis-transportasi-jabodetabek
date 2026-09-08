@@ -1,4 +1,4 @@
-# QA Antarmuka — v0.12
+# QA Antarmuka — v0.13
 
 Checklist visual setelah hard reload (`Ctrl+F5`):
 
@@ -12,7 +12,7 @@ Checklist visual setelah hard reload (`Ctrl+F5`):
 8. **Mobile <= 760 px**: popup tidak melewati viewport; action/footer tetap dapat digunakan.
 9. **Legenda**: label publik **Gagasan WebGIS** berada pada kelompok Eksplorasi WebGIS.
 
-v0.12 tidak mengubah GeoJSON atau urutan navigasi.
+v0.13 tidak mengubah GeoJSON atau urutan navigasi.
 
 
 ## Struktur jalur rail

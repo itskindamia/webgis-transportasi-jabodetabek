@@ -2,7 +2,7 @@
 
 WebGIS statis untuk eksplorasi jaringan transportasi umum Jabodetabek, termasuk BRT dan jaringan rel, halte/stasiun, status jaringan, serta integrasi antarmoda.
 
-**Baseline saat ini: v0.12 — 6 September 2026.**
+**Baseline saat ini: v0.13 — 8 September 2026.**
 
 ## Struktur utama
 

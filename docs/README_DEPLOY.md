@@ -1,8 +1,8 @@
-# WebGIS Transportasi Jabodetabek v0.12
+# WebGIS Transportasi Jabodetabek v0.13
 
 Paket ini adalah versi lengkap WebGIS statis untuk GitHub Pages. Salin seluruh isi direktori ke root situs agar struktur `index.html`, `css/`, `js/`, `data/`, dan `assets/` tetap sama.
 
-## Perubahan v0.12
+## Perubahan v0.13
 
 - Badge **Gagasan WebGIS** pada integrasi memakai penjelasan ringkas yang muncul di atas badge dan tidak lagi mendorong/menutupi tombol aksi popup.
 - Disclaimer besar tetap dipakai hanya bila titik utama memang berstatus Gagasan WebGIS.
@@ -12,7 +12,7 @@ Paket ini adalah versi lengkap WebGIS statis untuk GitHub Pages. Salin seluruh i
 - BRT tidak menerima treatment struktur rail.
 - Layang dan Permukaan dibedakan secara halus lewat bobot/casing garis tanpa mengubah warna lin atau pola status.
 - Perbaikan runtime/integrasi dari v0.10 tetap dipertahankan.
-- **Tidak ada perubahan GeoJSON pada v0.12.** Konflik sequence BRT, kelengkapan Lin Cibubur, dan kelengkapan `SRC_URL` rail tetap dilaporkan sebagai pekerjaan data terpisah.
+- **Tidak ada perubahan GeoJSON pada v0.13.** Konflik sequence BRT, kelengkapan Lin Cibubur, dan kelengkapan `SRC_URL` rail tetap dilaporkan sebagai pekerjaan data terpisah.
 
 ## Menjalankan dan menguji
 
@@ -47,7 +47,7 @@ node --check js/map.js
 
 ## Batasan data yang masih terbuka
 
-Rilis v0.12 tidak memodifikasi data. Karena itu beberapa catatan masih dapat muncul, antara lain migrasi schema BRT yang belum merata, dua konflik sequence navigasi BRT, cabang Lin Cibubur yang belum lengkap, dan `SRC_URL` rail yang masih kosong.
+Rilis v0.13 tidak memodifikasi data. Karena itu beberapa catatan masih dapat muncul, antara lain migrasi schema BRT yang belum merata, dua konflik sequence navigasi BRT, cabang Lin Cibubur yang belum lengkap, dan `SRC_URL` rail yang masih kosong.
 
 ## Batas penggunaan
 
