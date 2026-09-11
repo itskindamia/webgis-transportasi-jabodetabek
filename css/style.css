@@ -55,7 +55,7 @@ textarea,
 
 
 :root {
-  --font-main: "Avenir Next", "Avenir", "Helvetica Neue", Arial, sans-serif;
+  --font-main: "Avenir Next Local", "Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif;
   --text: #202020;
   --muted: #666666;
   --panel-width: 285px;
@@ -18105,8 +18105,8 @@ body .route-detail-card.is-collapsed
   /* Jarak antar Status Jaringan / Kondisi Operasional / Moda. */
   .right-info-panel .legend-section + .legend-section,
   .right-info-panel .legend-collapsible-section + .legend-collapsible-section {
-    margin-top: 8px !important;
-    padding-top: 8px !important;
+    margin-top: 6px !important;
+    padding-top: 6px !important;
   }
 
   /* Status jaringan. */
@@ -20580,5 +20580,1035 @@ a:focus-visible {
     width: 145px;
     max-width: 52vw;
     font-size: 8px;
+  }
+}
+
+
+/* =========================================================
+   STATION CODE METADATA — v0.14
+   Kode stasiun adalah metadata sekunder, bukan bagian judul.
+   ========================================================= */
+
+.stop-popup-station-code {
+  margin: -1px 0 5px;
+  padding: 0;
+  color: #747b84;
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0.015em;
+}
+
+.stop-popup-station-code strong {
+  color: #555d66;
+  font-weight: 650;
+}
+
+@media (max-width: 760px) {
+  .stop-popup-station-code {
+    margin-bottom: 4px;
+    font-size: 8.5px;
+  }
+}
+
+
+/* =========================================================
+   RAIL POPUP SERVICES — v0.15
+   KA Bandara pada stasiun KRL yang sama diperlakukan sebagai
+   layanan kereta, sedangkan KA Jarak Jauh memakai section ringkas.
+   ========================================================= */
+.stop-popup-static-rail-service {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 50%;
+  cursor: default;
+}
+
+.stop-popup-static-rail-service .rail-line-badge-wrap {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+}
+
+.stop-popup-static-rail-service .rail-line-badge-image {
+  width: 36px !important;
+  height: 36px !important;
+  max-width: 36px !important;
+  max-height: 36px !important;
+  object-fit: contain !important;
+}
+
+.stop-popup-static-rail-service .rail-line-badge-fallback {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stop-popup-section--intercity-rail {
+  margin-top: 9px;
+}
+
+.stop-popup-intercity-rail-list {
+  display: grid;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.stop-popup-intercity-rail-row {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 0;
+}
+
+.stop-popup-intercity-rail-name {
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: #4e5359;
+}
+
+@media (max-width: 520px) {
+  .stop-popup-static-rail-service .rail-line-badge-wrap {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+  }
+
+  .stop-popup-static-rail-service .rail-line-badge-image {
+    width: 34px !important;
+    height: 34px !important;
+    max-width: 34px !important;
+    max-height: 34px !important;
+  }
+}
+
+/* =========================================================
+   DESKTOP RIGHT SEARCH + LEGEND — 280PX
+   Search dan Legenda dirampingkan tanpa mengubah proporsi internal.
+   Header/judul kanan tetap memakai lebar existing agar tidak cepat wrap.
+   ========================================================= */
+@media (min-width: 1024px) {
+  :root {
+    --desktop-left-width: 268px !important;
+    --desktop-right-width: 280px !important;
+    --desktop-card-gap: 7px !important;
+  }
+
+  /* Panel kiri */
+  .filter-panel {
+    width: 268px !important;
+  }
+
+  /* Search kanan: outer 280px; padding existing 10px 11px 9px tetap. */
+  .global-search-panel {
+    width: 280px !important;
+  }
+
+  /* Legenda kanan: outer 280px; padding existing 10px 12px 11px tetap. */
+  .right-info-body {
+    width: 280px !important;
+  }
+
+  /* Header judul kanan tetap pada rule existing. */
+  .right-info-panel {
+    width: clamp(425px, 23vw, 450px) !important;
+  }
+
+  .right-info-header {
+    width: auto !important;
+  }
+}
+
+@media (min-width: 1600px) {
+  .filter-panel {
+    width: 270px !important;
+  }
+
+  .right-info-panel {
+    width: 445px !important;
+  }
+}
+
+/* =========================================================
+   v0.16.18 — FULL / A / B CONTROL
+   Base layout tetap v0.16.17. Hanya menambahkan kontrol trase
+   tiga pilihan tanpa mengubah lebar panel atau proporsi layout.
+   ========================================================= */
+.route-geometry-control {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.route-geometry-caption {
+  margin-bottom: 5px;
+  color: #747474;
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+
+.route-geometry-view-group {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  width: 100%;
+}
+
+.route-geometry-view-button {
+  min-width: 0;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid #d3d7dc;
+  border-radius: 7px;
+  background: #fff;
+  color: #41484f;
+  font-family: var(--font-main);
+  font-size: 9.5px;
+  line-height: 1;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.route-geometry-view-button:hover {
+  background: #f7f8f9;
+  border-color: #c5cbd1;
+}
+
+.route-geometry-view-button.is-active,
+.route-geometry-view-button[aria-pressed="true"] {
+  background: #eef3f6;
+  border-color: #9eafb9;
+  color: #26323a;
+}
+
+.route-geometry-view-button:focus-visible {
+  outline: 2px solid rgba(0,122,194,.25);
+  outline-offset: 1px;
+}
+
+.route-geometry-view-hint {
+  margin: 4px 1px 0;
+  color: #767e85;
+  font-size: 8px;
+  line-height: 1.25;
+}
+
+@media (max-width: 760px) {
+  .route-geometry-view-button {
+    height: 34px;
+    font-size: 10.5px;
+  }
+
+  .route-geometry-view-hint {
+    font-size: 9px;
+  }
+}
+
+
+/* =========================================================
+   v0.16.19 — DIRECTION-FRIENDLY GEOMETRY CONTROL
+   A/B tetap kode internal. UI publik hanya menampilkan
+   "Semua trase" dan "Sesuai arah" agar tidak membingungkan.
+   Base layout/lebar tetap v0.16.17.
+   ========================================================= */
+.route-geometry-view-group {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.route-geometry-view-button {
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 8px !important;
+}
+
+.route-geometry-view-hint {
+  margin-top: 4px !important;
+}
+
+@media (max-width: 760px) {
+  .route-geometry-view-button {
+    height: 34px !important;
+    min-height: 34px !important;
+  }
+}
+
+/* =========================================================
+   v0.16.20 — COMPACT TRACE BUTTON HEIGHT
+   Mengurangi tinggi kontrol 'Semua trase / Sesuai arah'
+   tanpa mengubah lebar, label, atau logika A/B internal.
+   ========================================================= */
+@media (min-width: 761px) {
+  .route-geometry-control {
+    margin-top: 6px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .route-geometry-caption {
+    margin-bottom: 4px !important;
+  }
+
+  .route-geometry-view-button {
+    height: 25px !important;
+    min-height: 25px !important;
+    padding: 0 7px !important;
+    border-radius: 6px !important;
+    font-size: 9.3px !important;
+    line-height: 1 !important;
+  }
+
+  .route-geometry-view-hint {
+    margin-top: 3px !important;
+    font-size: 7.8px !important;
+    line-height: 1.2 !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .route-geometry-view-button {
+    height: 30px !important;
+    min-height: 30px !important;
+  }
+}
+
+/* =========================================================
+   v0.16 — STOP POPUP ACTION ALIGNMENT
+   Google Maps + Sumber Data disejajarkan ritmenya dengan
+   blok sebelumnya (integrasi) dan blok berikutnya (prev/next).
+   ========================================================= */
+.stop-popup-action-row {
+  margin-top: 8px !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  align-items: stretch !important;
+}
+
+.stop-popup-action-cell {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: stretch !important;
+}
+
+.stop-popup-action-cell > * {
+  width: 100% !important;
+}
+
+.stop-popup-action-cell .stop-popup-external-link,
+.stop-popup-action-cell .stop-source-summary,
+.stop-popup-navigation.has-both .stop-popup-nav-button,
+.stop-popup-navigation.has-previous-only .stop-popup-nav-button,
+.stop-popup-navigation.has-next-only .stop-popup-nav-button,
+.stop-popup-nav-spacer {
+  min-height: 40px !important;
+  height: 40px !important;
+  box-sizing: border-box !important;
+  border-radius: 8px !important;
+}
+
+.stop-popup-action-cell .stop-popup-external-link {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 7px !important;
+  padding: 6px 8px !important;
+}
+
+.stop-popup-action-cell .stop-source-card {
+  margin-top: 0 !important;
+  width: 100% !important;
+  border-radius: 8px !important;
+}
+
+.stop-popup-action-cell .stop-source-summary {
+  display: grid !important;
+  align-items: center !important;
+  grid-template-columns: 18px minmax(0, 1fr) 12px !important;
+  column-gap: 6px !important;
+  padding: 6px 8px !important;
+}
+
+.stop-popup-action-cell .stop-popup-external-link-icon,
+.stop-popup-action-cell .stop-source-summary-icon {
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.stop-popup-action-cell .stop-source-summary-copy {
+  align-self: center !important;
+}
+
+.stop-popup-navigation {
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+  gap: 8px !important;
+}
+
+@media (max-width: 760px) {
+  .stop-popup-action-row {
+    gap: 8px !important;
+  }
+
+  .stop-popup-action-cell .stop-popup-external-link,
+  .stop-popup-action-cell .stop-source-summary,
+  .stop-popup-navigation.has-both .stop-popup-nav-button,
+  .stop-popup-navigation.has-previous-only .stop-popup-nav-button,
+  .stop-popup-navigation.has-next-only .stop-popup-nav-button,
+  .stop-popup-nav-spacer {
+    min-height: 42px !important;
+    height: 42px !important;
+  }
+}
+
+/* =========================================================
+   v0.16 — STOP POPUP ACTION ROW: EXACT WIDTH + COMPACT HEIGHT
+   - Hilangkan reserved scrollbar gutter pada area popup agar
+     baris Google Maps / Sumber Data sama panjang persis dengan
+     Previous / Next.
+   - Padatkan tinggi action row tanpa mengubah footer navigasi.
+   ========================================================= */
+.stop-popup-scroll {
+  scrollbar-gutter: auto !important;
+}
+
+.stop-popup-action-row {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin-top: 6px !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+.stop-popup-action-cell {
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.stop-popup-action-cell > * {
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+}
+
+.stop-popup-action-cell .stop-popup-external-link,
+.stop-popup-action-cell .stop-source-summary {
+  min-height: 30px !important;
+  height: 30px !important;
+  box-sizing: border-box !important;
+  border-radius: 7px !important;
+}
+
+.stop-popup-action-cell .stop-popup-external-link {
+  gap: 6px !important;
+  padding: 4px 7px !important;
+  font-size: 8.6px !important;
+  line-height: 1.05 !important;
+}
+
+.stop-popup-action-cell .stop-source-summary {
+  grid-template-columns: 16px minmax(0, 1fr) 10px !important;
+  column-gap: 5px !important;
+  padding: 4px 7px !important;
+}
+
+.stop-popup-action-cell .stop-popup-external-link-icon,
+.stop-popup-action-cell .stop-source-summary-icon {
+  width: 16px !important;
+  height: 16px !important;
+  flex: 0 0 16px !important;
+  font-size: 7.5px !important;
+}
+
+.stop-popup-action-cell .stop-source-type {
+  font-size: 8.2px !important;
+  line-height: 1.05 !important;
+}
+
+.stop-popup-action-cell .stop-source-chevron {
+  font-size: 11px !important;
+}
+
+/* Footer tetap lebih tinggi agar nama halte sebelumnya/berikutnya
+   masih terbaca dengan nyaman. */
+.stop-popup-navigation {
+  margin-top: 7px !important;
+}
+
+@media (max-width: 760px) {
+  .stop-popup-action-cell .stop-popup-external-link,
+  .stop-popup-action-cell .stop-source-summary {
+    min-height: 34px !important;
+    height: 34px !important;
+  }
+}
+
+/* =========================================================
+   v0.16 — TEMPORARY SERVICE RING CLIP FIX
+   Pastikan ring putus-putus halte/layanan sementara tampil utuh
+   tanpa mengubah diameter badge koridor di dalamnya.
+   ========================================================= */
+.stop-popup .stop-popup-direct-routes {
+  overflow: visible !important;
+  padding: 4px 4px 3px !important;
+  margin: -4px -4px -3px !important;
+}
+
+.stop-popup .stop-popup-route-button {
+  overflow: visible !important;
+}
+
+.stop-popup .stop-popup-route-button.is-operational-temporary,
+.stop-popup .stop-popup-route-button.is-operational-temp-terminus {
+  margin: 3px !important;
+}
+
+.stop-popup .stop-popup-route-button.is-operational-temporary::before {
+  inset: -3px !important;
+  box-sizing: border-box !important;
+  border-radius: 999px !important;
+  z-index: 2 !important;
+}
+
+.stop-popup .stop-popup-route-button.is-operational-temp-terminus::before {
+  inset: -3px !important;
+  box-sizing: border-box !important;
+  border-radius: 999px !important;
+  z-index: 2 !important;
+}
+
+.stop-popup .stop-popup-route-button > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* =========================================================
+   v0.16 — TEMPORARY SERVICE RING CLIP FIX 2
+   Tambah safe area luar agar dashed ring tidak tersentuh batas
+   container pada sisi atas/bawah/kiri/kanan.
+   Badge koridor tetap berukuran sama.
+   ========================================================= */
+.stop-popup .stop-popup-section--served-routes,
+.stop-popup .stop-popup-direct-routes,
+.stop-popup .stop-popup-route-list {
+  overflow: visible !important;
+}
+
+.stop-popup .stop-popup-direct-routes {
+  position: relative !important;
+  padding: 7px 7px 7px !important;
+  margin: -7px -7px -7px !important;
+}
+
+.stop-popup .stop-popup-route-button {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.stop-popup .stop-popup-route-button.is-operational-temporary,
+.stop-popup .stop-popup-route-button.is-operational-temp-terminus {
+  margin: 4px !important;
+}
+
+.stop-popup .stop-popup-route-button.is-operational-temporary::before,
+.stop-popup .stop-popup-route-button.is-operational-temp-terminus::before {
+  inset: -4px !important;
+  box-sizing: border-box !important;
+  border-radius: 999px !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+
+.stop-popup .stop-popup-route-button > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* =========================================================
+   v0.16 — PRIMARY ROUTE META AS SUMMARY CARDS
+   Moda + Status mengikuti bahasa visual Halte/Transit/etc.
+   ALIGNMENT/Trase disembunyikan dari panel (data tetap ada).
+   ========================================================= */
+.route-primary-meta-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+  margin-top: 8px !important;
+}
+
+.route-primary-meta-grid .route-primary-meta-item {
+  margin: 0 !important;
+  min-height: 27px !important;
+  padding: 5px 7px !important;
+  border: 1px solid rgba(0,0,0,.075) !important;
+  border-radius: 6px !important;
+  background: rgba(0,0,0,.018) !important;
+}
+
+.route-primary-meta-grid .route-primary-meta-item span {
+  font-size: 9.5px !important;
+  color: #737a80 !important;
+}
+
+.route-primary-meta-grid .route-primary-meta-item strong {
+  font-size: 10.5px !important;
+  color: #33383d !important;
+  font-weight: 700 !important;
+}
+
+.route-meta-secondary {
+  margin-top: 6px !important;
+}
+
+/* Karena Moda/Status kini sudah berupa kartu, summary berikutnya
+   cukup diberi jarak yang sama sehingga terbaca sebagai satu blok. */
+.route-primary-meta-grid + .route-summary-grid,
+.route-meta-secondary + .route-summary-grid {
+  margin-top: 6px !important;
+}
+
+@media (max-width: 760px) {
+  .route-primary-meta-grid {
+    gap: 5px !important;
+  }
+
+  .route-primary-meta-grid .route-primary-meta-item {
+    min-height: 29px !important;
+    padding: 5px 7px !important;
+  }
+}
+
+/* =========================================================
+   v0.16 — ROUTE META / SUMMARY EQUAL HEIGHT
+   Moda + Status disamakan tinggi visualnya dengan
+   Halte / Transit / Terminus / Panjang.
+   ========================================================= */
+.route-primary-meta-grid .route-primary-meta-item,
+.route-summary-grid .route-summary-item {
+  height: 26px !important;
+  min-height: 26px !important;
+  padding: 3px 7px !important;
+  box-sizing: border-box !important;
+  align-items: center !important;
+}
+
+.route-primary-meta-grid .route-primary-meta-item span,
+.route-primary-meta-grid .route-primary-meta-item strong,
+.route-summary-grid .route-summary-item span,
+.route-summary-grid .route-summary-item strong {
+  line-height: 1.1 !important;
+}
+
+@media (max-width: 760px) {
+  .route-primary-meta-grid .route-primary-meta-item,
+  .route-summary-grid .route-summary-item {
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 4px 7px !important;
+  }
+}
+
+/* =========================================================
+   v0.16 — ROUTE META / SUMMARY 24PX
+   Moda, Status, Halte, Transit, Terminus, Panjang
+   disamakan pada tinggi 24px di desktop maupun mobile.
+   ========================================================= */
+.route-primary-meta-grid .route-primary-meta-item,
+.route-summary-grid .route-summary-item {
+  height: 24px !important;
+  min-height: 24px !important;
+  padding: 2px 7px !important;
+  box-sizing: border-box !important;
+  align-items: center !important;
+}
+
+@media (max-width: 760px) {
+  .route-primary-meta-grid .route-primary-meta-item,
+  .route-summary-grid .route-summary-item {
+    height: 24px !important;
+    min-height: 24px !important;
+    padding: 2px 7px !important;
+  }
+}
+
+/* =========================================================
+   v0.16 — META CARD GAP EQUALIZED
+   Menyamakan gap grid Moda/Status dengan grid statistik di bawahnya.
+   ========================================================= */
+.route-primary-meta-grid,
+.route-summary-grid {
+  gap: 6px !important;
+}
+
+.route-primary-meta-grid {
+  margin-top: 6px !important;
+}
+
+.route-primary-meta-grid + .route-summary-grid,
+.route-meta-secondary + .route-summary-grid,
+.route-summary-grid + .route-summary-grid {
+  margin-top: 6px !important;
+}
+
+@media (max-width: 760px) {
+  .route-primary-meta-grid,
+  .route-summary-grid {
+    gap: 6px !important;
+  }
+
+  .route-primary-meta-grid {
+    margin-top: 6px !important;
+  }
+
+  .route-primary-meta-grid + .route-summary-grid,
+  .route-meta-secondary + .route-summary-grid,
+  .route-summary-grid + .route-summary-grid {
+    margin-top: 6px !important;
+  }
+}
+
+/* =========================================================
+   v0.16 — META CARD GAP SET TO 5PX
+   Menyamakan gap grid meta + statistik menjadi 5 px.
+   ========================================================= */
+.route-primary-meta-grid,
+.route-summary-grid {
+  gap: 5px !important;
+}
+
+.route-primary-meta-grid {
+  margin-top: 5px !important;
+}
+
+.route-primary-meta-grid + .route-summary-grid,
+.route-meta-secondary + .route-summary-grid,
+.route-summary-grid + .route-summary-grid {
+  margin-top: 5px !important;
+}
+
+@media (max-width: 760px) {
+  .route-primary-meta-grid,
+  .route-summary-grid {
+    gap: 5px !important;
+  }
+
+  .route-primary-meta-grid {
+    margin-top: 5px !important;
+  }
+
+  .route-primary-meta-grid + .route-summary-grid,
+  .route-meta-secondary + .route-summary-grid,
+  .route-summary-grid + .route-summary-grid {
+    margin-top: 5px !important;
+  }
+}
+
+/* =========================================================
+   v0.16 — COMPACT PRIMARY ROUTE FILTERS
+   Desktop/tablet: Moda, Status, dan Pilih Lin/Koridor dibuat
+   sedikit lebih rendah tanpa mengecilkan tipografi/ikon.
+   ========================================================= */
+@media (min-width: 761px) {
+  body #modeSelect,
+  body #statusSelect,
+  body #routeSelect {
+    height: 30px !important;
+    min-height: 30px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Label ketiga kontrol dirapatkan dari 5–6 px menjadi 4 px. */
+  body .filter-controls-card .filter-grid .form-field label,
+  body .filter-controls-card .route-select-field label {
+    margin-bottom: 4px !important;
+  }
+
+  /* Jarak Moda/Status menuju kontrol berikutnya sedikit dipadatkan. */
+  body .filter-controls-card .filter-grid .form-field {
+    margin-bottom: 7px !important;
+  }
+
+  /* Kontrol terakhir tetap tanpa ruang bawah tambahan. */
+  body .filter-controls-card .route-select-field {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* =========================================================
+   v0.16 — COMPACT SOURCE + DIVERSION CARDS
+   Desktop/tablet: kartu Sumber Data dan Pengalihan Sementara
+   dipadatkan vertikal tanpa mengecilkan tipografi utama.
+   ========================================================= */
+@media (min-width: 761px) {
+  /* Jarak dari blok sebelumnya dibuat sedikit lebih rapat. */
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-source-card,
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-alert-card {
+    margin-top: 5px !important;
+  }
+
+  /* Sumber & Dasar Data: target tinggi summary 36 px. */
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-source-summary {
+    min-height: 36px !important;
+    padding: 4px 7px !important;
+    gap: 7px !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-source-icon {
+    width: 18px !important;
+    height: 18px !important;
+    flex: 0 0 18px !important;
+  }
+
+  /* Pengalihan Sementara: tetap dua baris, tetapi lebih hemat tinggi. */
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-alert-summary {
+    min-height: 36px !important;
+    padding: 4px 7px !important;
+    gap: 6px !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-alert-icon {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 10px !important;
+  }
+}
+
+/* =========================================================
+   v0.16 — COMPACT ROUTE REFERENCE ROW + DIRECTION CONTROL
+   Desktop/tablet:
+   - Sumber Data + Pengalihan tampil sejajar bila keduanya ada.
+   - Saat salah satu detail dibuka, grid kembali 1 kolom agar isi
+     detail tetap nyaman dibaca.
+   - Arah perjalanan dirapatkan tanpa mengubah tipografi utama.
+   ========================================================= */
+@media (min-width: 761px) {
+  /* --- Arah perjalanan: lebih compact --- */
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-direction-control {
+    margin-top: 6px !important;
+    margin-bottom: 7px !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-direction-caption {
+    margin-bottom: 4px !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-direction-toggle {
+    min-height: 32px !important;
+    padding: 3px 4px 3px 9px !important;
+    gap: 8px !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-direction-toggle-icon {
+    width: 28px !important;
+    height: 24px !important;
+    flex: 0 0 28px !important;
+  }
+
+  /* --- Sumber Data + Pengalihan: dua kolom bila keduanya tersedia --- */
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    margin-top: 5px;
+    align-items: stretch;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert > .route-source-card,
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert > .route-alert-card {
+    min-width: 0;
+    width: 100%;
+    margin-top: 0 !important;
+  }
+
+  /* Tile dua kolom butuh sedikit tinggi agar dua baris teks tidak sesak. */
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert > .route-source-card > .route-source-summary,
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert > .route-alert-card > .route-alert-summary {
+    min-height: 48px !important;
+    height: 100%;
+    padding: 5px 6px !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert > .route-source-card > .route-source-summary {
+    gap: 5px !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert > .route-alert-card > .route-alert-summary {
+    grid-template-columns: 18px minmax(0, 1fr) 12px !important;
+    gap: 5px !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert .route-source-chevron,
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert .route-alert-chevron {
+    font-size: 15px !important;
+  }
+
+  /* Izinkan judul membungkus secara natural pada tile setengah lebar. */
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert .route-source-title,
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert .route-alert-title {
+    overflow-wrap: anywhere;
+  }
+
+  /* Begitu salah satu card dibuka, gunakan kembali lebar penuh. */
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert:has(> details[open]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert:has(> details[open])
+    > .route-source-card > .route-source-summary,
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert:has(> details[open])
+    > .route-alert-card > .route-alert-summary {
+    min-height: 36px !important;
+    height: auto;
+    padding: 4px 7px !important;
+  }
+}
+
+/* =========================================================
+   V0.16 — COMPACT REFERENCE ROW
+   Sembunyikan nama koridor pengalihan saat tile masih tertutup.
+   Judul koridor kembali terlihat ketika card Pengalihan dibuka.
+   ========================================================= */
+@media (min-width: 761px) {
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert
+    > .route-alert-card:not([open])
+    .route-alert-title {
+    display: none !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert
+    > .route-alert-card[open]
+    .route-alert-title {
+    display: block !important;
+  }
+}
+
+/* =========================================================
+   V0.16 — COMPACT REFERENCE ROW
+   Sembunyikan "Sumber & Dasar Data" saat tile Sumber Data
+   masih tertutup pada layout dua kolom. Judul kembali tampil
+   ketika card Sumber Data dibuka.
+   ========================================================= */
+@media (min-width: 761px) {
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert
+    > .route-source-card:not([open])
+    .route-source-title {
+    display: none !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert
+    > .route-source-card[open]
+    .route-source-title {
+    display: block !important;
+  }
+}
+
+/* =========================================================
+   V0.16 — COMPACT REFERENCE ROW (ARROW UNIFIED)
+   - Samakan perilaku panah Source + Pengalihan pada layout
+     dua kolom: tertutup = bawah, terbuka = atas.
+   - Ringkas tinggi tile tertutup setelah subtitle disembunyikan.
+   ========================================================= */
+@media (min-width: 761px) {
+  /* Tile setengah lebar yang masih tertutup dibuat lebih ringkas. */
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert
+    > .route-source-card:not([open])
+    > .route-source-summary,
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert
+    > .route-alert-card:not([open])
+    > .route-alert-summary {
+    min-height: 36px !important;
+    height: 100%;
+    padding: 4px 6px !important;
+  }
+
+  /* Source disamakan strukturnya dengan alert agar posisi panah konsisten. */
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert
+    > .route-source-card:not([open])
+    > .route-source-summary {
+    display: grid !important;
+    grid-template-columns: 18px minmax(0, 1fr) 12px !important;
+    align-items: center !important;
+    gap: 5px !important;
+  }
+
+  /* Pengalihan tetap grid, hanya diringkas. */
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert
+    > .route-alert-card:not([open])
+    > .route-alert-summary {
+    grid-template-columns: 18px minmax(0, 1fr) 12px !important;
+    gap: 5px !important;
+  }
+
+  /* Samakan tampilan chevron pada kedua tile. */
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert
+    .route-source-chevron,
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert
+    .route-alert-chevron {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 12px !important;
+    font-size: 15px !important;
+    line-height: 1 !important;
+    transform: rotate(90deg) !important;
+  }
+
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert
+    > .route-source-card[open]
+    .route-source-chevron,
+  body .route-detail-card:not(.is-overview):not(.is-collapsed)
+    .route-reference-grid.has-alert
+    > .route-alert-card[open]
+    .route-alert-chevron {
+    transform: rotate(-90deg) !important;
   }
 }

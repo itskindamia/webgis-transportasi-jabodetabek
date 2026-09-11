@@ -7,7 +7,7 @@
    - data/rail_stop.geojson   (opsional / multimoda rel)
 
    BRT tetap memakai schema v2.0 yang sudah ada.
-   MRT, KRL, dan LRT dibaca dari dua dataset RAIL yang sama
+   MRT, LRT, KRL, KA Bandara, dan KA Antarkota dibaca dari dua dataset RAIL yang sama
    melalui adapter runtime. MODE / LINE_ID / OPERATOR / STATUS
    pada setiap feature menentukan jaringan yang ditampilkan.
 
@@ -292,6 +292,15 @@ const TRANSIT_ROUTE_LABELS = {
   },
 
   KAI_KAJJ: {
+    operator: "KA Jarak Jauh",
+    route: "",
+    logo: null
+  },
+
+  /*
+    Alias legacy/singkat untuk kompatibilitas data integrasi.
+  */
+  KAJJ: {
     operator: "KA Jarak Jauh",
     route: "",
     logo: null
@@ -1033,11 +1042,16 @@ let stopHitLayer = null;
 /*
 
 /*
-  Untuk koridor yang sedang mengalami pengalihan:
-  false = hanya kondisi operasional/pengalihan
-  true  = tampilkan juga trase reguler sebagai pembanding
+  Kondisi trase untuk koridor yang sedang mengalami pengalihan.
+
+  CURRENT = kondisi operasional yang sedang berlaku.
+  REGULAR = trase reguler/normal secara utuh.
+
+  Ini BUKAN mode pembanding: hanya satu kondisi trase utama yang
+  ditampilkan pada satu waktu. State kembali ke CURRENT saat user
+  berpindah ke koridor lain.
 */
-let showRegularRouteComparison = false;
+let activeRouteConditionMode = "CURRENT";
 
 let currentSelectedRouteId = null;
 let currentSelectedStopKey = null;
@@ -1050,6 +1064,19 @@ let currentSelectedStopKey = null;
    Geometry rute tidak digambar ulang ketika arah berubah.
 */
 const routeDirectionById = new Map();
+
+/*
+  Tampilan geometri BRT.
+
+  FULL = seluruh geometri koridor (A + B + TRANSITION)
+  A    = geometri layanan arah A saja
+  B    = geometri layanan arah B saja
+
+  State ini sengaja dipisah dari routeDirectionById karena daftar halte
+  tetap membutuhkan satu arah aktif meskipun peta sedang menampilkan
+  trase FULL.
+*/
+const routeGeometryViewById = new Map();
 
 /*
   Cache ringan khusus logika arah.
@@ -1092,6 +1119,14 @@ function getRouteDirectionRuntimeCacheKey(routeId) {
     ? getActiveRouteDirection(routeKey)
     : "-";
 
+  const geometryView = hasDirectionalRouteGeometry(routeKey)
+    ? getRouteGeometryView(routeKey)
+    : "-";
+
+  const routeCondition = hasRouteDiversion(routeKey)
+    ? getRouteConditionMode(routeKey)
+    : "-";
+
   const divId = getActiveRouteDivId(routeKey) || "-";
 
   /*
@@ -1104,6 +1139,8 @@ function getRouteDirectionRuntimeCacheKey(routeId) {
   return [
     routeKey,
     side,
+    `GV:${geometryView}`,
+    `CM:${routeCondition}`,
     showProposedStops ? "P1" : "P0",
     showConceptualStops ? "C1" : "C0",
     `S:${normalizeStatus(statusSelect?.value || "ALL")}`,
@@ -1395,8 +1432,94 @@ function splitIds(value) {
     .filter(Boolean);
 }
 
+const MODE_PUBLIC_LABELS = {
+  BRT: "BRT",
+  MRT: "MRT",
+  LRT: "LRT",
+  KRL: "KRL",
+  KA_BANDARA: "KA Bandara",
+  ICT: "KA Antarkota"
+};
+
+const MODE_UI_ORDER = [
+  "BRT",
+  "MRT",
+  "LRT",
+  "KRL",
+  "KA_BANDARA",
+  "ICT"
+];
+
+const ICT_SERVICE_TYPE_PUBLIC_LABELS = {
+  LOCAL: "KA Lokal",
+  KAJJ: "KA Jarak Jauh"
+};
+
 function normalizeMode(value) {
-  return String(value ?? "").trim().toUpperCase();
+  const raw = String(value ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+
+  const aliases = {
+    KAI_BANDARA: "KA_BANDARA",
+    AIRPORT_RAIL: "KA_BANDARA",
+    AIRPORT_TRAIN: "KA_BANDARA",
+
+    INTERCITY: "ICT",
+    INTERCITY_TRAIN: "ICT",
+    INTERCITY_TRAINS: "ICT",
+    KA_ANTARKOTA: "ICT",
+
+    /* Alias MODE legacy. Kode integrasi KAJJ tetap ditangani
+       secara terpisah oleh getIntegrationInfo(). */
+    KAJJ: "ICT",
+    KAI_KAJJ: "ICT",
+    KA: "ICT",
+    KAI: "ICT"
+  };
+
+  return aliases[raw] || raw;
+}
+
+function getModePublicLabel(value) {
+  const mode = normalizeMode(value);
+  return MODE_PUBLIC_LABELS[mode] || cleanText(value) || mode;
+}
+
+function normalizeRailServiceType(value) {
+  const raw = String(value ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+
+  const aliases = {
+    LOCAL: "LOCAL",
+    KA_LOKAL: "LOCAL",
+    LOCAL_TRAIN: "LOCAL",
+    LOCAL_RAIL: "LOCAL",
+
+    KAJJ: "KAJJ",
+    JARAK_JAUH: "KAJJ",
+    KA_JARAK_JAUH: "KAJJ",
+    LONG_DISTANCE: "KAJJ"
+  };
+
+  return aliases[raw] || raw;
+}
+
+function getRailServiceType(feature) {
+  return normalizeRailServiceType(
+    feature?.properties?.SERVICE_TYPE ??
+    feature?.properties?.SERVICE ??
+    feature?.properties?.SUBMODE ??
+    ""
+  );
+}
+
+function getRailServiceTypePublicLabel(value) {
+  const serviceType = normalizeRailServiceType(value);
+  return ICT_SERVICE_TYPE_PUBLIC_LABELS[serviceType] || cleanText(value) || "";
 }
 
 function isRailModeValue(value) {
@@ -1408,12 +1531,7 @@ function isRailModeValue(value) {
     "KRL",
     "RAIL",
     "KA_BANDARA",
-    "KAI_BANDARA",
-    "AIRPORT_RAIL",
-    "KAJJ",
-    "KAI_KAJJ",
-    "KA",
-    "KAI"
+    "ICT"
   ].includes(mode);
 }
 
@@ -1602,8 +1720,9 @@ function featureCollection(features) {
 
    Tujuan:
    - BRT tetap memakai schema v2.0 tanpa perubahan sumber.
-   - MRT, KRL, dan LRT memakai schema rail yang seragam:
-       LINE_ID, LINE_NAME, MODE, OPERATOR, STATUS, STRUCTURE.
+   - MRT, KRL, LRT, KA Bandara, dan KA Antarkota memakai schema rail seragam:
+       LINE_ID, LINE_NAME, MODE, SERVICE_TYPE, OPERATOR, STATUS, STRUCTURE.
+   - SERVICE_TYPE wajib untuk MODE=ICT dengan domain LOCAL / KAJJ.
    - Semua moda rel boleh berada dalam rail_route.geojson dan
      rail_stop.geojson yang sama.
    - Adapter hanya menambah alias pada objek runtime.
@@ -1770,6 +1889,9 @@ function adaptRouteFeatureForRuntime(feature, datasetKey = "") {
       NAME: name,
       LINE_NAME: cleanText(p.LINE_NAME) || name,
       MODE: mode,
+      SERVICE_TYPE: normalizeRailServiceType(
+        p.SERVICE_TYPE ?? p.SERVICE ?? p.SUBMODE ?? ""
+      ),
       OPERATOR: cleanText(p.OPERATOR) || getDefaultOperator(mode),
       STATUS: cleanText(p.STATUS) || "Eksisting",
       COLOR: cleanText(p.COLOR) || getDefaultModeColor(mode),
@@ -1844,6 +1966,9 @@ function adaptStopFeatureForRuntime(feature, datasetKey = "") {
       STOP_NAME: stopName,
       DISPLAY_NM: cleanText(p.DISPLAY_NM) || stopName,
       MODE: mode,
+      SERVICE_TYPE: normalizeRailServiceType(
+        p.SERVICE_TYPE ?? p.SERVICE ?? p.SUBMODE ?? ""
+      ),
       OPERATOR: cleanText(p.OPERATOR) || getDefaultOperator(mode),
       STATUS: cleanText(p.STATUS) || "Eksisting",
       STRUCTURE: normalizeStructure(
@@ -2132,7 +2257,7 @@ function getRouteDetailSectionLabel() {
     return "Koridor";
   }
 
-  if (["MRT", "LRT", "KRL"].includes(mode)) {
+  if (["MRT", "LRT", "KRL", "KA_BANDARA", "ICT"].includes(mode)) {
     return "Lin";
   }
 
@@ -2189,12 +2314,12 @@ function updateRouteDetailToggleTerminology() {
   - Semua Koridor
   - Pilih Koridor
 
-  MRT / LRT / KRL
+  MRT / LRT / KRL / KA Bandara / KA Antarkota
   - Lin
   - Semua Lin
   - Pilih Lin
 
-  Semua Moda
+  Semua Layanan
   - Lin / Koridor
   - Semua Lin / Koridor
   - Pilih Lin / Koridor
@@ -2214,9 +2339,8 @@ function getRouteSelectionTerms() {
   }
 
   if (
-    selectedMode === "MRT" ||
-    selectedMode === "LRT" ||
-    selectedMode === "KRL"
+    ["MRT", "LRT", "KRL", "KA_BANDARA", "ICT"]
+      .includes(selectedMode)
   ) {
     return {
       singular: "Lin",
@@ -2670,10 +2794,27 @@ function getRouteHeadingParts(feature) {
   if (mode === "BRT") {
     const lineNumber = cleanText(p.LINE) || routeNumberFromId(routeId);
 
+    /*
+      Relasi pada heading mengikuti Kondisi Trase yang sedang dipilih.
+      - Saat ini  : gunakan relasi DIVERSION aktif bila tersedia.
+      - Reguler   : gunakan relasi feature REGULAR.
+
+      Ini hanya mengubah teks heading UI; data GeoJSON tidak diubah.
+    */
+    const relationFeature =
+      getRouteConditionMode(routeId) === "REGULAR"
+        ? (getRegularRouteFeature(routeId) || feature)
+        : (getDiversionRouteFeature(routeId) || feature);
+
     return {
-      systemName: cleanText(p.OPERATOR) || "TransJakarta",
+      systemName:
+        cleanText(p.NETWORK) ||
+        cleanText(p.OPERATOR) ||
+        "TransJakarta",
       lineName: lineNumber ? `Koridor ${lineNumber}` : "Koridor",
-      relation: normalizeRouteNameForDisplay(getRouteDisplayName(feature)),
+      relation: normalizeRouteNameForDisplay(
+        getRouteDisplayName(relationFeature)
+      ),
       badgeHTML: buildBrtBadge(routeId)
     };
   }
@@ -2769,6 +2910,122 @@ function getRegularRouteFeature(routeId) {
 }
 
 
+/* =========================================================
+   BRT ROUTE GEOMETRY — FULL / A / B + TRANSITION
+   ========================================================= */
+
+function normalizeRouteGeometryDirection(value) {
+  const raw = cleanText(value)
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+
+  if (raw === "A") return "A";
+  if (raw === "B") return "B";
+
+  if (
+    raw === "BOTH" ||
+    raw === "AB" ||
+    raw === "A_B" ||
+    raw === "DUA_ARAH" ||
+    raw === "BIDIRECTIONAL"
+  ) {
+    return "BOTH";
+  }
+
+  return "";
+}
+
+function normalizeRouteSegmentRole(value) {
+  const raw = cleanText(value)
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+
+  return raw === "TRANSITION"
+    ? "TRANSITION"
+    : "SERVICE";
+}
+
+function getRouteGeometryDirection(feature) {
+  return normalizeRouteGeometryDirection(
+    feature?.properties?.DIR_MAP ??
+    feature?.properties?.ROUTE_DIR ??
+    ""
+  );
+}
+
+function getRouteSegmentRole(feature) {
+  return normalizeRouteSegmentRole(
+    feature?.properties?.SEG_ROLE ??
+    feature?.properties?.SEGMENT_ROLE ??
+    "SERVICE"
+  );
+}
+
+function normalizeRouteGeometryView(value) {
+  const raw = cleanText(value).toUpperCase();
+  return raw === "A" || raw === "B"
+    ? raw
+    : "FULL";
+}
+
+function getRouteGeometryView(routeId) {
+  const routeKey = String(routeId ?? "");
+  const current = routeGeometryViewById.get(routeKey);
+  return normalizeRouteGeometryView(current || "FULL");
+}
+
+function setRouteGeometryView(routeId, view) {
+  const routeKey = String(routeId ?? "");
+  const normalized = normalizeRouteGeometryView(view);
+  routeGeometryViewById.set(routeKey, normalized);
+  clearDirectionRuntimeCaches();
+  return normalized;
+}
+
+function hasDirectionalRouteGeometry(routeId) {
+  const features = getRouteFeaturesById(routeId)
+    .filter(feature => getRouteMode(feature) === "BRT")
+    .filter(feature => normalizeRouteVariant(feature) === "REGULAR");
+
+  const directions = new Set(
+    features
+      .filter(feature => getRouteSegmentRole(feature) === "SERVICE")
+      .map(getRouteGeometryDirection)
+      .filter(Boolean)
+  );
+
+  return directions.has("A") && directions.has("B");
+}
+
+function filterBrtGeometryFeaturesForView(features, routeId) {
+  if (!Array.isArray(features) || !features.length) return [];
+  if (!hasDirectionalRouteGeometry(routeId)) return features;
+
+  const view = getRouteGeometryView(routeId);
+
+  /* FULL menampilkan A + B + TRANSITION. */
+  if (view === "FULL") return features;
+
+  /*
+    A/B hanya menampilkan segmen layanan. TRANSITION tidak ikut karena
+    segmen tersebut merupakan sirkulasi kendaraan di luar perjalanan
+    penumpang. Segmen SERVICE dengan DIR_MAP=BOTH tetap ikut bila ada.
+  */
+  return features.filter(feature => {
+    if (getRouteSegmentRole(feature) === "TRANSITION") return false;
+
+    const direction = getRouteGeometryDirection(feature);
+    return direction === view || direction === "BOTH";
+  });
+}
+
+function isBrtTransitionFeature(feature) {
+  return (
+    getRouteMode(feature) === "BRT" &&
+    getRouteSegmentRole(feature) === "TRANSITION"
+  );
+}
+
 /*
   Satu lin rail boleh mempunyai beberapa feature geometri dengan
   LINE_ID yang sama, misalnya:
@@ -2778,6 +3035,157 @@ function getRegularRouteFeature(routeId) {
 
   Identitas lin tetap satu; hanya geometri yang dipisah.
 */
+function uniqueRouteGeometryFeatures(features) {
+  const result = [];
+  const seen = new Set();
+
+  (Array.isArray(features) ? features : [])
+    .forEach((feature, index) => {
+      const key =
+        cleanText(feature?.properties?.GEOM_ID)
+        || `${getRouteId(feature)}:${normalizeRouteVariant(feature)}:${getRouteGeometryDirection(feature)}:${getRouteSegmentRole(feature)}:${index}`;
+
+      if (seen.has(key)) return;
+      seen.add(key);
+      result.push(feature);
+    });
+
+  return result;
+}
+
+
+/*
+  =========================================================
+  BRT DIRECTIONAL DIVERSION FALLBACK — v0.16
+  =========================================================
+
+  Prinsip:
+  - DIVERSION yang punya DIR_MAP=A hanya menggantikan SERVICE A.
+  - DIVERSION yang punya DIR_MAP=B hanya menggantikan SERVICE B.
+  - arah yang tidak memiliki DIVERSION aktif otomatis fallback ke REGULAR.
+  - TRANSITION memakai DIVERSION bila tersedia; jika tidak, REGULAR.
+  - DIVERSION tanpa DIR_MAP tetap diperlakukan sebagai pengalihan legacy
+    yang menggantikan seluruh geometri, demi kompatibilitas K2/K3/K8 lama.
+
+  Contoh K1 jika hanya arah B berubah:
+    FULL        = A_REG + B_DIV + TRANSITION aktif
+    arah A      = A_REG
+    arah B      = B_DIV
+*/
+function resolveActiveBrtGeometryFeatures(
+  routeId,
+  regularFeatures,
+  activeDiversions
+) {
+  const regular = Array.isArray(regularFeatures)
+    ? regularFeatures
+    : [];
+
+  const diversions = Array.isArray(activeDiversions)
+    ? activeDiversions
+    : [];
+
+  if (!diversions.length) {
+    return regular;
+  }
+
+  /*
+    Koridor legacy yang belum dipisah A/B tetap memakai perilaku lama:
+    geometri diversion aktif menggantikan geometri regular.
+  */
+  if (!hasDirectionalRouteGeometry(routeId)) {
+    return diversions;
+  }
+
+  const diversionService = diversions
+    .filter(feature => getRouteSegmentRole(feature) === 'SERVICE');
+
+  /*
+    Jika SERVICE diversion tidak memiliki arah, interpretasinya ambigu.
+    Demi kompatibilitas, anggap sebagai full-route override seperti schema lama.
+  */
+  if (
+    diversionService.some(
+      feature => !getRouteGeometryDirection(feature)
+    )
+  ) {
+    return diversions;
+  }
+
+  const result = [];
+
+  const regularService = regular
+    .filter(feature => getRouteSegmentRole(feature) === 'SERVICE');
+
+  const regularTransition = regular
+    .filter(feature => getRouteSegmentRole(feature) === 'TRANSITION');
+
+  const diversionTransition = diversions
+    .filter(feature => getRouteSegmentRole(feature) === 'TRANSITION');
+
+  /*
+    Segmen SERVICE yang berlaku untuk kedua arah diperlakukan sebagai
+    common segment. DIVERSION BOTH menggantikan REGULAR BOTH bila ada.
+  */
+  const diversionBoth = diversionService
+    .filter(feature => getRouteGeometryDirection(feature) === 'BOTH');
+
+  const regularBoth = regularService
+    .filter(feature => getRouteGeometryDirection(feature) === 'BOTH');
+
+  if (diversionBoth.length) {
+    result.push(...diversionBoth);
+  }
+  else {
+    result.push(...regularBoth);
+  }
+
+  ['A', 'B'].forEach(direction => {
+    const diversionForDirection = diversionService
+      .filter(
+        feature => getRouteGeometryDirection(feature) === direction
+      );
+
+    if (diversionForDirection.length) {
+      result.push(...diversionForDirection);
+      return;
+    }
+
+    const regularForDirection = regularService
+      .filter(
+        feature => getRouteGeometryDirection(feature) === direction
+      );
+
+    result.push(...regularForDirection);
+  });
+
+  /*
+    Transition adalah sirkulasi kendaraan. Jika ada transition khusus
+    diversion, gunakan itu; bila tidak, pertahankan transition reguler.
+  */
+  if (diversionTransition.length) {
+    result.push(...diversionTransition);
+  }
+  else {
+    result.push(...regularTransition);
+  }
+
+  /*
+    Jika ternyata schema directional belum lengkap dan resolver tidak
+    menghasilkan SERVICE apa pun, jangan membuat rute hilang.
+  */
+  const hasService = result.some(
+    feature => getRouteSegmentRole(feature) === 'SERVICE'
+  );
+
+  if (!hasService) {
+    return diversions;
+  }
+
+  return uniqueRouteGeometryFeatures(result);
+}
+
+
 function getActiveRouteGeometryFeatures(routeId) {
   const selectedStatus =
     normalizeStatus(statusSelect?.value || "ALL");
@@ -2797,23 +3205,45 @@ function getActiveRouteGeometryFeatures(routeId) {
     );
   };
 
-  const diversion =
-    getDiversionRouteFeature(routeId);
+  const routeFeatures = getRouteFeaturesById(routeId)
+    .filter(statusMatches);
 
-  if (diversion && statusMatches(diversion)) {
-    return [diversion];
+  const activeDiversions = routeFeatures
+    .filter(feature => normalizeRouteVariant(feature) === "DIVERSION")
+    .filter(feature => isFeatureWithinValidity(feature));
+
+  const regular = routeFeatures
+    .filter(feature => normalizeRouteVariant(feature) === "REGULAR");
+
+  const routeMode = getRouteMode(
+    activeDiversions[0]
+    || regular[0]
+    || routeFeatures[0]
+  );
+
+  if (routeMode === "BRT") {
+    const resolved = resolveActiveBrtGeometryFeatures(
+      routeId,
+      regular,
+      activeDiversions
+    );
+
+    return filterBrtGeometryFeaturesForView(
+      resolved.length ? resolved : routeFeatures,
+      routeId
+    );
   }
 
-  const regular =
-    getRegularRouteFeatures(routeId)
-      .filter(statusMatches);
+  /* Rail / non-BRT mempertahankan perilaku lama. */
+  if (activeDiversions.length) {
+    return activeDiversions;
+  }
 
   if (regular.length) {
     return regular;
   }
 
-  return getRouteFeaturesById(routeId)
-    .filter(statusMatches);
+  return routeFeatures;
 }
 
 
@@ -3026,6 +3456,76 @@ function hasRouteDiversion(routeId) {
 }
 
 
+/* =========================================================
+   ROUTE CONDITION — CURRENT / REGULAR
+   =========================================================
+
+   CURRENT = kondisi operasional aktif, termasuk directional diversion.
+   REGULAR = trase normal/reguler secara utuh.
+
+   Kontrol ini hanya muncul bila suatu koridor mempunyai diversion aktif.
+   Pemilihan kondisi trase tidak dimaksudkan sebagai overlay/perbandingan.
+*/
+function getRouteConditionMode(routeId) {
+  if (!routeId || !hasRouteDiversion(routeId)) {
+    return "CURRENT";
+  }
+
+  return activeRouteConditionMode === "REGULAR"
+    ? "REGULAR"
+    : "CURRENT";
+}
+
+function setRouteConditionMode(routeId, mode) {
+  const normalized = String(mode || "CURRENT").toUpperCase();
+
+  if (!routeId || !hasRouteDiversion(routeId)) {
+    activeRouteConditionMode = "CURRENT";
+    clearDirectionRuntimeCaches();
+    return activeRouteConditionMode;
+  }
+
+  activeRouteConditionMode = normalized === "REGULAR"
+    ? "REGULAR"
+    : "CURRENT";
+
+  clearDirectionRuntimeCaches();
+  return activeRouteConditionMode;
+}
+
+function getRegularRouteGeometryFeatures(routeId) {
+  let regular = getRegularRouteFeatures(routeId);
+
+  if (!regular.length) {
+    return [];
+  }
+
+  if (getRouteMode(regular[0]) === "BRT") {
+    regular = filterBrtGeometryFeaturesForView(
+      regular,
+      routeId
+    );
+  }
+
+  return uniqueRouteGeometryFeatures(regular);
+}
+
+function getDisplayedRouteGeometryFeatures(routeId) {
+  if (
+    getRouteConditionMode(routeId) === "REGULAR"
+    && hasRouteDiversion(routeId)
+  ) {
+    const regular = getRegularRouteGeometryFeatures(routeId);
+
+    if (regular.length) {
+      return regular;
+    }
+  }
+
+  return getActiveRouteGeometryFeatures(routeId);
+}
+
+
 /*
   Saat satu ROUTE_ID memiliki REGULAR + DIVERSION,
   WebGIS menganggap DIVERSION sebagai kondisi operasional aktif.
@@ -3034,7 +3534,7 @@ function hasRouteDiversion(routeId) {
   - dropdown tetap hanya satu koridor;
   - overview menampilkan kondisi pengalihan;
   - route info memakai nama/metadata pengalihan;
-  - REGULAR hanya menjadi layer pembanding opsional.
+  - REGULAR tetap tersedia sebagai mode kondisi trase tersendiri.
 */
 function getRouteById(routeId) {
   if (!routeData) {
@@ -3499,9 +3999,29 @@ function getRouteDirectionSourceFeatures(routeId) {
   const push = feature => {
     if (feature && !result.includes(feature)) result.push(feature);
   };
-  push(getRouteById(routeId));
-  push(getRegularRouteFeature(routeId));
-  push(getDiversionRouteFeature(routeId));
+
+  /*
+    Label arah harus mengikuti RELASI yang sedang ditampilkan.
+
+    - CURRENT + diversion aktif  -> utamakan feature DIVERSION
+    - REGULAR                    -> utamakan feature REGULAR
+
+    Fallback feature lain tetap disimpan agar data lama yang belum
+    mempunyai DIR_A_NAME / DIR_B_NAME tetap dapat membentuk label arah.
+  */
+  const conditionMode = getRouteConditionMode(routeId);
+
+  if (conditionMode === "REGULAR") {
+    push(getRegularRouteFeature(routeId));
+    push(getRouteById(routeId));
+    push(getDiversionRouteFeature(routeId));
+  }
+  else {
+    push(getDiversionRouteFeature(routeId));
+    push(getRouteById(routeId));
+    push(getRegularRouteFeature(routeId));
+  }
+
   return result;
 }
 
@@ -3524,13 +4044,21 @@ function getRouteDirectionFieldLabels(routeId) {
 
 function getRouteNameEndpoints(routeId) {
   /*
-    Untuk pengalihan aktif, nama/trase operasional menjadi sumber
-    endpoint arah. Jika tidak ada diversion, getRouteById() tetap
-    mengembalikan rute reguler.
+    Endpoint arah mengikuti nama relasi yang SEDANG DITAMPILKAN.
+
+    Contoh Koridor 2:
+    - CURRENT : Pulo Gadung - Monumen Nasional
+    - REGULAR : Pulo Gadung - Harmoni
+
+    Dengan begitu kontrol Arah Perjalanan tidak mempertahankan nama
+    relasi pengalihan ketika user sudah memilih kondisi Reguler.
   */
+  const conditionMode = getRouteConditionMode(routeId);
+
   const feature =
-    getRouteById(routeId) ||
-    getRegularRouteFeature(routeId);
+    conditionMode === "REGULAR"
+      ? (getRegularRouteFeature(routeId) || getRouteById(routeId))
+      : (getDiversionRouteFeature(routeId) || getRouteById(routeId) || getRegularRouteFeature(routeId));
 
   const routeName = feature
     ? getRouteDisplayName(feature)
@@ -3689,7 +4217,12 @@ function buildDirectionLabelFromDestination(routeId, destination) {
 }
 
 function getRouteDirectionLabels(routeId) {
-  const cacheKey = `labels:${String(routeId ?? "")}`;
+  /*
+    Kondisi trase menjadi bagian dari cache key karena label arah dapat
+    berubah antara relasi CURRENT dan REGULAR pada routeId yang sama.
+  */
+  const conditionMode = getRouteConditionMode(routeId);
+  const cacheKey = `labels:${String(routeId ?? "")}:${conditionMode}`;
   if (routeDirectionStaticCache.has(cacheKey)) {
     return routeDirectionStaticCache.get(cacheKey);
   }
@@ -3919,6 +4452,82 @@ function isStopVisibleInActiveDirection(feature, routeId) {
   }
 
   return false;
+}
+
+function shouldUseRegularStopsForDisplay(routeId) {
+  return Boolean(routeId)
+    && hasRouteDiversion(routeId)
+    && getRouteConditionMode(routeId) === "REGULAR";
+}
+
+function shouldShowAllStopsForDisplayedRoute(routeId) {
+  if (!routeId || !isRouteDirectionEnabled(routeId)) {
+    return true;
+  }
+
+  return getRouteGeometryView(routeId) === "FULL";
+}
+
+function passesBaseStopVisibilityFilters(feature, routeId) {
+  if (
+    isTemporaryStopFeature(feature)
+    && !isTemporaryStopActiveForRoute(feature, routeId)
+  ) {
+    return false;
+  }
+
+  if (
+    isProposedStop(feature) &&
+    !showProposedStops
+  ) {
+    return false;
+  }
+
+  if (
+    isConceptualStop(feature) &&
+    !showConceptualStops
+  ) {
+    return false;
+  }
+
+  const routeMode =
+    getRouteMode(
+      getRouteById(routeId)
+    );
+
+  const selectedStatus =
+    normalizeStatus(statusSelect?.value || "ALL");
+
+  if (
+    routeMode !== "BRT" &&
+    selectedStatus !== "ALL" &&
+    normalizeStatus(feature?.properties?.STATUS) !== selectedStatus
+  ) {
+    return false;
+  }
+
+  if (
+    normalizeStatus(feature?.properties?.STATUS) === "Construction" &&
+    !isConstructionStatusAllowedForMode(routeMode)
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function isStopVisibleForDisplayedContext(feature, routeId) {
+  if (shouldShowAllStopsForDisplayedRoute(routeId)) {
+    return true;
+  }
+
+  return isStopVisibleInActiveDirection(feature, routeId);
+}
+
+function getRegularVisibleStopsForRoute(routeId) {
+  return getStopsForRoute(routeId)
+    .filter(feature => passesBaseStopVisibilityFilters(feature, routeId))
+    .filter(feature => isStopVisibleForDisplayedContext(feature, routeId));
 }
 
 function getLegacySequenceRawForDirection(feature, routeId) {
@@ -4197,8 +4806,48 @@ function getActiveDirectionSequenceRaw(feature, routeId) {
   return explicit || "";
 }
 
+function buildRouteConditionControlHTML(routeId) {
+  if (!hasRouteDiversion(routeId)) return "";
+
+  const mode = getRouteConditionMode(routeId);
+  const isCurrent = mode === "CURRENT";
+
+  const buttons = [
+    ["CURRENT", "Saat ini", isCurrent],
+    ["REGULAR", "Reguler", !isCurrent]
+  ]
+    .map(([value, label, active]) => `
+      <button
+        type="button"
+        class="route-geometry-view-button${active ? " is-active" : ""}"
+        data-route-condition="${value}"
+        data-route-id="${escapeHTML(routeId)}"
+        aria-pressed="${active ? "true" : "false"}"
+      >
+        ${label}
+      </button>
+    `)
+    .join("");
+
+  const hint = isCurrent
+    ? "Menampilkan trase operasional yang sedang berlaku."
+    : "Menampilkan trase reguler; daftar halte mengikuti trase reguler.";
+
+  return `
+    <div class="route-geometry-control route-condition-control">
+      <div class="route-geometry-caption">Kondisi trase</div>
+      <div class="route-geometry-view-group">
+        ${buttons}
+      </div>
+      <div class="route-geometry-view-hint">${escapeHTML(hint)}</div>
+    </div>
+  `;
+}
+
+
 function buildRouteDirectionControlHTML(routeId) {
   if (!isRouteDirectionEnabled(routeId)) return "";
+  if (getRouteGeometryView(routeId) === "FULL") return "";
 
   const side = getActiveRouteDirection(routeId);
   const labels = getRouteDirectionLabels(routeId);
@@ -4221,11 +4870,52 @@ function buildRouteDirectionControlHTML(routeId) {
   `;
 }
 
+function buildRouteGeometryControlHTML(routeId) {
+  if (!hasDirectionalRouteGeometry(routeId)) return "";
+
+  const activeView = getRouteGeometryView(routeId);
+  const side = getActiveRouteDirection(routeId);
+  const labels = getRouteDirectionLabels(routeId);
+  const isFull = activeView === "FULL";
+
+  const buttons = [
+    ["FULL", "Semua trase", isFull],
+    ["DIRECTION", "Sesuai arah", !isFull]
+  ]
+    .map(([value, label, active]) => `
+      <button
+        type="button"
+        class="route-geometry-view-button${active ? " is-active" : ""}"
+        data-route-geometry-view="${value}"
+        data-route-id="${escapeHTML(routeId)}"
+        aria-pressed="${active ? "true" : "false"}"
+      >
+        ${label}
+      </button>
+    `)
+    .join("");
+
+  const hint = isFull
+    ? "Menampilkan seluruh trase koridor; semua halte koridor ditampilkan."
+    : `Menampilkan trase ${labels[side]}.`;
+
+  return `
+    <div class="route-geometry-control">
+      <div class="route-geometry-caption">Tampilan trase</div>
+      <div class="route-geometry-view-group">
+        ${buttons}
+      </div>
+      <div class="route-geometry-view-hint">${escapeHTML(hint)}</div>
+    </div>
+  `;
+}
+
 function refreshRouteDirectionView(routeId) {
   if (!routeId || !getRouteById(routeId)) return;
 
   clearSelectedStop();
   renderRouteInfo(getRouteById(routeId));
+  drawSelectedRouteGeometry(routeId);
   renderStopList(routeId);
   drawStops(routeId);
   updateStopLabelVisibility();
@@ -4516,9 +5206,20 @@ function getRouteSummaryLengthKm(feature) {
   const mode = getRouteMode(feature);
 
   if (mode === "BRT") {
-    return getGeometryLengthKm(
-      feature.geometry
-    );
+    const geometryFeatures =
+      getDisplayedRouteGeometryFeatures(routeId);
+
+    const sourceFeatures =
+      geometryFeatures.length
+        ? geometryFeatures
+        : [feature];
+
+    return sourceFeatures
+      .map(routeFeature =>
+        getGeometryLengthKm(routeFeature.geometry)
+      )
+      .filter(Number.isFinite)
+      .reduce((sum, value) => sum + value, 0);
   }
 
   return getRailSummaryGeometryFeatures(routeId)
@@ -4650,7 +5351,15 @@ function buildRouteSummaryHTML(
           <div class="route-summary-length-note">
             ${
               mode === "BRT"
-                ? "* Panjang merupakan estimasi total trase dua arah (pergi–kembali), bukan panjang satu arah."
+                ? (
+                    hasDirectionalRouteGeometry(getRouteId(feature))
+                      ? (
+                          getRouteGeometryView(getRouteId(feature)) === "FULL"
+                            ? "* Panjang merupakan estimasi total trase dua arah (pergi–kembali), bukan panjang satu arah."
+                            : "* Panjang merupakan estimasi trase arah perjalanan yang sedang ditampilkan."
+                        )
+                      : "* Panjang merupakan estimasi geometri koridor yang ditampilkan."
+                  )
                 : "* Panjang merupakan estimasi geometri lin yang ditampilkan."
             }
           </div>
@@ -4784,6 +5493,29 @@ function getStopDisplayName(feature) {
     cleanText(p.STOP_NAME) ||
     "Halte / Stasiun"
   );
+}
+
+function getStopStationCodeHTML(feature) {
+  if (!isRailFeature(feature)) {
+    return "";
+  }
+
+  const stationCode = cleanText(
+    feature?.properties?.STN_CODE
+  );
+
+  if (!stationCode) {
+    return "";
+  }
+
+  return `
+    <div
+      class="stop-popup-station-code"
+      aria-label="Kode stasiun ${escapeHTML(stationCode)}"
+    >
+      Kode stasiun · <strong>${escapeHTML(stationCode)}</strong>
+    </div>
+  `;
 }
 
 
@@ -5642,6 +6374,170 @@ function chooseStopGroupRepresentative(
 }
 
 
+/*
+  Sequence yang dipakai DAFTAR HALTE harus mengikuti konteks tampilan:
+
+  1. Setiap kali user memilih "Sesuai arah"
+     -> prioritaskan SEQ_A_MAP / SEQ_B_MAP sesuai arah aktif, termasuk
+        ketika koridor sedang memakai pengalihan. Ini penting untuk
+        koridor asimetris, misalnya K2:
+        A Pulo Gadung -> Monumen Nasional dan
+        B Monumen Nasional -> Pulo Gadung.
+
+  2. Jika sequence directional belum tersedia pada satu feature
+     -> fallback ke sequence konteksnya:
+        - REGULAR: sequence reguler/legacy;
+        - CURRENT: DIV_SEQ / sequence operasional.
+
+  3. "Semua trase" tidak memakai sequence satu arah.
+
+  Dengan demikian arah B tidak lagi diurutkan memakai DIV_SEQ arah A,
+  sementara halte pengalihan yang belum memiliki SEQ_A/B tetap aman
+  karena masih dapat memakai sequence operasional sebagai fallback.
+*/
+function getDisplayedStopSequenceRawForFeature(feature, routeId) {
+  if (!feature) {
+    return "";
+  }
+
+  const regularContext = shouldUseRegularStopsForDisplay(routeId);
+  const directionalView =
+    isRouteDirectionEnabled(routeId) &&
+    getRouteGeometryView(routeId) !== "FULL";
+
+  if (directionalView) {
+    const directionalRaw = getDirectionalSequenceRaw(
+      feature,
+      routeId,
+      getActiveRouteDirection(routeId)
+    );
+
+    if (directionalRaw) {
+      return directionalRaw;
+    }
+
+    if (regularContext) {
+      return getLegacySequenceRawForDirection(
+        feature,
+        routeId
+      );
+    }
+
+    return getStopSequenceRaw(
+      feature,
+      routeId
+    );
+  }
+
+  if (regularContext) {
+    return getLegacySequenceRawForDirection(
+      feature,
+      routeId
+    );
+  }
+
+  return getStopSequenceRaw(
+    feature,
+    routeId
+  );
+}
+
+function getDisplayedStopSortSequenceForFeature(feature, routeId, {
+  regularContext = shouldUseRegularStopsForDisplay(routeId)
+} = {}) {
+  if (!feature) {
+    return 999999;
+  }
+
+  const directionalView =
+    isRouteDirectionEnabled(routeId) &&
+    getRouteGeometryView(routeId) !== "FULL";
+
+  if (directionalView) {
+    const directionalRaw = getDirectionalSequenceRaw(
+      feature,
+      routeId,
+      getActiveRouteDirection(routeId)
+    );
+
+    if (directionalRaw) {
+      return parseDirectionalSequenceNumber(
+        directionalRaw
+      );
+    }
+
+    if (regularContext) {
+      return getLegacySequenceNumberForDirection(
+        feature,
+        routeId
+      );
+    }
+
+    return getStopSequence(
+      feature,
+      routeId
+    );
+  }
+
+  if (regularContext) {
+    return getLegacySequenceNumberForDirection(
+      feature,
+      routeId
+    );
+  }
+
+  return getStopSequence(
+    feature,
+    routeId
+  );
+}
+
+function getDisplayedStopSequenceRawForEntry(entry, routeId) {
+  const features = Array.isArray(entry?.physicalFeatures) && entry.physicalFeatures.length
+    ? entry.physicalFeatures
+    : [entry?.feature].filter(Boolean);
+
+  const candidates = features
+    .map(feature => {
+      const raw = getDisplayedStopSequenceRawForFeature(
+        feature,
+        routeId
+      );
+
+      return {
+        raw,
+        sort: raw
+          ? parseDirectionalSequenceNumber(raw)
+          : 999999
+      };
+    })
+    .filter(candidate => candidate.raw);
+
+  if (!candidates.length) {
+    return "";
+  }
+
+  candidates.sort((a, b) => a.sort - b.sort);
+  return candidates[0].raw;
+}
+
+function getDisplayedStopSortSequenceForEntry(entry, routeId) {
+  const features = Array.isArray(entry?.physicalFeatures) && entry.physicalFeatures.length
+    ? entry.physicalFeatures
+    : [entry?.feature].filter(Boolean);
+
+  const regularContext = shouldUseRegularStopsForDisplay(routeId);
+  const values = features
+    .map(feature => getDisplayedStopSortSequenceForFeature(feature, routeId, {
+      regularContext
+    }))
+    .filter(value => Number.isFinite(value));
+
+  return values.length
+    ? Math.min(...values)
+    : 999999;
+}
+
 function getLogicalOperationalStopEntries(
   routeId,
   { includeNotServed = true } = {}
@@ -5654,7 +6550,7 @@ function getLogicalOperationalStopEntries(
   }
 
   const rawEntries =
-    getOperationalStopListEntries(
+    getDisplayedStopListEntries(
       routeId
     )
       .filter(
@@ -5723,14 +6619,14 @@ function getLogicalOperationalStopEntries(
     .sort(
       (a, b) => {
         const seqA =
-          getDirectionalSortSequence(
-            a.feature,
+          getDisplayedStopSortSequenceForEntry(
+            a,
             routeId
           );
 
         const seqB =
-          getDirectionalSortSequence(
-            b.feature,
+          getDisplayedStopSortSequenceForEntry(
+            b,
             routeId
           );
 
@@ -6095,7 +6991,7 @@ function isContextualRailRoute(routeId) {
     "KRL",
     "RAIL",
     "KA_BANDARA",
-    "AIRPORT_RAIL"
+    "ICT"
   ].includes(mode);
 }
 
@@ -7222,68 +8118,10 @@ function getVisibleStopsForRoute(
 ) {
   return getStopsForRoute(routeId)
     .filter(
-      feature => {
-        if (
-          isTemporaryStopFeature(
-            feature
-          )
-          &&
-          !isTemporaryStopActiveForRoute(
-            feature,
-            routeId
-          )
-        ) {
-          return false;
-        }
-
-        if (
-          isProposedStop(feature) &&
-          !showProposedStops
-        ) {
-          return false;
-        }
-
-        if (
-          isConceptualStop(feature) &&
-          !showConceptualStops
-        ) {
-          return false;
-        }
-
-        const routeMode =
-          getRouteMode(
-            getRouteById(routeId)
-          );
-
-        const selectedStatus =
-          normalizeStatus(statusSelect?.value || "ALL");
-
-        if (
-          routeMode !== "BRT" &&
-          selectedStatus !== "ALL" &&
-          normalizeStatus(feature?.properties?.STATUS) !== selectedStatus
-        ) {
-          return false;
-        }
-
-        if (
-          normalizeStatus(feature?.properties?.STATUS) === "Construction" &&
-          !isConstructionStatusAllowedForMode(routeMode)
-        ) {
-          return false;
-        }
-
-        if (
-          !isStopVisibleInActiveDirection(
-            feature,
-            routeId
-          )
-        ) {
-          return false;
-        }
-
-        return true;
-      }
+      feature => passesBaseStopVisibilityFilters(feature, routeId)
+    )
+    .filter(
+      feature => isStopVisibleForDisplayedContext(feature, routeId)
     );
 }
 
@@ -7704,8 +8542,8 @@ function getStopSearchText(feature) {
 
   Prioritas:
   1. route yang sedang aktif bila halte/stasiun tersebut melayaninya
-  2. route yang sesuai filter Moda + Status
-  3. route yang sesuai filter Moda
+  2. route yang sesuai filter Jenis Layanan + Status
+  3. route yang sesuai filter Jenis Layanan
   4. route yang sesuai filter Status
   5. route valid pertama pada ROUTES
 */
@@ -9053,7 +9891,7 @@ const PRODUCT_TOUR_STEPS = [
   {
     title: "Pilih jaringan",
     text:
-      "Mulai dari Moda dan Status, lalu pilih Lin/Koridor yang ingin kamu jelajahi.",
+      "Mulai dari Jenis Layanan dan Status, lalu pilih Lin/Koridor yang ingin kamu jelajahi.",
     target: "controls",
     visual: "filters"
   },
@@ -9122,7 +9960,7 @@ function buildProductTourVisual(type) {
   if (type === "filters") {
     return `
       <div class="tour-mini-filters">
-        <span>Moda</span>
+        <span>Jenis Layanan</span>
         <strong>BRT</strong>
         <span>Status</span>
         <strong>Eksisting</strong>
@@ -11769,6 +12607,20 @@ function syncUrlState() {
         getActiveRouteDirection(routeId)
       );
     }
+
+    if (hasDirectionalRouteGeometry(routeId)) {
+      const geometryView = getRouteGeometryView(routeId);
+      if (geometryView !== "FULL") {
+        params.set("geom", geometryView);
+      }
+    }
+
+    if (
+      hasRouteDiversion(routeId) &&
+      getRouteConditionMode(routeId) === "REGULAR"
+    ) {
+      params.set("condition", "regular");
+    }
   }
 
   if (
@@ -11850,6 +12702,12 @@ function applyUrlStateAfterDataLoad() {
 
     const directionSide =
       params.get("dir");
+
+    const geometryView =
+      params.get("geom");
+
+    const routeCondition =
+      params.get("condition");
 
     const comparisonId =
       params.get("compare");
@@ -11952,9 +12810,24 @@ function applyUrlStateAfterDataLoad() {
         );
       }
 
+      if (hasDirectionalRouteGeometry(routeId)) {
+        setRouteGeometryView(
+          routeId,
+          geometryView || "FULL"
+        );
+      }
+
       showSingleRoute(
         routeId
       );
+
+      if (
+        hasRouteDiversion(routeId) &&
+        String(routeCondition || "").toLowerCase() === "regular"
+      ) {
+        setRouteConditionMode(routeId, "REGULAR");
+        refreshRouteDirectionView(routeId);
+      }
 
       if (
         comparisonId &&
@@ -13321,7 +14194,14 @@ function validateRailData() {
   const supportedModes = new Set([
     "MRT",
     "KRL",
-    "LRT"
+    "LRT",
+    "KA_BANDARA",
+    "ICT"
+  ]);
+
+  const validIctServiceTypes = new Set([
+    "LOCAL",
+    "KAJJ"
   ]);
 
   const validStructures = new Set([
@@ -13350,7 +14230,15 @@ function validateRailData() {
     }
     else if (!supportedModes.has(mode)) {
       routeIssues.push(
-        `${routeId || `route feature ${index + 1}`}: MODE=${p.MODE} belum dikenali sebagai MRT/KRL/LRT`
+        `${routeId || `route feature ${index + 1}`}: MODE=${p.MODE} belum dikenali sebagai MRT/LRT/KRL/KA_BANDARA/ICT`
+      );
+    }
+
+    const serviceType = getRailServiceType(feature);
+
+    if (mode === "ICT" && !validIctServiceTypes.has(serviceType)) {
+      routeIssues.push(
+        `${routeId || `route feature ${index + 1}`}: MODE=ICT membutuhkan SERVICE_TYPE=LOCAL atau KAJJ`
       );
     }
 
@@ -13411,7 +14299,15 @@ function validateRailData() {
       stopIssues.push(`${stopName}: MODE kosong`);
     }
     else if (!supportedModes.has(mode)) {
-      stopIssues.push(`${stopName}: MODE=${p.MODE} belum dikenali sebagai MRT/KRL/LRT`);
+      stopIssues.push(`${stopName}: MODE=${p.MODE} belum dikenali sebagai MRT/LRT/KRL/KA_BANDARA/ICT`);
+    }
+
+    const serviceType = getRailServiceType(feature);
+
+    if (mode === "ICT" && !validIctServiceTypes.has(serviceType)) {
+      stopIssues.push(
+        `${stopName}: MODE=ICT membutuhkan SERVICE_TYPE=LOCAL atau KAJJ`
+      );
     }
 
     if (!cleanText(p.OPERATOR)) {
@@ -13638,7 +14534,7 @@ function getFilteredRoutes() {
     statusSelect.value;
 
   /*
-    Saring dulu berdasarkan moda/status, kemudian kelompokkan
+    Saring dulu berdasarkan jenis layanan/status, kemudian kelompokkan
     berdasarkan ROUTE_ID.
 
     Jika sebuah koridor punya REGULAR + DIVERSION, hanya
@@ -13811,6 +14707,17 @@ function isRuntimeRegularComparison(
 }
 
 
+function isRuntimeRegularCondition(
+  feature
+) {
+  return (
+    String(
+      feature?.properties?._RUNTIME_ROUTE_CONDITION || ""
+    ).toUpperCase() === "REGULAR"
+  );
+}
+
+
 function isRuntimeRouteComparison(
   feature
 ) {
@@ -13854,6 +14761,9 @@ function routeStyle(feature) {
     isRuntimeRouteComparison(
       feature
     );
+
+  const brtTransition =
+    isBrtTransitionFeature(feature);
 
   const structure = normalizeStructure(
     feature?.properties?.STRUCTURE
@@ -13901,10 +14811,11 @@ function routeStyle(feature) {
                 ? 3.6
                 : 4.4
             )
-      ) * zoomWeightScale * railStructureWeightScale,
+      ) * zoomWeightScale * railStructureWeightScale * (brtTransition ? 0.82 : 1),
 
     /*
-      - Trase REGULAR pembanding pengalihan dibuat sangat redup.
+      - Marker legacy REGULAR-comparison tetap didukung untuk kompatibilitas,
+        tetapi mode Kondisi trase: Reguler tidak memakai treatment redup.
       - Rute kedua tetap cukup kuat untuk dibandingkan, tetapi
         sedikit lebih ringan dari rute utama.
     */
@@ -13917,11 +14828,13 @@ function routeStyle(feature) {
                   0.62,
                   statusStyle.opacity * 0.82
                 )
-              : statusStyle.opacity
+              : statusStyle.opacity * (brtTransition ? 0.58 : 1)
           ),
 
     dashArray:
-      statusStyle.dashArray,
+      brtTransition
+        ? "5 5"
+        : statusStyle.dashArray,
 
     lineCap: "round",
     lineJoin: "round"
@@ -14224,8 +15137,8 @@ function bindRoutePopup(feature, layer) {
       feature
     );
 
-  const isRegularComparison =
-    isRuntimeRegularComparison(
+  const isRegularCondition =
+    isRuntimeRegularCondition(
       feature
     );
 
@@ -14245,21 +15158,20 @@ function bindRoutePopup(feature, layer) {
       : "";
 
   const routeVariantHTML =
-    routeVariant === "DIVERSION"
+    isRegularCondition
       ? `
-        <div class="route-popup-operational-note">
-          <strong>Pengalihan sementara.</strong>
-          Trase ini merupakan kondisi operasional yang sedang
-          ditampilkan untuk koridor ini.
+        <div class="route-popup-regular-note">
+          <strong>Trase reguler.</strong>
+          Menampilkan konfigurasi trase normal koridor ini secara utuh.
         </div>
       `
       : (
-          isRegularComparison
+          routeVariant === "DIVERSION"
             ? `
-              <div class="route-popup-regular-note">
-                <strong>Trase reguler.</strong>
-                Ditampilkan sebagai pembanding terhadap
-                pengalihan sementara.
+              <div class="route-popup-operational-note">
+                <strong>Pengalihan sementara.</strong>
+                Trase ini merupakan kondisi operasional yang sedang
+                berlaku untuk koridor ini.
               </div>
             `
             : ""
@@ -14366,18 +15278,17 @@ function bindRoutePopup(feature, layer) {
       routePopupHTML;
 
     /*
-      Klik koridor lain memulai konteks baru sehingga
-      pembanding trase reguler kembali OFF.
-      Jika user mengklik salah satu geometri koridor yang sama,
-      keadaan toggle tetap dipertahankan.
+      Klik koridor lain memulai konteks baru sehingga kondisi trase
+      kembali ke kondisi operasional saat ini. Klik geometri koridor
+      yang sama mempertahankan pilihan Saat ini / Reguler.
     */
     if (
       String(
         currentSelectedRouteId ?? ""
       ) !== String(routeId)
     ) {
-      showRegularRouteComparison =
-        false;
+      activeRouteConditionMode =
+        "CURRENT";
     }
 
     const shouldShowPlanIntroFirst =
@@ -14628,50 +15539,36 @@ function getSelectedRouteGeometryFeatures(
     return [];
   }
 
-  const result = [];
+  const conditionMode =
+    getRouteConditionMode(routeId);
 
-  /*
-    Jika pengalihan aktif dan user meminta pembanding,
-    gambar REGULAR lebih dulu agar DIVERSION tetap berada
-    di lapisan visual paling atas.
-  */
-  if (
-    hasRouteDiversion(routeId) &&
-    showRegularRouteComparison
-  ) {
-    const regular =
-      getRegularRouteFeature(
-        routeId
-      );
-
-    if (regular) {
-      result.push(
-        cloneRouteFeatureForRuntime(
-          regular,
-          {
-            _RUNTIME_REGULAR_COMPARISON:
-              true
-          }
-        )
-      );
-    }
-  }
-
-  const activeGeometry =
-    getActiveRouteGeometryFeatures(
+  const displayedGeometry =
+    getDisplayedRouteGeometryFeatures(
       routeId
     );
 
-  if (activeGeometry.length) {
-    result.push(
-      ...activeGeometry
-    );
-  }
-  else {
-    result.push(active);
+  if (!displayedGeometry.length) {
+    return [active];
   }
 
-  return result;
+  /*
+    Trase REGULAR adalah mode utama tersendiri, bukan layer pembanding.
+    Runtime marker hanya dipakai untuk microcopy popup; styling tetap
+    sama kuatnya dengan trase utama.
+  */
+  if (conditionMode === "REGULAR") {
+    return displayedGeometry.map(feature =>
+      cloneRouteFeatureForRuntime(
+        feature,
+        {
+          _RUNTIME_ROUTE_CONDITION:
+            "REGULAR"
+        }
+      )
+    );
+  }
+
+  return displayedGeometry;
 }
 
 
@@ -14684,17 +15581,7 @@ function drawSelectedRouteGeometry(
     );
 
   const primaryActive =
-    primaryFeatures.filter(
-      feature =>
-        !isRuntimeRegularComparison(
-          feature
-        )
-    );
-
-  const primaryRegularComparison =
-    primaryFeatures.filter(
-      isRuntimeRegularComparison
-    );
+    primaryFeatures;
 
   const comparisonFeature =
     getComparisonRouteFeature();
@@ -14717,14 +15604,13 @@ function drawSelectedRouteGeometry(
 
   /*
     Urutan gambar:
-    1. trase reguler pembanding pengalihan (paling bawah)
-    2. rute kedua
-    3. rute utama (paling atas)
+    1. rute kedua (bila fitur perbandingan dua rute aktif)
+    2. rute utama sesuai kondisi trase yang dipilih user
 
-    Rute utama dengan demikian tetap dominan secara visual.
+    Pemilihan Saat ini / Reguler tidak pernah menggambar keduanya
+    secara bersamaan.
   */
   drawRoutes([
-    ...primaryRegularComparison,
     ...comparisonFeatures,
     ...primaryActive
   ]);
@@ -15665,7 +16551,7 @@ function renderAllRouteInfo() {
   const modeLabel =
     modeSelect.options[
       modeSelect.selectedIndex
-    ]?.text || "Semua Moda";
+    ]?.text || "Semua Layanan";
 
   const statusLabel =
     statusSelect.options[
@@ -16050,6 +16936,23 @@ function findStopFeatureByDisplayName(
   Halte tambahan pengalihan ditambahkan secara virtual dari
   ROUTE_ALERTS tanpa mengubah ROUTES/SEQ_MAP sumber.
 */
+function getRegularStopListEntries(routeId) {
+  return getRegularVisibleStopsForRoute(routeId)
+    .map(feature => ({
+      feature,
+      state: "regular",
+      temporaryTerminus: false,
+      virtual: false,
+      temporaryIndex: null
+    }));
+}
+
+function getDisplayedStopListEntries(routeId) {
+  return shouldUseRegularStopsForDisplay(routeId)
+    ? getRegularStopListEntries(routeId)
+    : getOperationalStopListEntries(routeId);
+}
+
 function getOperationalStopListEntries(
   routeId
 ) {
@@ -16323,7 +17226,7 @@ function getActiveOperationalStopsForRoute(
   return getLogicalOperationalStopEntries(
     routeId,
     {
-      includeNotServed: false
+      includeNotServed: shouldUseRegularStopsForDisplay(routeId)
     }
   )
     .map(
@@ -16349,9 +17252,12 @@ function getMapOperationalStopsForRoute(
   const seen =
     new Set();
 
-  return getOperationalStopListEntries(
-    routeId
-  )
+  const sourceEntries =
+    shouldUseRegularStopsForDisplay(routeId)
+      ? getRegularStopListEntries(routeId)
+      : getOperationalStopListEntries(routeId);
+
+  return sourceEntries
     .map(
       entry =>
         entry.feature
@@ -17215,14 +18121,16 @@ function renderRouteInfo(feature) {
       feature
     );
 
-  const alignmentHTML = hasText(p.ALIGNMENT)
-    ? `
-      <div class="route-meta-row">
-        <div class="route-meta-label">Trase</div>
-        <div>${escapeHTML(p.ALIGNMENT)}</div>
-      </div>
-    `
-    : "";
+  /*
+    Kartu Sumber Data dan Pengalihan dibuat menjadi satu kelompok
+    compact bila keduanya tersedia. Pengelompokan hanya dilakukan
+    ketika tidak ada kartu info rencana di antaranya, supaya urutan
+    informasi khusus rute tetap aman.
+  */
+
+  // ALIGNMENT tetap dipertahankan di data, tetapi tidak ditampilkan
+  // pada panel rute agar metadata utama lebih ringkas.
+  const alignmentHTML = "";
 
   const structureSummary =
     getRouteMode(feature) !== "BRT"
@@ -17240,48 +18148,6 @@ function renderRouteInfo(feature) {
 
   const nonExistingCount =
     proposedCount + conceptualCount;
-
-  const regularRouteToggleHTML =
-    hasRouteDiversion(
-      routeId
-    )
-      ? `
-        <div
-          class="optional-stop-control route-regular-control"
-          data-route-regular-control
-        >
-          <div class="optional-stop-control-copy">
-            <div class="optional-stop-control-title">
-              Tampilkan trase reguler
-            </div>
-
-            <div class="optional-stop-control-hint">
-              Tampilkan trase normal sebagai pembanding
-              terhadap pengalihan sementara.
-            </div>
-          </div>
-
-          <label
-            class="optional-stop-switch"
-            title="Tampilkan atau sembunyikan trase reguler"
-          >
-            <input
-              type="checkbox"
-              data-route-regular-toggle
-              ${showRegularRouteComparison ? "checked" : ""}
-              aria-label="Tampilkan trase reguler"
-            />
-
-            <span
-              class="optional-stop-switch-track"
-              aria-hidden="true"
-            >
-              <span class="optional-stop-switch-thumb"></span>
-            </span>
-          </label>
-        </div>
-      `
-      : "";
 
   const optionalStopsHTML =
     nonExistingCount
@@ -17364,6 +18230,43 @@ function renderRouteInfo(feature) {
       `
       : "";
 
+  const routeNetworkName = cleanText(p.NETWORK);
+  const routeSystemName = cleanText(routeHeading.systemName);
+
+  /*
+    NETWORK tidak perlu diulang di metadata bila nilainya sama
+    dengan nama sistem yang sudah tampil di atas judul rute.
+    Contoh: TransJakarta sudah tampil sebagai system name, jadi
+    kartu "Jaringan: TransJakarta" disembunyikan agar panel lebih
+    compact. Jika NETWORK berbeda, field tetap ditampilkan.
+  */
+  const networkHTML =
+    routeNetworkName &&
+    routeNetworkName.toLowerCase() !== routeSystemName.toLowerCase()
+      ? `
+        <div class="route-meta-row route-meta-row-network">
+          <div class="route-meta-label">Jaringan</div>
+          <div>${escapeHTML(routeNetworkName)}</div>
+        </div>
+      `
+      : "";
+
+  const routeReferenceCardsHTML =
+    routeSourceMetadataHTML &&
+    routeAlertHTML &&
+    !routePlanInfoHTML
+      ? `
+        <div class="route-reference-grid has-alert">
+          ${routeSourceMetadataHTML}
+          ${routeAlertHTML}
+        </div>
+      `
+      : `
+        ${routeSourceMetadataHTML}
+        ${routePlanInfoHTML}
+        ${routeAlertHTML}
+      `;
+
   routeInfoEl.innerHTML = `
     ${routeSystemHTML}
 
@@ -17380,33 +18283,35 @@ function renderRouteInfo(feature) {
       </div>
     </div>
 
+    ${buildRouteConditionControlHTML(routeId)}
     ${buildRouteDirectionControlHTML(routeId)}
+    ${buildRouteGeometryControlHTML(routeId)}
 
-    <div class="route-meta">
-      <div class="route-meta-row">
-        <div class="route-meta-label">Moda</div>
-        <div>${escapeHTML(getRouteMode(feature))}</div>
+    <div class="route-primary-meta-grid">
+      <div class="route-summary-item route-primary-meta-item">
+        <span>Moda</span>
+        <strong>${escapeHTML(getRouteMode(feature))}</strong>
       </div>
 
-      <div class="route-meta-row">
-        <div class="route-meta-label">Status</div>
-        <div>${escapeHTML(getRouteStatusSummary(routeId) || getStatusLabel(p.STATUS))}</div>
+      <div class="route-summary-item route-primary-meta-item">
+        <span>Status</span>
+        <strong>${escapeHTML(getRouteStatusSummary(routeId) || getStatusLabel(p.STATUS))}</strong>
       </div>
-
-      ${structureSummaryHTML}
-      ${alignmentHTML}
     </div>
+
+    ${(networkHTML || structureSummaryHTML || alignmentHTML) ? `
+      <div class="route-meta route-meta-secondary">
+        ${networkHTML}
+        ${structureSummaryHTML}
+        ${alignmentHTML}
+      </div>
+    ` : ""}
 
     ${routeSummaryHTML}
 
-    ${routeSourceMetadataHTML}
-
-    ${routePlanInfoHTML}
-
-    ${routeAlertHTML}
+    ${routeReferenceCardsHTML}
 
     <div class="optional-stop-controls">
-      ${regularRouteToggleHTML}
       ${optionalStopsHTML}
     </div>
   `;
@@ -17440,11 +18345,111 @@ routeInfoEl
 
       if (!routeId || !isRouteDirectionEnabled(routeId)) return;
 
-      toggleActiveRouteDirection(routeId);
+      const nextSide = toggleActiveRouteDirection(routeId);
+
+      /*
+        FULL tetap FULL ketika arah daftar halte dibalik.
+        Jika user sedang melihat A/B, trase mengikuti arah aktif baru.
+      */
+      if (
+        hasDirectionalRouteGeometry(routeId) &&
+        getRouteGeometryView(routeId) !== "FULL"
+      ) {
+        setRouteGeometryView(routeId, nextSide);
+      }
+
       refreshRouteDirectionView(routeId);
     }
   );
 
+
+/*
+  Kondisi trase publik: kondisi operasional saat ini / trase reguler.
+  Mode ini bukan overlay pembanding; hanya satu kondisi trase utama
+  yang ditampilkan pada satu waktu.
+*/
+routeInfoEl
+  ?.addEventListener(
+    "click",
+    event => {
+      const button =
+        event.target
+          ?.closest?.(
+            "[data-route-condition]"
+          );
+
+      if (!button) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const routeId = String(
+        button.dataset.routeId ||
+        currentSelectedRouteId ||
+        ""
+      );
+
+      if (!routeId || !hasRouteDiversion(routeId)) return;
+
+      setRouteConditionMode(
+        routeId,
+        button.dataset.routeCondition || "CURRENT"
+      );
+
+      refreshRouteDirectionView(routeId);
+      fitRouteToScreen();
+    }
+  );
+
+
+/*
+  Kontrol tampilan geometri publik: Semua trase / Sesuai arah.
+*/
+routeInfoEl
+  ?.addEventListener(
+    "click",
+    event => {
+      const button =
+        event.target
+          ?.closest?.(
+            "[data-route-geometry-view]"
+          );
+
+      if (!button) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const routeId = String(
+        button.dataset.routeId ||
+        currentSelectedRouteId ||
+        ""
+      );
+
+      if (!routeId || !hasDirectionalRouteGeometry(routeId)) return;
+
+      const requestedView = String(
+        button.dataset.routeGeometryView || "FULL"
+      ).toUpperCase();
+
+      /*
+        UI publik tidak menampilkan istilah A/B.
+        "Sesuai arah" memakai arah perjalanan yang sedang aktif,
+        sedangkan A/B tetap menjadi kode internal pada GeoJSON/runtime.
+      */
+      if (requestedView === "DIRECTION") {
+        setRouteGeometryView(
+          routeId,
+          getActiveRouteDirection(routeId)
+        );
+      }
+      else {
+        setRouteGeometryView(routeId, "FULL");
+      }
+
+      refreshRouteDirectionView(routeId);
+    }
+  );
 
 /*
   Toggle memakai event delegation karena routeInfo dirender
@@ -17454,57 +18459,6 @@ routeInfoEl
   ?.addEventListener(
     "change",
     event => {
-
-      const regularToggle =
-        event.target
-          ?.closest?.(
-            "[data-route-regular-toggle]"
-          );
-
-      if (regularToggle) {
-        const routeId =
-          currentSelectedRouteId
-          ||
-          (
-            routeSelect?.value !== "ALL"
-              ? routeSelect?.value
-              : ""
-          );
-
-        if (
-          !routeId ||
-          !hasRouteDiversion(
-            routeId
-          )
-        ) {
-          regularToggle.checked =
-            false;
-
-          showRegularRouteComparison =
-            false;
-
-          return;
-        }
-
-        showRegularRouteComparison =
-          Boolean(
-            regularToggle.checked
-          );
-
-        /*
-          Hanya geometri yang digambar ulang.
-          Daftar halte, popup stop, dan status operasional
-          tetap mengikuti pelayanan aktif/pengalihan.
-        */
-        drawSelectedRouteGeometry(
-          routeId
-        );
-
-        fitRouteToScreen();
-
-        return;
-      }
-
 
       const toggle =
         event.target
@@ -17595,6 +18549,50 @@ routeInfoEl
   );
 
 /* =========================================================
+   MODE OPTIONS — DATA DRIVEN v0.16
+   =========================================================
+
+   BRT/MRT/LRT/KRL tetap muncul sesuai data yang tersedia.
+   KA Bandara dan KA Antarkota baru ditambahkan ke dropdown ketika
+   rail_route.geojson benar-benar memuat route dengan MODE tersebut.
+   Dengan begitu kategori yang belum mempunyai lin tidak tampil kosong.
+*/
+function getAvailableRouteModes() {
+  const available = new Set(
+    (routeData?.features ?? [])
+      .map(feature => getRouteMode(feature))
+      .filter(mode => MODE_UI_ORDER.includes(mode))
+  );
+
+  return MODE_UI_ORDER.filter(mode => available.has(mode));
+}
+
+function syncModeOptionsWithData() {
+  if (!modeSelect) {
+    return;
+  }
+
+  const previous = normalizeMode(modeSelect.value || "ALL");
+  const availableModes = getAvailableRouteModes();
+
+  modeSelect.innerHTML = `
+    <option value="ALL">Semua Layanan</option>
+    ${availableModes
+      .map(mode => `
+        <option value="${escapeHTML(mode)}">
+          ${escapeHTML(getModePublicLabel(mode))}
+        </option>
+      `)
+      .join("")}
+  `;
+
+  modeSelect.value =
+    previous !== "ALL" && availableModes.includes(previous)
+      ? previous
+      : "ALL";
+}
+
+/* =========================================================
    DROPDOWN ROUTE
    ========================================================= */
 
@@ -17612,7 +18610,7 @@ function populateRouteDropdown() {
   /*
     UX MODE-FIRST
     ========================================================
-    Saat "Semua Moda" aktif, dropdown Lin/Koridor hanya
+    Saat "Semua Layanan" aktif, dropdown Lin/Koridor hanya
     menampilkan pilihan ALL.
 
     Daftar rute spesifik baru muncul setelah user memilih:
@@ -17620,9 +18618,11 @@ function populateRouteDropdown() {
     - MRT
     - LRT
     - KRL
+    - KA Bandara
+    - KA Antarkota
 
     Dengan begitu daftar Koridor BRT tidak bercampur dengan
-    Lin MRT/LRT/KRL ketika moda belum dipilih.
+    Lin rail ketika moda belum dipilih.
   */
   routeSelect.innerHTML = `
     <option value="ALL">
@@ -17641,42 +18641,61 @@ function populateRouteDropdown() {
   const features =
     getFilteredRoutes();
 
-  if (["MRT", "LRT", "KRL"].includes(selectedMode)) {
+  if (["MRT", "LRT", "KRL", "KA_BANDARA", "ICT"].includes(selectedMode)) {
     const groups = new Map();
 
     features.forEach(feature => {
-      const operator =
-        getRouteSystemName(feature)
-        || selectedMode;
+      const groupLabel =
+        selectedMode === "ICT"
+          ? (
+              getRailServiceTypePublicLabel(
+                getRailServiceType(feature)
+              ) || "KA Antarkota"
+            )
+          : (
+              getRouteSystemName(feature)
+              || getModePublicLabel(selectedMode)
+            );
 
-      if (!groups.has(operator)) {
-        groups.set(operator, []);
+      if (!groups.has(groupLabel)) {
+        groups.set(groupLabel, []);
       }
 
-      groups.get(operator).push(feature);
+      groups.get(groupLabel).push(feature);
     });
 
-    groups.forEach((groupFeatures, operator) => {
-      const optgroup =
-        document.createElement("optgroup");
+    const groupPriority = label => {
+      if (label === "KA Lokal") return 10;
+      if (label === "KA Jarak Jauh") return 20;
+      return 100;
+    };
 
-      optgroup.label = operator;
+    Array.from(groups.entries())
+      .sort((a, b) => {
+        const priorityDiff = groupPriority(a[0]) - groupPriority(b[0]);
+        return priorityDiff || String(a[0]).localeCompare(String(b[0]), "id");
+      })
+      .forEach(([groupLabel, groupFeatures]) => {
+        const optgroup =
+          document.createElement("optgroup");
 
-      groupFeatures.forEach(feature => {
-        const option =
-          document.createElement("option");
+        optgroup.label = groupLabel;
 
-        option.value =
-          getRouteId(feature);
+        groupFeatures.forEach(feature => {
+          const option =
+            document.createElement("option");
 
-        option.textContent =
-          getRouteOptionText(feature);
+          option.value =
+            getRouteId(feature);
 
-        optgroup.appendChild(option);
+          option.textContent =
+            getRouteOptionText(feature);
+
+          optgroup.appendChild(option);
+        });
+
+        routeSelect.appendChild(optgroup);
       });
-
-      routeSelect.appendChild(optgroup);
-    });
   }
   else {
     features.forEach(
@@ -18181,7 +19200,11 @@ function getIntegrationInfo(id) {
     KERETA API JARAK JAUH
     Tidak mempunyai badge lin khusus.
   */
-  if (code === "KAI_KAJJ") {
+  if (
+    code === "KAI_KAJJ" ||
+    code === "KAJJ" ||
+    code === "ICT_KAJJ"
+  ) {
 
     return {
       code,
@@ -18658,6 +19681,12 @@ function getIntegrationExpectedModes(services) {
       }
       else if (service?.operatorKey === "KRL") {
         modes.add("KRL");
+      }
+      else if (service?.operatorKey === "KAI_BANDARA") {
+        modes.add("KA_BANDARA");
+      }
+      else if (service?.operatorKey === "KAI_KAJJ") {
+        modes.add("ICT");
       }
       else if (
         service?.operatorKey === "LRT_JAKARTA" ||
@@ -19892,8 +20921,26 @@ function getStopTypeLabel(feature) {
     return "STASIUN KRL";
   }
 
+  if (mode === "KA_BANDARA") {
+    return "STASIUN KA BANDARA";
+  }
+
+  if (mode === "ICT") {
+    const serviceType = getRailServiceType(feature);
+
+    if (serviceType === "LOCAL") {
+      return "STASIUN KA LOKAL";
+    }
+
+    if (serviceType === "KAJJ") {
+      return "STASIUN KA JARAK JAUH";
+    }
+
+    return "STASIUN KA ANTARKOTA";
+  }
+
   return mode
-    ? `HALTE / STASIUN ${mode}`
+    ? `HALTE / STASIUN ${getModePublicLabel(mode)}`
     : "HALTE / STASIUN";
 }
 
@@ -20163,10 +21210,211 @@ function getDirectServiceSectionLabel(
     modes.size > 0 &&
     !modes.has("BRT")
   ) {
-    return "Lin yang dilayani";
+    return "Layanan kereta";
   }
 
   return "Lin / Koridor yang dilayani";
+}
+
+
+/* =========================================================
+   RAIL POPUP SERVICE CLASSIFICATION — v0.16
+   =========================================================
+
+   KA Bandara dapat berarti dua hal berbeda pada data sekarang:
+   1. layanan kereta yang berhenti di stasiun KRL yang sama; atau
+   2. integrasi ke stasiun KA Bandara lain di dalam simpul transit.
+
+   Karena master stop KA Bandara/KAJJ pada data saat ini belum menjadi layer rail
+   tersendiri, v0.16 tetap mempertahankan fallback kompatibilitas ini. Klasifikasi
+   dibuat konservatif dari MODE sumber + INT_NM:
+   - hanya popup KRL yang boleh mempromosikan KA Bandara menjadi
+     "Layanan kereta";
+   - nama tujuan harus sama dengan STOP_NAME atau DISPLAY_NM;
+   - KAJJ pada popup KRL dipisahkan menjadi bagian layanan khusus,
+     bukan dicampur ke daftar Integrasi.
+*/
+function normalizeRailServicePlaceName(value) {
+  return String(value ?? "")
+    .replace(
+      /\b(Dalam Pembangunan|Rencana|Usulan|Gagasan(?: WebGIS)?|Konseptual|Conceptual|Nonaktif)\b/gi,
+      ""
+    )
+    .replace(/^(Halte|Stasiun|Terminal)\s+/i, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function isIntegrationServiceAtSameStation(
+  feature,
+  integrationCode,
+  integrationNameMap = {}
+) {
+  const p = feature?.properties ?? {};
+
+  const sourceNames = [
+    p.STOP_NAME,
+    p.DISPLAY_NM
+  ]
+    .map(normalizeRailServicePlaceName)
+    .filter(Boolean);
+
+  if (!sourceNames.length) {
+    return false;
+  }
+
+  const relatedNames =
+    getIntegrationMultiMapValues(
+      integrationNameMap,
+      integrationCode
+    )
+      .map(normalizeRailServicePlaceName)
+      .filter(Boolean);
+
+  return relatedNames.some(
+    relatedName =>
+      sourceNames.includes(relatedName)
+  );
+}
+
+function partitionRailPopupServices(
+  feature,
+  integrations = [],
+  integrationNameMap = {}
+) {
+  const sourceMode =
+    normalizeMode(
+      feature?.properties?.MODE
+    );
+
+  const airportRailServices = [];
+  const intercityRailServices = [];
+  const remainingIntegrations = [];
+
+  (Array.isArray(integrations) ? integrations : [])
+    .forEach(code => {
+      const info = getIntegrationInfo(code);
+
+      if (
+        sourceMode === "KRL" &&
+        info.operatorKey === "KAI_BANDARA" &&
+        isIntegrationServiceAtSameStation(
+          feature,
+          code,
+          integrationNameMap
+        )
+      ) {
+        airportRailServices.push(code);
+        return;
+      }
+
+      if (
+        sourceMode === "KRL" &&
+        info.operatorKey === "KAI_KAJJ"
+      ) {
+        intercityRailServices.push(code);
+        return;
+      }
+
+      remainingIntegrations.push(code);
+    });
+
+  return {
+    airportRailServices,
+    intercityRailServices,
+    remainingIntegrations
+  };
+}
+
+function buildAirportRailDirectServiceBadge(
+  serviceCodes = []
+) {
+  const serviceCode =
+    (Array.isArray(serviceCodes) ? serviceCodes : [])
+      .find(code =>
+        getIntegrationInfo(code).operatorKey === "KAI_BANDARA"
+      );
+
+  if (!serviceCode) {
+    return "";
+  }
+
+  const badgeHTML =
+    buildLineBadge("KAI_BANDARA") ||
+    buildLineBadge("KA_BANDARA");
+
+  if (!badgeHTML) {
+    return "";
+  }
+
+  return `
+    <span
+      class="stop-popup-static-rail-service"
+      title="KA Bandara · layanan di stasiun ini"
+      aria-label="KA Bandara · layanan di stasiun ini"
+    >
+      ${badgeHTML}
+    </span>
+  `;
+}
+
+function buildIntercityRailServiceSectionHTML(
+  serviceCodes = [],
+  integrationNameMap = {}
+) {
+  const names = [];
+
+  (Array.isArray(serviceCodes) ? serviceCodes : [])
+    .forEach(code => {
+      getIntegrationMultiMapValues(
+        integrationNameMap,
+        code
+      )
+        .forEach(value => {
+          const cleanName =
+            stripTransitPlacePrefix(value);
+
+          if (
+            cleanName &&
+            !names.some(
+              current =>
+                normalizeRailServicePlaceName(current) ===
+                normalizeRailServicePlaceName(cleanName)
+            )
+          ) {
+            names.push(cleanName);
+          }
+        });
+    });
+
+  if (!names.length) {
+    return "";
+  }
+
+  return `
+    <div class="stop-popup-section stop-popup-section--intercity-rail">
+      <div class="stop-popup-label">
+        KA Jarak Jauh
+      </div>
+
+      <div class="stop-popup-intercity-rail-list">
+        ${
+          names
+            .map(
+              name => `
+                <div class="stop-popup-intercity-rail-row">
+                  <span class="stop-popup-intercity-rail-name">
+                    Stasiun ${escapeHTML(name)}
+                  </span>
+                </div>
+              `
+            )
+            .join("")
+        }
+      </div>
+    </div>
+  `;
 }
 
 
@@ -21116,6 +22364,22 @@ function buildStopPopup(feature, routeId) {
       feature
     );
 
+  const railPopupServices =
+    partitionRailPopupServices(
+      feature,
+      integrations,
+      integrationNameMap
+    );
+
+  const airportRailServiceIds =
+    railPopupServices.airportRailServices;
+
+  const intercityRailServiceIds =
+    railPopupServices.intercityRailServices;
+
+  const visibleIntegrations =
+    railPopupServices.remainingIntegrations;
+
   const role =
     getOperationalStopRole(
       feature,
@@ -21330,8 +22594,12 @@ function buildStopPopup(feature, routeId) {
       `
       : "";
 
+  const hasAirportRailDirectService =
+    airportRailServiceIds.length > 0;
+
   const directServiceHTML =
-    directRoutes.length
+    directRoutes.length ||
+    hasAirportRailDirectService
       ? `
         <div class="stop-popup-section stop-popup-section--service">
 
@@ -21356,6 +22624,10 @@ function buildStopPopup(feature, routeId) {
                 )
                 .join("")
             }
+
+            ${buildAirportRailDirectServiceBadge(
+              airportRailServiceIds
+            )}
           </div>
 
           ${buildDirectServiceOperationalNoteHTML(
@@ -21364,22 +22636,36 @@ function buildStopPopup(feature, routeId) {
           )}
 
           ${
-            directRoutes.length > 1
+            hasAirportRailDirectService
               ? `
                 <div class="stop-popup-route-hint">
-                  Klik badge untuk menampilkan rute lain yang melayani titik ini.
+                  Badge A menunjukkan layanan KA Bandara di stasiun ini.
                 </div>
               `
-              : ""
+              : (
+                  directRoutes.length > 1
+                    ? `
+                      <div class="stop-popup-route-hint">
+                        Klik badge untuk menampilkan rute lain yang melayani titik ini.
+                      </div>
+                    `
+                    : ""
+                )
           }
 
         </div>
       `
       : "";
 
+  const intercityRailServiceHTML =
+    buildIntercityRailServiceSectionHTML(
+      intercityRailServiceIds,
+      integrationNameMap
+    );
+
   const integrationGroups =
     groupIntegrationsByOperator(
-      integrations,
+      visibleIntegrations,
       integrationNameMap,
       integrationStatusMap,
       integrationTargetMap
@@ -21407,6 +22693,7 @@ function buildStopPopup(feature, routeId) {
   const isCompactPopup =
     directRoutes.length <= 2 &&
     integrationGroups.length === 0 &&
+    !intercityRailServiceHTML &&
     !(
       role &&
       role.toLowerCase() !== "reguler" &&
@@ -21623,6 +22910,8 @@ function buildStopPopup(feature, routeId) {
           ${escapeHTML(getStopDisplayName(feature))}
         </div>
 
+        ${getStopStationCodeHTML(feature)}
+
         <div class="stop-popup-meta-row">
           <div class="stop-popup-status ${getStopStatusClass(feature)}">
             ${escapeHTML(getStopStatusLabel(feature))}
@@ -21647,6 +22936,7 @@ function buildStopPopup(feature, routeId) {
 
         ${directServiceHTML}
         ${affectedRoutesHTML}
+        ${intercityRailServiceHTML}
         ${integrationHTML}
 
         ${stopActionRowHTML}
@@ -21679,6 +22969,8 @@ function safeBuildStopPopup(feature, routeId) {
         <div class="stop-popup-title">
           ${escapeHTML(getStopDisplayName(feature))}
         </div>
+
+        ${getStopStationCodeHTML(feature)}
 
         <div class="stop-popup-status ${getStopStatusClass(feature)}">
           ${escapeHTML(getStopStatusLabel(feature))}
@@ -23569,23 +24861,20 @@ function renderStopList(routeId) {
 
         Saat K4 aktif -> routeSeq = "01".
       */
-      const explicitDirectionSeq =
-        getActiveDirectionSequenceRaw(
-          feature,
+      /*
+        Nomor pada badge mengikuti sumber sequence yang sama dengan
+        pengurutan daftar. Pada tampilan satu arah reguler:
+        A -> SEQ_A_MAP
+        B -> SEQ_B_MAP
+
+        Jadi nomor yang terlihat bukan hasil renumber berdasarkan index,
+        melainkan nomor sequence eksplisit dari GeoJSON.
+      */
+      const routeSeq =
+        getDisplayedStopSequenceRawForEntry(
+          entry,
           routeId
         );
-
-      const routeSeq =
-        isRouteDirectionEnabled(routeId) &&
-        !hasRouteDiversion(routeId)
-          ? String(entryIndex + 1).padStart(2, "0")
-          : (
-              explicitDirectionSeq ||
-              getStopSequenceRaw(
-                feature,
-                routeId
-              )
-            );
 
       const seqBadgeHTML =
         isTemporaryServed &&
@@ -24336,7 +25625,7 @@ function selectStop(
   - judul membungkus menjadi dua baris
   - tinggi search berubah
 */
-const RIGHT_CARD_GAP = 8;
+const RIGHT_CARD_GAP = 6;
 
 function layoutDesktopRightCards() {
   const header =
@@ -24966,7 +26255,7 @@ function getRouteFitPadding() {
           Math.ceil(
             panelRect.right -
             (mapRect?.left ?? 0) +
-            28
+            18
           )
         )
       : 45;
@@ -24978,17 +26267,17 @@ function getRouteFitPadding() {
           Math.ceil(
             (mapRect?.right ?? window.innerWidth) -
             rightPanelRect.left +
-            28
+            18
           )
         )
       : 55;
 
   return {
     paddingTopLeft:
-      [leftPadding, 45],
+      [leftPadding, 38],
 
     paddingBottomRight:
-      [rightPadding, 85]
+      [rightPadding, 68]
   };
 }
 
@@ -25133,7 +26422,7 @@ function showAllRoutes(
 
   currentSelectedRouteId = null;
   comparisonRouteId = null;
-  showRegularRouteComparison = false;
+  activeRouteConditionMode = "CURRENT";
 
   updateRouteDetailCardState();
 
@@ -25196,12 +26485,13 @@ function showSingleRoute(
     previousRouteId !==
     String(routeId)
   ) {
-    showRegularRouteComparison =
-      false;
+    activeRouteConditionMode =
+      "CURRENT";
 
     /*
-      Saat user benar-benar pindah rute utama, pembanding lama
-      dibersihkan supaya konteks tidak terbawa tanpa sengaja.
+      Saat user benar-benar pindah rute utama, kondisi trase kembali
+      ke Saat ini dan pembanding dua-rute lama dibersihkan supaya
+      konteks tidak terbawa tanpa sengaja.
       Initial load (previousRouteId kosong) juga aman.
     */
     if (previousRouteId) {
@@ -26585,7 +27875,7 @@ async function loadData() {
       RAIL bersifat optional: bila rail_route.geojson / rail_stop.geojson
       belum diletakkan di folder data, WebGIS tetap terbuka sebagai BRT-only.
 
-      Semua MRT, KRL, dan LRT berada di dua file RAIL yang sama.
+      Semua MRT, LRT, KRL, KA Bandara, dan KA Antarkota berada di dua file RAIL yang sama.
       Script tidak perlu menambah request baru ketika moda/lin bertambah.
     */
     const [
@@ -26672,6 +27962,8 @@ async function loadData() {
       brtStops,
       railStops
     );
+
+    syncModeOptionsWithData();
 
     assignRuntimeStopKeys();
 
@@ -27044,7 +28336,9 @@ restoreRouteDetailCollapseState();
 
   function featureMatchesOperator(feature, operatorKey) {
     const p = feature?.properties || {};
-    const mode = String(p.MODE || "").toUpperCase();
+    const rawMode = String(p.MODE || "").toUpperCase();
+    const mode = normalizeMode(p.MODE || "");
+    const serviceType = getRailServiceType(feature);
     const operator = String(p.OPERATOR || "").toLowerCase();
     const lines = String(p.LINES || p.ROUTES || "").toUpperCase();
 
@@ -27052,14 +28346,15 @@ restoreRouteDetailCollapseState();
     if (mode === "BRT") return false;
     if (operatorKey === "KRL") return mode === "KRL" || operator.includes("commuter");
     if (operatorKey === "KAI_KAJJ") {
-      const isAirport = mode.includes("BANDARA") || lines.includes("BANDARA") || operator.includes("bandara");
+      const isAirport = mode === "KA_BANDARA" || rawMode.includes("BANDARA") || lines.includes("BANDARA") || operator.includes("bandara");
       const isCommuter = mode === "KRL" || operator.includes("commuter");
       return !isAirport && !isCommuter && (
-        mode.includes("KAJJ") || lines.includes("KAJJ") || operator.includes("jarak jauh") ||
-        mode === "KA" || mode === "KAI" || mode === "KERETA API"
+        (mode === "ICT" && serviceType === "KAJJ") ||
+        rawMode.includes("KAJJ") || lines.includes("KAJJ") || operator.includes("jarak jauh") ||
+        rawMode === "KA" || rawMode === "KAI" || rawMode === "KERETA API"
       );
     }
-    if (operatorKey === "KAI_BANDARA") return mode.includes("BANDARA") || lines.includes("BANDARA") || operator.includes("bandara");
+    if (operatorKey === "KAI_BANDARA") return mode === "KA_BANDARA" || rawMode.includes("BANDARA") || lines.includes("BANDARA") || operator.includes("bandara");
     if (operatorKey === "MRT_JAKARTA") return mode === "MRT" || operator.includes("mrt");
     if (operatorKey === "LRT_JABODEBEK") return (mode === "LRT" || mode.includes("LRT")) && (operator.includes("jabodebek") || lines.includes("LRT_JB_"));
     if (operatorKey === "LRT_JAKARTA") return (mode === "LRT" || mode.includes("LRT")) && (operator.includes("lrt jakarta") || lines.includes("LRT_JKT"));

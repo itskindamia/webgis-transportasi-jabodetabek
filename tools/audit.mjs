@@ -36,6 +36,17 @@ fail(html.includes("Struktur Jalur Kereta"), "Legenda struktur belum dibatasi se
 fail(html.includes("<span>Permukaan</span>"), "Kategori Permukaan belum tersedia pada legenda struktur rail.");
 fail(script.includes("function isRailFeature(feature)"), "Helper klasifikasi feature rail tidak ditemukan.");
 fail(script.includes("if (!isRailFeature(feature))"), "Pola struktur belum dibatasi hanya untuk feature rail.");
+fail(script.includes('code === "KAI_KAJJ" ||\n    code === "KAJJ"'), "Alias KAJJ belum dikenali langsung oleh resolver utama.");
+fail(script.includes("function getStopStationCodeHTML(feature)"), "Renderer metadata STN_CODE popup rail tidak ditemukan.");
+fail(script.includes('KA_BANDARA: "KA Bandara"'), "Label publik MODE=KA_BANDARA belum tersedia.");
+fail(script.includes('ICT: "KA Antarkota"'), "Label publik MODE=ICT belum tersedia.");
+fail(script.includes("function normalizeRailServiceType(value)"), "Normalizer SERVICE_TYPE rail belum tersedia.");
+fail(script.includes('LOCAL: "KA Lokal"'), "Label publik SERVICE_TYPE=LOCAL belum tersedia.");
+fail(script.includes('KAJJ: "KA Jarak Jauh"'), "Label publik SERVICE_TYPE=KAJJ belum tersedia.");
+fail(script.includes("function syncModeOptionsWithData()"), "Dropdown Moda data-driven v0.16 belum tersedia.");
+fail(script.includes('MODE=ICT membutuhkan SERVICE_TYPE=LOCAL atau KAJJ'), "Validasi SERVICE_TYPE untuk MODE=ICT belum tersedia.");
+fail(style.includes('--font-main: "Avenir Next Local", "Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif;'), "Fallback Avenir Next Local belum dipertahankan pada variabel font utama.");
+fail(/<div class="legend-section-content">[\s\S]*?<span>Usulan<\/span>[\s\S]*?<div class="webgis-exploration-label">Eksplorasi WebGIS<\/div>[\s\S]*?<span>Gagasan WebGIS<\/span>/.test(html), "Hierarki legenda Eksplorasi WebGIS belum berada tepat sebelum Gagasan WebGIS.");
 
 for (const documentPath of [
   "README.md",
@@ -43,6 +54,7 @@ for (const documentPath of [
   "docs/COMPLIANCE_AUDIT.md",
   "docs/NAVIGATION_QA.md",
   "docs/UI_QA.md",
+  "docs/RAIL_SCHEMA_V2.md",
   "THIRD_PARTY_NOTICES.md"
 ]) {
   fail(fs.existsSync(path.join(root, documentPath)), `Dokumen rilis hilang: ${documentPath}`);

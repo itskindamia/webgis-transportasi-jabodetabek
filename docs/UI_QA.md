@@ -1,4 +1,4 @@
-# QA Antarmuka — v0.13
+# QA Antarmuka — v0.16
 
 Checklist visual setelah hard reload (`Ctrl+F5`):
 
@@ -11,13 +11,14 @@ Checklist visual setelah hard reload (`Ctrl+F5`):
 7. **Popup close**: setelah popup ditutup, label halte/stasiun kembali mengikuti aturan decluttering normal.
 8. **Mobile <= 760 px**: popup tidak melewati viewport; action/footer tetap dapat digunakan.
 9. **Legenda**: label publik **Gagasan WebGIS** berada pada kelompok Eksplorasi WebGIS.
+10. **Kode stasiun rail**: `STN_CODE` tampil kecil di bawah nama stasiun dan tidak muncul pada halte BRT.
 
-v0.13 tidak mengubah GeoJSON atau urutan navigasi.
+v0.16 tidak mengubah GeoJSON atau urutan navigasi.
 
 
 ## Struktur jalur rail
 
 - Legenda Struktur Jalur hanya muncul untuk jaringan rail yang memiliki atribut struktur yang dikenali.
 - Kategori publik: Layang, Permukaan, Transisi, Bawah tanah.
-- Saat moda BRT dipilih, bagian Struktur Jalur Kereta harus tersembunyi.
+- Saat jenis layanan BRT dipilih, bagian Struktur Jalur Kereta harus tersembunyi.
 - Warna tetap mengikuti identitas lin; pola dash utama tetap mengikuti status jaringan.

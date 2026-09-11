@@ -1,10 +1,10 @@
-# Audit kepatuhan teknis v0.13
+# Audit kepatuhan teknis v0.16
 
 Tanggal audit: 5 September 2026
 
 ## Ringkasan
 
-Baseline v0.13 memisahkan **kelayakan runtime** dari **kelengkapan/migrasi data**. Paket dapat diuji secara teknis tanpa menganggap GeoJSON yang belum dimigrasikan sebagai masalah kode.
+Baseline v0.16 memisahkan **kelayakan runtime** dari **kelengkapan/migrasi data**. Paket dapat diuji secara teknis tanpa menganggap GeoJSON yang belum dimigrasikan sebagai masalah kode.
 
 ## Pemeriksaan runtime
 
@@ -20,7 +20,7 @@ Baseline v0.13 memisahkan **kelayakan runtime** dari **kelengkapan/migrasi data*
 | Integrasi lintas moda | resolver target diperketat; regex KRL/MRT diperbaiki pada v0.10 |
 | Gagasan WebGIS | label publik; nilai internal/legacy tetap kompatibel |
 
-## Catatan GeoJSON yang tidak diperbaiki pada v0.13
+## Catatan GeoJSON yang tidak diperbaiki pada v0.16
 
 - Migrasi schema BRT 31 field belum merata pada seluruh feature.
 - Terdapat duplikasi `GlobalID` pada data BRT.
@@ -39,7 +39,7 @@ node tools/audit-navigation.mjs
 node --check js/map.js
 ```
 
-Hasil ideal akhir proyek adalah ketiganya lulus. Pada v0.13 tanpa perubahan GeoJSON, `audit.mjs` diharapkan lulus dengan catatan data dan `audit-navigation.mjs` dapat tetap gagal sampai konflik sequence diperbaiki pada dataset.
+Hasil ideal akhir proyek adalah ketiganya lulus. Pada v0.16 tanpa perubahan GeoJSON, `audit.mjs` diharapkan lulus dengan catatan data dan `audit-navigation.mjs` dapat tetap gagal sampai konflik sequence diperbaiki pada dataset.
 
 ## Batas audit
 
