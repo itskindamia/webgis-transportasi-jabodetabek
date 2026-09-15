@@ -4,130 +4,87 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
-
-const readJSON = relative =>
-  JSON.parse(fs.readFileSync(path.join(root, relative), 'utf8'));
+const readJSON = relative => JSON.parse(fs.readFileSync(path.join(root, relative), 'utf8'));
 
 const stops = readJSON('data/brt_stop.geojson').features ?? [];
 const routeFeatures = readJSON('data/brt_route.geojson').features ?? [];
 
-const splitList = value =>
-  String(value ?? '')
-    .split(/[;,\n]+/)
-    .map(item => item.trim())
-    .filter(Boolean);
-
+const clean = value => String(value ?? '').trim();
+const splitList = value => clean(value).split(/[;,\n]+/).map(v => v.trim()).filter(Boolean);
 const parseMap = value => {
   const result = new Map();
-  String(value ?? '')
-    .split(/[;\n]+/)
-    .map(item => item.trim())
-    .filter(Boolean)
-    .forEach(item => {
-      const index = item.indexOf(':');
-      if (index < 0) return;
-      result.set(
-        item.slice(0, index).trim(),
-        item.slice(index + 1).trim()
-      );
-    });
+  clean(value).split(/[;\n]+/).map(v => v.trim()).filter(Boolean).forEach(item => {
+    const index = item.indexOf(':');
+    if (index < 0) return;
+    result.set(item.slice(0, index).trim(), item.slice(index + 1).trim());
+  });
   return result;
 };
 
+// Runtime v0.16 treats STOP_ID as the canonical logical-stop identity.
+// STOP_GROUP is only a compatibility fallback when STOP_ID is absent.
 const logicalKey = feature => {
   const p = feature?.properties ?? {};
-  return String(p.STOP_GROUP || p.STOP_ID || '').trim();
+  return clean(p.STOP_ID) || clean(p.STOP_GROUP) || clean(p.GEOM_ID);
 };
-
 const displayName = feature => {
   const p = feature?.properties ?? {};
-  return String(p.DISPLAY_NM || p.STOP_NAME || p.STOP_ID || '').trim();
+  return clean(p.DISPLAY_NM) || clean(p.STOP_NAME) || logicalKey(feature);
 };
-
-const servesRoute = (feature, routeId) =>
-  splitList(feature?.properties?.ROUTES).includes(routeId);
-
+const servesRoute = (feature, routeId) => splitList(feature?.properties?.ROUTES).includes(routeId);
 const sequencePattern = /^\d+[A-Za-z]*$/;
 
-const uniqueRouteIds = [];
-for (const feature of routeFeatures) {
-  const routeId = String(feature?.properties?.ID ?? '').trim();
-  if (routeId && !uniqueRouteIds.includes(routeId)) {
-    uniqueRouteIds.push(routeId);
-  }
-}
-
+const uniqueRouteIds = [...new Set(routeFeatures.map(f => clean(f?.properties?.ID)).filter(Boolean))];
 const errors = [];
 const warnings = [];
 const summaries = [];
 
-function auditField(routeId, features, field) {
+function auditField(routeId, features, field, strictDuplicates = true) {
   const sequenceToLogical = new Map();
   let filled = 0;
-
   for (const feature of features) {
     const sequence = parseMap(feature?.properties?.[field]).get(routeId) ?? '';
     if (!sequence) continue;
-
     filled += 1;
-
     if (!sequencePattern.test(sequence)) {
-      errors.push(
-        `${routeId} ${field}: sequence tidak valid "${sequence}" pada ${displayName(feature)}`
-      );
+      errors.push(`${routeId} ${field}: sequence tidak valid "${sequence}" pada ${displayName(feature)}`);
       continue;
     }
-
-    if (!sequenceToLogical.has(sequence)) {
-      sequenceToLogical.set(sequence, new Set());
-    }
+    if (!sequenceToLogical.has(sequence)) sequenceToLogical.set(sequence, new Set());
     sequenceToLogical.get(sequence).add(logicalKey(feature));
   }
-
   for (const [sequence, logicalStops] of sequenceToLogical.entries()) {
     if (logicalStops.size > 1) {
-      errors.push(
-        `${routeId} ${field}: sequence ${sequence} dipakai ${logicalStops.size} halte logis berbeda (${Array.from(logicalStops).join(', ')})`
-      );
+      const message = `${routeId} ${field}: sequence ${sequence} dipakai ${logicalStops.size} halte logis berbeda (${Array.from(logicalStops).join(', ')})`;
+      if (strictDuplicates) errors.push(message);
+      else warnings.push(`${message}; diabaikan karena sequence directional tersedia.`);
     }
   }
-
   return filled;
 }
 
 for (const routeId of uniqueRouteIds) {
   const routeStops = stops.filter(feature => servesRoute(feature, routeId));
   const logicalStops = new Set(routeStops.map(logicalKey).filter(Boolean));
-
   if (logicalStops.size < 2) {
     errors.push(`${routeId}: hanya memiliki ${logicalStops.size} halte logis.`);
     continue;
   }
 
-  const aCount = auditField(routeId, routeStops, 'SEQ_A_MAP');
-  const bCount = auditField(routeId, routeStops, 'SEQ_B_MAP');
-  const legacyCount = auditField(routeId, routeStops, 'SEQ_MAP');
+  const aMap = auditField(routeId, routeStops, 'SEQ_A_MAP');
+  const bMap = auditField(routeId, routeStops, 'SEQ_B_MAP');
+  const aOps = auditField(routeId, routeStops, 'SEQ_A_OPS');
+  const bOps = auditField(routeId, routeStops, 'SEQ_B_OPS');
+  const directionalCount = aMap + bMap + aOps + bOps;
+  const legacy = auditField(routeId, routeStops, 'SEQ_MAP', directionalCount === 0);
+  const schema = directionalCount ? 'directional/mixed' : 'legacy';
 
-  const schema = aCount || bCount ? 'directional/mixed' : 'legacy';
-
-  if ((aCount > 0) !== (bCount > 0)) {
-    warnings.push(
-      `${routeId}: hanya satu sisi SEQ_A_MAP/SEQ_B_MAP yang terisi; runtime akan memakai fallback per-feature.`
-    );
+  if ((aMap > 0) !== (bMap > 0) && (aOps > 0) !== (bOps > 0)) {
+    warnings.push(`${routeId}: sequence directional hanya terisi pada satu sisi; runtime memakai fallback per-feature.`);
   }
+  if (!legacy && !directionalCount) errors.push(`${routeId}: tidak memiliki sequence navigasi.`);
 
-  if (!legacyCount && !aCount && !bCount) {
-    errors.push(`${routeId}: tidak memiliki sequence navigasi.`);
-  }
-
-  summaries.push({
-    routeId,
-    logicalStops: logicalStops.size,
-    schema,
-    legacyCount,
-    aCount,
-    bCount
-  });
+  summaries.push({ routeId, logicalStops: logicalStops.size, schema, legacy, aMap, bMap, aOps, bOps });
 }
 
 if (errors.length) {
@@ -138,9 +95,8 @@ if (errors.length) {
   console.log('AUDIT NAVIGASI LULUS');
   console.log(`- ${uniqueRouteIds.length} koridor BRT diperiksa`);
   console.log(`- ${summaries.reduce((sum, item) => sum + item.logicalStops, 0)} entri halte logis lintas-koridor diperiksa`);
-  console.log('- Tidak ada benturan sequence antarhalte logis pada field navigasi yang terisi');
+  console.log('- Tidak ada benturan sequence antar-STOP_ID pada field navigasi yang terisi');
 }
-
 if (warnings.length) {
   console.log('CATATAN');
   warnings.forEach(item => console.log(`- ${item}`));

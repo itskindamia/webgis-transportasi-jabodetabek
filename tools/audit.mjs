@@ -24,8 +24,8 @@ const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== i
 fail(duplicateIds.length === 0, `ID HTML duplikat: ${duplicateIds.join(", ")}`);
 fail(html.includes('http-equiv="Content-Security-Policy"'), "Content Security Policy tidak ditemukan.");
 fail(script.includes("const APP_DEBUG = false;"), "APP_DEBUG produksi belum dinonaktifkan.");
-fail(html.includes('<option value="Conceptual">Gagasan WebGIS</option>'), "Label publik status Conceptual belum memakai Gagasan WebGIS.");
-fail(script.includes('Conceptual: "Gagasan WebGIS"'), "Pemetaan label status Conceptual ke Gagasan WebGIS tidak ditemukan.");
+fail(html.includes('<option value="Conceptual">Skenario</option>'), "Label publik status Conceptual belum memakai Skenario.");
+fail(script.includes('Conceptual: "Skenario"'), "Pemetaan label status Conceptual ke Skenario tidak ditemukan.");
 fail(script.includes('"Konseptual": "Conceptual"'), "Alias legacy Konseptual tidak dipertahankan.");
 fail(script.includes('"Gagasan": "Conceptual"'), "Alias legacy Gagasan tidak dipertahankan.");
 fail(!script.includes("\x08"), "map.js masih memuat karakter backspace/kontrol yang dapat merusak regex.");
@@ -46,7 +46,7 @@ fail(script.includes('KAJJ: "KA Jarak Jauh"'), "Label publik SERVICE_TYPE=KAJJ b
 fail(script.includes("function syncModeOptionsWithData()"), "Dropdown Moda data-driven v0.16 belum tersedia.");
 fail(script.includes('MODE=ICT membutuhkan SERVICE_TYPE=LOCAL atau KAJJ'), "Validasi SERVICE_TYPE untuk MODE=ICT belum tersedia.");
 fail(style.includes('--font-main: "Avenir Next Local", "Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif;'), "Fallback Avenir Next Local belum dipertahankan pada variabel font utama.");
-fail(/<div class="legend-section-content">[\s\S]*?<span>Usulan<\/span>[\s\S]*?<div class="webgis-exploration-label">Eksplorasi WebGIS<\/div>[\s\S]*?<span>Gagasan WebGIS<\/span>/.test(html), "Hierarki legenda Eksplorasi WebGIS belum berada tepat sebelum Gagasan WebGIS.");
+fail(/<div class="legend-section-content">[\s\S]*?<span>Usulan<\/span>[\s\S]*?<div class="webgis-exploration-label">Eksplorasi WebGIS<\/div>[\s\S]*?<span>Skenario<\/span>/.test(html), "Hierarki legenda Eksplorasi WebGIS belum berada tepat sebelum Skenario.");
 
 for (const documentPath of [
   "README.md",
@@ -86,7 +86,7 @@ fail(!/Radius jangkauan 400–800 m/i.test(html), "Dokumentasi UI Radius Jangkau
 
 /* =========================================================
    DATA READABILITY — invalid files fail; migration/content gaps warn
-   GeoJSON is intentionally not modified by this release.
+   GeoJSON integrity and schema checks.
    ========================================================= */
 const brtStops = readJSON("data/brt_stop.geojson");
 const brtRoutes = readJSON("data/brt_route.geojson");
@@ -102,10 +102,11 @@ for (const [name, collection] of [
 const expectedBrtFields = [
   "STOP_ID", "GEOM_ID", "STOP_GROUP", "STOP_NAME", "DISPLAY_NM", "MODE",
   "STATUS", "STOP_ROLE", "STOP_VAR", "PAID_LINK", "LINK_TYPE", "ROUTES",
-  "DIR_MAP", "ACT_MAP", "OPS_MAP", "SEQ_MAP", "DIV_SEQ", "DIV_ID",
-  "REPLACES_ID", "VALID_FR", "VALID_TO", "INTEGRASI", "INT_NM", "INT_STOP",
-  "INT_STATUS", "SOURCE", "SRC_URL", "SRC_NOTE", "REMARK", "SEQ_A_MAP", "SEQ_B_MAP"
-];
+  "DIR_MAP", "ACT_MAP", "OPS_MAP", "SEQ_MAP", "SEQ_A_MAP", "SEQ_B_MAP",
+  "SEQ_A_OPS", "SEQ_B_OPS", "DIV_SEQ", "DIV_ID", "REPLACE_ID", "VALID_FR",
+  "VALID_TO", "INTEGRASI", "INT_NM", "INT_STATUS", "SOURCE", "SRC_URL",
+  "SRC_NOTE", "REMARK"
+]
 const completeBrt = brtStops.features.filter(feature =>
   expectedBrtFields.every(field => Object.hasOwn(feature.properties ?? {}, field))
 ).length;
@@ -120,8 +121,21 @@ for (const field of ["GEOM_ID", "GlobalID"]) {
   const values = brtStops.features.map(feature => String(feature.properties?.[field] ?? "").trim()).filter(Boolean);
   warn(new Set(values).size === values.length, `${field} memiliki nilai duplikat pada data BRT.`);
 }
-const legacyAirportAliases = railStops.features.filter(feature => JSON.stringify(feature.properties ?? {}).includes("KA_BANDARA")).length;
-warn(legacyAirportAliases === 0, `Alias integrasi rail lama KA_BANDARA masih ditemukan pada ${legacyAirportAliases} feature; runtime tetap mendukung alias ini.`);
+const stopIdNames = new Map();
+for (const feature of brtStops.features) {
+  const p = feature.properties ?? {};
+  const stopId = String(p.STOP_ID ?? "").trim();
+  const name = String(p.DISPLAY_NM ?? p.STOP_NAME ?? "").trim();
+  if (!stopId) continue;
+  if (!stopIdNames.has(stopId)) stopIdNames.set(stopId, new Set());
+  if (name) stopIdNames.get(stopId).add(name);
+}
+const stopIdCollisions = [...stopIdNames.entries()].filter(([, names]) => names.size > 1);
+fail(stopIdCollisions.length === 0, `STOP_ID dipakai oleh halte berbeda: ${stopIdCollisions.map(([id,names]) => `${id}=[${[...names].join(" / ")}]`).join(", ")}`);
+
+const routeGeomValues = brtRoutes.features.map(feature => String(feature.properties?.GEOM_ID ?? "").trim()).filter(Boolean);
+fail(new Set(routeGeomValues).size === routeGeomValues.length, "GEOM_ID rute BRT masih duplikat.");
+
 const railRoutesWithoutUrl = railRoutes.features.filter(feature => !String(feature.properties?.SRC_URL ?? "").trim()).length;
 warn(railRoutesWithoutUrl === 0, `SRC_URL masih kosong pada ${railRoutesWithoutUrl}/${railRoutes.features.length} feature rute rail.`);
 
@@ -154,7 +168,7 @@ if (failures.length) {
   console.log(warnings.length ? "AUDIT RUNTIME LULUS DENGAN CATATAN DATA" : "AUDIT RUNTIME LULUS");
   notes.forEach(message => console.log(`- ${message}`));
   if (warnings.length) {
-    console.log("CATATAN DATA (GeoJSON tidak diubah pada rilis ini)");
+    console.log("CATATAN DATA");
     warnings.forEach(message => console.log(`- ${message}`));
   }
 }

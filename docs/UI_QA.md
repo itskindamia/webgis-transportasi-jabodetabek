@@ -10,7 +10,7 @@ Checklist visual setelah hard reload (`Ctrl+F5`):
 6. **Status integrasi**: `Dalam Pembangunan`, `Rencana`, dan status lain tampil sebagai chip terpisah dari nama titik.
 7. **Popup close**: setelah popup ditutup, label halte/stasiun kembali mengikuti aturan decluttering normal.
 8. **Mobile <= 760 px**: popup tidak melewati viewport; action/footer tetap dapat digunakan.
-9. **Legenda**: label publik **Gagasan WebGIS** berada pada kelompok Eksplorasi WebGIS.
+9. **Legenda**: label publik **Skenario** berada pada kelompok Eksplorasi WebGIS.
 10. **Kode stasiun rail**: `STN_CODE` tampil kecil di bawah nama stasiun dan tidak muncul pada halte BRT.
 
 v0.16 tidak mengubah GeoJSON atau urutan navigasi.

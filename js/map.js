@@ -803,7 +803,7 @@ const gpsButton = document.getElementById("gpsButton");
 const homeButton = document.getElementById("homeButton");
 
 /* =========================================================
-   BRT_STOP SCHEMA v2.0 — FINAL 31 FIELDS
+   BRT_STOP SCHEMA v2.0 — FINAL 32 FIELDS
    ========================================================= */
 
 const BRT_STOP_SCHEMA_V20_FIELDS = [
@@ -823,21 +823,22 @@ const BRT_STOP_SCHEMA_V20_FIELDS = [
   "ACT_MAP",
   "OPS_MAP",
   "SEQ_MAP",
+  "SEQ_A_MAP",
+  "SEQ_B_MAP",
+  "SEQ_A_OPS",
+  "SEQ_B_OPS",
   "DIV_SEQ",
   "DIV_ID",
-  "REPLACES_ID",
+  "REPLACE_ID",
   "VALID_FR",
   "VALID_TO",
   "INTEGRASI",
   "INT_NM",
-  "INT_STOP",
   "INT_STATUS",
   "SOURCE",
   "SRC_URL",
   "SRC_NOTE",
-  "REMARK",
-  "SEQ_A_MAP",
-  "SEQ_B_MAP"
+  "REMARK"
 ];
 
 
@@ -861,7 +862,7 @@ const BRT_STOP_SCHEMA_V20_DOMAINS = {
     "Eksisting",
     "Rencana",
     "Usulan",
-    "Gagasan",
+    "Skenario",
     "Nonaktif"
   ],
 
@@ -1207,6 +1208,33 @@ function areNonExistingStopsVisible() {
   return showProposedStops && showConceptualStops;
 }
 
+/*
+  Halte/stasiun non-eksisting hanya boleh dieksplorasi pada
+  konteks trase reguler/canonical. Jika sebuah rute mempunyai
+  DIVERSION dan user sedang melihat kondisi "Saat ini", Usulan
+  dan Gagasan selalu disembunyikan walaupun state toggle pernah ON.
+
+  Rute tanpa DIVERSION tetap memakai perilaku lama karena tidak
+  memiliki pilihan Kondisi trase: Saat ini / Reguler.
+*/
+function canShowNonExistingStopsForRouteContext(routeId) {
+  const routeKey =
+    String(routeId ?? "").trim();
+
+  if (!routeKey) {
+    return true;
+  }
+
+  if (!hasRouteDiversion(routeKey)) {
+    return true;
+  }
+
+  return (
+    getRouteConditionMode(routeKey) ===
+    "REGULAR"
+  );
+}
+
 const stopMarkerByKey = new Map();
 
 let gpsWatchId = null;
@@ -1239,14 +1267,15 @@ let nominatimRequestQueue = Promise.resolve();
 let suppressUrlStateSync = false;
 
 let lastFocusedBeforeInfoModal = null;
+let lastFocusedBeforeRoutePlanIntro = null;
+let lastFocusedBeforeProductTour = null;
 
 /*
-  Startup experience selalu dijalankan setiap page load:
-  Informasi & Catatan -> Cara Menggunakan.
+  Startup experience hanya dijalankan jika diperlukan:
+  - disclaimer belum pernah disetujui; dan/atau
+  - product tour belum pernah diselesaikan.
 
-  Nilai localStorage lama tetap dipertahankan untuk
-  kompatibilitas, tetapi tidak lagi dipakai untuk menentukan
-  apakah startup popup/tour muncul.
+  Setelah keduanya selesai, reload berikutnya langsung membuka peta.
 */
 let startupExperienceActive = false;
 let startupTourTimerId = null;
@@ -1579,6 +1608,9 @@ function normalizeStatus(value) {
     "Usulan Institusional": "Proposed",
 
     "Conceptual": "Conceptual",
+    "Skenario": "Conceptual",
+    "Skenario WebGIS": "Conceptual",
+    "Gagasan WebGIS": "Conceptual",
     "Gagasan": "Conceptual",
     "Konseptual": "Conceptual",
     "Konsep": "Conceptual",
@@ -1611,7 +1643,7 @@ function getStatusLabel(value) {
     Construction: "Dalam Pembangunan",
     Planned: "Rencana",
     Proposed: "Usulan",
-    Conceptual: "Gagasan WebGIS",
+    Conceptual: "Skenario",
     Inactive: "Nonaktif"
   };
 
@@ -2416,6 +2448,34 @@ function getRouteDisplayName(feature) {
 }
 
 
+function getRoutePresentationName(feature) {
+  const baseName =
+    normalizeRouteNameForDisplay(
+      getRouteDisplayName(feature)
+    );
+
+  const routeId =
+    getRouteId(feature);
+
+  /*
+    Nama operasional K3 saat diversion MRT 2A secara publik
+    dibedakan sebagai "via Veteran". Suffix ini hanya untuk
+    presentasi UI supaya NAME GeoJSON tetap dapat dipakai sebagai
+    pasangan endpoint tanpa mengubah logika arah/sequence.
+  */
+  if (
+    routeId === "BRT_03" &&
+    normalizeRouteVariant(feature) === "DIVERSION" &&
+    baseName &&
+    !/\bvia\s+veteran\b/i.test(baseName)
+  ) {
+    return `${baseName} via Veteran`;
+  }
+
+  return baseName;
+}
+
+
 function getRouteRelation(feature) {
   const p = feature?.properties ?? {};
 
@@ -2812,8 +2872,8 @@ function getRouteHeadingParts(feature) {
         cleanText(p.OPERATOR) ||
         "TransJakarta",
       lineName: lineNumber ? `Koridor ${lineNumber}` : "Koridor",
-      relation: normalizeRouteNameForDisplay(
-        getRouteDisplayName(relationFeature)
+      relation: getRoutePresentationName(
+        relationFeature
       ),
       badgeHTML: buildBrtBadge(routeId)
     };
@@ -2829,9 +2889,38 @@ function getRouteHeadingParts(feature) {
 
 
 function getRouteOptionText(feature) {
-  return getRouteMode(feature) === "BRT"
-    ? getRouteTitle(feature)
-    : getRailLineTitle(feature);
+  if (getRouteMode(feature) !== "BRT") {
+    return getRailLineTitle(feature);
+  }
+
+  const routeId = getRouteId(feature);
+  const p = feature?.properties ?? {};
+  const lineNumber = cleanText(p.LINE) || routeNumberFromId(routeId);
+  const relationFeature =
+    getRouteConditionMode(routeId) === "REGULAR"
+      ? (getRegularRouteFeature(routeId) || feature)
+      : (getDiversionRouteFeature(routeId) || feature);
+  const relation = getRoutePresentationName(
+    relationFeature
+  );
+
+  return relation
+    ? `Koridor ${lineNumber} (${relation})`
+    : `Koridor ${lineNumber}`;
+}
+
+function syncRouteDropdownOptionText(routeId) {
+  if (!routeSelect || !routeId) return;
+
+  const feature = getRouteById(routeId);
+  if (!feature) return;
+
+  const option = Array.from(routeSelect.options)
+    .find(item => String(item.value) === String(routeId));
+
+  if (option) {
+    option.textContent = getRouteOptionText(feature);
+  }
 }
 
 
@@ -3063,12 +3152,13 @@ function uniqueRouteGeometryFeatures(features) {
   - DIVERSION yang punya DIR_MAP=A hanya menggantikan SERVICE A.
   - DIVERSION yang punya DIR_MAP=B hanya menggantikan SERVICE B.
   - arah yang tidak memiliki DIVERSION aktif otomatis fallback ke REGULAR.
-  - TRANSITION memakai DIVERSION bila tersedia; jika tidak, REGULAR.
+  - Saat DIVERSION aktif, TRANSITION hanya ditampilkan bila tersedia
+    sebagai feature DIVERSION. TRANSITION REGULAR tidak diwariskan otomatis.
   - DIVERSION tanpa DIR_MAP tetap diperlakukan sebagai pengalihan legacy
     yang menggantikan seluruh geometri, demi kompatibilitas K2/K3/K8 lama.
 
   Contoh K1 jika hanya arah B berubah:
-    FULL        = A_REG + B_DIV + TRANSITION aktif
+    FULL        = A_REG + B_DIV + TRANSITION_DIV (jika ada)
     arah A      = A_REG
     arah B      = B_DIV
 */
@@ -3160,14 +3250,18 @@ function resolveActiveBrtGeometryFeatures(
   });
 
   /*
-    Transition adalah sirkulasi kendaraan. Jika ada transition khusus
-    diversion, gunakan itu; bila tidak, pertahankan transition reguler.
+    TRANSITION harus mengikuti konteks trase aktif.
+
+    Ketika ada DIVERSION, transition REGULAR tidak boleh otomatis
+    muncul pada trase pengalihan karena itu dapat menampilkan potongan
+    sirkulasi kendaraan yang sebenarnya hanya milik trase reguler.
+
+    Jika pengalihan memang membutuhkan transition, geometri tersebut
+    harus disediakan eksplisit sebagai ROUTE_VAR=DIVERSION +
+    SEG_ROLE=TRANSITION.
   */
   if (diversionTransition.length) {
     result.push(...diversionTransition);
-  }
-  else {
-    result.push(...regularTransition);
   }
 
   /*
@@ -3987,10 +4081,206 @@ function getDirectionalSequenceRaw(feature, routeId, side) {
   return cleanText(seqMap[String(routeId ?? "")]);
 }
 
+function getOperationalDirectionalSequenceRaw(feature, routeId, side) {
+  const p = feature?.properties ?? {};
+  const normalizedSide = normalizeRouteDirectionSide(side);
+  const field =
+    normalizedSide === "A"
+      ? (p.SEQ_A_OPS ?? "")
+      : (p.SEQ_B_OPS ?? "");
+
+  const seqMap = getCachedDirectionFieldMap(
+    feature,
+    normalizedSide === "A" ? "SEQ_A_OPS" : "SEQ_B_OPS",
+    field
+  );
+
+  return cleanText(seqMap[String(routeId ?? "")]);
+}
+
 function hasDirectionalSequenceForRoute(feature, routeId) {
   return Boolean(
     getDirectionalSequenceRaw(feature, routeId, "A") ||
     getDirectionalSequenceRaw(feature, routeId, "B")
+  );
+}
+
+function hasOperationalDirectionalSequenceForRoute(feature, routeId) {
+  return Boolean(
+    getOperationalDirectionalSequenceRaw(feature, routeId, "A") ||
+    getOperationalDirectionalSequenceRaw(feature, routeId, "B")
+  );
+}
+
+function routeHasOperationalDirectionalSequence(routeId) {
+  if (!stopData?.features) return false;
+
+  const routeKey = String(routeId ?? "");
+  const cacheKey = `ops-sequence:${routeKey}`;
+
+  if (routeDirectionStaticCache.has(cacheKey)) {
+    return routeDirectionStaticCache.get(cacheKey);
+  }
+
+  const result = stopData.features.some(feature =>
+    Boolean(
+      getOperationalDirectionalSequenceRaw(feature, routeKey, "A") ||
+      getOperationalDirectionalSequenceRaw(feature, routeKey, "B")
+    )
+  );
+
+  routeDirectionStaticCache.set(cacheKey, result);
+  return result;
+}
+
+function routeHasRegularDirectionalSequence(routeId) {
+  if (!stopData?.features) return false;
+
+  const routeKey = String(routeId ?? "");
+  const cacheKey = `map-sequence:${routeKey}`;
+
+  if (routeDirectionStaticCache.has(cacheKey)) {
+    return routeDirectionStaticCache.get(cacheKey);
+  }
+
+  const result = stopData.features.some(feature =>
+    Boolean(
+      getDirectionalSequenceRaw(feature, routeKey, "A") ||
+      getDirectionalSequenceRaw(feature, routeKey, "B")
+    )
+  );
+
+  routeDirectionStaticCache.set(cacheKey, result);
+  return result;
+}
+
+/*
+  Sequence arah yang dipakai UI mengikuti konteks kondisi trase:
+  - REGULAR -> SEQ_A_MAP / SEQ_B_MAP
+  - CURRENT -> SEQ_A_OPS / SEQ_B_OPS bila koridor sudah dimigrasikan
+               ke schema operasional per arah.
+  - Koridor lama yang belum punya SEQ_*_OPS tetap fallback ke MAP.
+*/
+function getContextDirectionalSequenceRaw(feature, routeId, side) {
+  if (shouldUseRegularStopsForDisplay(routeId)) {
+    return getDirectionalSequenceRaw(feature, routeId, side);
+  }
+
+  if (routeHasOperationalDirectionalSequence(routeId)) {
+    return getOperationalDirectionalSequenceRaw(feature, routeId, side);
+  }
+
+  return getDirectionalSequenceRaw(feature, routeId, side);
+}
+
+function hasContextDirectionalSequenceForRoute(feature, routeId) {
+  return Boolean(
+    getContextDirectionalSequenceRaw(feature, routeId, "A") ||
+    getContextDirectionalSequenceRaw(feature, routeId, "B")
+  );
+}
+
+/*
+  Keanggotaan halte pada kondisi trase aktif ditentukan oleh field
+  sequence yang memang berlaku untuk kondisi tersebut. ROUTES tetap
+  dipakai sebagai fallback hanya untuk koridor legacy yang belum
+  memiliki schema directional pada level rute.
+
+  REGULAR:
+    A          -> SEQ_A_MAP
+    B          -> SEQ_B_MAP
+    semua arah -> SEQ_A_MAP || SEQ_B_MAP
+
+  CURRENT:
+    A          -> SEQ_A_OPS
+    B          -> SEQ_B_OPS
+    semua arah -> SEQ_A_OPS || SEQ_B_OPS
+
+  Penting: begitu sebuah koridor memiliki SEQ_*_OPS, feature yang
+  kosong pada OPS tidak boleh fallback ke SEQ_*_MAP.
+*/
+function isStopMemberOfDisplayedRouteContext(feature, routeId) {
+  if (!feature || !routeId) return false;
+
+  const regularContext = shouldUseRegularStopsForDisplay(routeId);
+  const directionalView =
+    isRouteDirectionEnabled(routeId) &&
+    getRouteGeometryView(routeId) !== "FULL";
+  const activeSide = directionalView
+    ? getActiveRouteDirection(routeId)
+    : "";
+
+  if (regularContext && routeHasRegularDirectionalSequence(routeId)) {
+    if (activeSide) {
+      return Boolean(
+        getDirectionalSequenceRaw(feature, routeId, activeSide)
+      );
+    }
+
+    return hasDirectionalSequenceForRoute(feature, routeId);
+  }
+
+  if (!regularContext && routeHasOperationalDirectionalSequence(routeId)) {
+    if (activeSide) {
+      return Boolean(
+        getOperationalDirectionalSequenceRaw(feature, routeId, activeSide)
+      );
+    }
+
+    return hasOperationalDirectionalSequenceForRoute(feature, routeId);
+  }
+
+  /* Backward compatibility untuk koridor yang belum dimigrasikan. */
+  return stopServesRoute(feature, routeId);
+}
+
+function isOptionalNonExistingStopForDisplayedRoute(feature, routeId) {
+  if (!feature || !routeId) return false;
+
+  /*
+    Usulan/Skenario adalah layer eksplorasi opsional, bukan anggota
+    canonical/current sequence. Karena itu titik non-eksisting boleh
+    tetap ditampilkan berdasarkan ROUTES ketika toggle aktif, walaupun
+    SEQ_A/B_MAP atau SEQ_A/B_OPS sengaja kosong.
+
+    Pengecualian ini HANYA berlaku untuk status non-eksisting. Halte
+    Eksisting tetap wajib lolos sequence context agar filtering K8 dan
+    koridor lain yang sudah dimigrasikan tidak kembali memakai ROUTES
+    sebagai penentu marker utama.
+  */
+  if (!stopServesRoute(feature, routeId)) return false;
+
+  if (!canShowNonExistingStopsForRouteContext(routeId)) {
+    return false;
+  }
+
+  if (isProposedStop(feature)) {
+    return showProposedStops;
+  }
+
+  if (isConceptualStop(feature)) {
+    return showConceptualStops;
+  }
+
+  return false;
+}
+
+function getContextCandidateStopsForRoute(routeId) {
+  if (!stopData?.features) return [];
+
+  const regularContext = shouldUseRegularStopsForDisplay(routeId);
+  const hasContextSchema = regularContext
+    ? routeHasRegularDirectionalSequence(routeId)
+    : routeHasOperationalDirectionalSequence(routeId);
+
+  if (!hasContextSchema) {
+    return getStopsForRoute(routeId);
+  }
+
+  return stopData.features.filter(feature =>
+    isStopMemberOfDisplayedRouteContext(feature, routeId)
+    ||
+    isOptionalNonExistingStopForDisplayedRoute(feature, routeId)
   );
 }
 
@@ -4163,7 +4453,7 @@ function getRouteDirectionDestination(routeId, side) {
   const counts = new Map();
 
   stopData.features.forEach(feature => {
-    if (!getDirectionalSequenceRaw(feature, routeId, wantedSide)) {
+    if (!getContextDirectionalSequenceRaw(feature, routeId, wantedSide)) {
       return;
     }
 
@@ -4276,7 +4566,8 @@ function getRouteDirectionalCoverage(routeId) {
   }
 
   const routeKey = String(routeId ?? "");
-  const cacheKey = `coverage:${routeKey}`;
+  const conditionMode = getRouteConditionMode(routeKey);
+  const cacheKey = `coverage:${routeKey}:${conditionMode}`;
 
   if (routeDirectionStaticCache.has(cacheKey)) {
     return routeDirectionStaticCache.get(cacheKey);
@@ -4288,9 +4579,8 @@ function getRouteDirectionalCoverage(routeId) {
   let hasB = Boolean(direct.B);
 
   stopData.features.forEach(feature => {
-    if (!stopServesRoute(feature, routeKey)) return;
-    if (getDirectionalSequenceRaw(feature, routeKey, "A")) hasA = true;
-    if (getDirectionalSequenceRaw(feature, routeKey, "B")) hasB = true;
+    if (getContextDirectionalSequenceRaw(feature, routeKey, "A")) hasA = true;
+    if (getContextDirectionalSequenceRaw(feature, routeKey, "B")) hasB = true;
   });
 
   const result = { A: hasA, B: hasB };
@@ -4401,15 +4691,40 @@ function isStopVisibleInActiveDirection(feature, routeId) {
   if (!isRouteDirectionEnabled(routeId)) return true;
 
   const activeSide = getActiveRouteDirection(routeId);
-  const activeSeq = getDirectionalSequenceRaw(
+  const activeSeq = getContextDirectionalSequenceRaw(
     feature,
     routeId,
     activeSide
   );
 
+  /*
+    CURRENT diversion: terminus sementara tunggal adalah endpoint
+    operasional dan harus tetap terlihat pada kedua arah, meskipun
+    SEQ_A_MAP / SEQ_B_MAP regulernya hanya terisi pada salah satu side.
+
+    Contoh K2 Monumen Nasional:
+      OPS_MAP = BRT_02:TEMP_TERMINUS
+      DIV_SEQ = BRT_02:20
+      SEQ_A_MAP reguler kosong untuk BRT_02
+
+    Tanpa guard ini marker Monas hilang pada arah Pulo Gadung -> Monas.
+    Untuk halte dengan beberapa titik fisik, directional sequence tetap
+    dihormati agar titik arah yang salah tidak ikut muncul.
+  */
+  const currentOperationalCode =
+    getOperationalMapValue(feature, routeId);
+
+  if (
+    !shouldUseRegularStopsForDisplay(routeId) &&
+    currentOperationalCode === "TEMP_TERMINUS" &&
+    getStopGroupFeatures(feature, routeId).length <= 1
+  ) {
+    return true;
+  }
+
   /* Feature yang sudah memiliki map sequence directional bersifat
      eksplisit: kosong pada side aktif = tidak dilayani side itu. */
-  if (hasDirectionalSequenceForRoute(feature, routeId)) {
+  if (hasContextDirectionalSequenceForRoute(feature, routeId)) {
     return Boolean(activeSeq);
   }
 
@@ -4476,16 +4791,27 @@ function passesBaseStopVisibilityFilters(feature, routeId) {
     return false;
   }
 
+  const allowNonExistingStops =
+    canShowNonExistingStopsForRouteContext(
+      routeId
+    );
+
   if (
     isProposedStop(feature) &&
-    !showProposedStops
+    (
+      !allowNonExistingStops ||
+      !showProposedStops
+    )
   ) {
     return false;
   }
 
   if (
     isConceptualStop(feature) &&
-    !showConceptualStops
+    (
+      !allowNonExistingStops ||
+      !showConceptualStops
+    )
   ) {
     return false;
   }
@@ -4525,7 +4851,13 @@ function isStopVisibleForDisplayedContext(feature, routeId) {
 }
 
 function getRegularVisibleStopsForRoute(routeId) {
-  return getStopsForRoute(routeId)
+  /*
+    REGULAR harus merepresentasikan titik halte reguler/base saja.
+    Halte STOP_VAR=TEMPORARY hanya milik konteks operasional saat ini
+    dan tidak boleh ikut muncul hanya karena diversion masih aktif.
+  */
+  return getContextCandidateStopsForRoute(routeId)
+    .filter(feature => !isTemporaryStopFeature(feature))
     .filter(feature => passesBaseStopVisibilityFilters(feature, routeId))
     .filter(feature => isStopVisibleForDisplayedContext(feature, routeId));
 }
@@ -4697,45 +5029,31 @@ function shouldReverseOperationalSequence(routeId, side) {
 }
 
 function getDirectionalSortSequence(feature, routeId) {
-  /*
-    Operational diversion tetap menjadi sumber urutan utama, tetapi
-    urutannya dapat dibalik untuk sisi perjalanan sebaliknya.
-  */
-  if (hasRouteDiversion(routeId)) {
-    const operationalSequence = getStopSequence(feature, routeId);
-
-    if (!isRouteDirectionEnabled(routeId)) {
-      return operationalSequence;
-    }
-
-    if (!shouldReverseOperationalSequence(
-      routeId,
-      getActiveRouteDirection(routeId)
-    )) {
-      return operationalSequence;
-    }
-
-    const maximum = getRouteOperationalSequenceMaximum(routeId);
-
-    return (
-      operationalSequence < 999999 && maximum
-        ? maximum + 1 - operationalSequence
-        : operationalSequence
-    );
-  }
-
   if (!isRouteDirectionEnabled(routeId)) {
-    return getStopSequence(feature, routeId);
+    return getDisplayedStopSortSequenceForFeature(feature, routeId);
   }
 
   const side = getActiveRouteDirection(routeId);
 
   /*
-    Endpoint terminus tetap dikunci secara semantik:
-    origin = pertama, destination = terakhir.
-    Ini juga membuat migrasi bertahap aman ketika sequence endpoint
-    belum sempat diperbarui, tanpa hardcode nama halte tertentu.
+    Endpoint tetap dikunci secara semantik bila sequence eksplisit
+    belum tersedia, tetapi SEQ_*_MAP / SEQ_*_OPS selalu menjadi
+    sumber utama ketika tersedia.
   */
+  const explicit = getContextDirectionalSequenceRaw(
+    feature,
+    routeId,
+    side
+  );
+
+  if (explicit) {
+    return parseDirectionalSequenceNumber(explicit);
+  }
+
+  if (hasContextDirectionalSequenceForRoute(feature, routeId)) {
+    return 999999;
+  }
+
   const role = getStopRoleForRoute(feature, routeId);
   if (role === "Terminus" || role === "Transit-Terminus") {
     const activeLabel = getRouteDirectionLabels(routeId)[side];
@@ -4764,16 +5082,6 @@ function getDirectionalSortSequence(feature, routeId) {
     }
   }
 
-  const explicit = getDirectionalSequenceRaw(feature, routeId, side);
-
-  if (explicit) {
-    return parseDirectionalSequenceNumber(explicit);
-  }
-
-  if (hasDirectionalSequenceForRoute(feature, routeId)) {
-    return 999999;
-  }
-
   const legacy = getLegacySequenceNumberForDirection(feature, routeId);
   if (legacy >= 999999) return legacy;
 
@@ -4793,17 +5101,15 @@ function compareStopsForActiveDirection(a, b, routeId) {
 }
 
 function getActiveDirectionSequenceRaw(feature, routeId) {
-  if (!isRouteDirectionEnabled(routeId) || hasRouteDiversion(routeId)) {
-    return getStopSequenceRaw(feature, routeId);
+  if (!isRouteDirectionEnabled(routeId)) {
+    return getDisplayedStopSequenceRawForFeature(feature, routeId);
   }
 
-  const explicit = getDirectionalSequenceRaw(
+  return getContextDirectionalSequenceRaw(
     feature,
     routeId,
     getActiveRouteDirection(routeId)
-  );
-
-  return explicit || "";
+  ) || "";
 }
 
 function buildRouteConditionControlHTML(routeId) {
@@ -4914,6 +5220,7 @@ function refreshRouteDirectionView(routeId) {
   if (!routeId || !getRouteById(routeId)) return;
 
   clearSelectedStop();
+  syncRouteDropdownOptionText(routeId);
   renderRouteInfo(getRouteById(routeId));
   drawSelectedRouteGeometry(routeId);
   renderStopList(routeId);
@@ -5549,7 +5856,15 @@ function isTemporaryStopFeature(feature) {
 
 
 function getStopReplacesId(feature) {
+  /*
+    Schema master saat ini memakai REPLACE_ID. REPLACES_ID tetap
+    dibaca sebagai alias legacy agar data lama tidak putus.
+  */
   return cleanText(
+    feature
+      ?.properties
+      ?.REPLACE_ID
+    ??
     feature
       ?.properties
       ?.REPLACES_ID
@@ -5600,6 +5915,42 @@ function isTemporaryStopActiveForRoute(
     return false;
   }
 
+  const explicitOperationalCode =
+    getOperationalMapValue(
+      feature,
+      routeId
+    );
+
+  /*
+    OPS_MAP adalah sumber paling eksplisit untuk konteks CURRENT.
+    Jika feature TEMPORARY ditandai TEMP_SERVED / TEMP_TERMINUS
+    pada rute yang sedang memakai DIVERSION, titik tetap aktif
+    walaupun DIV_ID halte memakai sub-id paket pekerjaan yang
+    berbeda dari DIV_ID trase rute.
+
+    Contoh K1:
+      route DIV_ID = MRT2A_2026
+      stop  DIV_ID = MRT2A_CP201 / CP202 / CP203
+
+    Keduanya tetap bagian dari pengalihan yang sama.
+  */
+  if (
+    !shouldUseRegularStopsForDisplay(routeId)
+    &&
+    (
+      explicitOperationalCode === "TEMP_SERVED"
+      ||
+      explicitOperationalCode === "TEMP_TERMINUS"
+    )
+  ) {
+    /*
+      Stop-only operational events (mis. relokasi halte tanpa perubahan
+      geometri koridor) juga valid. OPS_MAP eksplisit sudah cukup untuk
+      mengaktifkan TEMPORARY pada kondisi CURRENT.
+    */
+    return true;
+  }
+
   const stopDivId =
     cleanText(
       feature
@@ -5608,9 +5959,8 @@ function isTemporaryStopActiveForRoute(
     );
 
   /*
-    Jika halte temporary menyebut DIV_ID,
-    hanya aktif ketika rute yang sedang dilihat sedang memakai
-    DIVERSION dengan DIV_ID yang sama.
+    Tanpa OPS_MAP eksplisit, DIV_ID tetap menjadi mekanisme
+    aktivasi strict untuk menjaga kompatibilitas data lama.
   */
   if (stopDivId) {
     const routeDivId =
@@ -5662,9 +6012,13 @@ function getActiveTemporaryReplacementForBase(
           routeId
         )
         &&
-        getStopReplacesId(
-          candidate
-        ) === baseGeomId
+        splitIds(
+          normalizeDelimitedIds(
+            getStopReplacesId(
+              candidate
+            )
+          )
+        ).includes(baseGeomId)
     )
     ??
     null
@@ -6038,6 +6392,174 @@ function getDirectionLabel(direction) {
 }
 
 
+
+/*
+  Badge arah pada DAFTAR HALTE memakai panah saja.
+
+  Konvensi:
+  - arah A = →
+  - arah B = ←
+  - halte yang melayani dua arah tidak menampilkan badge arah.
+
+  Label tujuan lengkap tetap disimpan sebagai title/aria-label agar
+  makna panah masih dapat diketahui tanpa memenuhi baris daftar.
+*/
+function isPaidAreaLinkedMultiBuildingStop(feature, routeId) {
+  const logicalId =
+    getStopLogicalId(feature);
+
+  if (
+    !logicalId ||
+    !stopData?.features
+  ) {
+    return false;
+  }
+
+  /*
+    Satu STOP_ID dapat memiliki dua bangunan fisik berbeda untuk
+    arah A/B. Bila seluruh bangunan BASE tersebut terhubung dalam
+    paid area (PAID_LINK=YES), arah bangunan tidak perlu ditonjolkan
+    pada daftar halte karena penumpang dapat berpindah arah tanpa
+    keluar area berbayar.
+
+    Contoh: halte dua bangunan yang dihubungkan jembatan/concourse
+    paid area. Halte dua bangunan yang PAID_LINK=NO tetap memakai
+    panah arah karena bangunannya operasionalnya terpisah.
+  */
+  const baseBuildings =
+    stopData.features
+      .filter(candidate =>
+        getStopLogicalId(candidate) === logicalId &&
+        stopServesRoute(candidate, routeId) &&
+        getStopVariant(candidate) === "BASE"
+      );
+
+  const uniqueGeomIds =
+    new Set(
+      baseBuildings
+        .map(getStopGeomId)
+        .filter(Boolean)
+    );
+
+  if (uniqueGeomIds.size < 2) {
+    return false;
+  }
+
+  return baseBuildings.every(
+    candidate =>
+      getPaidLinkStatus(candidate) === "YES"
+  );
+}
+
+
+function getStopListDirectionArrowInfo(feature, routeId) {
+  /*
+    Untuk halte logis dengan dua bangunan yang tetap terhubung di
+    dalam paid area, panah arah disembunyikan pada daftar halte.
+    Detail arah fisik tetap dapat dibaca dari popup/atribut bila
+    diperlukan.
+  */
+  if (
+    isPaidAreaLinkedMultiBuildingStop(
+      feature,
+      routeId
+    )
+  ) {
+    return {
+      symbol: "",
+      label: "",
+      side: ""
+    };
+  }
+
+  const rawDirection = getStopDirection(feature, routeId);
+  const fullLabel = getDirectionLabel(rawDirection);
+
+  if (!fullLabel) {
+    return {
+      symbol: "",
+      label: "",
+      side: ""
+    };
+  }
+
+  const hasA = Boolean(
+    getContextDirectionalSequenceRaw(feature, routeId, "A")
+  );
+  const hasB = Boolean(
+    getContextDirectionalSequenceRaw(feature, routeId, "B")
+  );
+
+  if (hasA && hasB) {
+    return {
+      symbol: "",
+      label: "",
+      side: ""
+    };
+  }
+
+  if (hasA) {
+    return {
+      symbol: "→",
+      label: fullLabel,
+      side: "A"
+    };
+  }
+
+  if (hasB) {
+    return {
+      symbol: "←",
+      label: fullLabel,
+      side: "B"
+    };
+  }
+
+  /*
+    Fallback untuk koridor legacy yang belum memiliki SEQ_A/SEQ_B_MAP
+    lengkap: cocokkan tujuan DIR_MAP terhadap tujuan relasi A/B aktif.
+  */
+  const stopDestination = getUnambiguousDirectionPlace(rawDirection);
+  const directionLabels = getRouteDirectionLabels(routeId);
+  const destinationA = getDestinationFromDirectionLabel(directionLabels.A);
+  const destinationB = getDestinationFromDirectionLabel(directionLabels.B);
+
+  const stopKey = normalizeDirectionPlaceKey(stopDestination);
+  const keyA = normalizeDirectionPlaceKey(destinationA);
+  const keyB = normalizeDirectionPlaceKey(destinationB);
+
+  const matches = (left, right) => Boolean(
+    left &&
+    right &&
+    (
+      left === right ||
+      left.includes(right) ||
+      right.includes(left)
+    )
+  );
+
+  if (matches(stopKey, keyA) && !matches(stopKey, keyB)) {
+    return {
+      symbol: "→",
+      label: fullLabel,
+      side: "A"
+    };
+  }
+
+  if (matches(stopKey, keyB) && !matches(stopKey, keyA)) {
+    return {
+      symbol: "←",
+      label: fullLabel,
+      side: "B"
+    };
+  }
+
+  return {
+    symbol: "",
+    label: "",
+    side: ""
+  };
+}
+
 function getStopDirectionInfo(
   feature,
   routeId
@@ -6395,10 +6917,71 @@ function chooseStopGroupRepresentative(
   sementara halte pengalihan yang belum memiliki SEQ_A/B tetap aman
   karena masih dapat memakai sequence operasional sebagai fallback.
 */
-function getDisplayedStopSequenceRawForFeature(feature, routeId) {
-  if (!feature) {
-    return "";
+/*
+  SEQ_MAP adalah urutan canonical untuk daftar halte pada tampilan
+  "Semua trase". Filtering membership tetap mengikuti konteks
+  REGULAR/CURRENT melalui SEQ_A/B_MAP atau SEQ_A/B_OPS.
+
+  Helper ini sengaja membaca SEQ_MAP secara langsung dan tidak memakai
+  getStopSequenceRaw(), karena fungsi legacy tersebut dapat memprioritaskan
+  DIV_SEQ/fallback operasional. Untuk sidebar Semua trase kita hanya ingin
+  urutan canonical yang disimpan di SEQ_MAP.
+*/
+function getCanonicalSequenceMapRaw(feature, routeId) {
+  if (!feature || !routeId) return "";
+
+  const p = feature.properties ?? {};
+  const seqMap = parseRouteMap(
+    p.SEQ_MAP ??
+    p.ROUTE_SEQ ??
+    ""
+  );
+
+  return String(
+    seqMap[String(routeId)] ?? ""
+  ).trim();
+}
+
+function getCurrentFullStopSequenceRaw(feature, routeId) {
+  if (!feature) return "";
+
+  /*
+    CURRENT + Semua trase memakai sequence operasional saja ketika
+    koridor sudah memiliki SEQ_*_OPS. A dipakai sebagai canonical
+    order; feature yang memang hanya ada di B tetap dapat memakai B.
+    Tidak ada fallback per-feature dari OPS ke MAP.
+  */
+  if (routeHasOperationalDirectionalSequence(routeId)) {
+    return (
+      getOperationalDirectionalSequenceRaw(feature, routeId, "A") ||
+      getOperationalDirectionalSequenceRaw(feature, routeId, "B")
+    );
   }
+
+  const diversionRaw = getDiversionSequenceRaw(feature, routeId);
+  if (diversionRaw) return diversionRaw;
+
+  const directionARaw = getDirectionalSequenceRaw(feature, routeId, "A");
+  if (directionARaw) return directionARaw;
+
+  return getLegacySequenceRawForDirection(feature, routeId);
+}
+
+function getRegularFullStopSequenceRaw(feature, routeId) {
+  if (!feature) return "";
+
+  if (routeHasRegularDirectionalSequence(routeId)) {
+    return (
+      getDirectionalSequenceRaw(feature, routeId, "A") ||
+      getDirectionalSequenceRaw(feature, routeId, "B")
+    );
+  }
+
+  return getLegacySequenceRawForDirection(feature, routeId);
+}
+
+function getDisplayedStopSequenceRawForFeature(feature, routeId) {
+  if (!feature) return "";
 
   const regularContext = shouldUseRegularStopsForDisplay(routeId);
   const directionalView =
@@ -6406,90 +6989,83 @@ function getDisplayedStopSequenceRawForFeature(feature, routeId) {
     getRouteGeometryView(routeId) !== "FULL";
 
   if (directionalView) {
-    const directionalRaw = getDirectionalSequenceRaw(
+    const directionalRaw = getContextDirectionalSequenceRaw(
       feature,
       routeId,
       getActiveRouteDirection(routeId)
     );
 
-    if (directionalRaw) {
-      return directionalRaw;
+    if (directionalRaw) return directionalRaw;
+
+    /*
+      Begitu route memiliki schema directional untuk konteks aktif,
+      sequence kosong pada feature berarti feature tersebut bukan
+      anggota arah itu. Jangan fallback per-feature ke MAP/legacy.
+    */
+    const routeUsesContextSequence = regularContext
+      ? routeHasRegularDirectionalSequence(routeId)
+      : routeHasOperationalDirectionalSequence(routeId);
+
+    if (routeUsesContextSequence) {
+      return "";
     }
 
-    if (regularContext) {
-      return getLegacySequenceRawForDirection(
-        feature,
-        routeId
-      );
-    }
-
-    return getStopSequenceRaw(
-      feature,
-      routeId
-    );
+    return regularContext
+      ? getLegacySequenceRawForDirection(feature, routeId)
+      : getStopSequenceRaw(feature, routeId);
   }
 
-  if (regularContext) {
-    return getLegacySequenceRawForDirection(
-      feature,
-      routeId
-    );
-  }
-
-  return getStopSequenceRaw(
-    feature,
-    routeId
-  );
+  /*
+    Semua trase: nomor sequence yang ditampilkan pada daftar mengikuti
+    SEQ_MAP. Mode Sesuai arah tetap menggunakan SEQ_A/B_MAP atau
+    SEQ_A/B_OPS sesuai condition + direction.
+  */
+  return getCanonicalSequenceMapRaw(feature, routeId);
 }
 
 function getDisplayedStopSortSequenceForFeature(feature, routeId, {
   regularContext = shouldUseRegularStopsForDisplay(routeId)
 } = {}) {
-  if (!feature) {
-    return 999999;
-  }
+  if (!feature) return 999999;
 
   const directionalView =
     isRouteDirectionEnabled(routeId) &&
     getRouteGeometryView(routeId) !== "FULL";
 
   if (directionalView) {
-    const directionalRaw = getDirectionalSequenceRaw(
+    const directionalRaw = getContextDirectionalSequenceRaw(
       feature,
       routeId,
       getActiveRouteDirection(routeId)
     );
 
     if (directionalRaw) {
-      return parseDirectionalSequenceNumber(
-        directionalRaw
-      );
+      return parseDirectionalSequenceNumber(directionalRaw);
     }
 
-    if (regularContext) {
-      return getLegacySequenceNumberForDirection(
-        feature,
-        routeId
-      );
+    const routeUsesContextSequence = regularContext
+      ? routeHasRegularDirectionalSequence(routeId)
+      : routeHasOperationalDirectionalSequence(routeId);
+
+    if (routeUsesContextSequence) {
+      return 999999;
     }
 
-    return getStopSequence(
-      feature,
-      routeId
-    );
+    return regularContext
+      ? getLegacySequenceNumberForDirection(feature, routeId)
+      : getStopSequence(feature, routeId);
   }
 
-  if (regularContext) {
-    return getLegacySequenceNumberForDirection(
-      feature,
-      routeId
-    );
-  }
+  /*
+    Semua trase: urutan sidebar mengikuti SEQ_MAP (canonical),
+    terlepas dari REGULAR/CURRENT. Keanggotaan halte tetap sudah
+    difilter oleh sequence konteks sebelum tahap sorting ini.
+  */
+  const raw = getCanonicalSequenceMapRaw(feature, routeId);
 
-  return getStopSequence(
-    feature,
-    routeId
-  );
+  return raw
+    ? parseDirectionalSequenceNumber(raw)
+    : 999999;
 }
 
 function getDisplayedStopSequenceRawForEntry(entry, routeId) {
@@ -7032,16 +7608,27 @@ function getContextualRailVisibleLogicalKeys(routeId) {
         return false;
       }
 
+      const allowNonExistingStops =
+        canShowNonExistingStopsForRouteContext(
+          routeId
+        );
+
       if (
         isProposedStop(feature) &&
-        !showProposedStops
+        (
+          !allowNonExistingStops ||
+          !showProposedStops
+        )
       ) {
         return false;
       }
 
       if (
         isConceptualStop(feature) &&
-        !showConceptualStops
+        (
+          !allowNonExistingStops ||
+          !showConceptualStops
+        )
       ) {
         return false;
       }
@@ -8116,7 +8703,7 @@ function getConceptualStopsForRoute(
 function getVisibleStopsForRoute(
   routeId
 ) {
-  return getStopsForRoute(routeId)
+  return getContextCandidateStopsForRoute(routeId)
     .filter(
       feature => passesBaseStopVisibilityFilters(feature, routeId)
     )
@@ -8127,27 +8714,311 @@ function getVisibleStopsForRoute(
 
 
 /*
-  Mengambil halte/stasiun sebelum dan sesudah berdasarkan
-  urutan SEQ_MAP pada rute yang sedang dipilih.
+  Tentukan arah yang paling tepat untuk navigasi popup.
+
+  - Jika UI sedang pada "Sesuai arah", ikuti arah aktif.
+  - Jika UI sedang pada "Semua trase" tetapi titik fisik yang
+    diklik hanya mempunyai sequence pada satu arah, ikuti arah
+    titik tersebut. Ini penting untuk halte sementara / halte
+    terpisah per arah.
+  - Bila titik melayani dua arah, biarkan kosong agar memakai
+    canonical full-trace order.
+*/
+function getPopupNavigationSide(feature, routeId) {
+  if (
+    isRouteDirectionEnabled(routeId) &&
+    getRouteGeometryView(routeId) !== "FULL"
+  ) {
+    return getActiveRouteDirection(routeId);
+  }
+
+  const regularContext =
+    shouldUseRegularStopsForDisplay(routeId);
+
+  const getRaw = side => {
+    if (regularContext) {
+      return getDirectionalSequenceRaw(
+        feature,
+        routeId,
+        side
+      );
+    }
+
+    if (routeHasOperationalDirectionalSequence(routeId)) {
+      return getOperationalDirectionalSequenceRaw(
+        feature,
+        routeId,
+        side
+      );
+    }
+
+    return getDirectionalSequenceRaw(
+      feature,
+      routeId,
+      side
+    );
+  };
+
+  const seqA = getRaw("A");
+  const seqB = getRaw("B");
+
+  if (seqA && !seqB) return "A";
+  if (seqB && !seqA) return "B";
+
+  return "";
+}
+
+function getPopupNavigationSequenceRaw(
+  feature,
+  routeId,
+  side = ""
+) {
+  if (!feature) return "";
+
+  const regularContext =
+    shouldUseRegularStopsForDisplay(routeId);
+
+  /* REGULAR yang sudah dimigrasikan hanya memakai SEQ_*_MAP. */
+  if (regularContext && routeHasRegularDirectionalSequence(routeId)) {
+    if (side) {
+      return getDirectionalSequenceRaw(feature, routeId, side);
+    }
+
+    return (
+      getDirectionalSequenceRaw(feature, routeId, "A") ||
+      getDirectionalSequenceRaw(feature, routeId, "B")
+    );
+  }
+
+  /*
+    CURRENT yang sudah dimigrasikan hanya memakai SEQ_*_OPS.
+    Sequence OPS kosong berarti halte tidak dilayani pada konteks/arah
+    tersebut; jangan fallback ke SEQ_*_MAP.
+  */
+  if (!regularContext && routeHasOperationalDirectionalSequence(routeId)) {
+    if (side) {
+      return getOperationalDirectionalSequenceRaw(feature, routeId, side);
+    }
+
+    return (
+      getOperationalDirectionalSequenceRaw(feature, routeId, "A") ||
+      getOperationalDirectionalSequenceRaw(feature, routeId, "B")
+    );
+  }
+
+  /* Backward compatibility untuk route legacy yang belum dimigrasikan. */
+  const operationalState =
+    getOperationalStopState(
+      feature,
+      routeId
+    );
+
+  if (!regularContext && operationalState.state === "not-served") {
+    return "";
+  }
+
+  if (side) {
+    const directionalRaw = getDirectionalSequenceRaw(
+      feature,
+      routeId,
+      side
+    );
+
+    if (directionalRaw) return directionalRaw;
+
+    if (hasDirectionalSequenceForRoute(feature, routeId)) {
+      return "";
+    }
+  }
+
+  return regularContext
+    ? getRegularFullStopSequenceRaw(feature, routeId)
+    : getStopSequenceRaw(feature, routeId);
+}
+
+/*
+  Resolver khusus Previous / Next.
+
+  Bila titik yang diklik mempunyai sequence konteks yang eksplisit,
+  navigasi dibentuk langsung dari SEQ_A/B_MAP atau SEQ_A/B_OPS.
+  Dengan demikian titik TEMPORARY tidak bergantung pada sequence
+  reguler/representative point untuk bisa memperoleh tetangga.
+*/
+function getSequenceAwarePopupNavigationStops(feature, routeId) {
+  if (!stopData?.features || !feature || !routeId) {
+    return [];
+  }
+
+  const side =
+    getPopupNavigationSide(
+      feature,
+      routeId
+    );
+
+  const currentRaw =
+    getPopupNavigationSequenceRaw(
+      feature,
+      routeId,
+      side
+    );
+
+  /*
+    Data lama yang belum mempunyai sequence eksplisit tetap memakai
+    resolver legacy agar tidak menimbulkan regresi.
+  */
+  if (!currentRaw) {
+    return [];
+  }
+
+  const regularContext =
+    shouldUseRegularStopsForDisplay(routeId);
+
+  const grouped = new Map();
+
+  stopData.features.forEach(item => {
+    if (!passesBaseStopVisibilityFilters(item, routeId)) {
+      return;
+    }
+
+    if (regularContext && isTemporaryStopFeature(item)) {
+      return;
+    }
+
+    if (!regularContext) {
+      const operationalState =
+        getOperationalStopState(
+          item,
+          routeId
+        );
+
+      if (operationalState.state === "not-served") {
+        return;
+      }
+    }
+
+    const raw =
+      getPopupNavigationSequenceRaw(
+        item,
+        routeId,
+        side
+      );
+
+    if (!raw) {
+      return;
+    }
+
+    const logicalKey =
+      getLogicalStopKey(item);
+
+    const sequence =
+      parseDirectionalSequenceNumber(raw);
+
+    if (!Number.isFinite(sequence) || sequence >= 999999) {
+      return;
+    }
+
+    const existing =
+      grouped.get(logicalKey);
+
+    if (
+      !existing ||
+      sequence < existing.sequence ||
+      (
+        sequence === existing.sequence &&
+        isTemporaryStopActiveForRoute(item, routeId) &&
+        !isTemporaryStopActiveForRoute(existing.feature, routeId)
+      )
+    ) {
+      grouped.set(
+        logicalKey,
+        {
+          feature: item,
+          sequence
+        }
+      );
+    }
+  });
+
+  return Array.from(grouped.values())
+    .sort(
+      (a, b) =>
+        a.sequence - b.sequence ||
+        getStopDisplayName(a.feature)
+          .localeCompare(
+            getStopDisplayName(b.feature),
+            "id"
+          )
+    )
+    .map(entry => entry.feature);
+}
+
+/*
+  Mengambil halte/stasiun sebelum dan sesudah.
+
+  Prioritas:
+  1. resolver sequence-aware untuk titik dengan SEQ_A/B_MAP atau
+     SEQ_A/B_OPS (termasuk halte TEMPORARY);
+  2. resolver logical-stop lama sebagai backward compatibility.
 */
 function getAdjacentStops(
   feature,
   routeId
 ) {
-  const stops =
+  const sequenceAwareStops =
+    getSequenceAwarePopupNavigationStops(
+      feature,
+      routeId
+    );
+
+  const legacyStops =
     getActiveOperationalStopsForRoute(
       routeId
     );
 
+  const stops =
+    sequenceAwareStops.length >= 2
+      ? sequenceAwareStops
+      : legacyStops;
+
   const currentLogicalKey =
     getLogicalStopKey(feature);
 
-  const currentIndex =
+  let currentIndex =
     stops.findIndex(
       item =>
         getLogicalStopKey(item) ===
         currentLogicalKey
     );
+
+  /*
+    Safety net: bila resolver sequence-aware valid tetapi titik popup
+    belum ikut karena data parsial, coba list legacy sebelum menyerah.
+  */
+  if (
+    currentIndex === -1 &&
+    stops !== legacyStops
+  ) {
+    currentIndex =
+      legacyStops.findIndex(
+        item =>
+          getLogicalStopKey(item) ===
+          currentLogicalKey
+      );
+
+    if (currentIndex !== -1) {
+      return {
+        previous:
+          currentIndex > 0
+            ? legacyStops[currentIndex - 1]
+            : null,
+
+        next:
+          currentIndex < legacyStops.length - 1
+            ? legacyStops[currentIndex + 1]
+            : null
+      };
+    }
+  }
 
   if (currentIndex === -1) {
     return {
@@ -8699,77 +9570,153 @@ function getStopSearchMatches(
       .split(" ")
       .filter(Boolean);
 
-  return stopData.features
-    .map(
-      feature => {
-        const name =
-          normalizeSearchText(
-            getStopDisplayName(
-              feature
-            )
-          );
-
-        const searchable =
-          getStopSearchText(
-            feature
-          );
-
-        const allWordsMatch =
-          queryWords.every(
-            word =>
-              searchable.includes(
-                word
+  const candidates =
+    stopData.features
+      .map(
+        feature => {
+          const name =
+            normalizeSearchText(
+              getStopDisplayName(
+                feature
               )
-          );
+            );
 
-        if (!allWordsMatch) {
-          return null;
-        }
+          const searchable =
+            getStopSearchText(
+              feature
+            );
 
-        let score = 0;
+          const allWordsMatch =
+            queryWords.every(
+              word =>
+                searchable.includes(
+                  word
+                )
+            );
 
-        if (
-          name === normalizedQuery
-        ) {
-          score += 100;
-        }
-        else if (
-          name.startsWith(
-            normalizedQuery
-          )
-        ) {
-          score += 70;
-        }
-        else if (
-          name.includes(
-            normalizedQuery
-          )
-        ) {
-          score += 50;
-        }
-        else {
-          score += 20;
-        }
+          if (!allWordsMatch) {
+            return null;
+          }
 
-        /*
-          Halte/stasiun yang memiliki route context valid
-          diprioritaskan karena bisa langsung dibuka.
-        */
-        if (
-          getPreferredRouteForStop(
-            feature
-          )
-        ) {
-          score += 5;
-        }
+          let score = 0;
 
-        return {
-          feature,
-          score
-        };
+          if (
+            name === normalizedQuery
+          ) {
+            score += 100;
+          }
+          else if (
+            name.startsWith(
+              normalizedQuery
+            )
+          ) {
+            score += 70;
+          }
+          else if (
+            name.includes(
+              normalizedQuery
+            )
+          ) {
+            score += 50;
+          }
+          else {
+            score += 20;
+          }
+
+          const preferredRoute =
+            getPreferredRouteForStop(
+              feature
+            );
+
+          /*
+            Halte/stasiun yang memiliki route context valid
+            diprioritaskan karena bisa langsung dibuka.
+          */
+          if (preferredRoute) {
+            score += 5;
+          }
+
+          return {
+            feature,
+            score,
+            preferredRoute
+          };
+        }
+      )
+      .filter(Boolean);
+
+  /*
+    Search bekerja pada logical stop, bukan physical geometry.
+    Tanpa dedupe, halte dua arah/temporary dapat muncul 2–4 kali
+    (mis. Blok M, Kali Grogol, Manggarai).
+  */
+  const grouped =
+    new Map();
+
+  candidates.forEach(
+    candidate => {
+      const logicalKey =
+        getLogicalStopKey(
+          candidate.feature
+        );
+
+      if (!grouped.has(logicalKey)) {
+        grouped.set(
+          logicalKey,
+          []
+        );
       }
-    )
-    .filter(Boolean)
+
+      grouped.get(logicalKey)
+        .push(candidate);
+    }
+  );
+
+  return Array.from(
+    grouped.values()
+  )
+    .map(group => {
+      group.sort(
+        (a, b) =>
+          b.score - a.score
+      );
+
+      const best =
+        group[0];
+
+      const routeId =
+        best.preferredRoute ||
+        getPreferredRouteForStop(
+          best.feature
+        );
+
+      const physicalFeatures =
+        routeId
+          ? getStopGroupFeatures(
+              best.feature,
+              routeId
+            )
+          : group.map(
+              item => item.feature
+            );
+
+      const representative =
+        (
+          routeId
+            ? chooseStopGroupRepresentative(
+                physicalFeatures,
+                routeId
+              )
+            : null
+        )
+        ||
+        best.feature;
+
+      return {
+        feature: representative,
+        score: best.score
+      };
+    })
     .sort(
       (a, b) => {
         if (
@@ -11494,6 +12441,9 @@ function startProductTour(
   productTourManual =
     Boolean(manual);
 
+  lastFocusedBeforeProductTour =
+    document.activeElement;
+
   /*
     Simpan view sebelum demo Tip 2–3. Ini berlaku baik pada
     startup tour maupun ketika user membuka Cara Menggunakan
@@ -11536,6 +12486,15 @@ function startProductTour(
 
   showProductTourStep(
     0
+  );
+
+  requestAnimationFrame(
+    () => {
+      productTourCard
+        ?.focus({
+          preventScroll: true
+        });
+    }
   );
 }
 
@@ -11595,7 +12554,24 @@ function closeProductTour(
     );
   }
 
+  const shouldRestoreTourFocus =
+    Boolean(
+      productTourManual &&
+      lastFocusedBeforeProductTour &&
+      typeof lastFocusedBeforeProductTour.focus ===
+        "function"
+    );
+
   productTourManual = false;
+
+  if (shouldRestoreTourFocus) {
+    lastFocusedBeforeProductTour
+      .focus({
+        preventScroll: true
+      });
+  }
+
+  lastFocusedBeforeProductTour = null;
 }
 
 
@@ -11817,6 +12793,7 @@ function getGlobalRouteSearchMatches(
             [
               getRouteTitle(feature),
               getRouteDisplayName(feature),
+              getRouteOptionText(feature),
               routeId,
               line,
               mode,
@@ -12413,6 +13390,124 @@ function updateGlobalSearch(
 }
 
 
+function activateBestGlobalSearchResult() {
+  const query =
+    String(
+      globalSearchInput?.value ?? ""
+    ).trim();
+
+  const normalizedQuery =
+    normalizeSearchText(query);
+
+  if (normalizedQuery.length < 2) {
+    return false;
+  }
+
+  /*
+    Nama halte/stasiun yang cocok persis diprioritaskan agar
+    "Manggarai" membuka titik lokal, bukan pencarian tempat daring.
+  */
+  const exactStop =
+    globalSearchLocalResults
+      .find(feature =>
+        normalizeSearchText(
+          getStopDisplayName(feature)
+        ) === normalizedQuery
+      );
+
+  if (exactStop) {
+    openStopFromSearch(
+      getStopKey(exactStop)
+    );
+
+    globalSearchInput.value =
+      getStopDisplayName(exactStop);
+
+    updateGlobalSearchClearButton();
+    closeGlobalSearchResults();
+    globalSearchInput.blur();
+    return true;
+  }
+
+  const exactRoute =
+    globalSearchRouteResults
+      .find(feature => {
+        const routeId =
+          getRouteId(feature);
+
+        const line =
+          cleanText(
+            feature?.properties?.LINE
+          );
+
+        const mode =
+          getRouteMode(feature);
+
+        return [
+          getRouteTitle(feature),
+          getRouteDisplayName(feature),
+          getRouteOptionText(feature),
+          routeId,
+          mode === "BRT"
+            ? `Koridor ${line}`
+            : `Lin ${line}`
+        ].some(value =>
+          normalizeSearchText(value) ===
+          normalizedQuery
+        );
+      });
+
+  if (exactRoute) {
+    openRouteFromGlobalSearch(
+      getRouteId(exactRoute)
+    );
+    return true;
+  }
+
+  if (globalSearchLocalResults.length) {
+    const feature =
+      globalSearchLocalResults[0];
+
+    openStopFromSearch(
+      getStopKey(feature)
+    );
+
+    globalSearchInput.value =
+      getStopDisplayName(feature);
+
+    updateGlobalSearchClearButton();
+    closeGlobalSearchResults();
+    globalSearchInput.blur();
+    return true;
+  }
+
+  if (globalSearchRouteResults.length) {
+    openRouteFromGlobalSearch(
+      getRouteId(
+        globalSearchRouteResults[0]
+      )
+    );
+    return true;
+  }
+
+  if (globalSearchPoiResults.length) {
+    const result =
+      globalSearchPoiResults[0];
+
+    globalSearchInput.value =
+      getPoiResultTitle(result);
+
+    updateGlobalSearchClearButton();
+    closeGlobalSearchResults();
+    openPoiResult(result);
+    globalSearchInput.blur();
+    return true;
+  }
+
+  return false;
+}
+
+
 function submitGlobalPoiSearch() {
   const query =
     String(
@@ -12471,7 +13566,12 @@ globalSearchInput
         event.key === "Enter"
       ) {
         event.preventDefault();
-        submitGlobalPoiSearch();
+
+        if (
+          !activateBestGlobalSearchResult()
+        ) {
+          submitGlobalPoiSearch();
+        }
       }
     }
   );
@@ -12890,16 +13990,98 @@ function applyUrlStateAfterDataLoad() {
 
 
 /* =========================================================
+   ACCESSIBILITY / CONTEXT HELPERS
+   ========================================================= */
+
+function getFocusableElements(container) {
+  if (!container) {
+    return [];
+  }
+
+  return Array.from(
+    container.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), details > summary, [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter(element => {
+    if (element.hidden) {
+      return false;
+    }
+
+    const style = window.getComputedStyle(element);
+    return (
+      style.display !== "none" &&
+      style.visibility !== "hidden"
+    );
+  });
+}
+
+function trapFocusWithin(event, container) {
+  if (event.key !== "Tab" || !container) {
+    return false;
+  }
+
+  const focusable =
+    getFocusableElements(container);
+
+  if (!focusable.length) {
+    event.preventDefault();
+    container.focus?.();
+    return true;
+  }
+
+  const first = focusable[0];
+  const last =
+    focusable[focusable.length - 1];
+
+  if (
+    event.shiftKey &&
+    document.activeElement === first
+  ) {
+    event.preventDefault();
+    last.focus();
+    return true;
+  }
+
+  if (
+    !event.shiftKey &&
+    document.activeElement === last
+  ) {
+    event.preventDefault();
+    first.focus();
+    return true;
+  }
+
+  return false;
+}
+
+function dismissGlobalSearchForContextSwitch() {
+  closeGlobalSearchResults();
+  globalSearchInput?.blur();
+}
+
+/* =========================================================
    INFORMATION / DISCLAIMER
    ========================================================= */
 
 /*
-  Memulai pengalaman pembuka setiap kali halaman dimuat.
-  Tidak bergantung localStorage: reload, buka ulang tab, atau
-  hard refresh tetap akan menampilkan informasi lalu tour.
+  Startup hanya muncul pada kunjungan yang masih membutuhkan
+  disclaimer dan/atau tutorial. Setelah keduanya selesai,
+  reload berikutnya langsung membuka peta.
 */
 function startStartupExperience() {
-  startupExperienceActive = true;
+  const needsDisclaimer =
+    !hasAcceptedDisclaimer();
+
+  const needsTour =
+    !hasCompletedProductTour();
+
+  if (
+    !needsDisclaimer &&
+    !needsTour
+  ) {
+    startupExperienceActive = false;
+    return;
+  }
 
   if (startupTourTimerId) {
     clearTimeout(
@@ -12909,9 +14091,34 @@ function startStartupExperience() {
     startupTourTimerId = null;
   }
 
-  setInfoModalOpen(
-    true
-  );
+  if (needsDisclaimer) {
+    /*
+      Flag ini hanya berarti: setelah disclaimer ditutup,
+      lanjutkan ke tour bila tour memang belum selesai.
+    */
+    startupExperienceActive =
+      needsTour;
+
+    setInfoModalOpen(
+      true
+    );
+
+    return;
+  }
+
+  startupExperienceActive = false;
+
+  startupTourTimerId =
+    setTimeout(
+      () => {
+        startupTourTimerId = null;
+
+        startProductTour({
+          manual: false
+        });
+      },
+      120
+    );
 }
 
 
@@ -12926,7 +14133,8 @@ function startStartupExperience() {
 function closeInfoModalAndContinueStartup() {
   const continueToTour =
     Boolean(
-      startupExperienceActive
+      startupExperienceActive &&
+      !hasCompletedProductTour()
     );
 
   startupExperienceActive = false;
@@ -13012,6 +14220,18 @@ function setInfoModalOpen(
       "info-modal-open"
     );
 
+    infoButton
+      ?.setAttribute(
+        "aria-expanded",
+        "true"
+      );
+
+    rightInfoAboutButton
+      ?.setAttribute(
+        "aria-expanded",
+        "true"
+      );
+
     requestAnimationFrame(
       () => {
         if (focusPrimary) {
@@ -13030,6 +14250,20 @@ function setInfoModalOpen(
   document.body.classList.remove(
     "info-modal-open"
   );
+
+  if (!isMobileLayout()) {
+    infoButton
+      ?.setAttribute(
+        "aria-expanded",
+        "false"
+      );
+  }
+
+  rightInfoAboutButton
+    ?.setAttribute(
+      "aria-expanded",
+      "false"
+    );
 
   if (
     lastFocusedBeforeInfoModal &&
@@ -13086,6 +14320,21 @@ routePlanIntroSourceEl
 document.addEventListener(
   "keydown",
   event => {
+    if (
+      routePlanIntroEl &&
+      !routePlanIntroEl.hidden &&
+      event.key === "Tab"
+    ) {
+      if (
+        trapFocusWithin(
+          event,
+          routePlanIntroEl
+        )
+      ) {
+        return;
+      }
+    }
+
     if (
       event.key === "Escape" &&
       routePlanIntroEl &&
@@ -13180,6 +14429,21 @@ infoModalBackdrop
 document.addEventListener(
   "keydown",
   event => {
+    if (
+      infoModalBackdrop &&
+      !infoModalBackdrop.hidden &&
+      event.key === "Tab"
+    ) {
+      if (
+        trapFocusWithin(
+          event,
+          infoModal
+        )
+      ) {
+        return;
+      }
+    }
+
     if (
       event.key === "Escape" &&
       productTour &&
@@ -13293,9 +14557,11 @@ function validateRouteData() {
       variantsByRoute
         .get(routeId)
         .push(
-          normalizeRouteVariant(
-            feature
-          )
+          [
+            normalizeRouteVariant(feature),
+            getRouteGeometryDirection(feature) || "NONE",
+            getRouteSegmentRole(feature) || "NONE"
+          ].join("|")
         );
     }
   );
@@ -13374,7 +14640,7 @@ function validateRouteData() {
 
   if (duplicateVariants.length) {
     console.warn(
-      "Duplikasi ROUTE_VAR:",
+      "Duplikasi kombinasi ROUTE_VAR/DIR_MAP/SEG_ROLE:",
       duplicateVariants
     );
   }
@@ -13651,7 +14917,7 @@ function validateStopData() {
 
         if (
           !hasText(
-            p.REPLACES_ID
+            getStopReplacesId(feature)
           )
         ) {
           temporaryMissingReplaces.push(
@@ -13992,7 +15258,7 @@ function validateStopData() {
   }
   else {
     console.info(
-      "Schema BRT_Stop v2.0 lengkap: 31 field ditemukan."
+      "Schema BRT_Stop v2.0 lengkap: 32 field ditemukan."
     );
   }
 
@@ -14000,7 +15266,7 @@ function validateStopData() {
     featureSchemaGaps.length
   ) {
     console.info(
-      "Feature yang belum membawa seluruh 31 property v2.0:",
+      "Feature yang belum membawa seluruh 32 property v2.0:",
       featureSchemaGaps
     );
   }
@@ -14086,7 +15352,7 @@ function validateStopData() {
 
   if (temporaryMissingReplaces.length) {
     console.info(
-      "STOP_VAR=TEMPORARY tanpa REPLACES_ID. Isi bila titik ini menggantikan feature BASE:",
+      "STOP_VAR=TEMPORARY tanpa REPLACE_ID. Isi bila titik ini menggantikan feature BASE:",
       temporaryMissingReplaces
     );
   }
@@ -15876,7 +17142,11 @@ function getRoutePlanIntroExtraText(
 }
 
 
-function closeRoutePlanIntro() {
+function closeRoutePlanIntro(
+  {
+    restoreFocus = true
+  } = {}
+) {
   if (
     routePlanIntroTimerId
   ) {
@@ -15917,6 +17187,20 @@ function closeRoutePlanIntro() {
 
   activeRoutePlanIntroRouteId =
     null;
+
+  if (
+    restoreFocus &&
+    lastFocusedBeforeRoutePlanIntro &&
+    typeof lastFocusedBeforeRoutePlanIntro.focus ===
+      "function"
+  ) {
+    lastFocusedBeforeRoutePlanIntro
+      .focus({
+        preventScroll: true
+      });
+  }
+
+  lastFocusedBeforeRoutePlanIntro = null;
 }
 
 
@@ -15970,6 +17254,9 @@ function showRoutePlanIntro(
   shownRoutePlanIntros.add(
     normalizedRouteId
   );
+
+  lastFocusedBeforeRoutePlanIntro =
+    document.activeElement;
 
   activeRoutePlanIntroRouteId =
     normalizedRouteId;
@@ -16027,6 +17314,11 @@ function showRoutePlanIntro(
             .add(
               "is-visible"
             );
+
+          routePlanIntroDismissEl
+            ?.focus({
+              preventScroll: true
+            });
         }
       );
     }
@@ -16103,7 +17395,9 @@ function openRoutePlanSourceCard(
     Simpan ID terlebih dahulu karena closeRoutePlanIntro()
     mengosongkan activeRoutePlanIntroRouteId.
   */
-  closeRoutePlanIntro();
+  closeRoutePlanIntro({
+    restoreFocus: false
+  });
 
   const planCard =
     document.querySelector(
@@ -16624,10 +17918,10 @@ const ROUTE_ALERTS = {
     */
     geometryUnchanged: true,
     title:
-      "Koridor 3: Kalideres – Monumen Nasional",
+      "Koridor 3: Kalideres – Monumen Nasional via Veteran",
 
     note:
-      "Koridor 3 mengalami penyesuaian layanan akibat pembangunan MRT Jakarta Fase 2A. Terminus sementara dipindahkan dari Pasar Baru ke Monumen Nasional.",
+      "Koridor 3 mengalami penyesuaian layanan akibat pembangunan MRT Jakarta Fase 2A. Layanan saat ini beroperasi Kalideres – Monumen Nasional via Veteran, dengan terminus sementara dipindahkan dari Pasar Baru ke Monumen Nasional.",
 
     temporaryTerminus:
       "Monumen Nasional",
@@ -16765,7 +18059,7 @@ function getOperationalStopState(
 
   /*
     PEDOMAN v2.0:
-    STOP_VAR / DIV_ID / REPLACES_ID adalah sumber data utama
+    STOP_VAR / DIV_ID / REPLACE_ID adalah sumber data utama
     untuk relokasi titik halte sementara.
   */
   if (
@@ -16948,9 +18242,33 @@ function getRegularStopListEntries(routeId) {
 }
 
 function getDisplayedStopListEntries(routeId) {
-  return shouldUseRegularStopsForDisplay(routeId)
-    ? getRegularStopListEntries(routeId)
-    : getOperationalStopListEntries(routeId);
+  /*
+    Rute TANPA DIVERSION tidak memiliki perbedaan konteks
+    Saat Ini vs Reguler. Karena itu daftar halte harus selalu
+    bersumber dari BASE/reguler agar toggle Usulan/Gagasan tetap
+    bekerja. Jangan masuk ke getOperationalStopListEntries(),
+    karena OPS_MAP=NOT_SERVED pada halte non-eksisting memang
+    dimaksudkan agar halte tersebut tidak dianggap aktif secara
+    operasional, bukan untuk memblokir toggle eksplorasi.
+  */
+  if (!hasRouteDiversion(routeId)) {
+    return getRegularStopListEntries(routeId);
+  }
+
+  if (shouldUseRegularStopsForDisplay(routeId)) {
+    /* Trase Reguler = halte BASE/reguler sesuai trase reguler. */
+    return getRegularStopListEntries(routeId);
+  }
+
+  /*
+    Saat Ini pada rute yang MEMILIKI diversion = hanya halte yang
+    benar-benar sedang dilayani. Halte NOT_SERVED tetap tersedia
+    di sumber data, tetapi tidak ditampilkan pada daftar/peta
+    konteks CURRENT. Temporary served tetap masuk melalui
+    OPS_MAP / data operasional.
+  */
+  return getOperationalStopListEntries(routeId)
+    .filter(entry => entry.state !== "not-served");
 }
 
 function getOperationalStopListEntries(
@@ -17003,6 +18321,30 @@ function getOperationalStopListEntries(
       )
     );
 
+  const existingEntriesByKey =
+    new Map();
+
+  entries.forEach(entry => {
+    const key =
+      getStopKey(
+        entry.feature
+      );
+
+    if (!key) {
+      return;
+    }
+
+    if (!existingEntriesByKey.has(key)) {
+      existingEntriesByKey.set(
+        key,
+        []
+      );
+    }
+
+    existingEntriesByKey.get(key)
+      .push(entry);
+  });
+
   const existingNames =
     new Set(
       entries.map(
@@ -17054,11 +18396,58 @@ function getOperationalStopListEntries(
             code === "TEMP_TERMINUS"
           );
         })
+        .filter(feature =>
+          !routeHasOperationalDirectionalSequence(routeId) ||
+          isStopMemberOfDisplayedRouteContext(feature, routeId)
+        )
+        /*
+          Kondisi "Saat ini" tidak pernah menampilkan titik
+          Usulan/Gagasan, termasuk bila titik tersebut memiliki
+          OPS_MAP TEMP_SERVED/TEMP_TERMINUS. Temporary eksisting
+          tetap boleh masuk selama aktif untuk rute ini.
+        */
         .filter(
           feature =>
-            !existingKeys.has(
-              getStopKey(feature)
+            passesBaseStopVisibilityFilters(
+              feature,
+              routeId
             )
+        )
+        /*
+          Temporary stop juga harus mengikuti pilihan arah.
+          Pada Semua trase kedua titik arah boleh tampil; pada
+          Sesuai arah hanya titik dengan SEQ_A_MAP / SEQ_B_MAP
+          untuk arah aktif yang ditampilkan.
+        */
+        .filter(
+          feature =>
+            isStopVisibleForDisplayedContext(
+              feature,
+              routeId
+            )
+        )
+        .filter(
+          feature => {
+            const key =
+              getStopKey(feature);
+
+            if (!key) {
+              return true;
+            }
+
+            const existingForKey =
+              existingEntriesByKey.get(key)
+              || [];
+
+            if (!existingForKey.length) {
+              return true;
+            }
+
+            return existingForKey.every(
+              entry =>
+                entry.state === "not-served"
+            );
+          }
         )
         .map(feature => {
           const state =
@@ -17144,6 +18533,17 @@ function getOperationalStopListEntries(
         entries.push(entry);
 
         existingKeys.add(key);
+
+        if (!existingEntriesByKey.has(key)) {
+          existingEntriesByKey.set(
+            key,
+            []
+          );
+        }
+
+        existingEntriesByKey.get(key)
+          .push(entry);
+
         existingNames.add(name);
       });
   }
@@ -17177,6 +18577,22 @@ function getOperationalStopListEntries(
             );
 
           if (!feature) {
+            return;
+          }
+
+          if (
+            !passesBaseStopVisibilityFilters(
+              feature,
+              routeId
+            )
+          ) {
+            return;
+          }
+
+          if (
+            routeHasOperationalDirectionalSequence(routeId) &&
+            !isStopMemberOfDisplayedRouteContext(feature, routeId)
+          ) {
             return;
           }
 
@@ -17252,10 +18668,13 @@ function getMapOperationalStopsForRoute(
   const seen =
     new Set();
 
+  /*
+    Marker mengikuti kondisi trase yang dipilih:
+    - REGULAR -> hanya titik halte reguler/base.
+    - CURRENT -> hanya titik yang sedang dilayani, termasuk temporary.
+  */
   const sourceEntries =
-    shouldUseRegularStopsForDisplay(routeId)
-      ? getRegularStopListEntries(routeId)
-      : getOperationalStopListEntries(routeId);
+    getDisplayedStopListEntries(routeId);
 
   return sourceEntries
     .map(
@@ -18149,8 +19568,15 @@ function renderRouteInfo(feature) {
   const nonExistingCount =
     proposedCount + conceptualCount;
 
+  const showOptionalStopsControl =
+    Boolean(nonExistingCount)
+    &&
+    canShowNonExistingStopsForRouteContext(
+      routeId
+    );
+
   const optionalStopsHTML =
-    nonExistingCount
+    showOptionalStopsControl
       ? `
         <div
           class="optional-stop-control"
@@ -18167,7 +19593,7 @@ function renderRouteInfo(feature) {
             </div>
 
             <div class="optional-stop-control-hint">
-              Mencakup status Usulan dan Gagasan.
+              Mencakup status Usulan dan Skenario.
             </div>
           </div>
 
@@ -18391,10 +19817,26 @@ routeInfoEl
 
       if (!routeId || !hasRouteDiversion(routeId)) return;
 
+      const requestedCondition =
+        String(
+          button.dataset.routeCondition ||
+          "CURRENT"
+        ).toUpperCase();
+
       setRouteConditionMode(
         routeId,
-        button.dataset.routeCondition || "CURRENT"
+        requestedCondition
       );
+
+      /*
+        Saat kembali ke kondisi operasional "Saat ini",
+        non-eksisting selalu OFF. Ini mencegah state toggle yang
+        sebelumnya aktif di Reguler ikut memengaruhi marker, daftar,
+        statistik halte, atau hasil pencarian pada kondisi aktual.
+      */
+      if (requestedCondition === "CURRENT") {
+        setNonExistingStopsVisible(false);
+      }
 
       refreshRouteDirectionView(routeId);
       fitRouteToScreen();
@@ -21237,7 +22679,7 @@ function getDirectServiceSectionLabel(
 function normalizeRailServicePlaceName(value) {
   return String(value ?? "")
     .replace(
-      /\b(Dalam Pembangunan|Rencana|Usulan|Gagasan(?: WebGIS)?|Konseptual|Conceptual|Nonaktif)\b/gi,
+      /\b(Dalam Pembangunan|Rencana|Usulan|Skenario(?: WebGIS)?|Gagasan(?: WebGIS)?|Konseptual|Conceptual|Nonaktif)\b/gi,
       ""
     )
     .replace(/^(Halte|Stasiun|Terminal)\s+/i, "")
@@ -21775,6 +23217,10 @@ function buildDiversionAffectedNoteHTML(
     return "";
   }
 
+  const objectTerm =
+    getTransitObjectTerms(feature)
+      .singular;
+
   return `
     <div class="stop-diversion-affected-note">
       <span
@@ -21785,7 +23231,7 @@ function buildDiversionAffectedNoteHTML(
       </span>
 
       <span>
-        Halte ini terdampak pengalihan sementara
+        ${escapeHTML(objectTerm)} ini terdampak pengalihan sementara
         ${escapeHTML(
           getOperationalRouteShortLabel(
             routeId
@@ -21812,43 +23258,28 @@ function buildOperationalStopNoticeHTML(
       routeId
     );
 
+  const objectTerm =
+    getTransitObjectTerms(feature)
+      .singular;
+
+  const objectTermLower =
+    objectTerm.toLowerCase();
+
   if (
     isTemporaryStopActiveForRoute(
       feature,
       routeId
     )
   ) {
-    const replacesId =
-      getStopReplacesId(
-        feature
-      );
-
-    const divId =
-      cleanText(
-        feature
-          ?.properties
-          ?.DIV_ID
-      );
-
     return `
       <div class="stop-operational-notice is-temporary is-physical-temporary">
         <div class="stop-operational-notice-title">
-          Halte sementara
+          ${escapeHTML(objectTerm)} sementara
         </div>
 
         <div class="stop-operational-notice-text">
           Titik ini merupakan lokasi fisik sementara
-          ${escapeHTML(routeLabel)}
-          ${
-            replacesId
-              ? `dan menggantikan sementara titik reguler <strong>${escapeHTML(replacesId)}</strong>`
-              : ""
-          }.
-          ${
-            divId
-              ? `<span class="stop-operational-div-id">DIV_ID: ${escapeHTML(divId)}</span>`
-              : ""
-          }
+          ${escapeHTML(routeLabel)}.
         </div>
       </div>
     `;
@@ -21866,7 +23297,7 @@ function buildOperationalStopNoticeHTML(
 
         <div class="stop-operational-notice-text">
           ${escapeHTML(routeLabel)}
-          sementara tidak melayani halte/stasiun ini selama
+          sementara tidak melayani ${escapeHTML(objectTermLower)} ini selama
           pengalihan operasional. Titik ini tetap ditampilkan
           untuk menunjukkan pola pelayanan normal.
         </div>
@@ -21904,7 +23335,7 @@ function buildOperationalStopNoticeHTML(
 
         <div class="stop-operational-notice-text">
           ${escapeHTML(routeLabel)}
-          melayani halte/stasiun ini selama pengalihan
+          melayani ${escapeHTML(objectTermLower)} ini selama pengalihan
           operasional.
         </div>
       </div>
@@ -22269,6 +23700,46 @@ function buildStopPopup(feature, routeId) {
       `
       : "";
 
+  /*
+    Jumlah/varian lokasi fisik sengaja tidak ditampilkan di daftar halte.
+    Informasi ini hanya muncul ketika user membuka popup halte/stasiun.
+  */
+  const popupPhysicalFeatures =
+    getStopGroupFeatures(
+      feature,
+      routeId
+    );
+
+  const popupPhysicalSummary =
+    getPhysicalStopSummary(
+      popupPhysicalFeatures
+    );
+
+  const physicalLocationHTML =
+    popupPhysicalSummary.short
+      ? `
+        <div
+          class="stop-popup-physical-note"
+          title="${escapeHTML(popupPhysicalSummary.long)}"
+        >
+          <span class="stop-popup-physical-label">
+            Lokasi fisik
+          </span>
+
+          <span
+            class="stop-popup-physical-separator"
+            aria-hidden="true"
+          >
+            ·
+          </span>
+
+          <strong>
+            ${escapeHTML(popupPhysicalSummary.short)}
+          </strong>
+        </div>
+      `
+      : "";
+
   const operationalState =
     getOperationalStopState(
       feature,
@@ -22577,22 +24048,66 @@ function buildStopPopup(feature, routeId) {
       : "";
 
 
+  /*
+    Alasan skenario halte.
+
+    STATUS Skenario dinormalisasi ke nilai internal "Conceptual"
+    agar data lama (Conceptual / Konseptual / Gagasan WebGIS) tetap
+    kompatibel. Jika REMARK terisi, REMARK diperlakukan sebagai
+    alasan spesifik penambahan halte dan ditampilkan dengan label
+    "Alasan Skenario".
+
+    Untuk halte pada rute visualisasi rencana yang bukan berstatus
+    Skenario, catatan generik lama tetap dipertahankan.
+  */
+  const isScenarioStop =
+    getStopStatus(feature) ===
+    "Conceptual";
+
+  const scenarioReason =
+    cleanText(
+      p.REMARK
+    );
+
   const stopScenarioNoteHTML =
-    isPlannedBRTVisualizationRoute(
-      routeId
-    )
+    isScenarioStop
       ? `
         <div class="stop-popup-scenario-note">
           <span class="stop-popup-scenario-note-icon" aria-hidden="true">i</span>
           <span>
-            <strong>Halte skenario.</strong>
-            Lokasi dan penamaan halte ini disusun berdasarkan
-            analisis penyusun WebGIS dan belum merupakan
-            penetapan resmi.
+            ${
+              scenarioReason
+                ? `
+                  <strong>Alasan Skenario.</strong>
+                  ${escapeHTML(scenarioReason)}
+                `
+                : `
+                  <strong>Halte skenario.</strong>
+                  Lokasi dan penamaan halte ini disusun sebagai
+                  eksplorasi WebGIS dan belum merupakan penetapan
+                  resmi pemerintah/operator.
+                `
+            }
           </span>
         </div>
       `
-      : "";
+      : (
+          isPlannedBRTVisualizationRoute(
+            routeId
+          )
+            ? `
+              <div class="stop-popup-scenario-note">
+                <span class="stop-popup-scenario-note-icon" aria-hidden="true">i</span>
+                <span>
+                  <strong>Halte skenario.</strong>
+                  Lokasi dan penamaan halte ini disusun berdasarkan
+                  analisis penyusun WebGIS dan belum merupakan
+                  penetapan resmi.
+                </span>
+              </div>
+            `
+            : ""
+        );
 
   const hasAirportRailDirectService =
     airportRailServiceIds.length > 0;
@@ -22923,6 +24438,8 @@ function buildStopPopup(feature, routeId) {
         </div>
 
         ${stopComplexHTML}
+
+        ${physicalLocationHTML}
 
         ${splitStopNoteHTML}
 
@@ -23404,7 +24921,12 @@ function getVisibleStopLabelMarkerKeys(
         jangan buka kembali tooltip permanennya hanya karena
         zoom band dekat menampilkan semua label.
       */
-      if (isDismissed) {
+      /*
+        Pada rute terpilih, nama setiap halte yang sedang ditampilkan
+        harus tetap tersedia, termasuk halte temporary. Menutup popup
+        tidak boleh menghilangkan label permanen halte.
+      */
+      if (isDismissed && !forceAllSelectedRouteLabels) {
         return;
       }
 
@@ -24740,9 +26262,24 @@ function updateRouteDetailCardState() {
 
 
 function renderStopList(routeId) {
+  const regularStopContext =
+    shouldUseRegularStopsForDisplay(
+      routeId
+    );
+
+  /*
+    Daftar halte mengikuti konteks Kondisi Trase:
+    - Saat ini  : hanya halte yang benar-benar sedang dilayani;
+    - Reguler   : tampilkan kembali halte trase reguler, termasuk
+                  halte yang pada kondisi operasional kini NOT_SERVED.
+  */
   const entries =
     getLogicalOperationalStopEntries(
-      routeId
+      routeId,
+      {
+        includeNotServed:
+          regularStopContext
+      }
     );
 
   const features =
@@ -24833,12 +26370,10 @@ function renderStopList(routeId) {
           physicalFeatures
         );
 
-      const direction =
-        getDirectionLabel(
-          getStopDirection(
-            feature,
-            routeId
-          )
+      const directionInfo =
+        getStopListDirectionArrowInfo(
+          feature,
+          routeId
         );
 
       const role =
@@ -24870,11 +26405,24 @@ function renderStopList(routeId) {
         Jadi nomor yang terlihat bukan hasil renumber berdasarkan index,
         melainkan nomor sequence eksplisit dari GeoJSON.
       */
+      const currentDirectionalList =
+        !regularStopContext &&
+        !shouldShowAllStopsForDisplayedRoute(routeId);
+
+      /*
+        Pada Saat ini + Sesuai arah, nomor badge mengikuti urutan
+        halte aktif yang benar-benar tampil. Dengan begitu terminus
+        sementara pertama menjadi 01 setelah halte NOT_SERVED
+        dikeluarkan dari daftar. Mode Reguler tetap memakai
+        SEQ_A_MAP / SEQ_B_MAP dari data.
+      */
       const routeSeq =
-        getDisplayedStopSequenceRawForEntry(
-          entry,
-          routeId
-        );
+        currentDirectionalList
+          ? String(entryIndex + 1).padStart(2, "0")
+          : getDisplayedStopSequenceRawForEntry(
+              entry,
+              routeId
+            );
 
       const seqBadgeHTML =
         isTemporaryServed &&
@@ -24938,7 +26486,8 @@ function renderStopList(routeId) {
           )
           .join("");
 
-      const rightBadges = [];
+      const leftBadges = [];
+      const edgeBadges = [];
 
       /*
         Badge arah pada daftar hanya berguna untuk halte yang
@@ -24960,12 +26509,17 @@ function renderStopList(routeId) {
         roleNormalized === "terminus sementara";
 
       if (
-        direction &&
+        directionInfo.symbol &&
         !hideDirectionForRole
       ) {
-        rightBadges.push(`
-          <span class="stop-direction">
-            ${escapeHTML(direction)}
+        edgeBadges.push(`
+          <span
+            class="stop-direction stop-direction-arrow"
+            title="${escapeHTML(directionInfo.label)}"
+            aria-label="${escapeHTML(directionInfo.label)}"
+            data-direction-side="${escapeHTML(directionInfo.side)}"
+          >
+            ${escapeHTML(directionInfo.symbol)}
           </span>
         `);
       }
@@ -24975,7 +26529,7 @@ function renderStopList(routeId) {
         isTemporaryServed ||
         isTemporaryTerminus
       ) {
-        rightBadges.push(`
+        leftBadges.push(`
           <span class="stop-operational-badge ${roleClass}">
             ${escapeHTML(role)}
           </span>
@@ -24987,26 +26541,22 @@ function renderStopList(routeId) {
         role.toLowerCase() !== "regular" &&
         role.toLowerCase() !== "normal"
       ) {
-        rightBadges.push(`
+        const roleBadgeHTML = `
           <span class="stop-role ${roleClass}">
             ${escapeHTML(role)}
           </span>
-        `);
-      }
-      if (
-        physicalCount > 1 &&
-        physicalSummary.short
-      ) {
-        rightBadges.push(`
-          <span
-            class="stop-physical-count-badge"
-            title="${escapeHTML(physicalSummary.long)}"
-          >
-            ${escapeHTML(physicalSummary.short)}
-          </span>
-        `);
-      }
+        `;
 
+        if (
+          roleNormalized === "transit" ||
+          roleNormalized === "transit-terminus"
+        ) {
+          edgeBadges.push(roleBadgeHTML);
+        }
+        else {
+          leftBadges.push(roleBadgeHTML);
+        }
+      }
       /*
         Status Eksisting tidak perlu diulang di setiap baris.
         Rencana / Usulan / Gagasan ditampilkan agar halte khusus langsung terbaca.
@@ -25015,20 +26565,23 @@ function renderStopList(routeId) {
         getStopStatus(feature)
           .toLowerCase() !== "existing"
       ) {
-        rightBadges.push(`
+        leftBadges.push(`
           <span class="stop-status-badge ${getStopStatusClass(feature)}">
             ${escapeHTML(getStopStatusShort(feature))}
           </span>
         `);
       }
 
+      const totalBadgesCount =
+        leftBadges.length +
+        edgeBadges.length;
+
       const isComplexListRow =
-        rightBadges.length > 1 ||
-        visibleRouteIds.length > 2 ||
-        physicalCount > 1;
+        totalBadgesCount > 1 ||
+        visibleRouteIds.length > 2;
 
       const hasOnlyRoleBadge =
-        rightBadges.length === 1 &&
+        totalBadgesCount === 1 &&
         (role === "Transit" ||
           role === "Terminus" ||
           role === "Transit-Terminus" ||
@@ -25085,7 +26638,24 @@ function renderStopList(routeId) {
           </div>
 
           <span class="stop-list-badges">
-            ${rightBadges.join("")}
+            ${
+              leftBadges.length
+                ? `
+                  <span class="stop-list-badges-left">
+                    ${leftBadges.join("")}
+                  </span>
+                `
+                : ""
+            }
+            ${
+              edgeBadges.length
+                ? `
+                  <span class="stop-list-badges-right">
+                    ${edgeBadges.join("")}
+                  </span>
+                `
+                : ""
+            }
           </span>
 
         </div>
@@ -25425,6 +26995,14 @@ function selectStop(
       routeId
     );
 
+  const selectedTerms =
+    getTransitObjectTerms(
+      feature
+    );
+
+  const selectedObjectTermLower =
+    selectedTerms.singular.toLowerCase();
+
   const selectedOperationalNotice =
     operationalState.state === "not-served"
       ? `
@@ -25435,7 +27013,7 @@ function selectStop(
               routeId
             )
           )}
-          sementara tidak melayani titik ini selama
+          sementara tidak melayani ${escapeHTML(selectedObjectTermLower)} ini selama
           pengalihan operasional.
         </div>
       `
@@ -25460,18 +27038,13 @@ function selectStop(
                   routeId
                 )
               )}
-              melayani titik ini selama pengalihan operasional.
+              melayani ${escapeHTML(selectedObjectTermLower)} ini selama pengalihan operasional.
             </div>
           `
           : "";
 
   selectedStopInfoEl.hidden =
     false;
-
-  const selectedTerms =
-    getTransitObjectTerms(
-      feature
-    );
 
   const showSelectedRole =
     role &&
@@ -25559,15 +27132,6 @@ function selectStop(
             : ""
         }
 
-        ${
-          physicalCount > 1
-            ? `
-              <span class="selected-stop-meta-text">
-                ${escapeHTML(String(physicalCount))} lokasi fisik
-              </span>
-            `
-            : ""
-        }
       </div>
     </div>
 
@@ -25931,6 +27495,12 @@ function setMobileInfoOpen(open) {
         "mobile-info-open"
       );
 
+    infoButton
+      ?.setAttribute(
+        "aria-expanded",
+        "false"
+      );
+
     return;
   }
 
@@ -25941,7 +27511,14 @@ function setMobileInfoOpen(open) {
       Boolean(open)
     );
 
+  infoButton
+    ?.setAttribute(
+      "aria-expanded",
+      String(Boolean(open))
+    );
+
   if (open) {
+    dismissGlobalSearchForContextSwitch();
     /*
       Hanya satu bottom sheet aktif.
     */
@@ -25965,6 +27542,15 @@ function setMobileInfoOpen(open) {
 
     setBasemapPanelOpen(
       false
+    );
+
+    requestAnimationFrame(
+      () => {
+        mobileInfoClose
+          ?.focus({
+            preventScroll: true
+          });
+      }
     );
   }
 }
@@ -25997,6 +27583,18 @@ function syncPanelModeAfterResize() {
     );
 
   mobileFilterToggle
+    ?.setAttribute(
+      "aria-expanded",
+      "false"
+    );
+
+  mobileBottomRouteButton
+    ?.setAttribute(
+      "aria-expanded",
+      "false"
+    );
+
+  infoButton
     ?.setAttribute(
       "aria-expanded",
       "false"
@@ -26093,6 +27691,12 @@ function setMobileFilterOpen(open) {
         "false"
       );
 
+    mobileBottomRouteButton
+      ?.setAttribute(
+        "aria-expanded",
+        "false"
+      );
+
     return;
   }
 
@@ -26120,12 +27724,23 @@ function setMobileFilterOpen(open) {
     );
 
   if (open) {
+    dismissGlobalSearchForContextSwitch();
+
     setMobileInfoOpen(
       false
     );
 
     setBasemapPanelOpen(
       false
+    );
+
+    requestAnimationFrame(
+      () => {
+        mobileFilterClose
+          ?.focus({
+            preventScroll: true
+          });
+      }
     );
   }
 }
@@ -26215,10 +27830,10 @@ function getRouteFitPadding() {
   if (viewportWidth <= 760) {
     return {
       paddingTopLeft:
-        [18, 88],
+        [16, 72],
 
       paddingBottomRight:
-        [18, 74]
+        [16, 62]
     };
   }
 
@@ -26231,9 +27846,51 @@ function getRouteFitPadding() {
     panelEl
       ?.getBoundingClientRect();
 
-  const rightPanelRect =
+  const rightBodyRect =
     rightInfoPanel
+      ?.querySelector(
+        ".right-info-body"
+      )
       ?.getBoundingClientRect();
+
+  const globalSearchRect =
+    globalSearchPanel
+      ?.getBoundingClientRect();
+
+  const conceptMediumLayout =
+    viewportWidth >= 761 &&
+    viewportWidth < 1600 &&
+    document.getElementById("desktopUtilityRail");
+
+  const conceptLegendOpen =
+    document.body.classList.contains(
+      "concept-legend-open"
+    );
+
+  const conceptSearchOpen =
+    document.body.classList.contains(
+      "concept-search-open"
+    );
+
+  const rightObstructionRects =
+    conceptMediumLayout
+      ? [
+          conceptLegendOpen
+            ? rightBodyRect
+            : null,
+          conceptSearchOpen
+            ? globalSearchRect
+            : null
+        ].filter(Boolean)
+      : [
+          rightBodyRect,
+          globalSearchRect
+        ]
+          .filter(rect =>
+            rect &&
+            rect.width > 0 &&
+            rect.height > 0
+          );
 
   const leftPanelVisible =
     panelRect &&
@@ -26244,9 +27901,17 @@ function getRouteFitPadding() {
       );
 
   const rightPanelVisible =
-    Boolean(
-      rightPanelRect
-    );
+    rightObstructionRects.length > 0;
+
+  const rightObstructionLeft =
+    rightPanelVisible
+      ? Math.min(
+          ...rightObstructionRects
+            .map(rect =>
+              rect.left
+            )
+        )
+      : null;
 
   const leftPadding =
     leftPanelVisible
@@ -26255,7 +27920,7 @@ function getRouteFitPadding() {
           Math.ceil(
             panelRect.right -
             (mapRect?.left ?? 0) +
-            18
+            10
           )
         )
       : 45;
@@ -26266,18 +27931,80 @@ function getRouteFitPadding() {
           55,
           Math.ceil(
             (mapRect?.right ?? window.innerWidth) -
-            rightPanelRect.left +
-            18
+            rightObstructionLeft +
+            10
           )
         )
-      : 55;
+      : conceptMediumLayout
+        ? 82
+        : 55;
 
   return {
     paddingTopLeft:
-      [leftPadding, 38],
+      [leftPadding, 20],
 
     paddingBottomRight:
-      [rightPadding, 68]
+      [rightPadding, 28]
+  };
+}
+
+function getOverviewFitPadding() {
+  const base = getRouteFitPadding();
+
+  /*
+    Overview tidak membutuhkan ruang napas sebesar tampilan satu rute.
+    Panel kiri tetap sepenuhnya dihormati, sedangkan ruang kanan/vertikal
+    dirapatkan agar seluruh jaringan terasa sedikit lebih dekat tanpa
+    memotong endpoint geografisnya.
+  */
+  return {
+    paddingTopLeft: [
+      base.paddingTopLeft[0],
+      Math.min(base.paddingTopLeft[1], 12)
+    ],
+    paddingBottomRight: [
+      Math.max(48, base.paddingBottomRight[0] - 18),
+      Math.min(base.paddingBottomRight[1], 16)
+    ]
+  };
+}
+
+
+function getRouteFitTuning(bounds) {
+  if (!bounds?.isValid?.()) {
+    return { bounds, maxZoom: 17 };
+  }
+
+  const diagonalMeters =
+    map.distance(
+      bounds.getSouthWest(),
+      bounds.getNorthEast()
+    );
+
+  /*
+    Rute pendek tidak perlu di-zoom terlalu ekstrem. Rute menengah
+    dan panjang dibiarkan mengikuti fitBounds secara natural.
+    Padding geografis kecil memberi ruang napas untuk label endpoint.
+  */
+  let maxZoom = 17;
+  let padRatio = 0.045;
+
+  if (diagonalMeters < 1800) {
+    maxZoom = 16;
+    padRatio = 0.085;
+  }
+  else if (diagonalMeters < 4500) {
+    maxZoom = 16;
+    padRatio = 0.065;
+  }
+  else if (diagonalMeters < 10000) {
+    maxZoom = 17;
+    padRatio = 0.055;
+  }
+
+  return {
+    bounds: bounds.pad(padRatio),
+    maxZoom
   };
 }
 
@@ -26298,22 +28025,22 @@ function fitRouteToScreen(
   const padding =
     getRouteFitPadding();
 
+  const tuning =
+    getRouteFitTuning(
+      routeLayer.getBounds()
+    );
+
   map.fitBounds(
-    routeLayer.getBounds(),
+    tuning.bounds,
     {
       ...padding,
-
-      /*
-        Hindari zoom terlalu dekat pada rute yang sangat pendek,
-        tetapi tetap buat rute mengisi area layar.
-      */
-      maxZoom: 16,
+      maxZoom: tuning.maxZoom,
 
       animate,
 
       duration:
         animate
-          ? 0.55
+          ? 0.5
           : 0
     }
   );
@@ -26455,7 +28182,7 @@ function showAllRoutes(
     routeLayer.getBounds().isValid()
   ) {
     const padding =
-      getRouteFitPadding();
+      getOverviewFitPadding();
 
     map.fitBounds(
       routeLayer.getBounds(),
@@ -27030,10 +28757,19 @@ function updateBasemapPanelState() {
 
 function setBasemapPanelOpen(open) {
 
+  const wasFocusedInside =
+    Boolean(
+      basemapPanel &&
+      basemapPanel.contains(
+        document.activeElement
+      )
+    );
+
   if (
     open &&
     isMobileLayout()
   ) {
+    dismissGlobalSearchForContextSwitch();
     document.body
       .classList
       .remove(
@@ -27052,12 +28788,41 @@ function setBasemapPanelOpen(open) {
         "aria-expanded",
         "false"
       );
+
+    infoButton
+      ?.setAttribute(
+        "aria-expanded",
+        "false"
+      );
   }
 
   basemapPanel.hidden =
     !open;
 
+  basemapButton
+    ?.setAttribute(
+      "aria-expanded",
+      String(Boolean(open))
+    );
+
   updateBasemapPanelState();
+
+  if (open) {
+    requestAnimationFrame(
+      () => {
+        basemapClose
+          ?.focus({
+            preventScroll: true
+          });
+      }
+    );
+  }
+  else if (wasFocusedInside) {
+    basemapButton
+      ?.focus({
+        preventScroll: true
+      });
+  }
 }
 
 
@@ -27991,9 +29756,8 @@ async function loadData() {
     );
 
     /*
-      Informasi & Disclaimer dan Cara Menggunakan selalu
-      muncul lagi pada setiap page load / reload / buka ulang
-      tab. Tidak bergantung pada localStorage.
+      Informasi & Disclaimer / Cara Menggunakan hanya muncul
+      selama user belum menyelesaikan tahap onboarding terkait.
     */
     setTimeout(
       () => {
@@ -28056,16 +29820,15 @@ restoreRouteDetailCollapseState();
 );
 
 /* =========================================================
-   WEBGIS GAGASAN WEBGIS PUBLIC LABEL — v0.7
+   WEBGIS SKENARIO PUBLIC LABEL — v0.16
    UI-only compatibility patch.
-   Internal data values remain Conceptual/Konseptual/Gagasan.
+   Internal data values remain compatible with Conceptual/Konseptual/Gagasan/Skenario.
    ========================================================= */
 (() => {
   "use strict";
 
-  const PUBLIC_LABEL = "Gagasan WebGIS";
+  const PUBLIC_LABEL = "Skenario";
   const EXPLORATION_LABEL = "Eksplorasi WebGIS";
-  const DISCLAIMER = "Skenario eksplorasi yang disusun untuk WebGIS ini; bukan rencana resmi pemerintah/operator.";
 
   function replaceVisibleText(root) {
     if (!root) return;
@@ -28080,43 +29843,28 @@ restoreRouteDetailCollapseState();
       const parent = node.parentElement;
       if (!parent || parent.closest("script,style,noscript,template")) continue;
       const current = node.nodeValue || "";
-      const next = current.replace(/\bGagasan\b(?!\s+WebGIS)/g, PUBLIC_LABEL);
+      const next = current
+        .replace(/\bGagasan WebGIS\b/g, PUBLIC_LABEL)
+        .replace(/\bGagasan\b(?!\s+WebGIS)/g, PUBLIC_LABEL)
+        .replace(/\bKonseptual\b/g, PUBLIC_LABEL);
       if (next !== current) node.nodeValue = next;
     }
   }
 
   function addPopupDisclaimer(root) {
+    /*
+      v0.16: definisi umum status Skenario sudah dijelaskan di panel
+      "Tentang Peta". Popup halte/stasiun hanya menampilkan alasan
+      spesifik melalui blok "Alasan Skenario" bila tersedia.
+
+      Hapus juga node legacy bila popup pernah dirender oleh build lama
+      atau MutationObserver menemukannya kembali.
+    */
     const scope = root?.querySelectorAll ? root : document;
-    const popups = [];
-    if (root?.matches?.(".leaflet-popup-content,.stop-popup,.route-popup")) popups.push(root);
-    popups.push(...scope.querySelectorAll?.(".leaflet-popup-content,.stop-popup,.route-popup") || []);
-
-    for (const popup of new Set(popups)) {
-      if (popup.querySelector(".webgis-concept-note")) continue;
-
-      /*
-        Jangan membuat disclaimer besar hanya karena ada integrasi
-        berstatus Gagasan WebGIS. Untuk kasus tersebut penjelasan
-        melekat langsung pada badge status integrasi.
-      */
-      const nonIntegrationClone = popup.cloneNode(true);
-      nonIntegrationClone
-        .querySelectorAll?.(".stop-popup-section--integration")
-        .forEach(section => section.remove());
-
-      const primaryText = nonIntegrationClone.textContent || "";
-      if (!primaryText.includes(PUBLIC_LABEL)) continue;
-
-      const note = document.createElement("div");
-      note.className = "webgis-concept-note";
-      note.textContent = DISCLAIMER;
-
-      const sourceSection = popup.querySelector(
-        ".stop-popup-section--source,.stop-popup-source,.route-popup-source,[class*=source]"
-      );
-      if (sourceSection?.parentNode) sourceSection.parentNode.insertBefore(note, sourceSection);
-      else popup.appendChild(note);
-    }
+    const notes = [];
+    if (root?.matches?.(".webgis-concept-note")) notes.push(root);
+    notes.push(...(scope.querySelectorAll?.(".webgis-concept-note") || []));
+    for (const note of new Set(notes)) note.remove();
   }
 
   function ensureExplorationLegend() {
@@ -28198,11 +29946,11 @@ restoreRouteDetailCollapseState();
 (() => {
   "use strict";
 
-  const STATUS_RE = /^(.*?)(?:\s*\((Dalam Pembangunan|Rencana|Usulan|Gagasan(?: WebGIS)?|Konseptual|Conceptual|Nonaktif)\))\s*$/i;
+  const STATUS_RE = /^(.*?)(?:\s*\((Dalam Pembangunan|Rencana|Usulan|Skenario(?: WebGIS)?|Gagasan(?: WebGIS)?|Konseptual|Conceptual|Nonaktif)\))\s*$/i;
 
   function normalizeStatusLabel(value) {
     const v = (value || "").trim();
-    if (/^(Gagasan|Konseptual|Conceptual)(?: WebGIS)?$/i.test(v)) return "Gagasan WebGIS";
+    if (/^(Skenario|Gagasan|Konseptual|Conceptual)(?: WebGIS)?$/i.test(v)) return "Skenario";
     return v;
   }
 
@@ -28262,7 +30010,7 @@ restoreRouteDetailCollapseState();
 
   function normalizePlaceName(value) {
     return String(value ?? "")
-      .replace(/\b(Dalam Pembangunan|Rencana|Usulan|Gagasan(?: WebGIS)?|Konseptual|Conceptual|Nonaktif)\b/gi, "")
+      .replace(/\b(Dalam Pembangunan|Rencana|Usulan|Skenario(?: WebGIS)?|Gagasan(?: WebGIS)?|Konseptual|Conceptual|Nonaktif)\b/gi, "")
       .replace(/^(Halte|Stasiun|Terminal)\s+/i, "")
       .replace(/\s+/g, " ")
       .trim()
@@ -28599,7 +30347,7 @@ restoreRouteDetailCollapseState();
         .querySelectorAll?.(".stop-popup-section--integration,.webgis-concept-note")
         .forEach(node => node.remove());
 
-      if (!(clone.textContent || "").includes("Gagasan WebGIS")) {
+      if (!(clone.textContent || "").includes("Skenario")) {
         note.remove();
       }
     }
@@ -28665,3 +30413,66 @@ restoreRouteDetailCollapseState();
   });
 })();
 
+
+
+/* =========================================================
+   V0.16 — RESPONSIVE LEGEND COMPACTION (14 SEP 2026)
+   Pada desktop menengah, bagian legenda dimulai dalam kondisi
+   tertutup agar area peta tidak terasa terjepit. Setelah user
+   membuka/menutup sendiri, pilihan user tidak ditimpa resize.
+   ========================================================= */
+const mediumDesktopLegendQuery = window.matchMedia(
+  "(min-width: 761px) and (max-width: 1439px)"
+);
+
+let isApplyingResponsiveLegendState = false;
+
+function applyResponsiveLegendDefault() {
+  if (isMobileLayout()) {
+    return;
+  }
+
+  const sections = document.querySelectorAll(
+    "details.legend-collapsible-section"
+  );
+
+  isApplyingResponsiveLegendState = true;
+
+  sections.forEach(details => {
+    if (details.dataset.userLegendChoice === "true") {
+      return;
+    }
+
+    const sectionName = details.dataset.legendSection || "";
+
+    if (mediumDesktopLegendQuery.matches) {
+      details.open = false;
+    } else {
+      /* Desktop lebar: Status Jaringan terbuka sebagai konteks
+         utama; bagian lain tetap compact sampai dibutuhkan. */
+      details.open = sectionName === "status";
+    }
+  });
+
+  requestAnimationFrame(() => {
+    isApplyingResponsiveLegendState = false;
+    layoutDesktopRightCards();
+  });
+}
+
+document
+  .querySelectorAll("details.legend-collapsible-section")
+  .forEach(details => {
+    details.addEventListener("toggle", () => {
+      if (!isApplyingResponsiveLegendState) {
+        details.dataset.userLegendChoice = "true";
+      }
+    });
+  });
+
+mediumDesktopLegendQuery.addEventListener?.(
+  "change",
+  applyResponsiveLegendDefault
+);
+
+requestAnimationFrame(applyResponsiveLegendDefault);

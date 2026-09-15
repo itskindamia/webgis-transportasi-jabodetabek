@@ -12,11 +12,11 @@ Paket ini adalah versi lengkap WebGIS statis untuk GitHub Pages. Salin seluruh i
 - Pedoman lengkap: `docs/RAIL_SCHEMA_V2.md`.
 
 
-- Label **Eksplorasi WebGIS** pada legenda Status Jaringan sekarang hanya mengelompokkan **Gagasan WebGIS**.
+- Label **Eksplorasi WebGIS** pada legenda Status Jaringan sekarang hanya mengelompokkan **Skenario**.
 - Resolver integrasi menerima **KAJJ** dan **KAI_KAJJ** sebagai KA Jarak Jauh secara langsung.
 - Fallback font mempertahankan **Avenir Next Local** sebagai pilihan pertama ketika tersedia pada sistem pengguna.
 - Popup stasiun rail menampilkan `STN_CODE` sebagai metadata kecil **Kode stasiun · XXX**, bukan bagian dari judul utama.
-- **Tidak ada perubahan feature GeoJSON eksisting pada v0.16.**
+- Build 14 September 2026 melakukan hardening GeoJSON terukur: normalisasi identitas BRT, sequence koridor yang terdeteksi bermasalah, dan referensi integrasi yang stale.
 
 ## Menjalankan dan menguji
 
@@ -52,7 +52,7 @@ node --check js/map.js
 
 ## Batasan data yang masih terbuka
 
-Rilis v0.16 tidak memodifikasi feature GeoJSON eksisting. Karena itu beberapa catatan masih dapat muncul, antara lain migrasi schema BRT yang belum merata, dua konflik sequence navigasi BRT, cabang Lin Cibubur yang belum lengkap, dan `SRC_URL` rail yang masih kosong.
+Audit navigasi lulus. Untuk review scoped K1–K10 + rail, pemeriksaan identitas, sequence, route geometry, dan pointer integrasi lulus; audit runtime global masih dapat melaporkan kelengkapan schema/geometri legacy K11–K19 yang memang berada di luar scope build ini. Pekerjaan lanjutan utama tetap kelengkapan `SRC_URL` BRT dan migrasi directional koridor legacy.
 
 ## Batas penggunaan
 

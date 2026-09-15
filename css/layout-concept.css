@@ -1,0 +1,710 @@
+/* =========================================================
+   WEBGIS LAYOUT CONCEPT — Adaptive Workspace
+   Prototype visual only; network/data logic is unchanged.
+   ========================================================= */
+
+:root {
+  --concept-left-wide: 304px;
+  --concept-right-wide: 312px;
+  --concept-left-medium: 292px;
+  --concept-utility: 48px;
+  --concept-gap: 10px;
+  --concept-edge: 16px;
+  --concept-radius: 12px;
+  --concept-surface: rgba(255,255,255,.965);
+  --concept-border: rgba(31,41,55,.10);
+  --concept-shadow: 0 7px 24px rgba(15,23,42,.13), 0 1px 4px rgba(15,23,42,.08);
+}
+
+/* Unified left workspace on desktop */
+@media (min-width: 761px) {
+  body .filter-panel {
+    top: var(--concept-edge) !important;
+    left: var(--concept-edge) !important;
+    width: var(--concept-left-medium) !important;
+    max-height: calc(100vh - (var(--concept-edge) * 2)) !important;
+    background: var(--concept-surface) !important;
+    border: 1px solid var(--concept-border) !important;
+    border-radius: var(--concept-radius) !important;
+    box-shadow: var(--concept-shadow) !important;
+    overflow: hidden !important;
+  }
+
+  body .filter-panel-content {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body .filter-controls-card,
+  body .route-detail-card {
+    width: 100% !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  body .filter-controls-card {
+    padding: 14px 14px 10px !important;
+    border-bottom: 1px solid #e8ebef !important;
+  }
+
+  body .route-detail-card {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    padding: 12px 14px 14px !important;
+    overflow-y: auto !important;
+  }
+
+  body .left-panel-collapse {
+    left: calc(var(--concept-edge) + var(--concept-left-medium) + 8px) !important;
+    top: 24px !important;
+    width: 32px !important;
+    height: 44px !important;
+    border-radius: 9px !important;
+    box-shadow: 0 4px 14px rgba(15,23,42,.12) !important;
+  }
+
+  body .left-panel-restore {
+    left: var(--concept-edge) !important;
+    top: 24px !important;
+    width: 34px !important;
+    height: 44px !important;
+    border-radius: 9px !important;
+  }
+
+  body.left-panel-collapsed .left-panel-restore {
+    left: var(--concept-edge) !important;
+  }
+
+  body .form-field select {
+    min-height: 38px !important;
+    border-radius: 8px !important;
+  }
+
+  body .right-info-header,
+  body .global-search-panel,
+  body .right-info-body {
+    border-radius: var(--concept-radius) !important;
+    box-shadow: var(--concept-shadow) !important;
+  }
+
+  body .right-info-header h1 {
+    font-size: 16.5px !important;
+    line-height: 1.18 !important;
+    font-weight: 680 !important;
+    letter-spacing: -.18px !important;
+  }
+}
+
+/* Wide desktop: two light side workspaces, map remains dominant */
+@media (min-width: 1600px) {
+  body .filter-panel {
+    width: var(--concept-left-wide) !important;
+  }
+  body .left-panel-collapse {
+    left: calc(var(--concept-edge) + var(--concept-left-wide) + 8px) !important;
+  }
+
+  body .right-info-panel {
+    top: var(--concept-edge) !important;
+    right: var(--concept-edge) !important;
+    width: var(--concept-right-wide) !important;
+  }
+
+  body .right-info-header {
+    width: var(--concept-right-wide) !important;
+    padding: 13px 15px 12px !important;
+  }
+
+  body .right-info-header h1 {
+    white-space: normal !important;
+  }
+
+  body .global-search-panel {
+    right: var(--concept-edge) !important;
+    width: var(--concept-right-wide) !important;
+  }
+
+  body .right-info-body {
+    width: var(--concept-right-wide) !important;
+    margin-left: 0 !important;
+    max-height: calc(100vh - 235px) !important;
+  }
+
+  body .lower-right-nav-stack {
+    right: calc(var(--concept-edge) + var(--concept-right-wide) + 12px) !important;
+  }
+
+  body .bottom-toolbar {
+    right: var(--concept-edge) !important;
+  }
+
+  #desktopUtilityRail {
+    display: none !important;
+  }
+}
+
+/* Medium desktop/laptop: right side becomes a utility rail + flyout */
+@media (min-width: 761px) and (max-width: 1599px) {
+  body .right-info-panel {
+    top: var(--concept-edge) !important;
+    right: var(--concept-edge) !important;
+    width: 300px !important;
+    pointer-events: none !important;
+  }
+
+  body .right-info-header {
+    width: 300px !important;
+    padding: 12px 14px 11px !important;
+    pointer-events: auto !important;
+  }
+
+  body .right-info-header h1 {
+    white-space: normal !important;
+  }
+
+  body .right-info-body {
+    position: fixed !important;
+    top: 76px !important;
+    right: calc(var(--concept-edge) + var(--concept-utility) + 10px) !important;
+    width: 304px !important;
+    max-height: calc(100vh - 150px) !important;
+    margin: 0 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateX(8px) scale(.985) !important;
+    pointer-events: none !important;
+    transition: opacity .16s ease, transform .16s ease, visibility .16s ease !important;
+    z-index: 1900 !important;
+  }
+
+  body.concept-legend-open .right-info-body {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateX(0) scale(1) !important;
+    pointer-events: auto !important;
+  }
+
+  body .global-search-panel {
+    position: fixed !important;
+    top: 76px !important;
+    right: calc(var(--concept-edge) + var(--concept-utility) + 10px) !important;
+    width: 304px !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateX(8px) scale(.985) !important;
+    pointer-events: none !important;
+    transition: opacity .16s ease, transform .16s ease, visibility .16s ease !important;
+    z-index: 1910 !important;
+  }
+
+  body.concept-search-open .global-search-panel {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateX(0) scale(1) !important;
+    pointer-events: auto !important;
+  }
+
+  #desktopUtilityRail {
+    position: fixed;
+    top: 76px;
+    right: var(--concept-edge);
+    width: var(--concept-utility);
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: rgba(255,255,255,.96);
+    border: 1px solid var(--concept-border);
+    border-radius: 12px;
+    box-shadow: var(--concept-shadow);
+    z-index: 1920;
+  }
+
+  #desktopUtilityRail button {
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #4b5563;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+
+  #desktopUtilityRail button:hover,
+  #desktopUtilityRail button[aria-pressed="true"] {
+    background: #eef2f6;
+    color: #111827;
+  }
+
+  #desktopUtilityRail svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  body .lower-right-nav-stack {
+    right: calc(var(--concept-edge) + var(--concept-utility) + 10px) !important;
+  }
+
+  body .bottom-toolbar {
+    right: var(--concept-edge) !important;
+  }
+}
+
+/* Compact title on smaller laptops */
+@media (min-width: 761px) and (max-width: 1199px) {
+  body .right-info-header {
+    display: none !important;
+  }
+
+  #desktopUtilityRail {
+    top: var(--concept-edge);
+  }
+
+  body .right-info-body,
+  body .global-search-panel {
+    top: var(--concept-edge) !important;
+  }
+}
+
+/* Selected route: keep contextual legend quiet until requested. */
+@media (min-width: 1600px) {
+  body.concept-route-selected .right-info-body {
+    max-height: 300px !important;
+  }
+}
+
+/* Mobile keeps the hardened bottom-sheet layout unchanged. */
+@media (max-width: 760px) {
+  #desktopUtilityRail {
+    display: none !important;
+  }
+}
+
+/* =========================================================
+   LAYOUT CONCEPT V2 — context-adaptive refinement
+   2026-09-15
+   ========================================================= */
+
+@media (min-width: 761px) {
+  /* Overview: the left workspace should stop where its content stops. */
+  body:not(.concept-route-selected) .filter-panel {
+    bottom: auto !important;
+    height: auto !important;
+    max-height: calc(100vh - (var(--concept-edge) * 2)) !important;
+  }
+
+  body:not(.concept-route-selected) .filter-panel-content {
+    height: auto !important;
+    min-height: 0 !important;
+    flex: 0 0 auto !important;
+    overflow: visible !important;
+  }
+
+  body:not(.concept-route-selected) .route-detail-card,
+  body:not(.concept-route-selected) .route-detail-card.is-overview {
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Selected route: turn the same sidebar into a full-height workspace. */
+  body.concept-route-selected .filter-panel {
+    top: var(--concept-edge) !important;
+    bottom: 12px !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  body.concept-route-selected .filter-panel-content {
+    height: 100% !important;
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+  body.concept-route-selected .route-detail-card {
+    min-height: 0 !important;
+    flex: 1 1 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.concept-route-selected .route-detail-body {
+    min-height: 0 !important;
+  }
+
+  /* Make the desktop collapse handle visually attached to the workspace. */
+  body .left-panel-collapse {
+    left: calc(var(--concept-edge) + var(--concept-left-medium) - 1px) !important;
+    top: 26px !important;
+    width: 30px !important;
+    height: 42px !important;
+    border-radius: 0 9px 9px 0 !important;
+    border-left-color: transparent !important;
+    box-shadow: 4px 4px 12px rgba(15,23,42,.10) !important;
+  }
+
+  body .left-panel-restore {
+    top: 26px !important;
+    width: 32px !important;
+    height: 42px !important;
+    border-radius: 0 9px 9px 0 !important;
+  }
+
+  /* Overview network: visually quieter; selected route returns to native styling. */
+  body:not(.concept-route-selected) #map .leaflet-overlay-pane path.leaflet-interactive {
+    stroke-width: 3.15px !important;
+    stroke-opacity: .84 !important;
+    transition: stroke-width .16s ease, stroke-opacity .16s ease !important;
+  }
+
+  body.concept-route-selected #map .leaflet-overlay-pane path.leaflet-interactive {
+    transition: stroke-width .16s ease, stroke-opacity .16s ease !important;
+  }
+
+  /* Compact app identity; it should read as a header, not a banner. */
+  body .right-info-header {
+    min-height: 0 !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+
+  body .right-info-header h1 {
+    font-size: 16px !important;
+    line-height: 1.16 !important;
+  }
+}
+
+@media (min-width: 1600px) {
+  body .left-panel-collapse {
+    left: calc(var(--concept-edge) + var(--concept-left-wide) - 1px) !important;
+  }
+
+  /* Wide desktop keeps the secondary side lightweight. */
+  body .right-info-header,
+  body .global-search-panel,
+  body .right-info-body {
+    width: 304px !important;
+  }
+
+  body .right-info-panel {
+    width: 304px !important;
+  }
+
+  body .lower-right-nav-stack {
+    right: calc(var(--concept-edge) + 304px + 12px) !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1599px) {
+  #desktopUtilityRail {
+    padding: 5px !important;
+    gap: 4px !important;
+  }
+
+  #desktopUtilityRail button {
+    position: relative;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 9px !important;
+    transition: background .15s ease, color .15s ease, transform .15s ease !important;
+  }
+
+  #desktopUtilityRail button:hover {
+    transform: translateY(-1px);
+  }
+
+  #desktopUtilityRail button[aria-pressed="true"]::before {
+    content: "";
+    position: absolute;
+    left: -5px;
+    top: 9px;
+    width: 3px;
+    height: 20px;
+    border-radius: 0 3px 3px 0;
+    background: currentColor;
+    opacity: .82;
+  }
+
+  #desktopUtilityRail button::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    right: calc(100% + 9px);
+    top: 50%;
+    transform: translateY(-50%) translateX(3px);
+    white-space: nowrap;
+    padding: 6px 8px;
+    border-radius: 7px;
+    background: rgba(17,24,39,.92);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .12s ease, transform .12s ease, visibility .12s ease;
+    box-shadow: 0 5px 14px rgba(15,23,42,.14);
+  }
+
+  #desktopUtilityRail button:hover::after,
+  #desktopUtilityRail button:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(0);
+  }
+
+  /* Flyouts align as one utility system with the rail. */
+  body .right-info-body,
+  body .global-search-panel {
+    right: calc(var(--concept-edge) + var(--concept-utility) + 8px) !important;
+    width: 300px !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1199px) {
+  /* At smaller laptop widths the identity header gives way to map space. */
+  body .right-info-header {
+    display: none !important;
+  }
+}
+
+/* =========================================================
+   REFINEMENT V3 — 15 Sep 2026
+   - Hapus tombol Info dari toolbar bawah
+   - Samakan ritme kartu meta rute
+   - Samakan tipografi nilai Moda/Status dengan statistik
+   ========================================================= */
+.bottom-toolbar .info-button {
+  display: none !important;
+}
+
+.route-primary-meta-grid,
+.route-summary-grid {
+  gap: 5px !important;
+}
+
+.route-primary-meta-grid {
+  margin-top: 5px !important;
+}
+
+.route-primary-meta-grid + .route-summary-grid,
+.route-meta-secondary + .route-summary-grid,
+.route-summary-grid + .route-summary-grid {
+  margin-top: 5px !important;
+}
+
+.route-primary-meta-grid .route-primary-meta-item,
+.route-summary-grid .route-summary-item {
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.route-primary-meta-grid .route-primary-meta-item span,
+.route-summary-grid .route-summary-item span {
+  font-size: 9.5px !important;
+  line-height: 1.05 !important;
+}
+
+.route-primary-meta-grid .route-primary-meta-item strong,
+.route-summary-grid .route-summary-item strong {
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.05 !important;
+}
+
+/* =========================================================
+   REFINEMENT V4 — FINAL LAYOUT POLISH — 15 Sep 2026
+   Panel kiri lebih efisien, utility rail lebih ringan.
+   ========================================================= */
+@media (min-width: 761px) {
+  :root {
+    --concept-left-medium: 300px;
+    --concept-utility: 46px;
+  }
+
+  body .filter-controls-card {
+    padding: 12px 14px 9px !important;
+  }
+
+  body .filter-panel .form-field select {
+    min-height: 34px !important;
+    height: 34px !important;
+  }
+
+  body.concept-route-selected .route-detail-card {
+    padding: 10px 14px 12px !important;
+  }
+
+  body.concept-route-selected .route-detail-toggle {
+    margin-bottom: 8px !important;
+  }
+
+  /* Beri sedikit lebih banyak ruang ke daftar halte tanpa
+     mengecilkan judul atau metadata utama rute. */
+  body.concept-route-selected .route-detail-card:not(.is-overview)
+    .route-info h2 {
+    margin-bottom: 6px !important;
+  }
+
+  body.concept-route-selected .route-primary-meta-grid,
+  body.concept-route-selected .route-summary-grid {
+    margin-top: 4px !important;
+  }
+
+  body.concept-route-selected .route-primary-meta-grid + .route-summary-grid,
+  body.concept-route-selected .route-meta-secondary + .route-summary-grid,
+  body.concept-route-selected .route-summary-grid + .route-summary-grid {
+    margin-top: 4px !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1599px) {
+  #desktopUtilityRail {
+    width: var(--concept-utility) !important;
+    padding: 4px !important;
+    gap: 3px !important;
+    border-radius: 11px !important;
+    box-shadow: 0 6px 18px rgba(15,23,42,.11), 0 1px 3px rgba(15,23,42,.07) !important;
+  }
+
+  #desktopUtilityRail button {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+  }
+
+  #desktopUtilityRail svg {
+    width: 17px !important;
+    height: 17px !important;
+  }
+
+  body .right-info-body,
+  body .global-search-panel {
+    right: calc(var(--concept-edge) + var(--concept-utility) + 8px) !important;
+    width: 296px !important;
+  }
+
+  body .lower-right-nav-stack {
+    right: calc(var(--concept-edge) + var(--concept-utility) + 8px) !important;
+  }
+}
+
+@media (min-width: 1600px) {
+  :root {
+    --concept-left-wide: 304px;
+  }
+}
+
+/* =========================================================
+   REFINEMENT V5 — LAYOUT MICRO-POLISH — 15 Sep 2026
+   1) Handle kiri menyatu dengan workspace.
+   2) Header kanan + utility rail satu alignment/system.
+   3) Overview fit memakai ruang peta lebih efisien.
+   ========================================================= */
+@media (min-width: 761px) {
+  /* Handle menjadi tab tipis yang benar-benar menempel pada panel. */
+  body .left-panel-collapse {
+    left: calc(var(--concept-edge) + var(--concept-left-medium) - 1px) !important;
+    top: 27px !important;
+    width: 24px !important;
+    height: 38px !important;
+    border-left: 0 !important;
+    border-radius: 0 7px 7px 0 !important;
+    box-shadow: 3px 2px 8px rgba(15,23,42,.08) !important;
+    font-size: 18px !important;
+    color: #59616a !important;
+  }
+
+  body .left-panel-collapse:hover {
+    transform: translateX(1px) !important;
+    background: #f8f9fa !important;
+  }
+
+  body .left-panel-restore {
+    left: var(--concept-edge) !important;
+    top: 27px !important;
+    width: 24px !important;
+    height: 38px !important;
+    border-left: 0 !important;
+    border-radius: 0 7px 7px 0 !important;
+    box-shadow: 3px 2px 8px rgba(15,23,42,.08) !important;
+    font-size: 18px !important;
+    color: #59616a !important;
+  }
+
+  /* App identity dibuat sedikit lebih tenang tanpa mengecilkan keterbacaan. */
+  body .right-info-header {
+    border-radius: 12px !important;
+    box-shadow: 0 5px 16px rgba(15,23,42,.10), 0 1px 3px rgba(15,23,42,.06) !important;
+  }
+
+  body .right-info-header h1 {
+    font-size: 16px !important;
+    line-height: 1.15 !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1599px) {
+  :root {
+    --concept-utility: 44px;
+  }
+
+  body .right-info-panel {
+    right: var(--concept-edge) !important;
+    width: 300px !important;
+  }
+
+  body .right-info-header {
+    right: 0 !important;
+    width: 300px !important;
+    padding: 10px 14px !important;
+  }
+
+  /* Beri satu gap visual yang konsisten antara header dan utility rail. */
+  #desktopUtilityRail {
+    top: 82px !important;
+    right: var(--concept-edge) !important;
+    width: var(--concept-utility) !important;
+    padding: 4px !important;
+    gap: 2px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 5px 16px rgba(15,23,42,.10), 0 1px 3px rgba(15,23,42,.06) !important;
+  }
+
+  #desktopUtilityRail button {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+  }
+
+  #desktopUtilityRail button[aria-pressed="true"]::before {
+    left: -4px !important;
+    top: 9px !important;
+    height: 18px !important;
+  }
+
+  /* Search/legend flyout sejajar dengan sisi kiri utility rail. */
+  body .right-info-body,
+  body .global-search-panel {
+    top: 82px !important;
+    right: calc(var(--concept-edge) + var(--concept-utility) + 8px) !important;
+    width: 296px !important;
+  }
+}
+
+@media (min-width: 1600px) {
+  body .left-panel-collapse {
+    left: calc(var(--concept-edge) + var(--concept-left-wide) - 1px) !important;
+  }
+}
