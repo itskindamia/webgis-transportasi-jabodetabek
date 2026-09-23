@@ -708,3 +708,67 @@
     left: calc(var(--concept-edge) + var(--concept-left-wide) - 1px) !important;
   }
 }
+
+/* =========================================================
+   V6 — REPEATING STARTUP TOUR
+   Tutorial muncul sekali setiap page load sebagai pengingat.
+   Tetap ringan: tombol Lewati selalu terlihat dan animasi
+   menghormati prefers-reduced-motion dari style utama.
+   ========================================================= */
+.product-tour-progress {
+  max-width: 100%;
+  white-space: normal;
+}
+
+/* =========================================================
+   V7 — GUIDED TOUR FINAL HARDENING — 15 Sep 2026
+   - Tip 2 pulse hanya dua kali lalu stabil.
+   - Tip 4 badge focus finite + popup tetap stabil (JS autoPan off).
+   - Tip 5 memakai panel Search asli; mock visual disembunyikan.
+   ========================================================= */
+body.product-tour-route-badges-step
+  .stop-popup-direct-routes.product-tour-badges-focus {
+  animation-iteration-count: 2 !important;
+  animation-fill-mode: forwards !important;
+}
+
+body.product-tour-route-badges-step
+  .leaflet-popup-content-wrapper {
+  transition: opacity .18s ease !important;
+}
+
+body.product-tour-search-step
+  #globalSearchPanel {
+  z-index: 6998 !important;
+}
+
+.product-tour-visual[hidden] {
+  display: none !important;
+}
+
+/* =========================================================
+   V8 — TIP 5 SEARCH LAUNCHER → SEARCH PANEL
+   Spotlight lebih dulu menunjuk ikon Find/Search, lalu Search
+   asli dibuka otomatis. Pulse dibatasi dua siklus agar tetap tenang.
+   ========================================================= */
+#desktopUtilityRail [data-concept="search"].product-tour-search-launcher-focus {
+  animation: product-tour-search-launcher-pulse .72s ease-out 2;
+  z-index: 7000 !important;
+}
+
+@keyframes product-tour-search-launcher-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(20, 135, 205, 0);
+  }
+  45% {
+    box-shadow: 0 0 0 6px rgba(20, 135, 205, .22);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #desktopUtilityRail [data-concept="search"].product-tour-search-launcher-focus {
+    animation: none !important;
+    outline: 2px solid rgba(20, 135, 205, .72) !important;
+    outline-offset: 2px !important;
+  }
+}

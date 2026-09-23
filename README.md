@@ -1,3 +1,10 @@
+## V9 — Bagian 1 Final: Onboarding & Tutorial
+
+- Tip 3 sekarang memprioritaskan halte yang sama dengan demo peta (Monumen Nasional) dan otomatis menggulir daftar hingga target terlihat. Bila rute aktif tidak melayani Monumen Nasional, tutorial mengikuti baris nyata pada rute tersebut sehingga tidak memberi contoh halte palsu.
+- Visual mini Tip 3 mengikuti nama, sequence, dan badge baris yang benar-benar disorot.
+- State sebelum tutorial dipulihkan lebih lengkap: center/zoom, filter/rute/arah, popup, panel/flyout, query Search, posisi scroll daftar/panel, dan URL direct-link.
+- Tip 5 tetap memakai alur ikon Cari Lokasi → panel Search asli.
+
 # Jaringan Transportasi Umum Jabodetabek
 
 WebGIS statis untuk eksplorasi jaringan transportasi umum Jabodetabek, termasuk BRT dan jaringan rel, halte/stasiun, status jaringan, serta integrasi antarmoda.

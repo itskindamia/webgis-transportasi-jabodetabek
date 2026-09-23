@@ -1311,6 +1311,15 @@ let productTourManual = false;
   State ini hanya hidup selama product tour.
 */
 let productTourInitialMapView = null;
+
+/*
+  Snapshot UI sebelum guided tour dimulai.
+  Ini menjaga tutorial tetap non-destruktif: setelah Lewati /
+  Mulai Jelajahi, panel/flyout dan konteks yang sudah dibuka user
+  dikembalikan seperti sebelum tour.
+*/
+let productTourInitialUiState = null;
+
 let productTourDemoStopFeature = null;
 let productTourDemoMarker = null;
 let productTourDemoPulse = null;
@@ -1330,6 +1339,14 @@ let productTourDemoPulseAnimationId = null;
 let productTourStopHighlightPhase = "map";
 let productTourStopHighlightTimerId = null;
 let productTourInjectedListDemo = false;
+
+/*
+  Tip 5 memakai dua fase:
+  1. sorot ikon Cari Lokasi di utility rail;
+  2. buka panel Search asli lalu pindahkan spotlight ke kotak pencarian.
+*/
+let productTourSearchPhase = "launcher";
+let productTourSearchRevealTimerId = null;
 
 let lastResponsiveIsMobile =
   window.matchMedia(
@@ -10866,11 +10883,494 @@ const PRODUCT_TOUR_STEPS = [
   {
     title: "Cari tujuan",
     text:
-      "Gunakan Cari Lokasi untuk menemukan halte, stasiun, atau tempat dari satu kotak pencarian.",
+      "Mulai dari ikon Cari Lokasi di kanan. Ikon ini akan membuka kotak pencarian untuk halte, stasiun, koridor, atau tempat.",
     target: "global-search",
     visual: "search"
   }
 ];
+
+
+
+function syncProductTourUtilityButtons() {
+  const rail =
+    document.getElementById(
+      "desktopUtilityRail"
+    );
+
+  rail
+    ?.querySelector(
+      '[data-concept="search"]'
+    )
+    ?.setAttribute(
+      "aria-pressed",
+      String(
+        document.body.classList.contains(
+          "concept-search-open"
+        )
+      )
+    );
+
+  rail
+    ?.querySelector(
+      '[data-concept="legend"]'
+    )
+    ?.setAttribute(
+      "aria-pressed",
+      String(
+        document.body.classList.contains(
+          "concept-legend-open"
+        )
+      )
+    );
+}
+
+
+function captureProductTourInitialUiState() {
+  const routeId =
+    String(
+      currentSelectedRouteId
+      ||
+      (
+        routeSelect?.value !== "ALL"
+          ? routeSelect?.value
+          : ""
+      )
+      || ""
+    );
+
+  const selectedMarker =
+    currentSelectedStopKey
+      ? stopMarkerByKey.get(
+          String(currentSelectedStopKey)
+        )
+      : null;
+
+  return {
+    leftCollapsed:
+      document.body.classList.contains(
+        "left-panel-collapsed"
+      ),
+
+    mobileFilterOpen:
+      document.body.classList.contains(
+        "mobile-filter-open"
+      ),
+
+    mobileInfoOpen:
+      document.body.classList.contains(
+        "mobile-info-open"
+      ),
+
+    basemapPanelOpen:
+      Boolean(
+        basemapPanel &&
+        !basemapPanel.hidden
+      ),
+
+    conceptSearchOpen:
+      document.body.classList.contains(
+        "concept-search-open"
+      ),
+
+    conceptLegendOpen:
+      document.body.classList.contains(
+        "concept-legend-open"
+      ),
+
+    mode:
+      String(
+        modeSelect?.value ?? "ALL"
+      ),
+
+    status:
+      String(
+        statusSelect?.value ?? "Existing"
+      ),
+
+    routeId,
+
+    routeSelectValue:
+      String(
+        routeSelect?.value ?? "ALL"
+      ),
+
+    routeDirection:
+      routeId &&
+      isRouteDirectionEnabled(routeId)
+        ? getActiveRouteDirection(routeId)
+        : "",
+
+    routeGeometryView:
+      routeId &&
+      hasDirectionalRouteGeometry(routeId)
+        ? getRouteGeometryView(routeId)
+        : "",
+
+    routeCondition:
+      routeId &&
+      hasRouteDiversion(routeId)
+        ? getRouteConditionMode(routeId)
+        : "",
+
+    comparisonRouteId:
+      String(
+        comparisonRouteId ?? ""
+      ),
+
+    selectedStopKey:
+      String(
+        currentSelectedStopKey ?? ""
+      ),
+
+    selectedPopupOpen:
+      Boolean(
+        selectedMarker?.isPopupOpen?.()
+      ),
+
+    stopListScrollTop:
+      Number(
+        stopListEl
+          ?.querySelector(".stop-list-scroll")
+          ?.scrollTop
+        ?? 0
+      ),
+
+    filterPanelScrollTop:
+      Number(
+        filterPanel
+          ?.querySelector(".filter-panel-content")
+          ?.scrollTop
+        ?? 0
+      ),
+
+    routeDetailScrollTop:
+      Number(
+        routeDetailCard?.scrollTop
+        ?? 0
+      ),
+
+    globalSearchValue:
+      String(
+        globalSearchInput?.value
+        ?? ""
+      ),
+
+    globalSearchResultsOpen:
+      Boolean(
+        globalSearchResults &&
+        !globalSearchResults.hidden
+      ),
+
+    globalSearchFocused:
+      Boolean(
+        globalSearchInput &&
+        document.activeElement === globalSearchInput
+      ),
+
+    locationUrl:
+      `${window.location.pathname}${window.location.search}${window.location.hash}`
+  };
+}
+
+
+function setProductTourGlobalSearchOpen(open) {
+  const shouldOpen =
+    Boolean(open);
+
+  if (shouldOpen) {
+    document.body.classList.remove(
+      "concept-legend-open"
+    );
+
+    document.body.classList.add(
+      "concept-search-open"
+    );
+  }
+  else {
+    document.body.classList.remove(
+      "concept-search-open"
+    );
+
+    globalSearchInput?.blur();
+  }
+
+  syncProductTourUtilityButtons();
+
+  if (shouldOpen) {
+    window.setTimeout(
+      () => {
+        globalSearchInput
+          ?.focus({
+            preventScroll: true
+          });
+
+        positionProductTour();
+      },
+      190
+    );
+  }
+}
+
+
+function restoreProductTourInitialUiState() {
+  const state =
+    productTourInitialUiState;
+
+  if (!state) {
+    return;
+  }
+
+  /*
+    Guided tour tidak seharusnya mengganti rute/filter. Namun snapshot
+    ini menjadi guard agar direct-link seperti ?route=BRT_09&dir=A
+    tetap kembali ke konteks awal bila kelak ada step demo tambahan.
+  */
+  const routeContextChanged =
+    String(modeSelect?.value ?? "ALL") !== state.mode
+    ||
+    String(statusSelect?.value ?? "Existing") !== state.status
+    ||
+    String(routeSelect?.value ?? "ALL") !== state.routeSelectValue
+    ||
+    String(currentSelectedRouteId ?? "") !== state.routeId;
+
+  if (routeContextChanged) {
+    suppressUrlStateSync = true;
+
+    try {
+      modeSelect.value = state.mode;
+      updateStatusAvailabilityForMode();
+
+      if (
+        Array.from(statusSelect.options)
+          .some(
+            option =>
+              option.value === state.status
+          )
+      ) {
+        statusSelect.value = state.status;
+      }
+
+      updateStatusAvailabilityForMode();
+      populateRouteDropdown();
+
+      if (
+        state.routeId &&
+        getRouteById(state.routeId)
+      ) {
+        routeSelect.value = state.routeId;
+
+        if (
+          state.routeDirection &&
+          isRouteDirectionEnabled(state.routeId)
+        ) {
+          setActiveRouteDirection(
+            state.routeId,
+            state.routeDirection
+          );
+        }
+
+        if (
+          state.routeGeometryView &&
+          hasDirectionalRouteGeometry(state.routeId)
+        ) {
+          setRouteGeometryView(
+            state.routeId,
+            state.routeGeometryView
+          );
+        }
+
+        showSingleRoute(
+          state.routeId,
+          false,
+          false
+        );
+
+        if (
+          state.routeCondition &&
+          hasRouteDiversion(state.routeId)
+        ) {
+          setRouteConditionMode(
+            state.routeId,
+            state.routeCondition
+          );
+
+          refreshRouteDirectionView(
+            state.routeId
+          );
+        }
+
+        if (
+          state.comparisonRouteId &&
+          state.comparisonRouteId !== state.routeId &&
+          getRouteById(
+            state.comparisonRouteId
+          )
+        ) {
+          setComparisonRoute(
+            state.comparisonRouteId,
+            {
+              fit: false,
+              syncUrl: false
+            }
+          );
+        }
+      }
+      else {
+        routeSelect.value = "ALL";
+        showAllRoutes(false);
+      }
+    }
+    finally {
+      suppressUrlStateSync = false;
+    }
+  }
+
+  if (!isMobileLayout()) {
+    setDesktopPanelCollapsed(
+      "left",
+      state.leftCollapsed
+    );
+  }
+
+  document.body.classList.toggle(
+    "concept-search-open",
+    state.conceptSearchOpen
+  );
+
+  document.body.classList.toggle(
+    "concept-legend-open",
+    state.conceptLegendOpen
+  );
+
+  syncProductTourUtilityButtons();
+
+  if (isMobileLayout()) {
+    setMobileFilterOpen(false);
+    setMobileInfoOpen(false);
+    setBasemapPanelOpen(false);
+
+    if (state.basemapPanelOpen) {
+      setBasemapPanelOpen(true);
+    }
+    else if (state.mobileFilterOpen) {
+      setMobileFilterOpen(true);
+    }
+    else if (state.mobileInfoOpen) {
+      setMobileInfoOpen(true);
+    }
+  }
+  else {
+    setBasemapPanelOpen(
+      state.basemapPanelOpen
+    );
+  }
+
+  /*
+    Bila sebelum tour sebuah popup halte memang terbuka, buka kembali
+    tanpa mengubah logical selection. Center/zoom dipulihkan lagi
+    sesudahnya agar auto-pan popup tidak menggeser view awal.
+  */
+  if (
+    state.selectedPopupOpen &&
+    state.selectedStopKey
+  ) {
+    const marker =
+      stopMarkerByKey.get(
+        state.selectedStopKey
+      );
+
+    try {
+      marker?.openPopup();
+    }
+    catch (error) {
+      // Marker dapat sudah digambar ulang; selection tetap dipertahankan.
+    }
+  }
+
+  /*
+    Pulihkan isi/state Search yang mungkin sudah dimiliki user
+    sebelum tutorial. Tour Tip 5 hanya boleh mendemonstrasikan
+    tombol dan panel Search, bukan menghapus query user.
+  */
+  if (globalSearchInput) {
+    globalSearchInput.value =
+      state.globalSearchValue ?? "";
+
+    updateGlobalSearchClearButton();
+
+    if (
+      state.globalSearchResultsOpen &&
+      String(state.globalSearchValue ?? "").trim()
+    ) {
+      renderGlobalSearchResults();
+    }
+    else {
+      closeGlobalSearchResults();
+    }
+  }
+
+  syncUrlState();
+
+  /*
+    syncUrlState() boleh menormalisasi query-string. Untuk tutorial
+    yang benar-benar non-destruktif, kembalikan URL persis seperti
+    saat tour dimulai (mis. ?mode=BRT&route=BRT_09&dir=A).
+  */
+  if (state.locationUrl) {
+    try {
+      window.history.replaceState(
+        window.history.state,
+        "",
+        state.locationUrl
+      );
+    }
+    catch (error) {
+      // Abaikan bila history API dibatasi oleh browser/embed.
+    }
+  }
+
+  /*
+    Tip 3 dapat menggulir daftar agar target tutorial terlihat.
+    Pulihkan posisi scroll setelah seluruh DOM rute selesai dirender.
+  */
+  requestAnimationFrame(
+    () => {
+      const stopScroller =
+        stopListEl
+          ?.querySelector(".stop-list-scroll");
+
+      if (stopScroller) {
+        stopScroller.scrollTop =
+          Number(state.stopListScrollTop ?? 0);
+      }
+
+      const filterScroller =
+        filterPanel
+          ?.querySelector(".filter-panel-content");
+
+      if (filterScroller) {
+        filterScroller.scrollTop =
+          Number(state.filterPanelScrollTop ?? 0);
+      }
+
+      if (routeDetailCard) {
+        routeDetailCard.scrollTop =
+          Number(state.routeDetailScrollTop ?? 0);
+      }
+
+      if (
+        state.globalSearchFocused &&
+        state.conceptSearchOpen
+      ) {
+        globalSearchInput
+          ?.focus({
+            preventScroll: true
+          });
+      }
+    }
+  );
+}
 
 
 function hasCompletedProductTour() {
@@ -10903,16 +11403,78 @@ function saveProductTourCompleted() {
 }
 
 
+function getProductTourSelectLabel(
+  selectElement,
+  value,
+  fallback = "—"
+) {
+  const normalizedValue =
+    String(value ?? "");
+
+  const option =
+    Array.from(
+      selectElement?.options ?? []
+    ).find(
+      candidate =>
+        String(candidate.value) ===
+        normalizedValue
+    )
+    ??
+    selectElement?.selectedOptions?.[0]
+    ??
+    null;
+
+  const label =
+    String(
+      option?.textContent ?? ""
+    ).trim();
+
+  return label || fallback;
+}
+
+
+function getProductTourInitialFilterLabels() {
+  const state =
+    productTourInitialUiState;
+
+  return {
+    mode:
+      getProductTourSelectLabel(
+        modeSelect,
+        state?.mode ?? modeSelect?.value,
+        "Semua Layanan"
+      ),
+
+    status:
+      getProductTourSelectLabel(
+        statusSelect,
+        state?.status ?? statusSelect?.value,
+        "Eksisting"
+      ),
+
+    route:
+      getProductTourSelectLabel(
+        routeSelect,
+        state?.routeSelectValue ?? routeSelect?.value,
+        "Semua Lin / Koridor"
+      )
+  };
+}
+
+
 function buildProductTourVisual(type) {
   if (type === "filters") {
+    const labels =
+      getProductTourInitialFilterLabels();
+
     return `
       <div class="tour-mini-filters">
         <span>Jenis Layanan</span>
-        <strong>BRT</strong>
+        <strong>${escapeHTML(labels.mode)}</strong>
         <span>Status</span>
-        <strong>Eksisting</strong>
-        <span class="tour-mini-wide">Pilih Koridor</span>
-        <strong class="tour-mini-wide">Koridor 1 (Blok M - Kota)</strong>
+        <strong>${escapeHTML(labels.status)}</strong>
+        <span class="tour-mini-wide">Lin / Koridor</span>
+        <strong class="tour-mini-wide">${escapeHTML(labels.route)}</strong>
       </div>
     `;
   }
@@ -10930,11 +11492,41 @@ function buildProductTourVisual(type) {
   }
 
   if (type === "stop-list") {
+    const target =
+      getProductTourListTargetElement();
+
+    const seq =
+      String(
+        target
+          ?.querySelector(".stop-seq-badge")
+          ?.textContent
+          ?.trim()
+        || "14"
+      );
+
+    const badge =
+      String(
+        target
+          ?.querySelector(".stop-list-route-badge")
+          ?.textContent
+          ?.trim()
+        || "1"
+      );
+
+    const name =
+      String(
+        target
+          ?.querySelector(".stop-list-name")
+          ?.textContent
+          ?.trim()
+        || "Monumen Nasional"
+      );
+
     return `
       <div class="tour-mini-stop-list">
-        <span class="tour-mini-stop-list-seq">14</span>
-        <span class="tour-mini-stop-list-badge">1</span>
-        <span class="tour-mini-stop-list-name">Monumen Nasional</span>
+        <span class="tour-mini-stop-list-seq">${escapeHTML(seq)}</span>
+        <span class="tour-mini-stop-list-badge">${escapeHTML(badge)}</span>
+        <span class="tour-mini-stop-list-name">${escapeHTML(name)}</span>
       </div>
     `;
   }
@@ -11061,6 +11653,28 @@ function clearProductTourStopHighlightTimer() {
 
     productTourStopHighlightTimerId = null;
   }
+}
+
+
+function clearProductTourSearchRevealTimer() {
+  if (
+    productTourSearchRevealTimerId !== null
+  ) {
+    clearTimeout(
+      productTourSearchRevealTimerId
+    );
+
+    productTourSearchRevealTimerId = null;
+  }
+
+  document
+    .querySelector(
+      '#desktopUtilityRail [data-concept="search"]'
+    )
+    ?.classList
+    .remove(
+      "product-tour-search-launcher-focus"
+    );
 }
 
 
@@ -11217,6 +11831,59 @@ function ensureProductTourListDemo() {
 }
 
 
+function ensureProductTourListTargetVisible(element) {
+  if (!element) {
+    return;
+  }
+
+  const scrollEl =
+    stopListEl
+      ?.querySelector(
+        ".stop-list-scroll"
+      );
+
+  if (!scrollEl) {
+    return;
+  }
+
+  const targetRect =
+    element.getBoundingClientRect();
+
+  const scrollRect =
+    scrollEl.getBoundingClientRect();
+
+  const comfortablyVisible =
+    targetRect.top >=
+      scrollRect.top + 6 &&
+    targetRect.bottom <=
+      scrollRect.bottom - 6;
+
+  if (comfortablyVisible) {
+    return;
+  }
+
+  const targetCenter =
+    targetRect.top -
+    scrollRect.top +
+    scrollEl.scrollTop +
+    targetRect.height / 2;
+
+  const desired =
+    targetCenter -
+    scrollEl.clientHeight / 2;
+
+  scrollEl.scrollTop =
+    Math.max(
+      0,
+      Math.min(
+        desired,
+        scrollEl.scrollHeight -
+          scrollEl.clientHeight
+      )
+    );
+}
+
+
 function getProductTourListTargetElement() {
   if (isMobileLayout()) {
     return null;
@@ -11231,14 +11898,59 @@ function getProductTourListTargetElement() {
     );
 
   if (!items.length) {
-    return ensureProductTourListDemo();
+    const demoItem =
+      ensureProductTourListDemo();
+
+    ensureProductTourListTargetVisible(
+      demoItem
+    );
+
+    return demoItem;
   }
 
   /*
-    Utamakan baris terpilih yang terlihat. Jika tidak ada,
-    pilih baris pertama yang sedang berada dalam viewport
-    daftar. Ini menjaga tutorial manual tetap relevan meski
-    user sebelumnya sudah menggulir daftar.
+    Tutorial Tip 2 memakai Monumen Nasional. Bila halte yang sama
+    memang ada pada daftar rute yang sedang terbuka (mis. K1),
+    Tip 3 harus menyorot BARIS YANG SAMA, bukan baris pertama yang
+    kebetulan terlihat. Ini menjaga hubungan mental:
+      titik di peta -> nama halte yang sama di daftar.
+  */
+  const demoFeature =
+    getProductTourDemoStopFeature();
+
+  const demoLogicalKey =
+    demoFeature
+      ? getLogicalStopKey(
+          demoFeature
+        )
+      : "";
+
+  const demoItem =
+    demoLogicalKey
+      ? items.find(
+          item =>
+            String(
+              item.dataset
+                ?.stopLogicalKey
+              ?? ""
+            ) ===
+            String(demoLogicalKey)
+        )
+      : null;
+
+  if (demoItem) {
+    ensureProductTourListTargetVisible(
+      demoItem
+    );
+
+    return demoItem;
+  }
+
+  /*
+    Bila rute aktif tidak melayani Monumen Nasional (mis. user
+    membuka direct-link K9), jangan menyisipkan halte palsu ke
+    daftar rute tersebut. Gunakan baris nyata yang relevan dan
+    visual mini Tip 3 akan mengikuti nama/nomor baris itu.
   */
   const scrollRect =
     stopListEl
@@ -11266,7 +11978,7 @@ function getProductTourListTargetElement() {
       );
     };
 
-  return (
+  const fallback =
     items.find(
       item =>
         item.classList.contains(
@@ -11277,8 +11989,13 @@ function getProductTourListTargetElement() {
     ||
     items.find(isVisible)
     ||
-    items[0]
+    items[0];
+
+  ensureProductTourListTargetVisible(
+    fallback
   );
+
+  return fallback;
 }
 
 
@@ -11406,6 +12123,9 @@ function startProductTourDemoPulseAnimation() {
   const startedAt =
     performance.now();
 
+  const pulseDuration = 1250;
+  const maxPulseCycles = 2;
+
   const animate =
     now => {
       if (
@@ -11420,6 +12140,32 @@ function startProductTourDemoPulseAnimation() {
         return;
       }
 
+      const elapsed =
+        now - startedAt;
+
+      /*
+        Reminder cukup berdenyut dua kali. Setelah itu ring berhenti
+        pada state stabil agar pengguna dapat membaca tanpa distraksi.
+      */
+      if (
+        elapsed >=
+        pulseDuration * maxPulseCycles
+      ) {
+        productTourDemoPulse
+          .setRadius(15);
+
+        productTourDemoPulse
+          .setStyle({
+            opacity: .92,
+            weight: 3
+          });
+
+        productTourDemoPulseAnimationId =
+          null;
+
+        return;
+      }
+
       /*
         Pulse sinusoidal:
         - radius ±3 px
@@ -11428,9 +12174,9 @@ function startProductTourDemoPulseAnimation() {
       */
       const phase =
         (
-          (now - startedAt)
+          elapsed
           /
-          1250
+          pulseDuration
         )
         *
         Math.PI
@@ -11477,6 +12223,30 @@ function startProductTourDemoPulseAnimation() {
     requestAnimationFrame(
       animate
     );
+}
+
+
+
+function settleProductTourDemoPulse() {
+  stopProductTourDemoPulseAnimation();
+
+  if (
+    !productTourDemoPulse ||
+    !map.hasLayer(
+      productTourDemoPulse
+    )
+  ) {
+    return;
+  }
+
+  productTourDemoPulse
+    .setRadius(15);
+
+  productTourDemoPulse
+    .setStyle({
+      opacity: .86,
+      weight: 3
+    });
 }
 
 
@@ -11718,7 +12488,11 @@ function openProductTourDemoPopup() {
       feature,
       "BRT_01"
     ),
-    getStopPopupOptions()
+    {
+      ...getStopPopupOptions(),
+      autoPan: false,
+      keepInView: false
+    }
   );
 
   marker.openPopup();
@@ -11758,6 +12532,18 @@ function prepareProductTourStopDemo({
 
   if (!marker) {
     return;
+  }
+
+  /*
+    Pulse aktif hanya pada Tip 2 (klik titik di peta). Tip daftar dan
+    perpindahan rute memakai ring statis agar fokus tidak berebut.
+  */
+  if (
+    PRODUCT_TOUR_STEPS[
+      productTourIndex
+    ]?.target !== "tutorial-stop"
+  ) {
+    settleProductTourDemoPulse();
   }
 
   positionProductTourAtDemoStop();
@@ -11935,6 +12721,33 @@ function getProductTourTargetRect(step) {
   }
 
   if (step.target === "global-search") {
+    const launcher =
+      document.querySelector(
+        '#desktopUtilityRail [data-concept="search"]'
+      );
+
+    if (
+      productTourSearchPhase === "launcher"
+      &&
+      launcher
+    ) {
+      const launcherRect =
+        launcher.getBoundingClientRect();
+
+      if (
+        launcherRect.width > 0
+        &&
+        launcherRect.height > 0
+      ) {
+        return {
+          left: launcherRect.left,
+          top: launcherRect.top,
+          width: launcherRect.width,
+          height: launcherRect.height
+        };
+      }
+    }
+
     const element =
       document.getElementById(
         "globalSearchPanel"
@@ -12231,6 +13044,22 @@ function prepareProductTourStep(step) {
     return;
   }
 
+  /*
+    Search asli hanya dipakai pada Tip 5. Tip ini sengaja dua fase:
+    spotlight lebih dulu mengarahkan mata ke ikon Find/Search, lalu
+    panel Cari Lokasi dibuka otomatis dan spotlight berpindah ke sana.
+  */
+  clearProductTourSearchRevealTimer();
+
+  if (step.target === "global-search") {
+    productTourSearchPhase = "launcher";
+    setProductTourGlobalSearchOpen(false);
+  }
+  else {
+    productTourSearchPhase = "launcher";
+    setProductTourGlobalSearchOpen(false);
+  }
+
   if (isMobileLayout()) {
     if (step.target === "controls") {
       setMobileInfoOpen(
@@ -12282,6 +13111,26 @@ function prepareProductTourStep(step) {
       prepareProductTourStopDemo({
         openPopup: true
       });
+    }
+    else if (
+      step.target ===
+      "global-search"
+    ) {
+      removeProductTourDemoLayers({
+        closePopup: true
+      });
+
+      /*
+        Pada mobile utility rail desktop tidak tersedia. Langsung
+        gunakan panel Search asli sebagai target yang ekuivalen.
+      */
+      productTourSearchPhase = "panel";
+      setProductTourGlobalSearchOpen(true);
+
+      window.setTimeout(
+        positionProductTour,
+        200
+      );
     }
     else if (
       step.target !==
@@ -12359,6 +13208,88 @@ function prepareProductTourStep(step) {
     return;
   }
 
+  if (
+    step.target ===
+    "global-search"
+  ) {
+    removeProductTourDemoLayers({
+      closePopup: true
+    });
+
+    const launcher =
+      document.querySelector(
+        '#desktopUtilityRail [data-concept="search"]'
+      );
+
+    const launcherRect =
+      launcher
+        ?.getBoundingClientRect();
+
+    const launcherVisible =
+      Boolean(
+        launcherRect
+        &&
+        launcherRect.width > 0
+        &&
+        launcherRect.height > 0
+      );
+
+    if (!launcherVisible) {
+      productTourSearchPhase = "panel";
+      setProductTourGlobalSearchOpen(true);
+
+      window.setTimeout(
+        positionProductTour,
+        200
+      );
+
+      return;
+    }
+
+    launcher.classList.add(
+      "product-tour-search-launcher-focus"
+    );
+
+    positionProductTour();
+
+    productTourSearchRevealTimerId =
+      window.setTimeout(
+        () => {
+          productTourSearchRevealTimerId = null;
+
+          if (
+            productTour?.hidden
+            ||
+            PRODUCT_TOUR_STEPS[productTourIndex]?.target !==
+              "global-search"
+          ) {
+            return;
+          }
+
+          launcher.classList.remove(
+            "product-tour-search-launcher-focus"
+          );
+
+          productTourSearchPhase = "panel";
+
+          setProductTourGlobalSearchOpen(true);
+
+          if (productTourText) {
+            productTourText.textContent =
+              "Tekan ikon Cari Lokasi untuk membuka pencarian. Setelah panel muncul, ketik halte, stasiun, koridor, atau tempat yang ingin dicari.";
+          }
+
+          window.setTimeout(
+            positionProductTour,
+            210
+          );
+        },
+        1050
+      );
+
+    return;
+  }
+
   /*
     Tip Search dan target lain membersihkan popup/marker demo,
     tetapi MEMPERTAHANKAN posisi kamera dari Tip sebelumnya.
@@ -12390,12 +13321,22 @@ function showProductTourStep(index) {
       productTourIndex
     ];
 
+  document.body.classList.toggle(
+    "product-tour-route-badges-step",
+    step.target === "tutorial-route-badges"
+  );
+
+  document.body.classList.toggle(
+    "product-tour-search-step",
+    step.target === "global-search"
+  );
+
   prepareProductTourStep(
     step
   );
 
   productTourProgress.textContent =
-    `TIP ${productTourIndex + 1} DARI ${PRODUCT_TOUR_STEPS.length}`;
+    `TIP ${productTourIndex + 1} DARI ${PRODUCT_TOUR_STEPS.length} · PENGINGAT SINGKAT`;
 
   productTourTitle.textContent =
     step.title;
@@ -12407,6 +13348,10 @@ function showProductTourStep(index) {
     buildProductTourVisual(
       step.visual
     );
+
+  /* Tip 5 memakai panel Cari Lokasi asli, jadi tidak perlu mockup. */
+  productTourVisual.hidden =
+    step.target === "global-search";
 
   productTourPrevious.hidden =
     productTourIndex === 0;
@@ -12445,7 +13390,15 @@ function startProductTour(
     document.activeElement;
 
   /*
-    Simpan view sebelum demo Tip 2–3. Ini berlaku baik pada
+    Simpan seluruh konteks UI yang dapat disentuh tour. Dengan ini
+    direct-link rute, collapse panel, Search/Legenda, dan popup user
+    dapat kembali seperti sebelum tutorial.
+  */
+  productTourInitialUiState =
+    captureProductTourInitialUiState();
+
+  /*
+    Simpan view sebelum demo Tip 2–4. Ini berlaku baik pada
     startup tour maupun ketika user membuka Cara Menggunakan
     secara manual.
   */
@@ -12508,6 +13461,8 @@ function closeProductTour(
     return;
   }
 
+  clearProductTourSearchRevealTimer();
+
   if (completed) {
     saveProductTourCompleted();
   }
@@ -12516,11 +13471,38 @@ function closeProductTour(
     closePopup: true
   });
 
+  const finalMapView =
+    productTourInitialMapView;
+
+  restoreProductTourInitialUiState();
+
   restoreProductTourInitialMapView({
     animate: false
   });
 
+  /*
+    Popup yang dipulihkan dapat memicu auto-pan. Tegaskan kembali
+    center/zoom awal pada frame berikutnya tanpa animasi.
+  */
+  requestAnimationFrame(
+    () => {
+      if (
+        finalMapView?.center &&
+        Number.isFinite(
+          Number(finalMapView.zoom)
+        )
+      ) {
+        map.setView(
+          finalMapView.center,
+          finalMapView.zoom,
+          { animate: false }
+        );
+      }
+    }
+  );
+
   productTourInitialMapView = null;
+  productTourInitialUiState = null;
   productTourDemoStopFeature = null;
 
   productTour.hidden =
@@ -12529,30 +13511,13 @@ function closeProductTour(
   document.body
     .classList
     .remove(
-      "product-tour-open"
+      "product-tour-open",
+      "product-tour-route-badges-step",
+      "product-tour-search-step"
     );
 
   productTourSpotlight.hidden =
     true;
-
-  if (isMobileLayout()) {
-    setMobileFilterOpen(
-      false
-    );
-
-    setMobileInfoOpen(
-      false
-    );
-  }
-  else if (
-    productTourManual &&
-    productTourPreviousLeftCollapsed
-  ) {
-    setDesktopPanelCollapsed(
-      "left",
-      true
-    );
-  }
 
   const shouldRestoreTourFocus =
     Boolean(
@@ -14064,24 +15029,30 @@ function dismissGlobalSearchForContextSwitch() {
    ========================================================= */
 
 /*
-  Startup hanya muncul pada kunjungan yang masih membutuhkan
-  disclaimer dan/atau tutorial. Setelah keduanya selesai,
-  reload berikutnya langsung membuka peta.
+  STARTUP REMINDER TOUR
+  ---------------------------------------------------------
+  Disclaimer tetap hanya perlu diterima sekali, tetapi tutorial
+  Cara Menggunakan sengaja muncul SEKALI PADA SETIAP PAGE LOAD.
+
+  Tujuan UX:
+  - pengguna baru mendapat onboarding lengkap;
+  - pengguna lama mendapat pengingat singkat bila lupa;
+  - tombol Lewati selalu tersedia sehingga tour tidak memaksa.
+
+  PRODUCT_TOUR_STORAGE_KEY tetap disimpan untuk kompatibilitas dan
+  telemetry lokal lama, tetapi tidak lagi menentukan apakah tour
+  startup ditampilkan.
 */
 function startStartupExperience() {
   const needsDisclaimer =
     !hasAcceptedDisclaimer();
 
-  const needsTour =
-    !hasCompletedProductTour();
-
-  if (
-    !needsDisclaimer &&
-    !needsTour
-  ) {
-    startupExperienceActive = false;
-    return;
-  }
+  /*
+    Sengaja TRUE pada setiap page load.
+    Tour hanya dipanggil satu kali oleh startup flow, bukan setiap
+    perubahan rute/filter.
+  */
+  const needsTour = true;
 
   if (startupTourTimerId) {
     clearTimeout(
@@ -14131,10 +15102,15 @@ function startStartupExperience() {
   modal tidak otomatis memulai walkthrough.
 */
 function closeInfoModalAndContinueStartup() {
+  /*
+    Bila modal ini merupakan bagian startup, lanjutkan ke reminder
+    tour walaupun pengguna pernah menyelesaikannya pada kunjungan
+    sebelumnya. Ini yang membuat tutorial kembali muncul saat WebGIS
+    dibuka ulang.
+  */
   const continueToTour =
     Boolean(
-      startupExperienceActive &&
-      !hasCompletedProductTour()
+      startupExperienceActive
     );
 
   startupExperienceActive = false;
