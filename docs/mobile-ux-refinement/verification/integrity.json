@@ -1,0 +1,58 @@
+{
+  "baselineCommit": "2900440884f9887343a2e440cb8b4479e2d8f2b9",
+  "candidateCommit": "779450176fadc4bca314423ea86a3be6fa26fb3d",
+  "protectedFiles": [
+    {
+      "file": "data/brt_route.geojson",
+      "expected": "0369b4fe57af28694b47bb691fedae546a639fe7340008dd72eb052e7e28d10d",
+      "actual": "0369b4fe57af28694b47bb691fedae546a639fe7340008dd72eb052e7e28d10d",
+      "matches": true
+    },
+    {
+      "file": "data/brt_stop.geojson",
+      "expected": "814a0589857e0629f06b848fab0af23804166b55396923376f8408d8907f5321",
+      "actual": "814a0589857e0629f06b848fab0af23804166b55396923376f8408d8907f5321",
+      "matches": true
+    },
+    {
+      "file": "data/rail_route.geojson",
+      "expected": "5432ca4f826c2bc96ecc6a4e8f63be61700bf2a0459bfbac761a85dc33505d34",
+      "actual": "5432ca4f826c2bc96ecc6a4e8f63be61700bf2a0459bfbac761a85dc33505d34",
+      "matches": true
+    },
+    {
+      "file": "data/rail_stop.geojson",
+      "expected": "fe720e7d2f83b15d0d315ce781950c68d60f47bdb9f20b01f4c7113f4822dbf0",
+      "actual": "fe720e7d2f83b15d0d315ce781950c68d60f47bdb9f20b01f4c7113f4822dbf0",
+      "matches": true
+    },
+    {
+      "file": "js/map.js",
+      "expected": "b15b1a2445fc5b9f601e7d72ee28b07839933d6a406d3ac0eb3addf2e158ddac",
+      "actual": "b15b1a2445fc5b9f601e7d72ee28b07839933d6a406d3ac0eb3addf2e158ddac",
+      "matches": true
+    },
+    {
+      "file": "js/layout-concept.js",
+      "expected": "7fd01a65b00f72fe56d59e589a65d0ae4ed4f6563eada0cab3b5cbc154293f5c",
+      "actual": "7fd01a65b00f72fe56d59e589a65d0ae4ed4f6563eada0cab3b5cbc154293f5c",
+      "matches": true
+    },
+    {
+      "file": "css/style.css",
+      "expected": "4f500ae2ab3c13f1da3aa8e3df1b627cef8e4adaf1975c4fe3968d619f7e91ff",
+      "actual": "4f500ae2ab3c13f1da3aa8e3df1b627cef8e4adaf1975c4fe3968d619f7e91ff",
+      "matches": true
+    },
+    {
+      "file": "css/layout-concept.css",
+      "expected": "9abadb8a1f7317006cae2441d406f2e8ddc5b85721d1d63c0531d789cb04c119",
+      "actual": "9abadb8a1f7317006cae2441d406f2e8ddc5b85721d1d63c0531d789cb04c119",
+      "matches": true
+    }
+  ],
+  "protectedDomHooks": 87,
+  "duplicateHtmlIds": [],
+  "a01BranchHead": "fc56479fc5ee21584efee0c7550a7538bdc1326c",
+  "backupBranch": "backup/production-before-mobile-ux-2900440"
+}
