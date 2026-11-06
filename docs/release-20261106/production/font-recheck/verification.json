@@ -1,0 +1,1676 @@
+{
+  "verifiedAt": "2026-11-06T16:28:16.096Z",
+  "mainCommit": "2900440884f9887343a2e440cb8b4479e2d8f2b9",
+  "verificationCheckout": "6beb7b73c3bfaf0962122bec1af81dda04185476",
+  "browser": "155.0.8059.79",
+  "transport": "Actual HTTPS production responses via inherited proxy; Python validates TLS using configured CA trust. No mocked assets/data.",
+  "fontURLs": [
+    "https://itskindamia.github.io/webgis-transportasi-jabodetabek/assets/fonts/pt-sans-latin-400-normal.woff2",
+    "https://itskindamia.github.io/webgis-transportasi-jabodetabek/assets/fonts/pt-sans-latin-700-normal.woff2"
+  ],
+  "loadedFontFaces": [
+    400,
+    700
+  ],
+  "typographyContexts": 12,
+  "computedFontChecks": 180,
+  "typography": [
+    {
+      "label": "LRT_JKT_S / LRTJ006_01",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      },
+      "sample": [
+        {
+          "selector": "body",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".tl-header",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#filterPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#statusSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#routeSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchInput",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchSubmit",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "12px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": "#rightInfoPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#tlDetailPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#selectedStopInfo",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#stopList .stop-list-name",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": ".leaflet-popup-content",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-title",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "20px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": ".lrt-service-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-nav-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "label": "live-velodrome-desktop.png",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      },
+      "sample": [
+        {
+          "selector": "body",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".tl-header",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#filterPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#statusSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#routeSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchInput",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchSubmit",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "12px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": "#rightInfoPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#tlDetailPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#selectedStopInfo",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#stopList .stop-list-name",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": ".leaflet-popup-content",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-title",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "20px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": ".lrt-service-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-nav-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "label": "LRT_JB_BK / LRTJB009_01",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      },
+      "sample": [
+        {
+          "selector": "body",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".tl-header",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#filterPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#statusSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#routeSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchInput",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchSubmit",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "12px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": "#rightInfoPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#tlDetailPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#selectedStopInfo",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#stopList .stop-list-name",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": ".leaflet-popup-content",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-title",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "20px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": ".lrt-service-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-nav-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "label": "LRT_JB_BK / LRTJB008_01",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      },
+      "sample": [
+        {
+          "selector": "body",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".tl-header",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#filterPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#statusSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#routeSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchInput",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchSubmit",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "12px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": "#rightInfoPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#tlDetailPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#selectedStopInfo",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#stopList .stop-list-name",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": ".leaflet-popup-content",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-title",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "20px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": ".lrt-service-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-nav-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "label": "LRT_JB_BK / LRTJB008_01",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      },
+      "sample": [
+        {
+          "selector": "body",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".tl-header",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#filterPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#statusSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#routeSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchInput",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchSubmit",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "12px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": "#rightInfoPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#tlDetailPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#selectedStopInfo",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#stopList .stop-list-name",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": ".leaflet-popup-content",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-title",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "20px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": ".lrt-service-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-nav-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "label": "live-cawang-mobile.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sample": [
+        {
+          "selector": "body",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".tl-header",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#filterPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#statusSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#routeSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#globalSearchInput",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchSubmit",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "12px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": "#rightInfoPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#tlDetailPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#selectedStopInfo",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#stopList .stop-list-name",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": ".leaflet-popup-content",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-title",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "19px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": ".lrt-service-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-nav-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "label": "live-landscape-568.png",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "sample": [
+        {
+          "selector": "body",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".tl-header",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#filterPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#statusSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#routeSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#globalSearchInput",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchSubmit",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "12px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": "#rightInfoPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#tlDetailPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#selectedStopInfo",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#stopList .stop-list-name",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": ".leaflet-popup-content",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-title",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "18px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": ".lrt-service-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-nav-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "label": "live-landscape-844.png",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "sample": [
+        {
+          "selector": "body",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".tl-header",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#filterPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#statusSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#routeSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchInput",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchSubmit",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "12px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": "#rightInfoPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#tlDetailPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#selectedStopInfo",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#stopList .stop-list-name",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": ".leaflet-popup-content",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-title",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "18px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": ".lrt-service-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-nav-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "label": "mobile stop list and detail visibly open",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sample": [
+        {
+          "selector": "body",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".tl-header",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#filterPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#statusSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#routeSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#globalSearchInput",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchSubmit",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "12px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": "#rightInfoPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#tlDetailPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#selectedStopInfo",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#stopList .stop-list-name",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".leaflet-popup-content",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-title",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "19px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": ".lrt-service-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-nav-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "label": "mobile filter/sidebar visibly open",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sample": [
+        {
+          "selector": "body",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".tl-header",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#filterPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#statusSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#routeSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchInput",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchSubmit",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "12px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": "#rightInfoPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#tlDetailPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#selectedStopInfo",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#stopList .stop-list-name",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": ".leaflet-popup-content",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-title",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "19px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": ".lrt-service-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-nav-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "label": "mobile legend visibly open",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sample": [
+        {
+          "selector": "body",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".tl-header",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#filterPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#statusSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#routeSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#globalSearchInput",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "16px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchSubmit",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "12px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": "#rightInfoPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#tlDetailPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#selectedStopInfo",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#stopList .stop-list-name",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": ".leaflet-popup-content",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-title",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "19px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": ".lrt-service-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-nav-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "label": "desktop sidebar and stop list visibly open",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      },
+      "sample": [
+        {
+          "selector": "body",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".tl-header",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#filterPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#statusSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#routeSelect",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchInput",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#globalSearchSubmit",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "12px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": "#rightInfoPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#tlDetailPanel",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": "#selectedStopInfo",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": false
+        },
+        {
+          "selector": "#stopList .stop-list-name",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".leaflet-popup-content",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-title",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "20px",
+          "weight": "700",
+          "visible": true
+        },
+        {
+          "selector": ".lrt-service-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "14px",
+          "weight": "400",
+          "visible": true
+        },
+        {
+          "selector": ".stop-popup-nav-button",
+          "family": "\"PT Sans\", Arial, sans-serif",
+          "size": "13px",
+          "weight": "400",
+          "visible": true
+        }
+      ]
+    }
+  ],
+  "cacheBust": [
+    {
+      "file": "css/layout-tabler.css",
+      "version": "release-20261106-1",
+      "status": 200,
+      "matchesLocal": true
+    },
+    {
+      "file": "css/lrt-popup.css",
+      "version": "release-20261106-1",
+      "status": 200,
+      "matchesLocal": true
+    },
+    {
+      "file": "css/font-pt-sans.css",
+      "version": "release-20261106-1",
+      "status": 200,
+      "matchesLocal": true
+    },
+    {
+      "file": "js/layout-tabler.js",
+      "version": "release-20261106-1",
+      "status": 200,
+      "matchesLocal": true
+    },
+    {
+      "file": "js/layout-tabler-ux.js",
+      "version": "release-20261106-1",
+      "status": 200,
+      "matchesLocal": true
+    },
+    {
+      "file": "js/lrt-popup.js",
+      "version": "release-20261106-1",
+      "status": 200,
+      "matchesLocal": true
+    },
+    {
+      "file": "js/app-loader.js",
+      "version": "release-20261106-1",
+      "status": 200,
+      "matchesLocal": true
+    }
+  ],
+  "matchedMainResources": [
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/",
+      "status": 200,
+      "bytes": 63896,
+      "sha256": "222a42f7eb9b8156843487b0e05eb71d07af9a870badcb03c59618666c852bbb",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/assets/fonts/pt-sans-latin-400-normal.woff2",
+      "status": 200,
+      "bytes": 45532,
+      "sha256": "2dea6190c113af617923c6b71f7f10ffbdf72074556f79963610254fe40e49be",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/css/legacy-components.css?v=release-20261106-1",
+      "status": 200,
+      "bytes": 175870,
+      "sha256": "ce7e6431359f846e2c95ecb23e713a5226306c36c52f8ae5e7a27e43e76c8756",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/css/tabler-components.css?v=release-20261106-1",
+      "status": 200,
+      "bytes": 162415,
+      "sha256": "cd5c45d86ce872ea85baf8f729807290c456ddd0b1254c30acdf84da00da3382",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/css/layout-tabler.css?v=release-20261106-1",
+      "status": 200,
+      "bytes": 35399,
+      "sha256": "e9f8e1a714a432ecd7e9bd89e9c6087b0d0fedb98662fd6cc4e420fdf7e34874",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/css/font-pt-sans.css?v=release-20261106-1",
+      "status": 200,
+      "bytes": 1993,
+      "sha256": "2b4903816269d9e72b371dfd11195083dd833285d9b3aa0959de872e7a30b596",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/assets/icons/tabler.svg",
+      "status": 200,
+      "bytes": 3049,
+      "sha256": "214c5c9ebd8e8979d84525b16099584962c27594c32e2fb93f3d775779a21b18",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/css/lrt-popup.css?v=release-20261106-1",
+      "status": 200,
+      "bytes": 9261,
+      "sha256": "edf7bc3c061c0811deeb565636bf12a0ead6cedd78ce715f8967bfdb31b0a065",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/js/layout-tabler.js?v=release-20261106-1",
+      "status": 200,
+      "bytes": 27538,
+      "sha256": "493613a55a46ab4da50f75d3242881cabadcd3e211a7144c6b3a91e26408c82e",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/js/layout-tabler-ux.js?v=release-20261106-1",
+      "status": 200,
+      "bytes": 11660,
+      "sha256": "eed841e67e2f5fe2db35c0ece88ebe0fde91678ba464104018ca605ca3390e28",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/assets/fonts/pt-sans-latin-700-normal.woff2",
+      "status": 200,
+      "bytes": 47180,
+      "sha256": "05ea99a48ece3c624fd9df15f5cf4e1d94703bde9ed2b384495900f55e28befe",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/js/lrt-popup.js?v=release-20261106-1",
+      "status": 200,
+      "bytes": 4817,
+      "sha256": "7950ec232680020f928d3451f67bd21817d6a417fbce5c519c759d5e9cdaf423",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/js/app-loader.js?v=release-20261106-1",
+      "status": 200,
+      "bytes": 2683,
+      "sha256": "34816e05480a7d8e4197da172bb81c0883fe6a4543de508e11e12670e4f56aea",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/js/map.js?v=20260915-v0.16-part1-tip1-v10",
+      "status": 200,
+      "bytes": 634552,
+      "sha256": "b15b1a2445fc5b9f601e7d72ee28b07839933d6a406d3ac0eb3addf2e158ddac",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/data/rail_stop.geojson",
+      "status": 200,
+      "bytes": 93719,
+      "sha256": "fe720e7d2f83b15d0d315ce781950c68d60f47bdb9f20b01f4c7113f4822dbf0",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/data/brt_stop.geojson",
+      "status": 200,
+      "bytes": 326093,
+      "sha256": "814a0589857e0629f06b848fab0af23804166b55396923376f8408d8907f5321",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/data/rail_route.geojson",
+      "status": 200,
+      "bytes": 303365,
+      "sha256": "5432ca4f826c2bc96ecc6a4e8f63be61700bf2a0459bfbac761a85dc33505d34",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/data/brt_route.geojson",
+      "status": 200,
+      "bytes": 999100,
+      "sha256": "0369b4fe57af28694b47bb691fedae546a639fe7340008dd72eb052e7e28d10d",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/assets/lines/lrt-jakarta-s.svg",
+      "status": 200,
+      "bytes": 3662,
+      "sha256": "6d010111314da1c3209fc21ea4d0eb839828cdf5f0ecad4ed8bbd6dab21fd4d8",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/assets/logos/transjakarta.svg",
+      "status": 200,
+      "bytes": 14406,
+      "sha256": "3508b2f4f23cfb750468f436d43a6f6708b071a8a6734955670c3375216a42b3",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/assets/lines/lrt-jabodebek-bk.png",
+      "status": 200,
+      "bytes": 9396,
+      "sha256": "9ba3f35dac0d7b0b85cf88727c45114f543701d836bbc39f32461b76f2cf5393",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/assets/lines/lrt-jabodebek-cb.png",
+      "status": 200,
+      "bytes": 9252,
+      "sha256": "dfa0be8a51f816ce4e00c7cd483a82797dbceb5c092309ac94b0c200cf3e82ec",
+      "matchesLocal": true,
+      "matchesMain": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/assets/logos/transjakarta.svg",
+      "status": 200,
+      "bytes": 14406,
+      "sha256": "3508b2f4f23cfb750468f436d43a6f6708b071a8a6734955670c3375216a42b3",
+      "matchesLocal": true,
+      "matchesMain": true
+    }
+  ],
+  "geojsonCount": 4,
+  "errors": [],
+  "failures": [],
+  "captures": [
+    {
+      "file": "live-velodrome-desktop.png",
+      "viewport": [
+        1366,
+        900
+      ],
+      "width": 1366,
+      "selected": "LRTJ006_01",
+      "route": "LRT_JKT_S",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "sha256": "820632e34e80bd18bb433e0e5952ef0e9ab72731a3059727b7997079d774d2ee"
+    },
+    {
+      "file": "live-cawang-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "width": 390,
+      "selected": "LRTJB008_01",
+      "route": "LRT_JB_BK",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "sha256": "6e4dbf934fba1fe6e21873d7b584bbe1c2c891714a96feecd9ddb7032aba90db"
+    },
+    {
+      "file": "live-landscape-568.png",
+      "viewport": [
+        568,
+        320
+      ],
+      "width": 568,
+      "selected": "LRTJB008_01",
+      "route": "LRT_JB_BK",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "sha256": "73609fb7704c710b8cf1d2b34973c54695b9918de4b3a35d1006d6319f7e80f7"
+    },
+    {
+      "file": "live-landscape-844.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "width": 844,
+      "selected": "LRTJB008_01",
+      "route": "LRT_JB_BK",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "sha256": "d0f9f878f9083fa54f2cde6f6d28fb11d69f09df01fb6a73a934b779d0d9e228"
+    }
+  ],
+  "regressionTests": {
+    "passed": 50,
+    "failed": 0
+  },
+  "auditsIdenticalToBaseline": true,
+  "protectedHashesMatch": 8
+}
