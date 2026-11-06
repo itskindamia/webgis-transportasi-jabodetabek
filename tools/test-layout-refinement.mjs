@@ -91,6 +91,7 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844], [768, 1024], 
     const grid = await page.locator(".info-guide-grid").evaluate(el => ({ display: getComputedStyle(el).display, columns: getComputedStyle(el).gridTemplateColumns.split(" ").length, family: getComputedStyle(el).fontFamily }));
     assert.equal(grid.display, "grid");
     assert.equal(grid.columns, width < 768 ? 1 : 2);
+    if (width >= 768) assert.ok((await page.locator(".info-modal").boundingBox()).width >= 700, "two-column guide has enough room for readable cards");
     assert.ok(grid.family.includes("PT Sans"));
     assert.equal(await page.locator(".info-guide-item").count(), 5);
     for (const card of await page.locator(".info-guide-item").all()) {

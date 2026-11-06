@@ -180,6 +180,9 @@
   .tl-app .leaflet-container { font-family: var(--tblr-font-sans-serif); }
   .tl-compat { display: none; }
 
+  @media (min-width: 768px) {
+    .tl-app .info-modal { width: min(760px, calc(100vw - 32px)); max-width: calc(100vw - 32px); }
+  }
   @media (min-width: 1024px) {
     .tl-app .tl-route-content .stop-list-item { min-height: 40px; }
   }

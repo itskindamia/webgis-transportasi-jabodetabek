@@ -100,6 +100,53 @@ try {
     await page.locator("#zoomInButton").click({ trial: true });
     await page.locator(".leaflet-popup-close-button").click({ trial: true });
   }
+  await page.locator(".leaflet-popup-close-button").click();
+  for (const [width, height] of [[1366, 900], [390, 844]]) {
+    await page.setViewportSize({ width, height });
+    await page.waitForTimeout(450);
+    if (await page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none")) await page.click("#tlNetworkToggle");
+    await page.click('[data-mode="BRT"]');
+    await page.selectOption("#routeSelect", "BRT_03");
+    await page.waitForTimeout(900);
+    const fullName = await page.locator("#routeSelect").evaluate(el => el.selectedOptions[0].text);
+    assert.equal(await page.locator("#routeSelect").getAttribute("title"), fullName);
+    assert.equal(await page.locator("#tlRouteFullName").innerText(), fullName);
+    assert.equal(await page.locator("#tlMapContext").getAttribute("title"), fullName);
+    await page.locator("#routeCompareAdd").click({ trial: true });
+    if (width < 768) {
+      const intrinsic = await page.locator(".filter-panel-content").evaluate(el => {
+        const style = getComputedStyle(el);
+        return el.clientHeight - el.querySelector(".filter-controls-card").getBoundingClientRect().height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      });
+      assert.ok(intrinsic <= 3, "live Network sheet has no flex filler");
+      await capture(page, "live-network-mobile.png");
+      await page.click("#mobileFilterClose");
+    }
+    await page.evaluate(() => { webgisLayout.showPopupDetails(); webgisLayout.setTab("stops"); webgisLayout.setDetailExpanded(true); webgisLayout.setSheetPosition("half"); });
+    await page.waitForTimeout(350);
+    const state = await page.evaluate(() => ({ route: currentSelectedRouteId, stop: currentSelectedStopKey, url: location.href, center: [map.getCenter().lat, map.getCenter().lng], zoom: map.getZoom() }));
+    await capture(page, width < 768 ? "live-k3-list-mobile.png" : "live-k3-list-desktop.png");
+    for (const name of ["Damai", "Jelambar"]) {
+      const row = page.locator("#stopList .stop-list-item").filter({ has: page.locator(".stop-list-name", { hasText: name }) }).first();
+      assert.ok(await row.locator(".stop-list-route-badge").count() > 1);
+    }
+    if (width < 768) for (const id of ["tlDetailCollapse", "tlDetailExpand", "tlDetailHalf"]) {
+      await page.click("#" + id);
+      await page.waitForTimeout(200);
+      const after = await page.evaluate(() => ({ route: currentSelectedRouteId, stop: currentSelectedStopKey, url: location.href, center: [map.getCenter().lat, map.getCenter().lng], zoom: map.getZoom() }));
+      assert.deepEqual(after, state, "live sheet positions preserve selection, URL and camera");
+    }
+    await page.click("#tlAbout");
+    assert.equal(await page.locator(".info-guide-item").count(), 5);
+    const grid = await page.locator(".info-guide-grid").evaluate(el => getComputedStyle(el).gridTemplateColumns.split(" ").length);
+    assert.equal(grid, width < 768 ? 1 : 2);
+    for (const selector of ["#routeSelect", "#statusSelect", ".tl-route-content", ".stop-list-name", ".info-guide-item", "#bottomToolbar button"]) {
+      assert.ok(await page.locator(selector).first().evaluate(el => getComputedStyle(el).fontFamily.includes("PT Sans")), "PT Sans on " + selector);
+    }
+    await page.locator(".info-guide-section").evaluate(el => el.scrollIntoView({ block: "start", behavior: "instant" }));
+    await capture(page, width < 768 ? "live-guide-mobile.png" : "live-guide-desktop.png");
+    await page.click("#infoModalClose");
+  }
   const geojson = responses.filter(r => new URL(r.url).pathname.endsWith(".geojson"));
   assert.equal(new Set(geojson.map(r => r.url)).size, 4);
   assert.ok(geojson.every(r => r.status === 200 && r.matchesLocal));
@@ -108,5 +155,5 @@ try {
   await writeFile(path.join(output, "smoke.json"), JSON.stringify({ verifiedAt: new Date().toISOString(), url: base, expectedCommit: sha.trim(), browser: await browser.version(),
     transport: "Actual HTTPS production responses via inherited proxy; Python validates TLS using configured CA trust. No mocked assets/data.",
     errors, failures, geojsonCount: 4, loadedFontFaces: [400, 700], responses, captures }, null, 2) + "\n");
-  console.log("Production smoke passed: resources match local candidate, four GeoJSON, both fonts, LRT Jakarta/Jabodebek, navigation and landscape");
+  console.log("Production smoke passed: matching resources, four GeoJSON, both fonts, LRT/navigation/landscape, Network/detail sheets, K3 badges, full labels and guide cards");
 } finally { await browser.close(); }

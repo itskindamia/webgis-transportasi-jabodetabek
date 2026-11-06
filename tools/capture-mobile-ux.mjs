@@ -80,7 +80,7 @@ async function showDetail(page, tab = "stops", position = "half") {
 }
 async function guide(page, name) {
   await page.click("#tlAbout");
-  await page.locator(".info-guide-section").scrollIntoViewIfNeeded();
+  await page.locator(".info-guide-section").evaluate(el => el.scrollIntoView({ block: "start", behavior: "instant" }));
   await capture(page, name, "Kartu Cara Menggunakan dalam modal Informasi & Catatan");
   await page.click("#infoModalClose");
 }
