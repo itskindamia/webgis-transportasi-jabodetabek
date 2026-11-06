@@ -48,6 +48,8 @@ async function settle(page) {
     const tiles = [...document.querySelectorAll("#map .leaflet-tile")];
     return tiles.length > 0 && tiles.every(tile => tile.complete && tile.naturalWidth > 1);
   }, null, { timeout: 40000 });
+  // Image decoding completes before Leaflet finishes its tile opacity fade.
+  await page.waitForTimeout(250);
 }
 
 async function capture(page, filename, description) {

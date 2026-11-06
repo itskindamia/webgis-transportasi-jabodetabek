@@ -1,141 +1,192 @@
-# Prototipe layout Tabler + Leaflet — laporan sementara
+# Prototipe layout Tabler + Leaflet
 
-**Status: implementasi lokal telah dibuat dan 10 tes terakhir lulus, tetapi kode layout dan screenshot belum ter-push. Lingkungan eksekusi menjadi unavailable sebelum handoff. Commit laporan ini hanya berisi dokumentasi, bukan implementasi layout.**
+Implementasi map-first tersedia pada branch `feat/layout-tabler-prototype` untuk
+review layout. Workspace asli `/workspace/work/webgis-tabler` berhasil diakses
+kembali dan perubahan lokal dipulihkan; implementasi ini **bukan rekonstruksi**
+dari laporan. Kode, dependensi, stylesheet hasil build, tes, dan screenshot
+disimpan melalui commit bertahap.
 
-Tanggal pekerjaan: 6 November 2026.
+Baseline: main pada `3835e534f4aa0ee8889b77924cf58ccaab20f4db`. PR A01 tetap
+terpisah. Tidak ada merge, deployment GitHub Pages, perubahan URL publik,
+atau migrasi database.
 
-## Branch dan batas perubahan
+## Menjalankan secara lokal
 
-- Branch: `feat/layout-tabler-prototype`, dibuat dari `main` pada `3835e534f4aa0ee8889b77924cf58ccaab20f4db`.
-- PR A01 / `fix/a01-toggle-non-existing` tetap terpisah, head terakhir diperiksa `fc56479fc5ee21584efee0c7550a7538bdc1326c`.
-- Tidak ada merge, deployment, perubahan URL publik, atau migrasi database.
-- Pada hasil lokal, seluruh empat GeoJSON dan `js/map.js` dipertahankan byte demi byte. GeoJSON, geometri, atribut, STOP_ID, GEOM_ID, keputusan operasional, arah, dan urutan halte tidak diedit.
-- Pengujian integritas juga melindungi kedua stylesheet lama dan `js/layout-concept.js`, serta keberadaan seluruh 87 ID DOM asli.
+Node 20+ diperlukan. CSS hasil build disertakan, sehingga server statis dapat
+dijalankan tanpa memasang dependensi pengembangan:
 
-## Audit struktur dan keputusan layout
-
-| Area | Kondisi awal | Pendekatan prototipe lokal |
-| --- | --- | --- |
-| Entry HTML | Shell lama dengan kontrol filter, informasi, pencarian, basemap, dan detail | Susun ulang shell; pertahankan semua ID dan isi komponen yang dipakai engine |
-| CSS | `style.css` sekitar 447 KB ditambah `layout-concept.css`; banyak aturan global, aturan berulang, dan prioritas tinggi | Pisahkan layer Tabler, komponen dinamis lama, dan shell prototipe; CSS lama tetap disimpan tetapi tidak dimuat oleh entry prototipe |
-| JavaScript | `map.js` sekitar 635 KB / 31 ribu baris; logika transportasi dan ukuran panel saling terkait | Engine tidak diedit; adapter layout terpisah mengganti pengukuran panel dan padding popup/peta |
-| Desktop | Overlay panel lama memakai ukuran viewport | Header minimalis, sidebar collapsible, peta fleksibel, panel detail di kanan |
-| Tablet 768 px | Kontrol berpotensi menghabiskan area peta | Sidebar dan detail menjadi overlay; hanya satu panel samping terbuka |
-| Mobile 390 px | Panel lama dan toolbar bersaing dengan peta | Search mengambang, dock empat tombol, filter/informasi/detail sebagai bottom sheet |
-| Ukuran Leaflet | Layout lama melakukan pengukuran dan fit ulang khusus shell lama | ResizeObserver pada kontainer dan invalidateSize; perubahan chrome tidak memanggil fit ulang rute |
-| Popup dan atribusi | Opsi popup lama menghitung viewport dan sidebar lama | Padding berdasarkan kontainer peta; popup dan atribusi dijaga di atas bottom sheet |
-| Seleksi halte | Daftar, marker, popup, kartu, dan URL ditangani engine | Kontrol lama tetap dipakai; adapter mengamati isi komponen untuk tab dan judul detail |
-
-Komponen Tabler UI 1.4.0 dikompilasi dari Sass terpilih: typography, forms, buttons, cards, badges, navigation, icons, dan dasar layout. Tidak memuat bundle JavaScript Tabler. Leaflet tetap versi 1.9.4. Subset lokal Tabler Icons terdiri dari 17 ikon.
-
-Shell dan CSS komponen lama hasil ekstraksi tidak menambahkan `!important`. Build Tabler terakhir yang berhasil masih memuat 18 deklarasi prioritas dari vendor. Usaha berikutnya untuk menormalisasi deklarasi vendor tidak berhasil dijalankan karena lingkungan terputus; jangan menganggap perubahan tersebut telah diterapkan.
-
-## Berkas lokal yang sudah dibuat atau diubah
-
-Lokasi checkout sebelum lingkungan terputus: `/workspace/work/webgis-tabler`.
-
-| Berkas | Perubahan lokal |
-| --- | --- |
-| `index.html` | Shell Tabler, sidebar, peta, detail bertab, dock dan bottom sheet; semua hook DOM lama dipertahankan |
-| `js/app-loader.js` | Menambahkan event kesiapan engine untuk adapter layout |
-| `js/layout-tabler.js` | Toggle panel, adapter fungsi pengukuran UI, ResizeObserver, tab, mode layanan proxy, aksesibilitas kontrol, ruang popup dan atribusi |
-| `css/layout-tabler.css` | Shell responsif, spacing, typography, komponen, dan breakpoint |
-| `css/tabler-components.scss` / `css/tabler-components.css` | Sumber Sass pilihan dan CSS Tabler hasil build |
-| `css/legacy-components.css` | Presentasi popup, badge, legenda, daftar, dialog dan komponen dinamis lama yang tetap diperlukan |
-| `tools/build-tabler-css.mjs` | Build CSS terpilih serta ekstraksi komponen lama tanpa shell lama |
-| `tools/serve-layout.mjs` | Server statis lokal Node |
-| `tools/layout-browser.mjs` | Fixture browser dengan data dan Leaflet asli serta tile/geocoding terisolasi |
-| `tools/test-layout-tabler.mjs` | Sepuluh tes integritas dan interaksi browser |
-| `docs/layout-tabler/source-integrity.json` | Hash SHA-256 berkas terlindungi dari baseline dan daftar ID DOM asli |
-| `assets/icons/tabler.svg` | Sprite subset ikon Tabler |
-| `assets/licenses/*` / `THIRD_PARTY_NOTICES.md` | Lisensi Tabler, Bootstrap 5.3.7, dan Tabler Icons |
-| `package.json` / `package-lock.json` / `.gitignore` | Perintah dev/build/test, versi dependensi terkunci, dan pengabaian artefak lokal |
-| `docs/layout-tabler/screenshots/*` | Tujuh screenshot aktual pada empat lebar layar; belum dapat diekspor |
-
-Berkas implementasi dalam tabel ini belum tersedia di branch remote. Jangan menjalankan instruksi berikut dari clone remote saat ini dengan menganggap prototipe sudah tersimpan.
-
-## Menjalankan hasil lokal setelah workspace pulih
-
-Node 20+; CSS hasil build sudah tersedia di checkout lokal.
-
-```sh
-cd /workspace/work/webgis-tabler
+~~~sh
+git clone --branch feat/layout-tabler-prototype https://github.com/itskindamia/webgis-transportasi-jabodetabek.git
+cd webgis-transportasi-jabodetabek
 npm run dev
-```
+~~~
 
-Server terakhir berjalan pada `http://localhost:5173/`. Server lokal terputus bersama lingkungan; URL ini bukan deployment publik.
+Buka http://localhost:5173/. Leaflet CDN, tile basemap, dan pencarian Nominatim
+tetap menggunakan layanan eksternal seperti aplikasi sebelumnya.
 
-Untuk membangun ulang CSS dan menjalankan tes setelah berkas berhasil diserahkan:
+Untuk build dan tes:
 
-```sh
+~~~sh
 npm ci
 npm run build:ui
 npx playwright install chromium
 npm run test:layout
-```
+~~~
 
-Dalam lingkungan kerja terakhir, Chromium yang telah tersedia digunakan melalui:
+Chromium yang telah terpasang dapat dipilih secara eksplisit:
 
-```sh
+~~~sh
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:layout
-```
+~~~
 
-## Hasil pengujian terakhir yang berhasil
+## Audit struktur dan hasil implementasi
 
-**10 tes lulus, 0 gagal, durasi 58,43 detik, Chromium headless.** Pemeriksaan ini dilakukan sebelum gangguan lingkungan dan sebelum normalisasi vendor yang gagal diterapkan. Pemformatan whitespace HTML sesudah tes belum diuji ulang.
+| Area | Struktur awal | Hasil prototipe |
+| --- | --- | --- |
+| HTML | Kontrol dan informasi bergantung pada shell lama | Header minimalis, sidebar jaringan, peta utama, panel detail bertab; semua 87 ID DOM asli dipertahankan |
+| CSS | Dua stylesheet shell, banyak selector global dan aturan berulang | Layer tabler, legacy-components, prototype; stylesheet shell lama disimpan tetapi tidak dimuat entry baru |
+| JavaScript | map.js sekitar 635 KB mencampur operasi transportasi dan pengukuran UI | Engine tetap byte-identical; adapter layout terpisah untuk panel dan ukuran |
+| Desktop | Pengukuran panel bergantung pada viewport | Grid sidebar–peta–detail; sidebar dan detail dapat ditutup; peta mengikuti grid |
+| Tablet 768 px | Panel berpotensi menyisakan area peta terlalu sempit | Panel menjadi overlay; jaringan dan detail dibuka bergantian |
+| Mobile 390 px | Kontrol bersaing dengan peta | Search mengambang, dock empat tombol, bottom sheet filter/informasi/detail, handle expand |
+| Leaflet | Padding dan fit bergantung pada shell lama | ResizeObserver dan invalidateSize mengikuti kontainer; penutupan panel tidak memanggil fit ulang rute |
+| Popup mobile | Margin, sheet, atribusi dan kontrol membutuhkan ruang tersendiri | Padding dan isi popup responsif; seleksi ulang halte yang sama juga memperkecil sheet |
+| State | Engine memegang seleksi, marker, daftar dan URL | Kontrol lama tetap digunakan; adapter mengamati hasil render dan meneruskan pilihan layanan ke select asli |
+
+Tabler UI **1.4.0** dikompilasi dari Sass terpilih: typography, forms, buttons,
+cards, badges, navigation, icons, dan dasar layout. Bundle JavaScript Tabler
+tidak dimuat. Leaflet tetap **1.9.4**. Sprite lokal berisi 17 ikon Tabler Icons
+**3.35.0**. Versi dependensi terkunci dalam package-lock.json.
+
+CSS shell baru dan ekstraksi komponen lama memiliki **0 deklarasi !important**.
+CSS Tabler mempertahankan 18 deklarasi vendor. Aturan lama untuk badge,
+popup, legenda dan informasi jaringan diekstraksi agar presentasi data tetap
+tersedia; seluruh duplikasi CSS proyek belum dibersihkan.
+
+## Integritas dan batas perubahan
+
+- Empat GeoJSON dan js/map.js tidak berubah byte demi byte. Geometri, atribut,
+  STOP_ID, GEOM_ID, nama, status, arah, pengalihan dan urutan halte tidak diedit.
+- Adapter hanya mengganti helper pengukuran dan kontrol panel UI; fungsi
+  transportasi, seleksi/navigasi dan sinkronisasi URL tetap memakai engine asli.
+- [source-integrity.json](layout-tabler/source-integrity.json) melindungi SHA-256
+  delapan berkas: empat GeoJSON, js/map.js, js/layout-concept.js dan kedua CSS lama.
+- Semua 87 ID DOM baseline tetap ada; entry prototipe memiliki 109 ID unik.
+  Select lama tetap menjadi hook engine walaupun pilihan layanan ditampilkan
+  melalui tombol baru.
+- Pencarian transportasi/tempat, basemap/opasitas, legenda, popup, integrasi,
+  GPS, home, zoom, perbandingan rute dan navigasi halte tetap terhubung.
+
+## Berkas utama yang berubah
+
+| Berkas | Peran |
+| --- | --- |
+| index.html | Shell Tabler dan penempatan ulang komponen |
+| js/app-loader.js | Event kesiapan engine |
+| js/layout-tabler.js | Panel, tab, mode proxy, resize, padding popup dan atribusi |
+| css/layout-tabler.css | Shell responsif, spacing, typography dan breakpoint |
+| css/tabler-components.scss / css/tabler-components.css | Sass terpilih dan hasil build |
+| css/legacy-components.css | Presentasi komponen dinamis lama yang masih diperlukan |
+| assets/icons/tabler.svg / assets/licenses/* | Sprite ikon dan lisensi |
+| package.json / package-lock.json / .gitignore | Perintah lokal, dependensi dan pengabaian artefak sementara |
+| tools/build-tabler-css.mjs / tools/serve-layout.mjs | Build dan server lokal |
+| tools/layout-browser.mjs / tools/test-layout-tabler.mjs | Fixture dan regresi browser |
+| tools/capture-layout.mjs / tools/fetch-preview-tile.py | Capture aktual dengan tile penyedia |
+| docs/layout-tabler/verification/* | Log tes/audit dan ringkasan |
+| docs/layout-tabler/screenshots/* | Delapan PNG dan manifest |
+| README.md / THIRD_PARTY_NOTICES.md | Cara menjalankan dan atribusi |
+
+## Pengujian terbaru
+
+**10 tes lulus, 0 gagal**, Chromium headless.
+[Log lengkap](layout-tabler/verification/layout-tests.tap) dan
+[ringkasan mesin](layout-tabler/verification/summary.json) disertakan.
 
 | Pengujian | Hasil |
 | --- | --- |
-| Hash data/engine/CSS lama dan hook DOM | Lulus |
+| Hash sumber, hook DOM, ID unik dan prioritas CSS shell/komponen lama | Lulus |
 | Layout dan resize Leaflet 390 × 844 | Lulus |
 | Layout dan resize Leaflet 768 × 1024 | Lulus |
 | Layout dan resize Leaflet 1366 × 900 | Lulus |
 | Layout dan resize Leaflet 1600 × 1000 | Lulus |
-| Seleksi halte, popup, navigasi sebelumnya/berikutnya, integrasi, tab dan URL | Lulus |
-| Pencarian transportasi, pencarian tempat, basemap, opasitas, legenda, informasi | Lulus |
+| Seleksi halte, popup, sebelumnya/berikutnya, integrasi, tab dan URL | Lulus |
+| Pencarian transportasi/tempat, basemap, opasitas, legenda dan informasi | Lulus |
 | Keyboard tab dan perpindahan breakpoint | Lulus |
-| Popup mobile dan atribusi tidak tertutup detail sheet | Lulus |
+| Popup mobile bebas dari kontrol/atribusi/sheet, seleksi ulang keyboard dan tombol tutup | Lulus |
 | GPS, home, zoom dan perbandingan rute | Lulus |
 
-Tidak ditemukan error JavaScript baru dalam alur tersebut atau overflow horizontal. Ukuran Leaflet cocok dengan ukuran kontainer setelah panel dibuka/ditutup. Zoom tetap; center saat resize diperiksa dalam toleransi pembulatan satu piksel Leaflet.
+Tidak ada overflow horizontal atau error runtime baru dalam alur tersebut.
+Ukuran Leaflet cocok dengan kontainer setelah perubahan panel. Zoom tidak
+berubah saat menutup panel; center diperiksa dalam toleransi pembulatan satu
+piksel Leaflet.
 
-Pencarian tempat dan GPS memakai respons/posisi uji yang deterministik. Tile pada tes regresi diisolasi. Screenshot visual menggunakan tile Esri aktual yang diambil melalui proxy dan cache sementara, bukan tile kosong pada fixture tes.
+Tes regresi mengisolasi tile/geocoding dan memakai posisi GPS uji. HTML, data,
+engine dan Leaflet yang dijalankan merupakan berkas asli. Screenshot memakai
+server HTTP lokal sesungguhnya dan tile aktual. Bytes Leaflet CDN dipasok dari
+paket npm versi identik dengan SRI; Google Fonts opsional memakai system
+fallback saat capture. Ini bukan pengujian menyeluruh ketersediaan layanan
+eksternal.
 
-### Baseline audit repository
+QA visual menemukan popup mobile bertabrakan dengan atribusi dan ruang
+kontrol. Reproduksi negatif checkpoint lama tersimpan dalam
+[mobile-popup-before.tap](layout-tabler/verification/mobile-popup-before.tap);
+regresi setelah perbaikan dalam
+[mobile-popup-after.tap](layout-tabler/verification/mobile-popup-after.tap).
+Keduanya terpisah dari audit data di bawah.
 
-| Pemeriksaan | Main 3835e534 | Prototipe lokal |
+### Perbandingan audit repository
+
+| Pemeriksaan | Baseline main | Prototipe |
 | --- | --- | --- |
-| `node --check` untuk JavaScript aplikasi | Lulus | Pemeriksaan adapter baru lulus sebelum pengujian browser |
-| `node tools/audit-navigation.mjs` | Lulus, dengan catatan lama | Lulus; output identik |
-| `node tools/audit.mjs` | Gagal pada konflik identitas data yang sudah ada | Gagal; output identik |
-| `python tools/audit-k01-k10-rail.py` | Gagal pada temuan data/rail lama | Gagal; output identik |
+| npm ci dan npm run build:ui | Belum tersedia | Lulus |
+| node --check JavaScript aplikasi/adapter/tooling | Aplikasi lama lulus | Lulus |
+| node tools/audit-navigation.mjs | Lulus dengan catatan lama | Lulus, output identik |
+| node tools/audit.mjs | Gagal: konflik STOP_ID dan GEOM_ID | Gagal, output identik |
+| python tools/audit-k01-k10-rail.py | Gagal: temuan identitas/data/rail lama | Gagal, output identik |
 
-Kegagalan baseline tersebut tidak diperbaiki pada pekerjaan layout. A01 dari main juga tetap ada karena PR A01 belum digabung; suite layout ini tidak mengklaim memperbaiki toggle non-eksisting.
+Stdout/stderr lengkap baseline dan prototipe tersedia di
+[audits.json](layout-tabler/verification/audits.json). Temuan data lama tidak
+diperbaiki pada pekerjaan layout.
 
-## Screenshot yang dibuat tetapi belum berhasil diserahkan
+## Screenshot untuk review
 
-- `layout-1366.png`: desktop, Koridor 1 dengan daftar halte.
-- `layout-1600.png`: desktop lebar, Koridor 1.
-- `layout-768.png`: tablet dengan panel detail.
-- `layout-390.png`: mobile dengan detail sheet ringkas.
-- `mobile-filter.png`: bottom sheet jaringan.
-- `mobile-detail-expanded.png`: bottom sheet detail diperbesar.
-- `desktop-route-summary.png`: tab ringkasan rute.
+| Viewport / keadaan | Berkas |
+| --- | --- |
+| Desktop 1366 × 900 | [layout-1366.png](layout-tabler/screenshots/layout-1366.png) |
+| Desktop 1600 × 1000 | [layout-1600.png](layout-tabler/screenshots/layout-1600.png) |
+| Tablet 768 × 1024 | [layout-768.png](layout-tabler/screenshots/layout-768.png) |
+| Mobile 390 × 844 | [layout-390.png](layout-tabler/screenshots/layout-390.png) |
+| Ringkasan rute desktop | [desktop-route-summary.png](layout-tabler/screenshots/desktop-route-summary.png) |
+| Detail mobile diperbesar | [mobile-detail-expanded.png](layout-tabler/screenshots/mobile-detail-expanded.png) |
+| Filter mobile | [mobile-filter.png](layout-tabler/screenshots/mobile-filter.png) |
+| Popup dan seleksi mobile | [mobile-stop-popup.png](layout-tabler/screenshots/mobile-stop-popup.png) |
 
-Screenshot ini dibuat sebelum penyempurnaan terakhir posisi atribusi, batas tinggi sheet, dan pemulihan sheet ringkas saat memilih halte; screenshot final harus diambil ulang setelah workspace pulih. Jangan menafsirkan daftar nama berkas ini sebagai lampiran yang sudah tersedia.
+Timestamp, commit aplikasi saat capture, versi Chromium, dimensi kontainer,
+jumlah tile aktual dan SHA-256 PNG tercatat dalam
+[manifest.json](layout-tabler/screenshots/manifest.json).
 
-## Belum selesai diintegrasikan atau diverifikasi
+Untuk mengambil ulang, diperlukan Python 3 standard library dan akses HTTPS
+ke penyedia tile melalui konfigurasi proxy yang diwariskan:
 
-1. **P0 — Pulihkan akses workspace, simpan implementasi, jalankan ulang tes final, ambil ulang dan ekspor screenshot.** Branch remote saat laporan ini dibuat hanya memuat baseline dan laporan ini.
-2. **P1 — Review visual layout dan perilaku sheet** sebelum merge apa pun.
-3. **P1 — Validasi ulang onboarding/guided tour lama** terhadap anchor layout baru; tes layout menutup onboarding untuk menguji aplikasi utama.
-4. **P2 — Gestur drag/swipe bottom sheet** belum diimplementasikan; prototipe memakai tombol handle untuk memperbesar/memperkecil.
-5. **P2 — Safari/iOS, perangkat sentuh nyata, keyboard virtual, dan audit aksesibilitas lengkap** belum diuji.
-6. **P2 — Kurangi sisa CSS komponen lama** setelah review visual; ekstraksi sengaja mempertahankan presentasi badge dan informasi jaringan.
-7. **Terpisah — A01 dan konflik GEOM_ID/STOP_ID serta temuan audit lain** tetap mengikuti jalur perbaikan masing-masing.
+~~~sh
+npm run capture:layout
+~~~
 
-Adapter layout masih bergantung pada beberapa fungsi UI global di monolit `map.js`; perubahan engine di masa depan membutuhkan pengujian kontrak layout. Belum ada klaim kesiapan produksi.
+Tool memulai server lokal sementara pada port 5187 dan menutupnya setelah
+capture. Cache tile berada di direktori sementara, tidak masuk repository.
 
-## Langkah handoff berikutnya
+## Batas integrasi yang tersisa
 
-Setelah lingkungan tersedia, periksa checkout tanpa menimpa perubahan, verifikasi baseline dan head PR A01, jalankan build/tes final, bandingkan hash data/engine dengan baseline, simpan screenshot final, lalu commit/push hanya ke branch prototipe. Siapkan review layout terpisah. Jangan merge atau deploy.
+1. **Onboarding/guided tour lama:** anchor dan copy belum disesuaikan penuh;
+   suite layout menutup onboarding untuk menguji aplikasi utama. Perlu review
+   terpisah sebelum produksi.
+2. **Gestur drag/swipe bottom sheet:** belum tersedia; gunakan tombol handle.
+3. **Safari/iOS, perangkat sentuh nyata, keyboard virtual dan screen reader:**
+   belum divalidasi menyeluruh; pengujian memakai Chromium headless.
+4. **Ketergantungan helper UI global:** perubahan engine memerlukan regresi
+   layout. CSS komponen lama juga masih memiliki aturan berulang.
+5. **A01 dan audit data:** bug toggle non-eksisting tetap mengikuti PR A01;
+   konflik STOP_ID/GEOM_ID dan temuan lain tetap ada.
+
+Prototipe disiapkan untuk review layout melalui Draft PR, belum untuk
+produksi. Jangan merge atau deploy sebelum review selesai.
