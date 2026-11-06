@@ -44,6 +44,7 @@ for (const [width, height] of [[568, 320], [844, 390]]) test(`compact landscape 
     assert.equal(await page.evaluate(() => currentSelectedStopKey), key);
     assert.equal(page.url(), url);
     const popup = await page.locator(".leaflet-popup").boundingBox();
+    if (width === 844) assert.ok(popup.width >= 400, "popup uses the space released by the tablet detail overlay");
     assert.ok(popup.x >= 0 && popup.y >= 0 && popup.x + popup.width <= width && popup.y + popup.height <= height);
     for (const selector of ["#zoomInButton", "#gpsButton", ".leaflet-popup-close-button"]) await page.locator(selector).click({ trial: true });
     assert.equal(await page.locator(".leaflet-control-attribution").evaluate(el => {

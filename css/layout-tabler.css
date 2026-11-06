@@ -378,6 +378,8 @@
   }
   .tl-short-landscape .tl-map-caption { display: none; }
   .tl-short-landscape.tl-stop-popup-open:not(.tl-popup-shelved) .tl-detail-panel { visibility: hidden; pointer-events: none; }
+  .tl-short-landscape.tl-stop-popup-open:not(.tl-popup-shelved) .tl-map-actions,
+  .tl-short-landscape.tl-stop-popup-open:not(.tl-popup-shelved) .tl-map-navigation { right: max(12px, env(safe-area-inset-right, 0px)); }
   .tl-short-landscape.tl-popup-shelved #map .leaflet-popup { visibility: hidden; pointer-events: none; }
   @media (max-width: 359px) {
     .tl-brand { gap: 6px; }
