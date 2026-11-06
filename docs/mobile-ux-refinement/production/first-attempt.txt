@@ -1,0 +1,33 @@
+Live capture live-velodrome-desktop.png
+Live capture live-cawang-mobile.png
+Live capture live-landscape-568.png
+Live capture live-landscape-844.png
+Live capture live-k3-list-desktop.png
+Live capture live-guide-desktop.png
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#routeCompareAdd')[22m
+[2m    - locator resolved to <button type="button" id="routeCompareAdd" aria-expanded="false" class="route-compare-add" aria-controls="routeComparePicker">…</button>[22m
+[2m  - attempting click action (trial run)[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action (trial run)[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action (trial run)[22m
+[2m      - waiting 100ms[22m
+[2m    58 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is not visible[22m
+[2m     - retrying click action (trial run)[22m
+[2m       - waiting 500ms[22m
+
+    at /workspace/work/webgis-mobile-ux-live/tools/smoke-live.mjs:115:44 {
+  name: 'TimeoutError'
+}
+
+Node.js v24.22.1

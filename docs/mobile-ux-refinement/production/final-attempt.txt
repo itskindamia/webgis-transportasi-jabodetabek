@@ -1,0 +1,10 @@
+Live capture live-velodrome-desktop.png
+Live capture live-cawang-mobile.png
+Live capture live-landscape-568.png
+Live capture live-landscape-844.png
+Live capture live-k3-list-desktop.png
+Live capture live-guide-desktop.png
+Live capture live-network-mobile.png
+Live capture live-k3-list-mobile.png
+Live capture live-guide-mobile.png
+Production smoke passed: matching resources, four GeoJSON, both fonts, LRT/navigation/landscape, Network/detail sheets, K3 badges, full labels and guide cards
