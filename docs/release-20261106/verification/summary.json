@@ -1,0 +1,64 @@
+{
+  "productionBefore": "10abd9eb918d81c9bd0f696d1e3742615c28ca37",
+  "backupBranch": "backup/production-20261106-10abd9e",
+  "pr3Merge": "ba838579eacd24f20301205e3f404910be96a5bc",
+  "implementationCommit": "4080476933be298d2c9c2cfb99157f571baa6059",
+  "tests": {
+    "pr3": {
+      "pass": 19,
+      "fail": 0
+    },
+    "full": {
+      "pass": 50,
+      "fail": 0
+    },
+    "affectedRecheck": {
+      "pass": 5,
+      "fail": 0
+    }
+  },
+  "protectedHashesMatch": 8,
+  "auditsIdenticalToBaseline": true,
+  "navigationExitCode": 0,
+  "knownDataAuditExitCodes": [
+    1,
+    1
+  ],
+  "screenshotCount": 14,
+  "viewports": [
+    [
+      320,
+      568
+    ],
+    [
+      360,
+      800
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      768,
+      1024
+    ],
+    [
+      1366,
+      900
+    ],
+    [
+      1600,
+      1000
+    ],
+    [
+      568,
+      320
+    ],
+    [
+      844,
+      390
+    ]
+  ],
+  "physicalDevicesAndSafariTested": false,
+  "publicationStatus": "Recorded on PR4 after deployment verification"
+}

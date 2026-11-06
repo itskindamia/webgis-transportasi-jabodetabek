@@ -1,0 +1,5 @@
+
+> build:ui
+> node tools/build-tabler-css.mjs
+
+{"tablerBytes":162306,"legacyRules":1351,"legacyBytes":175733}
