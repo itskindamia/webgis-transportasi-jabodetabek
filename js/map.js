@@ -20925,23 +20925,19 @@ routeInfoEl
           selectedFeature &&
           (
             (
-              isProposedStopFeature(
+              isProposedStop(
                 selectedFeature
               )
               &&
-              !isOptionalStopVisible(
-                "Proposed"
-              )
+              !showProposedStops
             )
             ||
             (
-              isConceptualStopFeature(
+              isConceptualStop(
                 selectedFeature
               )
               &&
-              !isOptionalStopVisible(
-                "Conceptual"
-              )
+              !showConceptualStops
             )
           );
 
@@ -20949,6 +20945,10 @@ routeInfoEl
           clearSelectedStop();
         }
       }
+
+      /* drawStops mengganti marker; pulihkan seleksi yang masih terlihat. */
+      const selectedStopKey =
+        currentSelectedStopKey;
 
       renderRouteInfo(
         getRouteById(
@@ -20963,6 +20963,16 @@ routeInfoEl
       drawStops(
         routeId
       );
+
+      if (selectedStopKey) {
+        selectStop(
+          selectedStopKey,
+          routeId,
+          false
+        );
+      } else {
+        syncUrlState();
+      }
     }
   );
 
