@@ -6,9 +6,15 @@ kembali dan perubahan lokal dipulihkan; implementasi ini **bukan rekonstruksi**
 dari laporan. Kode, dependensi, stylesheet hasil build, tes, dan screenshot
 disimpan melalui commit bertahap.
 
-Baseline: main pada `3835e534f4aa0ee8889b77924cf58ccaab20f4db`. PR A01 tetap
-terpisah. Tidak ada merge, deployment GitHub Pages, perubahan URL publik,
-atau migrasi database.
+Baseline data/engine: `3835e534f4aa0ee8889b77924cf58ccaab20f4db`. PR A01 tetap
+terpisah. Pekerjaan refinement ini tidak melakukan merge ke main, deployment
+GitHub Pages, perubahan URL publik, atau migrasi database.
+
+PR #2 telah di-merge oleh itskindamia pada 6 November 2026, 09:41 UTC, sebagai
+commit squash `10abd9eb918d81c9bd0f696d1e3742615c28ca37`. Tree main tersebut
+identik dengan `26c6086`. Riwayat feature branch diselaraskan dengan baseline
+terbitan ini tanpa perubahan kode/hasil tes; review refinement menggunakan
+Draft PR lanjutan dari branch `feat/layout-tabler-prototype` yang sama.
 
 ## Menjalankan secara lokal
 
