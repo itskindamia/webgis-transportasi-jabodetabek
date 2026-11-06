@@ -232,7 +232,7 @@
     setDetailExpanded(!body.classList.contains("tl-detail-expanded"));
   });
   const positionBar = byId("tlDetailExpand").parentElement;
-  for (const [id, label, position] of [["tlDetailCollapse", "Ringkas", "collapsed"], ["tlDetailHalf", "Sedang", "half"]]) {
+  for (const [id, label, position] of [["tlDetailCollapse", "Mini", "collapsed"], ["tlDetailHalf", "Sedang", "half"]]) {
     const button = document.createElement("button"); button.id = id; button.type = "button";
     button.className = "tl-sheet-position"; button.textContent = label;
     button.setAttribute("aria-label", `Posisi detail ${label.toLowerCase()}`);
@@ -303,6 +303,16 @@
     const selected = !byId("selectedStopInfo").hidden;
     byId("tlTabSelected").disabled = !selected;
     const option = byId("routeSelect").selectedOptions[0];
+    const routeLabel = option?.text.trim() || "";
+    const fullName = byId("tlRouteFullName");
+    byId("routeSelect").title = routeLabel;
+    const descriptions = new Set((byId("routeSelect").getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
+    descriptions.add(fullName.id);
+    byId("routeSelect").setAttribute("aria-describedby", [...descriptions].join(" "));
+    for (const item of byId("routeSelect").options) item.title = item.text;
+    fullName.hidden = !route;
+    if (fullName.textContent !== routeLabel) fullName.textContent = routeLabel;
+    for (const name of byId("stopList").querySelectorAll(".stop-list-name")) name.title = name.textContent.trim().replace(/\s+/g, " ");
     const heading = byId("routeInfo").querySelector(".route-title, h2");
     const selectedHeading = byId("selectedStopInfo").querySelector(".selected-stop-title, .selected-stop-name, .stop-name, h3, h2");
     const count = new Set(getFilteredRoutes().map(getRouteId)).size;
@@ -310,6 +320,7 @@
     const mode = byId("modeSelect").selectedOptions[0]?.text || "Semua layanan";
     byId("tlVisibleCount").textContent = `${count} lin / koridor pada filter aktif`;
     byId("tlMapContext").textContent = route ? (option?.text || heading?.textContent || route) : mode;
+    byId("tlMapContext").title = byId("tlMapContext").textContent;
     byId("tlMapStatus").textContent = status;
     byId("tlTabStops").textContent = ["ALL", "BRT"].includes(byId("modeSelect").value) ? "Daftar halte" : "Daftar stasiun";
     byId("tlDetailEyebrow").textContent = route ? "DETAIL JARINGAN" : "JARINGAN JABODETABEK";

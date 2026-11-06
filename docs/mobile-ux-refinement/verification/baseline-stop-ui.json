@@ -1,0 +1,678 @@
+{
+  "BRT_01": [
+    {
+      "key": "BRT001_REG_A",
+      "logicalKey": "STOP:BRT001",
+      "name": "Blok M",
+      "sequence": "01",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "Terminus",
+          "className": "stop-list-badges-left"
+        }
+      ]
+    },
+    {
+      "key": "BRT002_REG_A",
+      "logicalKey": "STOP:BRT002",
+      "name": "ASEAN",
+      "sequence": "02",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "→\n          \n        \n          \n            Transit",
+          "className": "stop-list-badges-right"
+        }
+      ]
+    },
+    {
+      "key": "BRT003_REG_B",
+      "logicalKey": "STOP:BRT003",
+      "name": "Kejaksaan Agung",
+      "sequence": "02",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "←\n          \n        \n          \n            Transit",
+          "className": "stop-list-badges-right"
+        }
+      ]
+    },
+    {
+      "key": "BRT004_REG",
+      "logicalKey": "STOP:BRT004",
+      "name": "Masjid Agung",
+      "sequence": "03",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT005_REG",
+      "logicalKey": "STOP:BRT005",
+      "name": "Bundaran Senayan",
+      "sequence": "04",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT006_REG",
+      "logicalKey": "STOP:BRT006",
+      "name": "Senayan Bank Jakarta",
+      "sequence": "05",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT007_REG",
+      "logicalKey": "STOP:BRT007",
+      "name": "Polda Metro Jaya",
+      "sequence": "06",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT008_REG",
+      "logicalKey": "STOP:BRT008",
+      "name": "Bendungan Hilir",
+      "sequence": "07",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "Transit",
+          "className": "stop-list-badges-right"
+        }
+      ]
+    },
+    {
+      "key": "BRT009_REG",
+      "logicalKey": "STOP:BRT009",
+      "name": "Karet",
+      "sequence": "08",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT010_REG",
+      "logicalKey": "STOP:BRT010",
+      "name": "Dukuh Atas",
+      "sequence": "09",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "Transit",
+          "className": "stop-list-badges-right"
+        }
+      ]
+    },
+    {
+      "key": "BRT011_REG",
+      "logicalKey": "STOP:BRT011",
+      "name": "Tosari",
+      "sequence": "10",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT012_REG",
+      "logicalKey": "STOP:BRT012",
+      "name": "Bundaran HI Astra",
+      "sequence": "11",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT013_REG",
+      "logicalKey": "STOP:BRT013",
+      "name": "M.H. Thamrin",
+      "sequence": "12",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT014_TEMP_A",
+      "logicalKey": "STOP:BRT014",
+      "name": "Kebon Sirih",
+      "sequence": "13",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting · Sementara",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "Halte Sementara",
+          "className": "stop-list-badges-left"
+        },
+        {
+          "text": "→",
+          "className": "stop-list-badges-right"
+        }
+      ]
+    },
+    {
+      "key": "BRT015_REG",
+      "logicalKey": "STOP:BRT015",
+      "name": "Monumen Nasional",
+      "sequence": "14",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        },
+        {
+          "text": "2",
+          "title": "Koridor 2 (Pulo Gadung - Monumen Nasional) · Eksisting · Terminus sementara",
+          "color": "rgb(41, 74, 153)"
+        },
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting · Terminus sementara",
+          "color": "rgb(251, 199, 31)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT016_TEMP",
+      "logicalKey": "STOP:BRT016",
+      "name": "Harmoni",
+      "sequence": "15",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting · Sementara",
+          "color": "rgb(208, 33, 39)"
+        },
+        {
+          "text": "2",
+          "title": "Koridor 2 (Pulo Gadung - Monumen Nasional) · Eksisting · Tidak dilayani sementara",
+          "color": "rgb(41, 74, 153)"
+        },
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting · Tidak dilayani sementara",
+          "color": "rgb(251, 199, 31)"
+        },
+        {
+          "text": "8",
+          "title": "Koridor 8 (Lebak Bulus - Pasar Baru) · Eksisting · Tidak dilayani sementara",
+          "color": "rgb(215, 52, 146)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "Halte Sementara",
+          "className": "stop-list-badges-left"
+        }
+      ]
+    },
+    {
+      "key": "BRT017_TEMP",
+      "logicalKey": "STOP:BRT017",
+      "name": "Sawah Besar",
+      "sequence": "16",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting · Sementara",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "Halte Sementara",
+          "className": "stop-list-badges-left"
+        }
+      ]
+    },
+    {
+      "key": "BRT018_TEMP",
+      "logicalKey": "STOP:BRT018",
+      "name": "Mangga Besar",
+      "sequence": "17",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting · Sementara",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "Halte Sementara",
+          "className": "stop-list-badges-left"
+        }
+      ]
+    },
+    {
+      "key": "BRT019_REG_B",
+      "logicalKey": "STOP:BRT019",
+      "name": "Taman Sari",
+      "sequence": "18",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT020_TEMP",
+      "logicalKey": "STOP:BRT020",
+      "name": "Glodok",
+      "sequence": "19",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting · Sementara",
+          "color": "rgb(208, 33, 39)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "Halte Sementara",
+          "className": "stop-list-badges-left"
+        }
+      ]
+    },
+    {
+      "key": "BRT021_REG_A",
+      "logicalKey": "STOP:BRT021",
+      "name": "Kali Besar",
+      "sequence": "20",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        },
+        {
+          "text": "12",
+          "title": "Koridor 12 (Pluit - Tanjung Priok) · Eksisting",
+          "color": "rgb(119, 187, 121)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "→",
+          "className": "stop-list-badges-right"
+        }
+      ]
+    },
+    {
+      "key": "BRT022_REG_A",
+      "logicalKey": "STOP:BRT022",
+      "name": "Museum Sejarah Jakarta",
+      "sequence": "21",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        },
+        {
+          "text": "12",
+          "title": "Koridor 12 (Pluit - Tanjung Priok) · Eksisting",
+          "color": "rgb(119, 187, 121)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "→",
+          "className": "stop-list-badges-right"
+        }
+      ]
+    },
+    {
+      "key": "BRT023_REG",
+      "logicalKey": "STOP:BRT023",
+      "name": "Kota",
+      "sequence": "22",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        },
+        {
+          "text": "12",
+          "title": "Koridor 12 (Pluit - Tanjung Priok) · Eksisting",
+          "color": "rgb(119, 187, 121)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "Transit-Terminus",
+          "className": "stop-list-badges-right"
+        }
+      ]
+    }
+  ],
+  "BRT_03": [
+    {
+      "key": "BRT046_REG_A",
+      "logicalKey": "STOP:BRT046",
+      "name": "Kalideres",
+      "sequence": "01",
+      "lines": [
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting",
+          "color": "rgb(251, 199, 31)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "Terminus",
+          "className": "stop-list-badges-left"
+        }
+      ]
+    },
+    {
+      "key": "BRT047_REG",
+      "logicalKey": "STOP:BRT047",
+      "name": "Pesakih",
+      "sequence": "02",
+      "lines": [
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting",
+          "color": "rgb(251, 199, 31)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT048_REG",
+      "logicalKey": "STOP:BRT048",
+      "name": "Sumur Bor",
+      "sequence": "03",
+      "lines": [
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting",
+          "color": "rgb(251, 199, 31)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT049_REG",
+      "logicalKey": "STOP:BRT049",
+      "name": "Rawa Buaya",
+      "sequence": "04",
+      "lines": [
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting",
+          "color": "rgb(251, 199, 31)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT050_REG",
+      "logicalKey": "STOP:BRT050",
+      "name": "Jembatan Baru",
+      "sequence": "05",
+      "lines": [
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting",
+          "color": "rgb(251, 199, 31)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT051_REG",
+      "logicalKey": "STOP:BRT051",
+      "name": "Pulo Nangka",
+      "sequence": "06",
+      "lines": [
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting",
+          "color": "rgb(251, 199, 31)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT052_REG",
+      "logicalKey": "STOP:BRT052",
+      "name": "Jembatan Gantung",
+      "sequence": "07",
+      "lines": [
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting",
+          "color": "rgb(251, 199, 31)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT053_REG",
+      "logicalKey": "STOP:BRT053",
+      "name": "Taman Kota",
+      "sequence": "08",
+      "lines": [
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting",
+          "color": "rgb(251, 199, 31)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT054_REG",
+      "logicalKey": "STOP:BRT054",
+      "name": "Damai",
+      "sequence": "09",
+      "lines": [
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting",
+          "color": "rgb(251, 199, 31)"
+        },
+        {
+          "text": "8",
+          "title": "Koridor 8 (Lebak Bulus - Pasar Baru) · Eksisting",
+          "color": "rgb(215, 52, 146)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT055_REG",
+      "logicalKey": "STOP:BRT055",
+      "name": "Jelambar",
+      "sequence": "10",
+      "lines": [
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting",
+          "color": "rgb(251, 199, 31)"
+        },
+        {
+          "text": "8",
+          "title": "Koridor 8 (Lebak Bulus - Pasar Baru) · Eksisting",
+          "color": "rgb(215, 52, 146)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT056_REG",
+      "logicalKey": "STOP:BRT056",
+      "name": "Grogol",
+      "sequence": "11",
+      "lines": [
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting",
+          "color": "rgb(251, 199, 31)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "Transit",
+          "className": "stop-list-badges-right"
+        }
+      ]
+    },
+    {
+      "key": "BRT057_REG",
+      "logicalKey": "STOP:BRT057",
+      "name": "Roxy",
+      "sequence": "12",
+      "lines": [
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting",
+          "color": "rgb(251, 199, 31)"
+        }
+      ],
+      "badges": []
+    },
+    {
+      "key": "BRT015_REG",
+      "logicalKey": "STOP:BRT015",
+      "name": "Monumen Nasional",
+      "sequence": "+",
+      "lines": [
+        {
+          "text": "1",
+          "title": "Koridor 1 (Blok M - Kota) · Eksisting",
+          "color": "rgb(208, 33, 39)"
+        },
+        {
+          "text": "2",
+          "title": "Koridor 2 (Pulo Gadung - Monumen Nasional) · Eksisting · Terminus sementara",
+          "color": "rgb(41, 74, 153)"
+        },
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting · Terminus sementara",
+          "color": "rgb(251, 199, 31)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "Terminus Sementara",
+          "className": "stop-list-badges-left"
+        }
+      ]
+    },
+    {
+      "key": "BRT155_REG",
+      "logicalKey": "STOP:BRT155",
+      "name": "Petojo",
+      "sequence": "+",
+      "lines": [
+        {
+          "text": "8",
+          "title": "Koridor 8 (Lebak Bulus - Pasar Baru) · Eksisting",
+          "color": "rgb(215, 52, 146)"
+        },
+        {
+          "text": "3",
+          "title": "Koridor 3 (Kalideres - Monumen Nasional) · Eksisting · Sementara",
+          "color": "rgb(251, 199, 31)"
+        }
+      ],
+      "badges": [
+        {
+          "text": "Sementara",
+          "className": "stop-list-badges-left"
+        }
+      ]
+    }
+  ]
+}

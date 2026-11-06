@@ -1,0 +1,981 @@
+{
+  "capturedAt": "2026-11-06T19:26:15.493Z",
+  "applicationCommit": "779450176fadc4bca314423ea86a3be6fa26fb3d",
+  "browser": "155.0.8059.79",
+  "origin": "local HTTP preview (no deployment)",
+  "realTileResponses": 419,
+  "runtimeErrors": [],
+  "tileFailures": [],
+  "notes": [
+    "Actual provider tiles; pinned Leaflet CDN bytes from identical npm package; actual local PT Sans.",
+    "All application/data served over local HTTP. Layout UI is exercised without rewriting transport features."
+  ],
+  "captured": [
+    {
+      "file": "desktop-sidebar.png",
+      "description": "Sidebar jaringan desktop",
+      "viewport": [
+        1366,
+        900
+      ],
+      "documentWidth": 1366,
+      "mapSize": [
+        786,
+        836
+      ],
+      "mapContainer": [
+        786,
+        836
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open",
+      "loadedTiles": 24,
+      "networkHeight": 836,
+      "detailHeight": 836,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 271.546875,
+          "height": 40
+        },
+        {
+          "name": "Pesakih",
+          "top": 311.546875,
+          "height": 40
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 351.546875,
+          "height": 40
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 391.546875,
+          "height": 40
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 431.546875,
+          "height": 40
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 471.546875,
+          "height": 40
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 511.546875,
+          "height": 40
+        },
+        {
+          "name": "Taman Kota",
+          "top": 551.546875,
+          "height": 40
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "93a141025bbe1b9afe9577e792f1fb9e227b283d839924cdb8cd6618d9f3833b"
+    },
+    {
+      "file": "desktop-k3-list.png",
+      "description": "Daftar halte Koridor 3 desktop",
+      "viewport": [
+        1366,
+        900
+      ],
+      "documentWidth": 1366,
+      "mapSize": [
+        786,
+        836
+      ],
+      "mapContainer": [
+        786,
+        836
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open",
+      "loadedTiles": 24,
+      "networkHeight": 836,
+      "detailHeight": 836,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 271.546875,
+          "height": 40
+        },
+        {
+          "name": "Pesakih",
+          "top": 311.546875,
+          "height": 40
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 351.546875,
+          "height": 40
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 391.546875,
+          "height": 40
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 431.546875,
+          "height": 40
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 471.546875,
+          "height": 40
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 511.546875,
+          "height": 40
+        },
+        {
+          "name": "Taman Kota",
+          "top": 551.546875,
+          "height": 40
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "5f84355f4a8fff87fe7af94530451cfedec11d43ede3e4d7d635975f8a036ced"
+    },
+    {
+      "file": "guide-desktop.png",
+      "description": "Kartu Cara Menggunakan dalam modal Informasi & Catatan",
+      "viewport": [
+        1366,
+        900
+      ],
+      "documentWidth": 1366,
+      "mapSize": [
+        786,
+        836
+      ],
+      "mapContainer": [
+        786,
+        836
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open info-modal-open",
+      "loadedTiles": 24,
+      "networkHeight": 836,
+      "detailHeight": 836,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 271.546875,
+          "height": 40
+        },
+        {
+          "name": "Pesakih",
+          "top": 311.546875,
+          "height": 40
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 351.546875,
+          "height": 40
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 391.546875,
+          "height": 40
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 431.546875,
+          "height": 40
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 471.546875,
+          "height": 40
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 511.546875,
+          "height": 40
+        },
+        {
+          "name": "Taman Kota",
+          "top": 551.546875,
+          "height": 40
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "8871f035a9443f96b183de7226de4dcfcfa771a5138f13be6f09e10eec112df8"
+    },
+    {
+      "file": "desktop-long-route.png",
+      "description": "Nama koridor panjang pada sidebar dan chip peta",
+      "viewport": [
+        1600,
+        1000
+      ],
+      "documentWidth": 1600,
+      "mapSize": [
+        968,
+        936
+      ],
+      "mapContainer": [
+        968,
+        936
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open",
+      "loadedTiles": 25,
+      "networkHeight": 936,
+      "detailHeight": 936,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 271.546875,
+          "height": 40
+        },
+        {
+          "name": "Pesakih",
+          "top": 311.546875,
+          "height": 40
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 351.546875,
+          "height": 40
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 391.546875,
+          "height": 40
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 431.546875,
+          "height": 40
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 471.546875,
+          "height": 40
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 511.546875,
+          "height": 40
+        },
+        {
+          "name": "Taman Kota",
+          "top": 551.546875,
+          "height": 40
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "709087ef0ea3f672025a318f9c73b69b879606a375a6afb8810a10e4aab70eb0"
+    },
+    {
+      "file": "tablet-k3-list.png",
+      "description": "Daftar halte Koridor 3 di tablet",
+      "viewport": [
+        768,
+        1024
+      ],
+      "documentWidth": 768,
+      "mapSize": [
+        768,
+        960
+      ],
+      "mapContainer": [
+        768,
+        960
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app left-panel-collapsed tl-detail-open",
+      "loadedTiles": 20,
+      "networkHeight": 854,
+      "detailHeight": 928,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 288.546875,
+          "height": 44
+        },
+        {
+          "name": "Pesakih",
+          "top": 332.546875,
+          "height": 44
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 376.546875,
+          "height": 44
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 420.546875,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 464.546875,
+          "height": 44
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 508.546875,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 552.546875,
+          "height": 44
+        },
+        {
+          "name": "Taman Kota",
+          "top": 596.546875,
+          "height": 44
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "1b8d3a06f65193ce1b639887a76d24427d6f28a72e128f35e8be78492d4692cf"
+    },
+    {
+      "file": "mobile-network-320.png",
+      "description": "Panel jaringan ponsel kecil dengan scroll internal",
+      "viewport": [
+        320,
+        568
+      ],
+      "documentWidth": 320,
+      "mapSize": [
+        320,
+        448
+      ],
+      "mapContainer": [
+        320,
+        448
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app mobile-filter-open",
+      "loadedTiles": 4,
+      "networkHeight": 372,
+      "detailHeight": 0,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pesakih",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Taman Kota",
+          "top": 0,
+          "height": 0
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "df47ba81ce965a817eb7b28403450f939e549ec150d93aa1918dee83081b2974"
+    },
+    {
+      "file": "mobile-list-360.png",
+      "description": "Daftar halte posisi Sedang pada 360 px",
+      "viewport": [
+        360,
+        800
+      ],
+      "documentWidth": 360,
+      "mapSize": [
+        360,
+        680
+      ],
+      "mapContainer": [
+        360,
+        680
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open",
+      "loadedTiles": 12,
+      "networkHeight": 0,
+      "detailHeight": 340,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 583.5,
+          "height": 44
+        },
+        {
+          "name": "Pesakih",
+          "top": 627.5,
+          "height": 44
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 671.5,
+          "height": 44
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 715.5,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 759.5,
+          "height": 44
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 803.5,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 847.5,
+          "height": 44
+        },
+        {
+          "name": "Taman Kota",
+          "top": 891.5,
+          "height": 44
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "51d80747caf393908a8f822e641230e0dee39b3d5543ee1becb7165c8cb9c875"
+    },
+    {
+      "file": "mobile-network.png",
+      "description": "Panel Jaringan mengikuti isi dan nama koridor lengkap",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app mobile-filter-open",
+      "loadedTiles": 12,
+      "networkHeight": 475.6875,
+      "detailHeight": 0,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pesakih",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Taman Kota",
+          "top": 0,
+          "height": 0
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "96e7aaf911932e35365e935ef5309aeb6e65677a0114b04bba59626d2e06a6f1"
+    },
+    {
+      "file": "mobile-detail-list.png",
+      "description": "Panel Detail Sedang, tab Daftar Halte",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open",
+      "loadedTiles": 12,
+      "networkHeight": 0,
+      "detailHeight": 340,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 627.5,
+          "height": 44
+        },
+        {
+          "name": "Pesakih",
+          "top": 671.5,
+          "height": 44
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 715.5,
+          "height": 44
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 759.5,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 803.5,
+          "height": 44
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 847.5,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 891.5,
+          "height": 44
+        },
+        {
+          "name": "Taman Kota",
+          "top": 935.5,
+          "height": 44
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "e008f7c358a7587b4c9c55e115d3c47171c13f59b9311af7353d7d581c030d87"
+    },
+    {
+      "file": "mobile-detail-summary.png",
+      "description": "Panel Detail Sedang, tab Ringkasan",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "route",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open",
+      "loadedTiles": 12,
+      "networkHeight": 0,
+      "detailHeight": 340,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pesakih",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Taman Kota",
+          "top": 0,
+          "height": 0
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "c88108ed95a7c845bc2c94864efa24181561a0836792a49a53044d3a39a99cd6"
+    },
+    {
+      "file": "mobile-detail-full.png",
+      "description": "Panel Detail Penuh dengan daftar dapat digulir",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded",
+      "loadedTiles": 12,
+      "networkHeight": 0,
+      "detailHeight": 648,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 319.5,
+          "height": 44
+        },
+        {
+          "name": "Pesakih",
+          "top": 363.5,
+          "height": 44
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 407.5,
+          "height": 44
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 451.5,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 495.5,
+          "height": 44
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 539.5,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 583.5,
+          "height": 44
+        },
+        {
+          "name": "Taman Kota",
+          "top": 627.5,
+          "height": 44
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "5cdcbf4d6a535090528935300e649a631472baa2c9cc5036fdb05e7c22944584"
+    },
+    {
+      "file": "guide-mobile.png",
+      "description": "Kartu Cara Menggunakan dalam modal Informasi & Catatan",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded info-modal-open",
+      "loadedTiles": 12,
+      "networkHeight": 0,
+      "detailHeight": 648,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 319.5,
+          "height": 44
+        },
+        {
+          "name": "Pesakih",
+          "top": 363.5,
+          "height": 44
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 407.5,
+          "height": 44
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 451.5,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 495.5,
+          "height": 44
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 539.5,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 583.5,
+          "height": 44
+        },
+        {
+          "name": "Taman Kota",
+          "top": 627.5,
+          "height": 44
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "b67bfb76a866fb8c3264131e692849006594982a91238e90a2074a94633e202b"
+    },
+    {
+      "file": "landscape-568.png",
+      "description": "Panel Detail dan area eksplorasi peta pada landscape",
+      "viewport": [
+        568,
+        320
+      ],
+      "documentWidth": 568,
+      "mapSize": [
+        568,
+        224
+      ],
+      "mapContainer": [
+        568,
+        224
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-short-viewport tl-short-landscape",
+      "loadedTiles": 12,
+      "networkHeight": 0,
+      "detailHeight": 180,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 237.5,
+          "height": 44
+        },
+        {
+          "name": "Pesakih",
+          "top": 281.5,
+          "height": 44
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 325.5,
+          "height": 44
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 369.5,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 413.5,
+          "height": 44
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 457.5,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 501.5,
+          "height": 44
+        },
+        {
+          "name": "Taman Kota",
+          "top": 545.5,
+          "height": 44
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "a0af0c6c34135d39ee9772e890492693580239001a9c1b09bfb6b60b8298ee8b"
+    },
+    {
+      "file": "landscape-844.png",
+      "description": "Panel Detail dan area eksplorasi peta pada landscape",
+      "viewport": [
+        844,
+        390
+      ],
+      "documentWidth": 844,
+      "mapSize": [
+        844,
+        326
+      ],
+      "mapContainer": [
+        844,
+        326
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-short-landscape left-panel-collapsed",
+      "loadedTiles": 16,
+      "networkHeight": 220,
+      "detailHeight": 294,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 288.546875,
+          "height": 44
+        },
+        {
+          "name": "Pesakih",
+          "top": 332.546875,
+          "height": 44
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 376.546875,
+          "height": 44
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 420.546875,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 464.546875,
+          "height": 44
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 508.546875,
+          "height": 44
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 552.546875,
+          "height": 44
+        },
+        {
+          "name": "Taman Kota",
+          "top": 596.546875,
+          "height": 44
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "e61a7fee2953b39313b557d04bb25d26d02478bd088bc95f6f4f51ea07c59a84"
+    }
+  ]
+}

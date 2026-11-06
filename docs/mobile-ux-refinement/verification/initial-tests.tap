@@ -1,0 +1,416 @@
+
+> test:layout
+> node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-*.mjs tools/test-font-pt-sans.mjs tools/test-lrt-popup.mjs
+
+TAP version 13
+# Subtest: PT Sans is the shared app typography token, with no duplicated Google stylesheet
+ok 1 - PT Sans is the shared app typography token, with no duplicated Google stylesheet
+  ---
+  duration_ms: 357.163002
+  type: 'test'
+  ...
+# Subtest: real PT Sans regular/bold load once and apply to controls, popups, labels and tour
+ok 2 - real PT Sans regular/bold load once and apply to controls, popups, labels and tour
+  ---
+  duration_ms: 8594.994505
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 320x568
+ok 3 - mobile-first shell and popup bounds at 320x568
+  ---
+  duration_ms: 7451.851904
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 360x800
+ok 4 - mobile-first shell and popup bounds at 360x800
+  ---
+  duration_ms: 6760.519115
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 390x844
+ok 5 - mobile-first shell and popup bounds at 390x844
+  ---
+  duration_ms: 5680.584541
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 768x1024
+ok 6 - mobile-first shell and popup bounds at 768x1024
+  ---
+  duration_ms: 5728.21978
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 1366x900
+ok 7 - mobile-first shell and popup bounds at 1366x900
+  ---
+  duration_ms: 5857.4966
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 1600x1000
+ok 8 - mobile-first shell and popup bounds at 1600x1000
+  ---
+  duration_ms: 5612.044538
+  type: 'test'
+  ...
+# Subtest: three sheet positions and closing/reopening preserve the route and selection
+ok 9 - three sheet positions and closing/reopening preserve the route and selection
+  ---
+  duration_ms: 6927.591578
+  type: 'test'
+  ...
+# Subtest: panel scrolling does not pan/zoom the map or repeatedly invalidate its unchanged size
+ok 10 - panel scrolling does not pan/zoom the map or repeatedly invalidate its unchanged size
+  ---
+  duration_ms: 6496.735096
+  type: 'test'
+  ...
+# Subtest: orientation and keyboard-sized visual viewport remain usable and preserve selection
+ok 11 - orientation and keyboard-sized visual viewport remain usable and preserve selection
+  ---
+  duration_ms: 11204.252348
+  type: 'test'
+  ...
+# Subtest: pan and zoom with all existing network layers retain layer identities
+ok 12 - pan and zoom with all existing network layers retain layer identities
+  ---
+  duration_ms: 1905.269239
+  type: 'test'
+  ...
+# Subtest: guided tour remains readable and closable on a small phone
+ok 13 - guided tour remains readable and closable on a small phone
+  ---
+  duration_ms: 6409.323224
+  type: 'test'
+  ...
+# Subtest: regenerated CSS retains every info-guide component and matches committed output
+ok 14 - regenerated CSS retains every info-guide component and matches committed output
+  ---
+  duration_ms: 1176.680848
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 320x568
+ok 15 - network sizing, full route labels, list density and guide cards at 320x568
+  ---
+  duration_ms: 6052.730514
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 360x800
+ok 16 - network sizing, full route labels, list density and guide cards at 360x800
+  ---
+  duration_ms: 6009.046583
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 390x844
+ok 17 - network sizing, full route labels, list density and guide cards at 390x844
+  ---
+  duration_ms: 6032.710357
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 768x1024
+ok 18 - network sizing, full route labels, list density and guide cards at 768x1024
+  ---
+  duration_ms: 5851.471736
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 1366x900
+ok 19 - network sizing, full route labels, list density and guide cards at 1366x900
+  ---
+  duration_ms: 5832.880566
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 1600x1000
+ok 20 - network sizing, full route labels, list density and guide cards at 1600x1000
+  ---
+  duration_ms: 6152.660741
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 568x320
+ok 21 - network sizing, full route labels, list density and guide cards at 568x320
+  ---
+  duration_ms: 5960.343074
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 844x390
+ok 22 - network sizing, full route labels, list density and guide cards at 844x390
+  ---
+  duration_ms: 5671.006127
+  type: 'test'
+  ...
+# Subtest: list identities, sequence and all line/role/status/direction badges match baseline K1 and K3
+ok 23 - list identities, sequence and all line/role/status/direction badges match baseline K1 and K3
+  ---
+  duration_ms: 10512.031259
+  type: 'test'
+  ...
+# Subtest: Mini/half/full and tab changes preserve selected LRT, filters, URL and camera
+ok 24 - Mini/half/full and tab changes preserve selected LRT, filters, URL and camera
+  ---
+  duration_ms: 9325.167828
+  type: 'test'
+  ...
+# Subtest: network content reflows across modes/status and comparison while chrome stays reachable
+not ok 25 - network content reflows across modes/status and comparison while chrome stays reachable
+  ---
+  duration_ms: 41755.462939
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-refinement.mjs:146:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    locator.click: Timeout 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('#routeCompareAdd')[22m
+    [2m    - locator resolved to <button type="button" id="routeCompareAdd" aria-expanded="false" class="route-compare-add" aria-controls="routeComparePicker">…</button>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    58 × waiting for element to be visible, enabled and stable[22m
+    [2m       - element is not visible[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/workspace/work/webgis-mobile-ux/tools/test-layout-refinement.mjs:159:67)
+  ...
+# Subtest: compact landscape exposes services and all LRT actions at 568x320
+ok 26 - compact landscape exposes services and all LRT actions at 568x320
+  ---
+  duration_ms: 13370.447003
+  type: 'test'
+  ...
+# Subtest: compact landscape exposes services and all LRT actions at 844x390
+ok 27 - compact landscape exposes services and all LRT actions at 844x390
+  ---
+  duration_ms: 11621.761122
+  type: 'test'
+  ...
+# Subtest: portrait popup scroll hint and source/navigation remain reachable at 320, 360 and 390
+ok 28 - portrait popup scroll hint and source/navigation remain reachable at 320, 360 and 390
+  ---
+  duration_ms: 14873.460482
+  type: 'test'
+  ...
+# Subtest: direct-link reload restores LRT station, active line and actionable popup
+ok 29 - direct-link reload restores LRT station, active line and actionable popup
+  ---
+  duration_ms: 8632.104743
+  type: 'test'
+  ...
+# Subtest: all four production GeoJSON resources load through the app
+ok 30 - all four production GeoJSON resources load through the app
+  ---
+  duration_ms: 1478.673269
+  type: 'test'
+  ...
+# Subtest: source geometry, attributes, operation engine and existing DOM hooks remain intact
+ok 31 - source geometry, attributes, operation engine and existing DOM hooks remain intact
+  ---
+  duration_ms: 227.515697
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 390px
+ok 32 - responsive layout and real Leaflet resizing at 390px
+  ---
+  duration_ms: 5803.183993
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 768px
+ok 33 - responsive layout and real Leaflet resizing at 768px
+  ---
+  duration_ms: 6916.70394
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 1366px
+ok 34 - responsive layout and real Leaflet resizing at 1366px
+  ---
+  duration_ms: 6592.579925
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 1600px
+ok 35 - responsive layout and real Leaflet resizing at 1600px
+  ---
+  duration_ms: 5888.816292
+  type: 'test'
+  ...
+# Subtest: stop selection, popup navigation, integration links, tabs and URL remain connected
+ok 36 - stop selection, popup navigation, integration links, tabs and URL remain connected
+  ---
+  duration_ms: 9898.10168
+  type: 'test'
+  ...
+# Subtest: global transport search, online place search, basemaps, legend and about remain reachable
+ok 37 - global transport search, online place search, basemaps, legend and about remain reachable
+  ---
+  duration_ms: 6660.391555
+  type: 'test'
+  ...
+# Subtest: keyboard tabs and crossing mobile/tablet/desktop breakpoints keep controls usable
+ok 38 - keyboard tabs and crossing mobile/tablet/desktop breakpoints keep controls usable
+  ---
+  duration_ms: 6187.586435
+  type: 'test'
+  ...
+# Subtest: mobile stop popup and provider attribution stay above the detail sheet
+ok 39 - mobile stop popup and provider attribution stay above the detail sheet
+  ---
+  duration_ms: 8978.35983
+  type: 'test'
+  ...
+# Subtest: GPS, home, zoom and route comparison controls still drive Leaflet
+ok 40 - GPS, home, zoom and route comparison controls still drive Leaflet
+  ---
+  duration_ms: 7199.584125
+  type: 'test'
+  ...
+# Subtest: mobile popup and detail take turns without changing selection, tab, URL, or markers
+ok 41 - mobile popup and detail take turns without changing selection, tab, URL, or markers
+  ---
+  duration_ms: 6869.782437
+  type: 'test'
+  ...
+# Subtest: visual label decluttering preserves every marker and stop identity at 390px
+ok 42 - visual label decluttering preserves every marker and stop identity at 390px
+  ---
+  duration_ms: 6302.874223
+  type: 'test'
+  ...
+# Subtest: visual label decluttering preserves every marker and stop identity at 1366px
+ok 43 - visual label decluttering preserves every marker and stop identity at 1366px
+  ---
+  duration_ms: 6696.759345
+  type: 'test'
+  ...
+# Subtest: Tabler guided tour has visible anchors and restores UI/transport state at 390px
+ok 44 - Tabler guided tour has visible anchors and restores UI/transport state at 390px
+  ---
+  duration_ms: 7427.414435
+  type: 'test'
+  ...
+# Subtest: Tabler guided tour has visible anchors and restores UI/transport state at 768px
+ok 45 - Tabler guided tour has visible anchors and restores UI/transport state at 768px
+  ---
+  duration_ms: 7316.857569
+  type: 'test'
+  ...
+# Subtest: Tabler guided tour has visible anchors and restores UI/transport state at 1366px
+ok 46 - Tabler guided tour has visible anchors and restores UI/transport state at 1366px
+  ---
+  duration_ms: 7225.456343
+  type: 'test'
+  ...
+# Subtest: guided tour skip and Escape preserve an empty overview and the open network sheet
+ok 47 - guided tour skip and Escape preserve an empty overview and the open network sheet
+  ---
+  duration_ms: 2143.507995
+  type: 'test'
+  ...
+# Subtest: startup disclaimer continues to the adapted tour through the normal buttons
+ok 48 - startup disclaimer continues to the adapted tour through the normal buttons
+  ---
+  duration_ms: 1792.410227
+  type: 'test'
+  ...
+# Subtest: primary mobile controls and detail actions offer at least 44px touch targets
+ok 49 - primary mobile controls and detail actions offer at least 44px touch targets
+  ---
+  duration_ms: 6063.229208
+  type: 'test'
+  ...
+# Subtest: Velodrome popup reads Jakarta operator, code/status/structure, service metadata and preserves links
+ok 50 - Velodrome popup reads Jakarta operator, code/status/structure, service metadata and preserves links
+  ---
+  duration_ms: 5012.689606
+  type: 'test'
+  ...
+# Subtest: single-line Jabodebek popup uses its own operator and source line color
+ok 51 - single-line Jabodebek popup uses its own operator and source line color
+  ---
+  duration_ms: 4517.446109
+  type: 'test'
+  ...
+# Subtest: shared Cawang retains route-switch handlers and follows the active line for both navigation branches
+ok 52 - shared Cawang retains route-switch handlers and follows the active line for both navigation branches
+  ---
+  duration_ms: 11573.016823
+  type: 'test'
+  ...
+# Subtest: LRT integration buttons still navigate to the related source feature
+ok 53 - LRT integration buttons still navigate to the related source feature
+  ---
+  duration_ms: 6996.889025
+  type: 'test'
+  ...
+# Subtest: mobile station search, status filters and guided tour preserve LRT selection and popup scroll
+ok 54 - mobile station search, status filters and guided tour preserve LRT selection and popup scroll
+  ---
+  duration_ms: 7555.869192
+  type: 'test'
+  ...
+# Subtest: long previous-station names wrap without truncation on a small phone
+ok 55 - long previous-station names wrap without truncation on a small phone
+  ---
+  duration_ms: 5015.080612
+  type: 'test'
+  ...
+# Subtest: LRT presentation renders escaped supplied station names and omits missing station codes
+ok 56 - LRT presentation renders escaped supplied station names and omits missing station codes
+  ---
+  duration_ms: 1628.368762
+  type: 'test'
+  ...
+# Subtest: LRT Jakarta and multi-line Jabodebek popups remain reachable at 320x568
+ok 57 - LRT Jakarta and multi-line Jabodebek popups remain reachable at 320x568
+  ---
+  duration_ms: 8469.990577
+  type: 'test'
+  ...
+# Subtest: LRT Jakarta and multi-line Jabodebek popups remain reachable at 360x800
+ok 58 - LRT Jakarta and multi-line Jabodebek popups remain reachable at 360x800
+  ---
+  duration_ms: 8487.400075
+  type: 'test'
+  ...
+# Subtest: LRT Jakarta and multi-line Jabodebek popups remain reachable at 390x844
+ok 59 - LRT Jakarta and multi-line Jabodebek popups remain reachable at 390x844
+  ---
+  duration_ms: 8429.23327
+  type: 'test'
+  ...
+# Subtest: LRT Jakarta and multi-line Jabodebek popups remain reachable at 768x1024
+ok 60 - LRT Jakarta and multi-line Jabodebek popups remain reachable at 768x1024
+  ---
+  duration_ms: 8318.255473
+  type: 'test'
+  ...
+# Subtest: LRT Jakarta and multi-line Jabodebek popups remain reachable at 1366x900
+ok 61 - LRT Jakarta and multi-line Jabodebek popups remain reachable at 1366x900
+  ---
+  duration_ms: 8252.9969
+  type: 'test'
+  ...
+# Subtest: LRT Jakarta and multi-line Jabodebek popups remain reachable at 1600x1000
+ok 62 - LRT Jakarta and multi-line Jabodebek popups remain reachable at 1600x1000
+  ---
+  duration_ms: 14603.243378
+  type: 'test'
+  ...
+1..62
+# tests 62
+# suites 0
+# pass 61
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 457399.103757
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

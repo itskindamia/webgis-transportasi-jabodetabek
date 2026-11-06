@@ -1,0 +1,30 @@
+{
+  "sourceCommit": "2900440884f9887343a2e440cb8b4479e2d8f2b9",
+  "features": [
+    {
+      "STOP_ID": "BRT002",
+      "GEOM_ID": "BRT002_REG_A",
+      "DISPLAY_NM": "ASEAN",
+      "ROUTES": "BRT_01",
+      "SEQ_MAP": "BRT_01:02",
+      "SEQ_A_MAP": "BRT_01:02",
+      "SEQ_B_MAP": null,
+      "DIR_MAP": "BRT_01:Kota",
+      "STATUS": "Eksisting",
+      "STOP_VAR": "BASE"
+    },
+    {
+      "STOP_ID": "BRT003",
+      "GEOM_ID": "BRT003_REG_B",
+      "DISPLAY_NM": "Kejaksaan Agung",
+      "ROUTES": "BRT_01",
+      "SEQ_MAP": "BRT_01:02",
+      "SEQ_A_MAP": null,
+      "SEQ_B_MAP": "BRT_01:19",
+      "DIR_MAP": "BRT_01:Blok M",
+      "STATUS": "Eksisting",
+      "STOP_VAR": "BASE"
+    }
+  ],
+  "finding": "FULL view uses canonical SEQ_MAP: both logical stops have BRT_01:02. Directional A/B values differ and are not renumbered. No source data or engine changes."
+}

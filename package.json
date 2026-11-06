@@ -7,6 +7,7 @@
     "build:ui": "node tools/build-tabler-css.mjs",
     "capture:layout": "node tools/capture-layout.mjs",
     "capture:lrt": "node tools/capture-lrt-mobile.mjs",
+    "capture:mobile-ux": "node tools/capture-mobile-ux.mjs",
     "test:layout": "node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-*.mjs tools/test-font-pt-sans.mjs tools/test-lrt-popup.mjs",
     "test:lrt": "node --test --test-reporter=tap tools/test-lrt-popup.mjs"
   },

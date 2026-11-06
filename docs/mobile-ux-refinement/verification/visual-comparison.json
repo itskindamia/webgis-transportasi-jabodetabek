@@ -1,0 +1,216 @@
+{
+  "baseline": "2900440884f9887343a2e440cb8b4479e2d8f2b9",
+  "candidate": "779450176fadc4bca314423ea86a3be6fa26fb3d",
+  "screenshots": [
+    {
+      "file": "desktop-sidebar.png",
+      "viewport": [
+        1366,
+        900
+      ],
+      "networkHeightBefore": 836,
+      "networkHeightAfter": 836,
+      "detailHeightBefore": 836,
+      "detailHeightAfter": 836,
+      "simpleRowHeightBefore": 44,
+      "simpleRowHeightAfter": 40,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    },
+    {
+      "file": "desktop-k3-list.png",
+      "viewport": [
+        1366,
+        900
+      ],
+      "networkHeightBefore": 836,
+      "networkHeightAfter": 836,
+      "detailHeightBefore": 836,
+      "detailHeightAfter": 836,
+      "simpleRowHeightBefore": 44,
+      "simpleRowHeightAfter": 40,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    },
+    {
+      "file": "guide-desktop.png",
+      "viewport": [
+        1366,
+        900
+      ],
+      "networkHeightBefore": 836,
+      "networkHeightAfter": 836,
+      "detailHeightBefore": 836,
+      "detailHeightAfter": 836,
+      "simpleRowHeightBefore": 44,
+      "simpleRowHeightAfter": 40,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    },
+    {
+      "file": "desktop-long-route.png",
+      "viewport": [
+        1600,
+        1000
+      ],
+      "networkHeightBefore": 936,
+      "networkHeightAfter": 936,
+      "detailHeightBefore": 936,
+      "detailHeightAfter": 936,
+      "simpleRowHeightBefore": 44,
+      "simpleRowHeightAfter": 40,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    },
+    {
+      "file": "tablet-k3-list.png",
+      "viewport": [
+        768,
+        1024
+      ],
+      "networkHeightBefore": 854,
+      "networkHeightAfter": 854,
+      "detailHeightBefore": 928,
+      "detailHeightAfter": 928,
+      "simpleRowHeightBefore": 44,
+      "simpleRowHeightAfter": 44,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    },
+    {
+      "file": "mobile-network-320.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "networkHeightBefore": 372,
+      "networkHeightAfter": 372,
+      "detailHeightBefore": 0,
+      "detailHeightAfter": 0,
+      "simpleRowHeightBefore": 0,
+      "simpleRowHeightAfter": 0,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    },
+    {
+      "file": "mobile-list-360.png",
+      "viewport": [
+        360,
+        800
+      ],
+      "networkHeightBefore": 0,
+      "networkHeightAfter": 0,
+      "detailHeightBefore": 340,
+      "detailHeightAfter": 340,
+      "simpleRowHeightBefore": 44,
+      "simpleRowHeightAfter": 44,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    },
+    {
+      "file": "mobile-network.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "networkHeightBefore": 496.5,
+      "networkHeightAfter": 475.6875,
+      "detailHeightBefore": 0,
+      "detailHeightAfter": 0,
+      "simpleRowHeightBefore": 0,
+      "simpleRowHeightAfter": 0,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    },
+    {
+      "file": "mobile-detail-list.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "networkHeightBefore": 0,
+      "networkHeightAfter": 0,
+      "detailHeightBefore": 340,
+      "detailHeightAfter": 340,
+      "simpleRowHeightBefore": 44,
+      "simpleRowHeightAfter": 44,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    },
+    {
+      "file": "mobile-detail-summary.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "networkHeightBefore": 0,
+      "networkHeightAfter": 0,
+      "detailHeightBefore": 340,
+      "detailHeightAfter": 340,
+      "simpleRowHeightBefore": 0,
+      "simpleRowHeightAfter": 0,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    },
+    {
+      "file": "mobile-detail-full.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "networkHeightBefore": 0,
+      "networkHeightAfter": 0,
+      "detailHeightBefore": 648,
+      "detailHeightAfter": 648,
+      "simpleRowHeightBefore": 44,
+      "simpleRowHeightAfter": 44,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    },
+    {
+      "file": "guide-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "networkHeightBefore": 0,
+      "networkHeightAfter": 0,
+      "detailHeightBefore": 648,
+      "detailHeightAfter": 648,
+      "simpleRowHeightBefore": 44,
+      "simpleRowHeightAfter": 44,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    },
+    {
+      "file": "landscape-568.png",
+      "viewport": [
+        568,
+        320
+      ],
+      "networkHeightBefore": 0,
+      "networkHeightAfter": 0,
+      "detailHeightBefore": 180,
+      "detailHeightAfter": 180,
+      "simpleRowHeightBefore": 44,
+      "simpleRowHeightAfter": 44,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    },
+    {
+      "file": "landscape-844.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "networkHeightBefore": 220,
+      "networkHeightAfter": 220,
+      "detailHeightBefore": 294,
+      "detailHeightAfter": 294,
+      "simpleRowHeightBefore": 44,
+      "simpleRowHeightAfter": 44,
+      "noHorizontalOverflow": true,
+      "mapMatchesContainer": true
+    }
+  ]
+}
