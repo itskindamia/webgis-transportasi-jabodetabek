@@ -260,6 +260,16 @@
     getStopPopupOptions = () => {
       const size = map.getSize();
       const padding = mapPadding();
+      if (mobile()) {
+        // Reserve the control rail and the visible provider credits as well
+        // as the sheet. They must not cover popup actions.
+        padding.paddingBottomRight[0] = 60;
+        const credits = map.attributionControl?.getContainer();
+        if (credits) padding.paddingBottomRight[1] = Math.max(
+          padding.paddingBottomRight[1],
+          (Number.parseFloat(credits.style.marginBottom) || 0) + credits.getBoundingClientRect().height + 12
+        );
+      }
       const availableWidth = size.x - padding.paddingTopLeft[0] - padding.paddingBottomRight[0];
       const maxWidth = Math.min(330, Math.max(200, availableWidth - 12));
       return {
@@ -312,11 +322,26 @@
       contentObserver.observe(byId(id), { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] });
     }
     for (const id of ["modeSelect", "routeSelect", "statusSelect"]) byId(id).addEventListener("change", scheduleSync);
+    const revealStopPopup = event => {
+      if (!mobile() || !event.target.closest(".stop-list-item[data-stop-key]")) return;
+      if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
+      // The engine may reuse an already open popup when selecting the same
+      // stop, so popupopen and a changed selection key are not guaranteed.
+      setDetailExpanded(false);
+      syncAttribution();
+    };
+    byId("stopList").addEventListener("click", revealStopPopup, true);
+    byId("stopList").addEventListener("keydown", revealStopPopup, true);
     new ResizeObserver(resizeMap).observe(byId("map"));
     const sheetObserver = new ResizeObserver(() => requestAnimationFrame(syncAttribution));
     for (const id of ["filterPanel", "rightInfoPanel", "basemapPanel", "tlDetailPanel"]) sheetObserver.observe(byId(id));
     map.on("popupopen", ({ popup }) => {
       if (!popup.getElement()?.querySelector(".stop-popup")) return;
+      if (mobile()) {
+        // Reselecting the same stop also needs a visible map popup.
+        setDetailExpanded(false);
+        syncAttribution();
+      }
       const { autoPan, keepInView, ...dimensions } = getStopPopupOptions();
       // Preserve the engine's navigation-specific autoPan setting.
       Object.assign(popup.options, dimensions);
