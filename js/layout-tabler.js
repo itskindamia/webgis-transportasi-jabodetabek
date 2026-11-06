@@ -535,7 +535,7 @@
           tab: detail.dataset.tab, sheetPosition, detailsOverPopup,
           filter: body.classList.contains("mobile-filter-open"), info: body.classList.contains("mobile-info-open"),
           legend: body.classList.contains("tl-legend-open"), basemap: !byId("basemapPanel").hidden,
-          scroll: [...document.querySelectorAll(".filter-panel-content, .tl-route-content, .stop-list-scroll, .right-info-body, .leaflet-popup-content, .stop-popup-scroll")].map(element => ({ element, top: element.scrollTop }))
+          scroll: [...document.querySelectorAll(".filter-panel-content, .tl-route-content, .stop-list-scroll, .right-info-body, .leaflet-popup-content, .stop-popup-scroll, .lrt-popup-body")].map(element => ({ element, top: element.scrollTop }))
         };
       },
       restore(state) {
