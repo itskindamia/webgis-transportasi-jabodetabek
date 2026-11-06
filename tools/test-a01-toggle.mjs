@@ -87,11 +87,20 @@ async function openRoute(t, routeId = "BRT_13", width = 1366) {
   await page.selectOption("#routeSelect", routeId);
   // Let the existing adaptive-layout fit finish before selecting a stop.
   await page.waitForTimeout(750);
-  return { page, errors };
+  await page.evaluate(installView);
+  return { page, errors, t };
 }
 
-async function view(page) {
-  return page.evaluate(() => {
+function installView() {
+  window.a01CameraCalls = [];
+  for (const method of ["panTo", "panBy", "flyTo", "setView", "setZoom", "fitBounds"]) {
+    const original = map[method];
+    map[method] = function (...args) {
+      window.a01CameraCalls.push(method);
+      return original.apply(this, args);
+    };
+  }
+  window.a01ReadView = () => {
     const rows = [...document.querySelectorAll("#stopList .stop-list-item")];
     const feature = currentSelectedStopKey ? getStopByKey(currentSelectedStopKey) : null;
     const marker = currentSelectedStopKey ? stopMarkerByKey.get(currentSelectedStopKey) : null;
@@ -111,9 +120,20 @@ async function view(page) {
       cardVisible: !selectedStopInfoEl.hidden,
       cardName: selectedStopInfoEl.querySelector(".selected-stop-title")?.textContent.trim() || null,
       popupOpen: Boolean(marker?.isPopupOpen()), style,
-      sharedStop: new URL(location.href).searchParams.get("stop")
+      popupAutoPan: marker?.getPopup()?.options.autoPan ?? null,
+      globalPopupOpen: Boolean(map._popup?.isOpen()),
+      sharedStop: new URL(location.href).searchParams.get("stop"),
+      center: [map.getCenter().lat, map.getCenter().lng], zoom: map.getZoom(),
+      filterOpen: document.body.classList.contains("mobile-filter-open"),
+      filterExpanded: mobileFilterToggle.getAttribute("aria-expanded"),
+      bottomRouteExpanded: mobileBottomRouteButton.getAttribute("aria-expanded"),
+      cameraCalls: [...window.a01CameraCalls]
     };
-  });
+  };
+}
+
+async function view(page) {
+  return page.evaluate(() => window.a01ReadView());
 }
 
 function assertConsistent(state, checked, selection = null) {
@@ -125,7 +145,7 @@ function assertConsistent(state, checked, selection = null) {
   assert.equal(state.cardVisible, Boolean(selection), "selected stop card visibility");
   assert.deepEqual(state.selectedRows, selection ? [selection.selectedLogical] : [], "selected list row");
   assert.deepEqual(state.currentRows, state.selectedRows, "accessible selection state");
-  assert.equal(state.popupOpen, Boolean(selection), "selected marker popup");
+  assert.equal(state.popupOpen, Boolean(selection?.popupOpen), "selected marker popup");
   assert.equal(state.sharedStop, selection?.sharedStop || null, "shareable selection state");
   if (selection) {
     assert.equal(state.cardName, selection.cardName, "selected stop card content");
@@ -133,14 +153,42 @@ function assertConsistent(state, checked, selection = null) {
   }
 }
 
-async function toggle({ page, errors }, checked) {
+function assertUiPreserved(app, before, after) {
+  if (after.cameraCalls.length || before.filterOpen !== after.filterOpen
+    || (before.selectedKey === after.selectedKey && before.popupOpen !== after.popupOpen)) {
+    app.t.diagnostic(JSON.stringify({
+      before: { center: before.center, zoom: before.zoom, filterOpen: before.filterOpen, popupOpen: before.popupOpen },
+      after: { center: after.center, zoom: after.zoom, filterOpen: after.filterOpen, popupOpen: after.popupOpen },
+      cameraCalls: after.cameraCalls
+    }));
+  }
+  assert.deepEqual(after.cameraCalls, [], "toggle must not invoke camera navigation");
+  assert.equal(after.zoom, before.zoom, "toggle must preserve zoom");
+  assert.deepEqual(after.center, before.center, "toggle must preserve the panned map center");
+  assert.equal(after.filterOpen, before.filterOpen, "mobile filter must retain its open/closed state");
+  assert.equal(after.filterExpanded, before.filterExpanded, "filter aria-expanded");
+  assert.equal(after.bottomRouteExpanded, before.bottomRouteExpanded, "mobile route aria-expanded");
+  if (before.selectedKey && before.selectedKey === after.selectedKey) {
+    assert.equal(after.popupOpen, before.popupOpen, "toggle must preserve popup open/closed state");
+    assert.equal(after.popupAutoPan, before.popupAutoPan, "normal popup auto-pan option must be restored");
+  } else if (!before.selectedKey && !after.selectedKey) {
+    assert.equal(after.globalPopupOpen, before.globalPopupOpen, "toggle must not reopen a dismissed popup");
+  }
+}
+
+async function toggle(app, checked) {
+  const { page, errors } = app;
   await page.evaluate(() => setMobileFilterOpen(true));
   const input = page.locator("[data-optional-stop-toggle]");
   assert.notEqual(await input.isChecked(), checked, "exercise a real toggle change");
+  await page.evaluate(() => { window.a01CameraCalls = []; });
+  const before = await view(page);
   await page.locator(".optional-stop-switch").click();
-  await page.waitForTimeout(650);
+  await page.waitForTimeout(1000);
   assert.deepEqual(errors, [], "toggle must not emit JavaScript errors");
-  return view(page);
+  const after = await view(page);
+  assertUiPreserved(app, before, after);
+  return after;
 }
 
 async function selectStatus({ page, errors }, status) {
@@ -196,5 +244,62 @@ for (const [status, routeId] of [["Conceptual", "BRT_13"], ["Proposed", "BRT_11"
     assertConsistent(disabled, false);
     assert.equal(disabled.markerCount, initial.markerCount);
     assert.ok(!disabled.markerLogical.includes(selected.selectedLogical), "hidden selection is removed from map and list");
+  });
+}
+
+for (const width of [1366, 390]) {
+  test(`Koridor 13: preserve a panned view and open popup at ${width}px`, async t => {
+    const app = await openRoute(t, "BRT_13", width);
+    const initial = await selectStatus(app, "Existing");
+    await app.page.evaluate(() => map.panBy([160, -180], { animate: false }));
+    await app.page.waitForTimeout(400);
+    const selected = await view(app.page);
+    assert.ok(selected.popupOpen, "popup remains open after panning");
+    assert.notDeepEqual(selected.center, initial.center, "exercise a changed camera center");
+    const distance = await app.page.evaluate(() => map.latLngToContainerPoint(
+      stopMarkerByKey.get(currentSelectedStopKey).getLatLng()
+    ).distanceTo(map.getSize().divideBy(2)));
+    assert.ok(distance > 90, "selected stop is away from the viewport center");
+    const enabled = await toggle(app, true);
+    assertConsistent(enabled, true, selected);
+    assertConsistent(await toggle(app, false), false, selected);
+  });
+
+  test(`Koridor 13: preserve a closed popup during pending selection at ${width}px`, async t => {
+    const app = await openRoute(t, "BRT_13", width);
+    // A list click selects immediately but opens its popup after 380 ms.
+    // Interrupt navigation as a drag would, then toggle in the same event turn.
+    const before = await app.page.evaluate(width => {
+      const row = [...document.querySelectorAll("#stopList .stop-list-item")].find(row =>
+        getStopStatus(getStopByKey(row.dataset.stopKey)) === "Existing"
+      );
+      row.click();
+      map.stop();
+      map.panBy([160, 80], { animate: false });
+      setMobileFilterOpen(width !== 390);
+      window.a01CameraCalls = [];
+      const before = window.a01ReadView();
+      document.querySelector("[data-optional-stop-toggle]").click();
+      return before;
+    }, width);
+    assert.ok(before.selectedKey, "selection exists before delayed popup opens");
+    assert.equal(before.popupOpen, false);
+    await app.page.waitForTimeout(1000);
+    const after = await view(app.page);
+    assert.deepEqual(app.errors, []);
+    assertUiPreserved(app, before, after);
+    assertConsistent(after, true, before);
+  });
+
+  test(`Koridor 13: keep a manually dismissed popup closed at ${width}px`, async t => {
+    const app = await openRoute(t, "BRT_13", width);
+    await selectStatus(app, "Existing");
+    await app.page.locator(".leaflet-popup-close-button").click();
+    const closed = await view(app.page);
+    assertConsistent(closed, false);
+    assert.equal(closed.globalPopupOpen, false);
+    await app.page.evaluate(() => map.panBy([160, 80], { animate: false }));
+    assertConsistent(await toggle(app, true), true);
+    assertConsistent(await toggle(app, false), false);
   });
 }
