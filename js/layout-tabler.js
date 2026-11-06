@@ -12,6 +12,43 @@
   let lastStop = "";
   let lastTablet = tablet();
   let modeSignature = "";
+  let stopPopup = null;
+  let detailsOverPopup = false;
+  let shelvedAutoPan = null;
+
+  function syncPopupPresentation() {
+    const open = Boolean(mobile() && stopPopup?.isOpen());
+    const overlay = body.classList.contains("mobile-filter-open") || body.classList.contains("mobile-info-open") || !byId("basemapPanel").hidden;
+    const shelved = open && (detailsOverPopup || overlay);
+    const element = stopPopup?.getElement();
+    body.classList.toggle("tl-stop-popup-open", open);
+    body.classList.toggle("tl-popup-shelved", shelved);
+    if (element) {
+      element.inert = shelved;
+      element.setAttribute("aria-hidden", String(shelved));
+      if (shelved && shelvedAutoPan === null) {
+        shelvedAutoPan = stopPopup.options.autoPan;
+        stopPopup.options.autoPan = false;
+      } else if (!shelved && shelvedAutoPan !== null) {
+        stopPopup.options.autoPan = shelvedAutoPan;
+        shelvedAutoPan = null;
+      }
+    }
+    if (ready) requestAnimationFrame(syncAttribution);
+  }
+
+  function revealPopup() {
+    detailsOverPopup = false;
+    syncPopupPresentation();
+  }
+
+  function showPopupDetails() {
+    detailsOverPopup = true;
+    setDetail(true);
+    setDetailExpanded(true);
+    syncPopupPresentation();
+    byId("tlDetailClose").focus({ preventScroll: true });
+  }
 
   function resizeMap() {
     if (!ready || resizeFrame) return;
@@ -50,13 +87,14 @@
     }
     if (open && tablet() && ready) setDesktopPanelCollapsed("left", true);
     body.classList.toggle("tl-detail-open", open);
-    if (!open) setDetailExpanded(false);
+    if (!open) { setDetailExpanded(false); detailsOverPopup = false; }
     detail.inert = !open;
     for (const id of ["tlDetailsToggle", "tlMobileDetails"]) {
       byId(id).setAttribute("aria-expanded", String(open));
     }
     if (focus && open) byId("tlDetailClose").focus({ preventScroll: true });
     resizeMap();
+    syncPopupPresentation();
   }
 
   function syncPanelControls() {
@@ -114,8 +152,12 @@
   });
   byId("tlLegendToggle").addEventListener("click", toggleLegend);
   for (const id of ["tlDetailsToggle", "tlMobileDetails"]) {
-    byId(id).addEventListener("click", () => setDetail(!body.classList.contains("tl-detail-open"), { focus: true }));
+    byId(id).addEventListener("click", () => {
+      if (mobile() && stopPopup?.isOpen() && !detailsOverPopup) showPopupDetails();
+      else setDetail(!body.classList.contains("tl-detail-open"), { focus: true });
+    });
   }
+  byId("tlDetailResume").addEventListener("click", showPopupDetails);
   byId("tlDetailClose").addEventListener("click", () => {
     setDetail(false);
     byId(mobile() ? "tlMobileDetails" : "tlDetailsToggle").focus({ preventScroll: true });
@@ -182,8 +224,6 @@
     const routeChanged = route !== lastRoute;
     const stopChanged = stop !== lastStop;
     const selected = !byId("selectedStopInfo").hidden;
-    // A newly selected stop needs room for its map popup above the sheet.
-    if (mobile() && stopChanged && selected) setDetailExpanded(false);
     byId("tlTabSelected").disabled = !selected;
     const option = byId("routeSelect").selectedOptions[0];
     const heading = byId("routeInfo").querySelector(".route-title, h2");
@@ -215,7 +255,7 @@
         setDetail(false);
       }
     } else if (stopChanged && selected) {
-      setTab("selected");
+      if (!mobile()) setTab("selected");
       setDetail(true);
     } else if (!selected && detail.dataset.tab === "selected") setTab("stops");
     lastRoute = route;
@@ -299,6 +339,7 @@
       if (open && mobile()) setDetail(false);
       originalFilter(open);
       syncPanelControls();
+      syncPopupPresentation();
       resizeMap();
     };
     setMobileInfoOpen = open => {
@@ -306,6 +347,7 @@
       if (!mobile()) body.classList.toggle("tl-legend-open", Boolean(open));
       originalInfo(open);
       syncPanelControls();
+      syncPopupPresentation();
       resizeMap();
     };
     setBasemapPanelOpen = open => {
@@ -313,6 +355,7 @@
       if (open) body.classList.remove("tl-legend-open");
       originalBasemap(open);
       syncPanelControls();
+      syncPopupPresentation();
       resizeMap();
     };
     setRouteDetailCollapsed(false, { persist: false });
@@ -329,7 +372,7 @@
       if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
       // The engine may reuse an already open popup when selecting the same
       // stop, so popupopen and a changed selection key are not guaranteed.
-      setDetailExpanded(false);
+      revealPopup();
       syncAttribution();
     };
     byId("stopList").addEventListener("click", revealStopPopup, true);
@@ -339,9 +382,11 @@
     for (const id of ["filterPanel", "rightInfoPanel", "basemapPanel", "tlDetailPanel"]) sheetObserver.observe(byId(id));
     map.on("popupopen", ({ popup }) => {
       if (!popup.getElement()?.querySelector(".stop-popup")) return;
+      stopPopup = popup;
+      detailsOverPopup = false;
+      shelvedAutoPan = null;
+      syncPopupPresentation();
       if (mobile()) {
-        // Reselecting the same stop also needs a visible map popup.
-        setDetailExpanded(false);
         syncAttribution();
       }
       const { autoPan, keepInView, ...dimensions } = getStopPopupOptions();
@@ -349,16 +394,27 @@
       Object.assign(popup.options, dimensions);
       popup.update();
     });
+    map.on("popupclose", ({ popup }) => {
+      if (popup !== stopPopup) return;
+      if (shelvedAutoPan !== null) popup.options.autoPan = shelvedAutoPan;
+      popup.getElement()?.removeAttribute("aria-hidden");
+      if (popup.getElement()) popup.getElement().inert = false;
+      stopPopup = null;
+      detailsOverPopup = false;
+      shelvedAutoPan = null;
+      syncPopupPresentation();
+    });
     window.addEventListener("resize", () => {
       if (tablet() !== lastTablet) {
         lastTablet = tablet();
         if (tablet()) setDesktopPanelCollapsed("left", true);
       }
       syncPanelControls();
+      syncPopupPresentation();
       resizeMap();
     });
     document.addEventListener("keydown", event => {
-      if (event.key !== "Escape" || event.defaultPrevented) return;
+      if (event.key !== "Escape" || event.defaultPrevented || !byId("productTour").hidden) return;
       if (body.classList.contains("mobile-filter-open")) setMobileFilterOpen(false);
       else if (body.classList.contains("mobile-info-open") || body.classList.contains("tl-legend-open")) setMobileInfoOpen(false);
       else if (!byId("basemapPanel").hidden) setBasemapPanelOpen(false);
@@ -370,5 +426,32 @@
     scheduleSync();
     resizeMap();
     document.documentElement.dataset.layoutReady = "true";
+    // UI-only bridge for the tour; no transport state setters are exposed.
+    window.webgisLayout = Object.freeze({
+      setDetail, setTab, setDetailExpanded, revealPopup, showPopupDetails,
+      capture() {
+        return {
+          leftCollapsed: body.classList.contains("left-panel-collapsed"),
+          detailOpen: body.classList.contains("tl-detail-open"), expanded: body.classList.contains("tl-detail-expanded"),
+          tab: detail.dataset.tab, detailsOverPopup,
+          filter: body.classList.contains("mobile-filter-open"), info: body.classList.contains("mobile-info-open"),
+          legend: body.classList.contains("tl-legend-open"), basemap: !byId("basemapPanel").hidden,
+          scroll: [...document.querySelectorAll(".filter-panel-content, .tl-route-content, .stop-list-scroll, .right-info-body, .leaflet-popup-content, .stop-popup-scroll")].map(element => ({ element, top: element.scrollTop }))
+        };
+      },
+      restore(state) {
+        setMobileFilterOpen(false); setMobileInfoOpen(false); setBasemapPanelOpen(false);
+        body.classList.toggle("left-panel-collapsed", state.leftCollapsed);
+        setDetail(state.detailOpen); setTab(state.tab); setDetailExpanded(state.expanded);
+        if (state.filter) setMobileFilterOpen(true);
+        if (state.info) setMobileInfoOpen(true);
+        if (state.basemap) setBasemapPanelOpen(true);
+        body.classList.toggle("tl-legend-open", state.legend);
+        detailsOverPopup = state.detailsOverPopup;
+        syncPanelControls(); syncPopupPresentation(); resizeMap();
+        for (const item of state.scroll) if (item.element.isConnected) item.element.scrollTop = item.top;
+      }
+    });
+    window.dispatchEvent(new Event("webgis:layout-ready"));
   });
 })();

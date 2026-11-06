@@ -255,4 +255,59 @@
   @media (prefers-reduced-motion: reduce) {
     .tl-app *, .tl-app *::before, .tl-app *::after { scroll-behavior: auto; transition-duration: 0s; animation-duration: 0s; }
   }
+
+  /* Refinement: keep the current layout, enlarge interactive targets. */
+  .tl-app .btn-icon, .tl-header-action, .tl-app .form-select,
+  .tl-app .stop-list-item, .route-geometry-view-button, .route-direction-button,
+  .tl-basemap .opacity-grid button, .basemap-close { min-height: 44px; }
+  .tl-app .btn-icon, .tl-map-actions .btn, .tl-map-navigation .btn { min-width: 44px; width: 44px; height: 44px; }
+  .tl-header-action, .tl-detail-tabs .nav-link { min-width: 44px; }
+  .tl-search .global-search-submit { height: 34px; min-height: 34px; }
+  .tl-detail-tabs .nav-link { min-height: 44px; font-size: 13px; }
+  .tl-route-content .stop-list-name { font-size: 13px; }
+  .tl-detail-heading { align-items: center; }
+  #tlDetailResume { display: none; }
+  .tl-label-suppressed { visibility: hidden; pointer-events: none; }
+  .tl-app .route-stop-name-label { font-size: 12px; line-height: 1.35; }
+  .tl-app .product-tour-card { width: min(360px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto; padding: 20px; border-radius: 12px; }
+  .tl-app .product-tour-card h2 { font-size: 18px; }
+  .tl-app .product-tour-card p { font-size: 14px; line-height: 1.6; }
+  .tl-app .product-tour-footer { gap: 10px; flex-wrap: wrap; }
+  .tl-app .product-tour-nav { display: flex; gap: 8px; }
+  .tl-app .product-tour-card button { min-height: 44px; padding: 9px 12px; font-size: 13px; }
+  .tl-app .product-tour-spotlight { transition: none; pointer-events: none; }
+  @media (max-width: 760px) {
+    .tl-search .form-control { height: 48px; min-height: 48px; padding-right: 100px; }
+    .tl-search .global-search-submit { top: 2px; right: 3px; height: 44px; min-height: 44px; min-width: 50px; }
+    .global-search-clear { top: 2px; right: 55px; width: 36px; height: 44px; }
+    .tl-mode-button { min-height: 44px; font-size: 12px; }
+    .tl-panel-heading .btn-icon, .tl-detail-heading .btn-icon { min-width: 44px; width: 44px; height: 44px; }
+    .tl-sheet-grab { height: 44px; flex-basis: 44px; }
+    .tl-sheet-grab button { height: 44px; width: 100%; }
+    .tl-detail-heading h2 { font-size: 16px; }
+    .tl-detail-heading p { font-size: 12px; }
+    .tl-detail-tabs { gap: 16px; }
+    .tl-map-actions { top: 106px; }
+    .tl-popup-shelved #map .leaflet-popup { visibility: hidden; pointer-events: none; }
+    .tl-stop-popup-open:not(.tl-popup-shelved) .tl-detail-panel {
+      height: 72px; min-height: 72px; max-height: 72px;
+    }
+    .tl-stop-popup-open:not(.tl-popup-shelved) .tl-sheet-grab,
+    .tl-stop-popup-open:not(.tl-popup-shelved) .tl-detail-tabs,
+    .tl-stop-popup-open:not(.tl-popup-shelved) .tl-route-content { display: none; }
+    .tl-stop-popup-open:not(.tl-popup-shelved) .tl-detail-heading { padding: 10px 12px; flex: 1; gap: 8px; }
+    .tl-stop-popup-open:not(.tl-popup-shelved) .tl-detail-heading > div { flex: 1; overflow: hidden; }
+    .tl-stop-popup-open:not(.tl-popup-shelved) .tl-detail-heading h2,
+    .tl-stop-popup-open:not(.tl-popup-shelved) .tl-detail-heading p { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tl-stop-popup-open:not(.tl-popup-shelved) .tl-detail-heading .tl-eyebrow { display: none; }
+    .tl-stop-popup-open:not(.tl-popup-shelved) #tlDetailResume { display: block; min-width: 64px; min-height: 44px; flex: 0 0 auto; padding: 8px 12px; }
+    .tl-stop-popup-open:not(.tl-popup-shelved) .tl-map-navigation { visibility: visible; bottom: 96px; }
+    .tl-app .leaflet-container a.leaflet-popup-close-button { min-width: 44px; min-height: 44px; }
+    .tl-app .stop-popup-scroll { padding-top: 20px; }
+    .tl-app .stop-popup-nav-button, .tl-app .integration-place-row-button,
+    .tl-app .stop-popup-action, .tl-app .stop-popup-source-toggle,
+    .tl-app .stop-popup-split-action { min-height: 44px; }
+    .tl-app .route-geometry-view-button, .tl-app .route-direction-button { font-size: 12px; padding: 8px; }
+    .tl-app .right-info-action { min-height: 44px; font-size: 12px; }
+  }
 }
