@@ -1,0 +1,71 @@
+{
+  "workflow": {
+    "id": 42245462828,
+    "head_sha": "2900440884f9887343a2e440cb8b4479e2d8f2b9",
+    "status": "completed",
+    "conclusion": "success",
+    "run_attempt": 1,
+    "html_url": "https://github.com/itskindamia/webgis-transportasi-jabodetabek/actions/runs/42245462828",
+    "commit": null,
+    "error": null,
+    "updated_at": "2026-11-06T15:44:22Z"
+  },
+  "deploymentStatuses": [
+    {
+      "state": "success",
+      "description": "",
+      "environment_url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/",
+      "created_at": "2026-11-06T15:44:22Z"
+    },
+    {
+      "state": "in_progress",
+      "description": "",
+      "environment_url": "",
+      "created_at": "2026-11-06T15:42:33Z"
+    },
+    {
+      "state": "queued",
+      "description": "",
+      "environment_url": "",
+      "created_at": "2026-11-06T15:42:31Z"
+    },
+    {
+      "state": "waiting",
+      "description": "",
+      "environment_url": "",
+      "created_at": "2026-11-06T15:42:30Z"
+    }
+  ],
+  "pagesBuild": {
+    "id": null,
+    "head_sha": null,
+    "status": "built",
+    "conclusion": null,
+    "run_attempt": null,
+    "html_url": null,
+    "commit": "2900440884f9887343a2e440cb8b4479e2d8f2b9",
+    "error": {
+      "message": null
+    },
+    "updated_at": "2026-11-06T15:43:51Z"
+  },
+  "legacyRetry": {
+    "id": 42238969235,
+    "head_sha": "ba838579eacd24f20301205e3f404910be96a5bc",
+    "status": "queued",
+    "conclusion": null,
+    "run_attempt": 1,
+    "html_url": "https://github.com/itskindamia/webgis-transportasi-jabodetabek/actions/runs/42238969235",
+    "updated_at": "2026-11-06T15:14:30Z"
+  },
+  "legacyCancelAttempt": {
+    "requestedRunId": 42238969235,
+    "githubResponse": "Cannot cancel a workflow run that is completed",
+    "note": "GET metadata still reports queued; current release run and Pages build/deployment are successful at 2900440."
+  },
+  "legacyForceCancelAttempt": {
+    "requestedRunId": 42238969235,
+    "httpStatus": 409,
+    "githubResponse": "Cannot cancel a workflow re-run that has not yet queued."
+  }
+}
