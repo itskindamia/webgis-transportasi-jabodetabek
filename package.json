@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "node tools/serve-layout.mjs",
     "build:ui": "node tools/build-tabler-css.mjs",
+    "capture:layout": "node tools/capture-layout.mjs",
     "test:layout": "node --test tools/test-layout-tabler.mjs"
   },
   "devDependencies": {
