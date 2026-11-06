@@ -67,8 +67,9 @@
   updateViewport();
 
   function syncPopupPresentation() {
-    const open = Boolean(mobile() && stopPopup?.isOpen());
-    const overlay = body.classList.contains("mobile-filter-open") || body.classList.contains("mobile-info-open") || body.classList.contains("tl-keyboard-open") || !byId("basemapPanel").hidden;
+    const compactLandscape = body.classList.contains("tl-short-landscape");
+    const open = Boolean((mobile() || compactLandscape) && stopPopup?.isOpen());
+    const overlay = body.classList.contains("mobile-filter-open") || body.classList.contains("mobile-info-open") || body.classList.contains("tl-keyboard-open") || (compactLandscape && body.classList.contains("tl-legend-open")) || !byId("basemapPanel").hidden;
     const shelved = open && (detailsOverPopup || overlay);
     const element = stopPopup?.getElement();
     body.classList.toggle("tl-stop-popup-open", open);
@@ -218,7 +219,7 @@
   byId("tlLegendToggle").addEventListener("click", toggleLegend);
   for (const id of ["tlDetailsToggle", "tlMobileDetails"]) {
     byId(id).addEventListener("click", () => {
-      if (mobile() && stopPopup?.isOpen() && !detailsOverPopup) showPopupDetails();
+      if ((mobile() || body.classList.contains("tl-short-landscape")) && stopPopup?.isOpen() && !detailsOverPopup) showPopupDetails();
       else setDetail(!body.classList.contains("tl-detail-open"), { focus: true });
     });
   }
@@ -385,6 +386,9 @@
       if (compactLandscape) {
         padding.paddingTopLeft[1] = 10;
         padding.paddingBottomRight[1] = 10;
+        // The short-landscape detail overlay yields to the popup. Its saved
+        // state returns when Details is requested or the popup closes.
+        padding.paddingBottomRight[0] = 60;
       }
       for (const selector of [".tl-map-actions", ".tl-map-navigation"]) {
         const control = document.querySelector(selector), style = getComputedStyle(control), rect = control.getBoundingClientRect();

@@ -76,7 +76,11 @@ test("direct-link reload restores LRT station, active line and actionable popup"
   const url = page.url();
   await page.reload();
   await page.waitForFunction(() => document.documentElement.dataset.layoutReady === "true" && currentSelectedStopKey === "LRTJB008_01");
-  await page.evaluate(() => { startupExperienceActive = false; clearTimeout(startupTourTimerId); setInfoModalOpen(false); closeProductTour(); });
+  // Follow the real startup flow after navigation. Hiding the modal before
+  // its startup timer fires can make it reopen over the next-station button.
+  await page.click("#infoModalAccept");
+  await page.waitForSelector("#productTour", { state: "visible" });
+  await page.click("#productTourSkip");
   await page.waitForTimeout(900);
   assert.equal(await page.evaluate(() => currentSelectedRouteId), "LRT_JB_CB");
   assert.equal(page.url(), url);
