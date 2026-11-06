@@ -154,6 +154,42 @@ test("LRT integration buttons still navigate to the related source feature", asy
   assert.deepEqual(errors, []);
 });
 
+test("mobile station search, status filters and guided tour preserve LRT selection and popup scroll", async t => {
+  const { page, errors } = await app(t, 390, 844);
+  await chooseLrt(page, "LRT_JKT_S");
+  for (const status of ["ALL", "Existing"]) {
+    if (await page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none")) await page.click("#tlNetworkToggle");
+    await page.selectOption("#statusSelect", status);
+    await page.waitForTimeout(400);
+    assert.equal(await page.evaluate(() => statusSelect.value), status);
+    assert.ok(await page.evaluate(() => routeLayer.getLayers().length) > 0);
+    assert.ok((await page.locator("#routeInfo").textContent()).includes(status === "ALL" ? "Semua Status" : "Eksisting"));
+  }
+  const source = await page.evaluate(() => {
+    const feature = stopData.features.find(item => item.properties.STOP_ID === "LRTJ006");
+    return { key: getStopKey(feature), name: getStopDisplayName(feature) };
+  });
+  if (await page.locator("#mobileFilterClose").isVisible()) await page.click("#mobileFilterClose");
+  await page.fill("#globalSearchInput", source.name);
+  await page.locator(`#globalSearchResults [data-global-type="transport"][data-stop-key="${source.key}"]`).click();
+  await page.waitForSelector(".leaflet-popup .lrt-popup");
+  await page.waitForTimeout(900);
+  await page.locator(".lrt-popup .stop-popup-navigation").scrollIntoViewIfNeeded();
+  const before = await page.evaluate(() => ({ key: currentSelectedStopKey, route: currentSelectedRouteId, url: location.href,
+    tab: document.getElementById("tlDetailPanel").dataset.tab, scroll: document.querySelector(".lrt-popup-body").scrollTop }));
+  assert.equal(before.key, source.key);
+  assert.ok(before.scroll > 0);
+  await page.evaluate(() => startProductTour({ manual: true }));
+  await page.click("#productTourNext");
+  await page.click("#productTourSkip");
+  await page.waitForTimeout(250);
+  const after = await page.evaluate(() => ({ key: currentSelectedStopKey, route: currentSelectedRouteId, url: location.href,
+    tab: document.getElementById("tlDetailPanel").dataset.tab, scroll: document.querySelector(".lrt-popup-body").scrollTop }));
+  assert.deepEqual(after, before);
+  assert.equal(await page.locator(".leaflet-popup").isVisible(), true);
+  assert.deepEqual(errors, []);
+});
+
 test("long previous-station names wrap without truncation on a small phone", async t => {
   const { page, errors } = await app(t, 320, 568);
   await chooseLrt(page, "LRT_JB_BK");
@@ -212,6 +248,10 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844], [768, 1024], 
       await nav.click({ trial: true });
       await page.locator('.lrt-popup a[href*="google.com/maps"]').scrollIntoViewIfNeeded();
       await page.locator('.lrt-popup a[href*="google.com/maps"]').click({ trial: true });
+      for (const label of [".stop-popup-maps-link > span:last-child", ".stop-source-type"]) {
+        assert.equal(await page.locator(`.lrt-popup ${label}`).evaluate(el => el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1), false, "action labels remain readable without ellipsis or clipping");
+      }
+      assert.equal(await page.locator(".lrt-popup .stop-popup-maps-link").evaluate(el => getComputedStyle(el).color), "rgb(255, 255, 255)");
       await page.locator(".lrt-popup .stop-source-summary").click();
       assert.equal(await page.locator(".lrt-popup .stop-source-card").evaluate(el => el.open), true);
     }

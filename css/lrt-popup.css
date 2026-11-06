@@ -41,10 +41,13 @@
   .tl-app .lrt-popup .integration-place-row-button { min-height: 44px; padding: 8px 6px; }
   .tl-app .lrt-popup .integration-place-name { font-size: 13px; line-height: 1.4; white-space: normal; overflow-wrap: anywhere; }
   .tl-app .lrt-popup .stop-popup-integration-scroll, .tl-app .lrt-popup .stop-source-body { height: auto; max-height: none; overflow: visible; }
-  .tl-app .lrt-popup .stop-popup-action-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0 4px; }
+  .tl-app .lrt-popup .stop-popup-action-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr)); gap: 8px; margin: 14px 0 4px; }
   .tl-app .lrt-popup .stop-popup-action-cell { min-width: 0; }
-  .tl-app .lrt-popup .stop-popup-action-cell :is(a, button, summary) { min-height: 44px; font-size: 13px; line-height: 1.35; white-space: normal; overflow-wrap: anywhere; }
+  .tl-app .lrt-popup .stop-popup-action-cell :is(a, button, summary) { height: auto; min-height: 44px; font-size: 13px; line-height: 1.35; white-space: normal; overflow-wrap: anywhere; }
   .tl-app .lrt-popup .stop-popup-action-cell :is(a, button, summary) span { font-size: inherit; }
+  .tl-app .lrt-popup .stop-source-type { white-space: normal; overflow: visible; text-overflow: clip; }
+  .tl-app .lrt-popup .stop-source-summary-copy { min-width: 0; }
+  .tl-app .lrt-popup .stop-popup-external-link-icon { color: inherit; }
   .tl-app .lrt-popup .stop-popup-maps-link { background: var(--lrt-accent); color: white; border-color: var(--lrt-accent); }
   .tl-app .lrt-popup .stop-popup-navigation { flex: 0 0 auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 12px 8px 8px; margin: 0; border-top: 1px solid var(--tl-border); background: white; }
   .tl-app .lrt-popup .stop-popup-navigation.has-next-only, .tl-app .lrt-popup .stop-popup-navigation.has-previous-only { grid-template-columns: 1fr; }
@@ -62,3 +65,5 @@
 /* Leaflet's vendor sheet is unlayered. Keep its outer box from becoming
    a second scroll surface; the scoped body above owns LRT scrolling. */
 .tl-app .lrt-popup-shell .leaflet-popup-content { overflow: hidden; }
+.tl-app .lrt-popup-shell .stop-popup-maps-link { color: white; }
+.tl-app .lrt-popup-shell a.leaflet-popup-close-button { display: grid; place-items: center; width: 44px; height: 44px; font-size: 24px; }
