@@ -1,7 +1,7 @@
 /* Visual decluttering and Tabler tour. Transport features are read, never edited. */
 (() => {
   const byId = id => document.getElementById(id);
-  const mobile = () => matchMedia("(max-width: 760px)").matches;
+  const mobile = () => matchMedia("(max-width: 767px)").matches;
   const intersects = (a, b, gap = 0) => a.left < b.right + gap && a.right > b.left - gap && a.top < b.bottom + gap && a.bottom > b.top - gap;
   const visibleRect = element => {
     if (!element || element.hidden || getComputedStyle(element).display === "none" || getComputedStyle(element).visibility === "hidden") return null;
@@ -90,7 +90,16 @@
       Object.assign(spotlight.style, { left: `${focus.left}px`, top: `${focus.top}px`, width: `${focus.right - focus.left}px`, height: `${focus.bottom - focus.top}px` });
       spotlight.hidden = false;
       card.style.width = `${Math.min(360, innerWidth - 24)}px`;
-      const width = card.offsetWidth, height = card.offsetHeight;
+      const width = card.offsetWidth;
+      let height = Math.min(card.scrollHeight + card.offsetHeight - card.clientHeight, innerHeight - 24);
+      let allowedHeight = innerHeight - 24;
+      if (mobile()) {
+        const verticalRoom = Math.max(focus.top - 28, innerHeight - focus.bottom - 28);
+        const horizontalRoom = Math.max(focus.left - 28, innerWidth - focus.right - 28);
+        if (horizontalRoom < width && verticalRoom < height) allowedHeight = Math.max(96, verticalRoom);
+      }
+      card.style.maxHeight = `${allowedHeight}px`;
+      height = card.offsetHeight;
       const clampX = value => Math.max(12, Math.min(innerWidth - width - 12, value));
       const clampY = value => Math.max(12, Math.min(innerHeight - height - 12, value));
       const choices = [

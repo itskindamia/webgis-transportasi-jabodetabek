@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
-    <meta content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://unpkg.com https://cdnjs.cloudflare.com https://tile.openstreetmap.org https://server.arcgisonline.com; connect-src 'self' https://nominatim.openstreetmap.org; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests" http-equiv="Content-Security-Policy">
+    <meta content="default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com; font-src 'self' data:; img-src 'self' data: blob: https://unpkg.com https://cdnjs.cloudflare.com https://tile.openstreetmap.org https://server.arcgisonline.com; connect-src 'self' https://nominatim.openstreetmap.org; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests" http-equiv="Content-Security-Policy">
     <meta content="Peta interaktif jaringan BRT, MRT, LRT, dan KRL Jabodetabek untuk eksplorasi jaringan, halte/stasiun, serta integrasi antarmoda." name="description">
     <meta content="strict-origin-when-cross-origin" name="referrer">
     <title>Jaringan Transportasi Umum Jabodetabek</title>
     <link crossorigin="anonymous" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" id="leafletCssPrimary" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" rel="stylesheet">
-    <!-- PT Sans hanya untuk badge nomor koridor -->
-    <link href="https://fonts.googleapis.com" rel="preconnect">
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&amp;display=swap" rel="stylesheet">
+    <!-- Preload regular once; CSS reuses this exact URL. Bold loads on demand. -->
+    <link rel="preload" href="assets/fonts/pt-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="stylesheet" href="css/tabler-components.css?v=prototype-1">
     <link rel="stylesheet" href="css/legacy-components.css?v=prototype-1">
     <link rel="stylesheet" href="css/layout-tabler.css?v=prototype-1">
+    <link rel="stylesheet" href="css/lrt-popup.css?v=lrt-mobile-1">
+    <link rel="stylesheet" href="css/font-pt-sans.css?v=1">
   </head>
   <body class="tl-app">
     <div class="tl-shell" id="tlShell">
@@ -970,6 +970,7 @@
     </div>
     <script src="js/layout-tabler.js?v=prototype-1"></script>
     <script src="js/layout-tabler-ux.js?v=refinement-1"></script>
+    <script src="js/lrt-popup.js?v=lrt-mobile-1"></script>
     <script crossorigin="anonymous" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/app-loader.js?v=prototype-1"></script>
   </body>

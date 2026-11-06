@@ -2,8 +2,8 @@
 (() => {
   const byId = id => document.getElementById(id);
   const body = document.body;
-  const mobile = () => matchMedia("(max-width: 760px)").matches;
-  const tablet = () => matchMedia("(min-width: 761px) and (max-width: 1099px)").matches;
+  const mobile = () => matchMedia("(max-width: 767px)").matches;
+  const tablet = () => matchMedia("(min-width: 768px) and (max-width: 1023px)").matches;
   const detail = byId("tlDetailPanel");
   let ready = false;
   let resizeFrame = 0;
@@ -15,10 +15,59 @@
   let stopPopup = null;
   let detailsOverPopup = false;
   let shelvedAutoPan = null;
+  let sheetPosition = "half";
+  let viewportFrame = 0;
+  let attributionFrame = 0;
+  let fullViewportHeight = innerHeight;
+  let previousViewportWidth = innerWidth;
+  let popupLayoutSignature = "";
+
+  function refreshPopupLayout() {
+    if (!ready || !stopPopup?.isOpen() || detailsOverPopup || body.classList.contains("tl-popup-shelved")) return;
+    const { autoPan, keepInView, ...dimensions } = getStopPopupOptions();
+    const signature = JSON.stringify(dimensions);
+    if (signature === popupLayoutSignature) return;
+    popupLayoutSignature = signature;
+    stopPopup.getElement()?.style.setProperty("--tl-popup-content-height", `${dimensions.maxHeight}px`);
+    Object.assign(stopPopup.options, dimensions);
+    stopPopup.update();
+  }
+
+  function queueAttribution() {
+    if (!ready || attributionFrame) return;
+    attributionFrame = requestAnimationFrame(() => { attributionFrame = 0; syncAttribution(); });
+  }
+
+  function updateViewport() {
+    viewportFrame = 0;
+    const viewport = window.visualViewport;
+    const height = Math.round(viewport?.height || innerHeight);
+    const focused = document.activeElement === byId("globalSearchInput");
+    if (Math.abs(innerWidth - previousViewportWidth) > 40) fullViewportHeight = height;
+    else if (!focused) fullViewportHeight = Math.max(height, innerHeight);
+    previousViewportWidth = innerWidth;
+    const keyboard = mobile() && focused && height < fullViewportHeight - 140;
+    const root = document.documentElement;
+    const values = { "--tl-viewport-height": `${height}px`, "--tl-viewport-top": `${viewport?.scale === 1 ? Math.round(viewport.offsetTop) : 0}px` };
+    for (const [name, value] of Object.entries(values)) if (root.style.getPropertyValue(name) !== value) root.style.setProperty(name, value);
+    body.classList.toggle("tl-keyboard-open", keyboard);
+    body.classList.toggle("tl-short-viewport", mobile() && height < 560);
+    if (ready) { syncPopupPresentation(); resizeMap(); }
+  }
+
+  function queueViewport() {
+    if (!viewportFrame) viewportFrame = requestAnimationFrame(updateViewport);
+  }
+  window.visualViewport?.addEventListener("resize", queueViewport);
+  window.visualViewport?.addEventListener("scroll", queueViewport);
+  window.addEventListener("resize", queueViewport);
+  byId("globalSearchInput").addEventListener("focus", queueViewport);
+  byId("globalSearchInput").addEventListener("blur", queueViewport);
+  updateViewport();
 
   function syncPopupPresentation() {
     const open = Boolean(mobile() && stopPopup?.isOpen());
-    const overlay = body.classList.contains("mobile-filter-open") || body.classList.contains("mobile-info-open") || !byId("basemapPanel").hidden;
+    const overlay = body.classList.contains("mobile-filter-open") || body.classList.contains("mobile-info-open") || body.classList.contains("tl-keyboard-open") || !byId("basemapPanel").hidden;
     const shelved = open && (detailsOverPopup || overlay);
     const element = stopPopup?.getElement();
     body.classList.toggle("tl-stop-popup-open", open);
@@ -34,12 +83,13 @@
         shelvedAutoPan = null;
       }
     }
-    if (ready) requestAnimationFrame(syncAttribution);
+    queueAttribution();
   }
 
   function revealPopup() {
     detailsOverPopup = false;
     syncPopupPresentation();
+    resizeMap();
   }
 
   function showPopupDetails() {
@@ -57,8 +107,12 @@
       // Leaflet's pixel pan compensates for the new container size and keeps
       // the center (within Leaflet's pixel rounding) and zoom. Do not refit
       // when closing chrome.
-      map.invalidateSize({ animate: false, pan: true, debounceMoveend: true });
+      const element = byId("map"), size = map.getSize();
+      if (size.x !== element.clientWidth || size.y !== element.clientHeight) {
+        map.invalidateSize({ animate: false, pan: true, debounceMoveend: true });
+      }
       syncAttribution();
+      refreshPopupLayout();
     });
   }
 
@@ -74,9 +128,19 @@
   }
 
   function setDetailExpanded(expanded) {
+    setSheetPosition(expanded ? "expanded" : "half");
+  }
+
+  function setSheetPosition(position) {
+    sheetPosition = ["collapsed", "half", "expanded"].includes(position) ? position : "half";
+    const expanded = sheetPosition === "expanded";
+    detail.dataset.sheetPosition = sheetPosition;
     body.classList.toggle("tl-detail-expanded", expanded);
+    body.classList.toggle("tl-sheet-collapsed", sheetPosition === "collapsed");
     byId("tlDetailExpand").setAttribute("aria-expanded", String(expanded));
     byId("tlDetailExpand").setAttribute("aria-label", expanded ? "Perkecil panel detail" : "Perbesar panel detail");
+    for (const [id, value] of [["tlDetailCollapse", "collapsed"], ["tlDetailHalf", "half"], ["tlDetailExpand", "expanded"]]) byId(id)?.setAttribute("aria-pressed", String(sheetPosition === value));
+    queueAttribution();
   }
 
   function setDetail(open, { focus = false } = {}) {
@@ -108,7 +172,7 @@
     byId("rightInfoPanel").inert = !legendOpen;
     byId("tlNetworkToggle").setAttribute("aria-expanded", String(networkOpen));
     byId("tlLegendToggle").setAttribute("aria-expanded", String(legendOpen));
-    if (ready) requestAnimationFrame(syncAttribution);
+    queueAttribution();
   }
 
   function syncAttribution() {
@@ -118,13 +182,13 @@
     if (mobile()) {
       for (const id of ["filterPanel", "rightInfoPanel", "basemapPanel", "tlDetailPanel"]) {
         const panel = byId(id);
-        if (!panel.hidden && getComputedStyle(panel).display !== "none") bottom = Math.max(bottom, panel.getBoundingClientRect().height + 16);
+        const style = getComputedStyle(panel);
+        if (!panel.hidden && style.display !== "none" && style.visibility !== "hidden") bottom = Math.max(bottom, panel.getBoundingClientRect().height + 16);
       }
     }
     // Keep the original provider credits visible above mobile sheets.
-    attribution.style.marginBottom = `${bottom}px`;
-    attribution.style.maxWidth = mobile() ? `${innerWidth - 24}px` : "";
-    attribution.style.marginRight = mobile() ? "12px" : "";
+    const values = { marginBottom: `${bottom}px`, maxWidth: mobile() ? `${innerWidth - 24}px` : "", marginRight: mobile() ? "12px" : "" };
+    for (const [name, value] of Object.entries(values)) if (attribution.style[name] !== value) attribution.style[name] = value;
   }
 
   function toggleNetwork() {
@@ -165,6 +229,17 @@
   byId("tlDetailExpand").addEventListener("click", () => {
     setDetailExpanded(!body.classList.contains("tl-detail-expanded"));
   });
+  const positionBar = byId("tlDetailExpand").parentElement;
+  for (const [id, label, position] of [["tlDetailCollapse", "Ringkas", "collapsed"], ["tlDetailHalf", "Sedang", "half"]]) {
+    const button = document.createElement("button"); button.id = id; button.type = "button";
+    button.className = "tl-sheet-position"; button.textContent = label;
+    button.setAttribute("aria-label", `Posisi detail ${label.toLowerCase()}`);
+    button.addEventListener("click", () => setSheetPosition(position));
+    positionBar.insertBefore(button, byId("tlDetailExpand"));
+  }
+  byId("tlDetailExpand").classList.add("tl-sheet-position");
+  byId("tlDetailExpand").replaceChildren(document.createTextNode("Penuh"));
+  setSheetPosition("half");
   for (const id of ["tlAbout", "tlNetworkAbout"]) {
     byId(id).addEventListener("click", () => { if (ready) setInfoModalOpen(true); });
   }
@@ -272,7 +347,7 @@
     const rect = byId("map").getBoundingClientRect();
     let left = 20, top = 70, right = 60, bottom = 72;
     if (mobile()) {
-      left = 16; right = 16; top = 108; bottom = 28;
+      left = 16; right = 16; top = Math.min(108, rect.height * .25); bottom = 28;
       if (body.classList.contains("tl-detail-open")) {
         bottom = Math.min(rect.height * .55, byId("tlDetailPanel").getBoundingClientRect().height + 24);
       }
@@ -287,6 +362,10 @@
   window.addEventListener("webgis:map-ready", () => {
     if (ready) return;
     ready = true;
+    // Responsive behavior is UI-only; align the legacy controls with the
+    // shared CSS breakpoint while retaining all transport handlers.
+    isMobileLayout = mobile;
+    syncPanelModeAfterResize();
 
     // Retire the previous shell's measurements without modifying map.js.
     layoutDesktopRightCards = () => {};
@@ -300,10 +379,20 @@
     getStopPopupOptions = () => {
       const size = map.getSize();
       const padding = mapPadding();
+      const mapRect = byId("map").getBoundingClientRect();
+      for (const selector of [".tl-map-actions", ".tl-map-navigation"]) {
+        const control = document.querySelector(selector), style = getComputedStyle(control), rect = control.getBoundingClientRect();
+        if (style.display !== "none" && style.visibility !== "hidden" && rect.right > mapRect.left && rect.left < mapRect.right) padding.paddingBottomRight[0] = Math.max(padding.paddingBottomRight[0], mapRect.right - rect.left + 12);
+      }
       if (mobile()) {
         // Reserve the control rail and the visible provider credits as well
         // as the sheet. They must not cover popup actions.
-        padding.paddingBottomRight[0] = 60;
+        padding.paddingBottomRight[0] = Math.max(60, padding.paddingBottomRight[0]);
+        padding.paddingTopLeft[1] = 16;
+        for (const element of [byId("globalSearchPanel"), document.querySelector(".tl-map-caption")]) {
+          const style = getComputedStyle(element), rect = element.getBoundingClientRect();
+          if (style.display !== "none" && style.visibility !== "hidden" && rect.bottom > mapRect.top && rect.top < mapRect.bottom) padding.paddingTopLeft[1] = Math.max(padding.paddingTopLeft[1], rect.bottom - mapRect.top + 12);
+        }
         const credits = map.attributionControl?.getContainer();
         if (credits) padding.paddingBottomRight[1] = Math.max(
           padding.paddingBottomRight[1],
@@ -313,10 +402,10 @@
       const availableWidth = size.x - padding.paddingTopLeft[0] - padding.paddingBottomRight[0];
       // Mobile popup content also needs room for Leaflet's outside margins.
       const frameWidth = mobile() ? 48 : 12;
-      const maxWidth = Math.min(330, Math.max(200, availableWidth - frameWidth));
+      const maxWidth = Math.min(330, Math.max(160, availableWidth - frameWidth));
       return {
         maxWidth, minWidth: Math.min(245, maxWidth),
-        maxHeight: Math.min(540, Math.max(150, size.y - padding.paddingTopLeft[1] - padding.paddingBottomRight[1] - 28)),
+        maxHeight: Math.min(540, Math.max(64, size.y - padding.paddingTopLeft[1] - padding.paddingBottomRight[1] - 40)),
         autoPan: true, keepInView: true, ...{
           autoPanPaddingTopLeft: padding.paddingTopLeft,
           autoPanPaddingBottomRight: padding.paddingBottomRight
@@ -378,21 +467,29 @@
     byId("stopList").addEventListener("click", revealStopPopup, true);
     byId("stopList").addEventListener("keydown", revealStopPopup, true);
     new ResizeObserver(resizeMap).observe(byId("map"));
-    const sheetObserver = new ResizeObserver(() => requestAnimationFrame(syncAttribution));
+    const sheetObserver = new ResizeObserver(() => { queueAttribution(); resizeMap(); });
     for (const id of ["filterPanel", "rightInfoPanel", "basemapPanel", "tlDetailPanel"]) sheetObserver.observe(byId(id));
+    for (const id of ["filterPanel", "rightInfoPanel", "basemapPanel", "tlDetailPanel"]) {
+      const panel = byId(id);
+      L.DomEvent.disableScrollPropagation(panel);
+      for (const event of ["touchstart", "dblclick"]) panel.addEventListener(event, e => e.stopPropagation(), { passive: true });
+    }
     map.on("popupopen", ({ popup }) => {
       if (!popup.getElement()?.querySelector(".stop-popup")) return;
       stopPopup = popup;
       detailsOverPopup = false;
       shelvedAutoPan = null;
+      popupLayoutSignature = "";
       syncPopupPresentation();
       if (mobile()) {
         syncAttribution();
       }
       const { autoPan, keepInView, ...dimensions } = getStopPopupOptions();
       // Preserve the engine's navigation-specific autoPan setting.
+      popup.getElement()?.style.setProperty("--tl-popup-content-height", `${dimensions.maxHeight}px`);
       Object.assign(popup.options, dimensions);
       popup.update();
+      popupLayoutSignature = JSON.stringify(dimensions);
     });
     map.on("popupclose", ({ popup }) => {
       if (popup !== stopPopup) return;
@@ -400,6 +497,7 @@
       popup.getElement()?.removeAttribute("aria-hidden");
       if (popup.getElement()) popup.getElement().inert = false;
       stopPopup = null;
+      popupLayoutSignature = "";
       detailsOverPopup = false;
       shelvedAutoPan = null;
       syncPopupPresentation();
@@ -424,16 +522,17 @@
       }
     });
     scheduleSync();
+    document.fonts?.ready.then(resizeMap);
     resizeMap();
     document.documentElement.dataset.layoutReady = "true";
     // UI-only bridge for the tour; no transport state setters are exposed.
     window.webgisLayout = Object.freeze({
-      setDetail, setTab, setDetailExpanded, revealPopup, showPopupDetails,
+      setDetail, setTab, setDetailExpanded, setSheetPosition, revealPopup, showPopupDetails,
       capture() {
         return {
           leftCollapsed: body.classList.contains("left-panel-collapsed"),
           detailOpen: body.classList.contains("tl-detail-open"), expanded: body.classList.contains("tl-detail-expanded"),
-          tab: detail.dataset.tab, detailsOverPopup,
+          tab: detail.dataset.tab, sheetPosition, detailsOverPopup,
           filter: body.classList.contains("mobile-filter-open"), info: body.classList.contains("mobile-info-open"),
           legend: body.classList.contains("tl-legend-open"), basemap: !byId("basemapPanel").hidden,
           scroll: [...document.querySelectorAll(".filter-panel-content, .tl-route-content, .stop-list-scroll, .right-info-body, .leaflet-popup-content, .stop-popup-scroll")].map(element => ({ element, top: element.scrollTop }))
@@ -442,7 +541,7 @@
       restore(state) {
         setMobileFilterOpen(false); setMobileInfoOpen(false); setBasemapPanelOpen(false);
         body.classList.toggle("left-panel-collapsed", state.leftCollapsed);
-        setDetail(state.detailOpen); setTab(state.tab); setDetailExpanded(state.expanded);
+        setDetail(state.detailOpen); setTab(state.tab); setSheetPosition(state.sheetPosition || (state.expanded ? "expanded" : "half"));
         if (state.filter) setMobileFilterOpen(true);
         if (state.info) setMobileInfoOpen(true);
         if (state.basemap) setBasemapPanelOpen(true);

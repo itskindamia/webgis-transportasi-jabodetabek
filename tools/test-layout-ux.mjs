@@ -39,6 +39,7 @@ test("mobile popup and detail take turns without changing selection, tab, URL, o
   assert.ok((await page.locator("#tlDetailPanel").boundingBox()).height <= 80);
   assert.equal(await page.locator("#tlDetailExpand").getAttribute("aria-expanded"), "true");
   await page.click("#tlDetailResume");
+  await page.waitForFunction(() => document.getElementById("tlDetailPanel").getBoundingClientRect().height > 232);
   assert.equal(await page.locator(".leaflet-popup").isVisible(), false);
   assert.equal(await page.evaluate(() => map._popup.isOpen()), true, "popup is retained, not closed through the engine");
   assert.ok((await page.locator("#tlDetailPanel").boundingBox()).height > 232);
