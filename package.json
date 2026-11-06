@@ -6,7 +6,7 @@
     "dev": "node tools/serve-layout.mjs",
     "build:ui": "node tools/build-tabler-css.mjs",
     "capture:layout": "node tools/capture-layout.mjs",
-    "test:layout": "node --test tools/test-layout-tabler.mjs"
+    "test:layout": "node --test --test-concurrency=1 tools/test-layout-*.mjs"
   },
   "devDependencies": {
     "@tabler/core": "1.4.0",

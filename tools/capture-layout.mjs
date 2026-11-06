@@ -60,6 +60,10 @@ async function capture(page, filename, description) {
       mapSize: [map.getSize().x, map.getSize().y], mapContainer: [Math.round(rect.width), Math.round(rect.height)],
       route: currentSelectedRouteId, selectedStop: currentSelectedStopKey,
       detailTab: document.getElementById("tlDetailPanel").dataset.tab,
+      detailHeight: document.getElementById("tlDetailPanel").getBoundingClientRect().height,
+      popupVisible: Boolean(map._popup?.getElement() && getComputedStyle(map._popup.getElement()).visibility !== "hidden"),
+      labelCount: document.querySelectorAll("#map .route-stop-name-label").length,
+      shownLabels: [...document.querySelectorAll("#map .route-stop-name-label")].filter(el => getComputedStyle(el).visibility !== "hidden").length,
       bodyClasses: document.body.className, loadedTiles: document.querySelectorAll("#map .leaflet-tile-loaded").length };
   });
   assert.deepEqual(state.mapSize, state.mapContainer);
@@ -126,6 +130,17 @@ try {
       if (width === 1366) {
         await page.click("#tlTabRoute");
         await capture(page, "desktop-route-summary.png", "Ringkasan rute dan kontrol kondisi/tampilan trase");
+        await page.click("#tlLegendToggle");
+        await page.click("#rightInfoGuideButton");
+        await capture(page, "desktop-guided-tour.png", "Guided tour dengan anchor pilihan jaringan Tabler");
+        await page.click("#productTourSkip");
+      }
+      if (width === 768) {
+        await page.click("#tlLegendToggle");
+        await page.click("#rightInfoGuideButton");
+        await page.click("#productTourNext");
+        await capture(page, "tablet-guided-tour.png", "Guided tour pada tab detail di tablet");
+        await page.click("#productTourSkip");
       }
       if (width === 390) {
         await page.click("#tlDetailExpand");
@@ -137,7 +152,18 @@ try {
         await page.click("#tlDetailExpand");
         await page.locator('#stopList [data-stop-key="BRT002_REG_A"]').click();
         await page.waitForTimeout(1000);
-        await capture(page, "mobile-stop-popup.png", "Popup halte ASEAN dan sheet seleksi ringkas");
+        await capture(page, "mobile-stop-popup.png", "Popup halte ASEAN dengan strip detail 72 px");
+        await page.click("#tlDetailResume");
+        await capture(page, "mobile-selection-detail.png", "Detail diperbesar; popup disembunyikan tanpa menghapus seleksi");
+        await page.click("#tlDetailClose");
+        await page.click("#infoButton");
+        await page.click("#rightInfoGuideButton");
+        await capture(page, "mobile-guided-tour.png", "Guided tour jaringan pada bottom sheet mobile");
+        await page.click("#productTourNext");
+        await page.click("#productTourNext");
+        await page.click("#productTourNext");
+        await capture(page, "mobile-tour-search.png", "Guided tour menyorot pencarian yang selalu terlihat");
+        await page.click("#productTourSkip");
       }
     } finally { await context.close(); }
   }

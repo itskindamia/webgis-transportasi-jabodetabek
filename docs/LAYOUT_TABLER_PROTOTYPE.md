@@ -6,9 +6,15 @@ kembali dan perubahan lokal dipulihkan; implementasi ini **bukan rekonstruksi**
 dari laporan. Kode, dependensi, stylesheet hasil build, tes, dan screenshot
 disimpan melalui commit bertahap.
 
-Baseline: main pada `3835e534f4aa0ee8889b77924cf58ccaab20f4db`. PR A01 tetap
-terpisah. Tidak ada merge, deployment GitHub Pages, perubahan URL publik,
-atau migrasi database.
+Baseline data/engine: `3835e534f4aa0ee8889b77924cf58ccaab20f4db`. PR A01 tetap
+terpisah. Pekerjaan refinement ini tidak melakukan merge ke main, deployment
+GitHub Pages, perubahan URL publik, atau migrasi database.
+
+PR #2 telah di-merge oleh itskindamia pada 6 November 2026, 09:41 UTC, sebagai
+commit squash `10abd9eb918d81c9bd0f696d1e3742615c28ca37`. Tree main tersebut
+identik dengan `26c6086`. Riwayat feature branch diselaraskan dengan baseline
+terbitan ini tanpa perubahan kode/hasil tes; review refinement menggunakan
+Draft PR lanjutan dari branch `feat/layout-tabler-prototype` yang sama.
 
 ## Menjalankan secara lokal
 
@@ -71,7 +77,7 @@ tersedia; seluruh duplikasi CSS proyek belum dibersihkan.
   transportasi, seleksi/navigasi dan sinkronisasi URL tetap memakai engine asli.
 - [source-integrity.json](layout-tabler/source-integrity.json) melindungi SHA-256
   delapan berkas: empat GeoJSON, js/map.js, js/layout-concept.js dan kedua CSS lama.
-- Semua 87 ID DOM baseline tetap ada; entry prototipe memiliki 109 ID unik.
+- Semua 87 ID DOM baseline tetap ada; entry prototipe memiliki 110 ID unik.
   Select lama tetap menjadi hook engine walaupun pilihan layanan ditampilkan
   melalui tombol baru.
 - Pencarian transportasi/tempat, basemap/opasitas, legenda, popup, integrasi,
@@ -84,6 +90,7 @@ tersedia; seluruh duplikasi CSS proyek belum dibersihkan.
 | index.html | Shell Tabler dan penempatan ulang komponen |
 | js/app-loader.js | Event kesiapan engine |
 | js/layout-tabler.js | Panel, tab, mode proxy, resize, padding popup dan atribusi |
+| js/layout-tabler-ux.js | Decluttering visual dan tur dengan anchor Tabler; tidak mengganti rute/data |
 | css/layout-tabler.css | Shell responsif, spacing, typography dan breakpoint |
 | css/tabler-components.scss / css/tabler-components.css | Sass terpilih dan hasil build |
 | css/legacy-components.css | Presentasi komponen dinamis lama yang masih diperlukan |
@@ -91,14 +98,15 @@ tersedia; seluruh duplikasi CSS proyek belum dibersihkan.
 | package.json / package-lock.json / .gitignore | Perintah lokal, dependensi dan pengabaian artefak sementara |
 | tools/build-tabler-css.mjs / tools/serve-layout.mjs | Build dan server lokal |
 | tools/layout-browser.mjs / tools/test-layout-tabler.mjs | Fixture dan regresi browser |
+| tools/test-layout-ux.mjs | Regresi popup/detail, label, guided tour, startup dan target sentuh |
 | tools/capture-layout.mjs / tools/fetch-preview-tile.py | Capture aktual dengan tile penyedia |
 | docs/layout-tabler/verification/* | Log tes/audit dan ringkasan |
-| docs/layout-tabler/screenshots/* | Delapan PNG dan manifest |
+| docs/layout-tabler/screenshots/* | Tiga belas PNG aktual dan manifest |
 | README.md / THIRD_PARTY_NOTICES.md | Cara menjalankan dan atribusi |
 
 ## Pengujian terbaru
 
-**10 tes lulus, 0 gagal**, Chromium headless.
+**19 tes lulus, 0 gagal**, Chromium headless.
 [Log lengkap](layout-tabler/verification/layout-tests.tap) dan
 [ringkasan mesin](layout-tabler/verification/summary.json) disertakan.
 
@@ -114,6 +122,11 @@ tersedia; seluruh duplikasi CSS proyek belum dibersihkan.
 | Keyboard tab dan perpindahan breakpoint | Lulus |
 | Popup mobile bebas dari kontrol/atribusi/sheet, seleksi ulang keyboard dan tombol tutup | Lulus |
 | GPS, home, zoom dan perbandingan rute | Lulus |
+| Popup ↔ detail: seleksi, tab, URL, marker dan daftar tetap sama | Lulus |
+| Decluttering di mobile/desktop, hover dan prioritas label terpilih | Lulus |
+| Lima langkah tur di 390/768/1366 px dan resize ke 1600 px | Lulus |
+| Tur: maju/mundur, selesai, Lewati, Escape, focus trap dan startup normal | Lulus |
+| Target sentuh kontrol utama minimal 44 × 44 px | Lulus |
 
 Tidak ada overflow horizontal atau error runtime baru dalam alur tersebut.
 Ukuran Leaflet cocok dengan kontainer setelah perubahan panel. Zoom tidak
@@ -133,6 +146,46 @@ kontrol. Reproduksi negatif checkpoint lama tersimpan dalam
 regresi setelah perbaikan dalam
 [mobile-popup-after.tap](layout-tabler/verification/mobile-popup-after.tap).
 Keduanya terpisah dari audit data di bawah.
+
+### Refinement UX dibanding commit 26c6086
+
+Layout utama tetap sama; refinement hanya mengatur prioritas komponen,
+keterbacaan dan interaksi.
+
+- Saat popup halte aktif pada mobile, panel detail menjadi **strip 72 px**.
+  Tab dan preferensi expand disimpan; penyesuaian visual tidak memilih ulang
+  halte, mengubah aria-current, atau menulis URL.
+- Tombol **Detail** menampilkan panel dan menyembunyikan popup secara visual
+  dengan visibility/inert. Popup Leaflet tidak ditutup melalui engine, sehingga
+  seleksi tetap ada. Menutup panel mengembalikan popup. Membuka filter/informasi
+  juga menyembunyikan popup agar hanya satu permukaan informasi yang dominan.
+  Tombol X popup tetap mengikuti perilaku engine lama untuk mengakhiri seleksi.
+- Label disaring berdasarkan **kotak aktual di layar**, tabrakan dan panel
+  yang menutup peta. Label terpilih dan hover diprioritaskan, lalu terminus,
+  endpoint dan transit. Semua marker dan nama di daftar tetap tersedia;
+  koordinat, membership dan urutan tidak diubah.
+- Tur memakai lima target Tabler yang terlihat: jaringan, tab detail,
+  popup/integrasi (atau tombol Detail ketika belum ada popup), pencarian atas,
+  dan peta dasar. Tur tidak membuat marker demo, memilih rute contoh, atau
+  mengganti filter. Keluar dari tur memulihkan panel, tab, scroll, pencarian,
+  fokus, center/zoom, serta mempertahankan seleksi dan URL.
+- Kontrol utama, tab, baris halte dan aksi popup diperbesar untuk sentuhan;
+  pengujian mengukur target minimal **44 × 44 px**.
+
+| Ukuran yang diukur | PR 26c6086 | Refinement |
+| --- | --- | --- |
+| Pasangan label bertumpuk, Koridor 1 | 14 | 0 |
+| Label terlihat pada framing yang diukur | 23 | 12 |
+| Marker fisik / entri daftar | 26 / 23 | 26 / 23 |
+| Sheet saat popup aktif di mobile | 232 px | 72 px |
+| Target tombol legenda mobile | 36 × 36 px | 44 × 44 px |
+| Suite layout | 10 lulus | 19 lulus |
+
+Pengukuran label menggunakan BRT_01, status Eksisting, lebar 390 dan 1366 px,
+tinggi 900 px; jumlah label yang terlihat berubah mengikuti zoom dan ruang.
+[Data perbandingan](layout-tabler/verification/ux-comparison.json),
+[tes baseline PR](layout-tabler/verification/layout-tests-pr26c6086.tap), dan
+[audit pembanding PR](layout-tabler/verification/ux-audits.json) disertakan.
 
 ### Perbandingan audit repository
 
@@ -160,6 +213,11 @@ diperbaiki pada pekerjaan layout.
 | Detail mobile diperbesar | [mobile-detail-expanded.png](layout-tabler/screenshots/mobile-detail-expanded.png) |
 | Filter mobile | [mobile-filter.png](layout-tabler/screenshots/mobile-filter.png) |
 | Popup dan seleksi mobile | [mobile-stop-popup.png](layout-tabler/screenshots/mobile-stop-popup.png) |
+| Detail mobile; popup disembunyikan, seleksi tetap ada | [mobile-selection-detail.png](layout-tabler/screenshots/mobile-selection-detail.png) |
+| Tur jaringan desktop | [desktop-guided-tour.png](layout-tabler/screenshots/desktop-guided-tour.png) |
+| Tur detail tablet | [tablet-guided-tour.png](layout-tabler/screenshots/tablet-guided-tour.png) |
+| Tur jaringan mobile | [mobile-guided-tour.png](layout-tabler/screenshots/mobile-guided-tour.png) |
+| Tur pencarian mobile | [mobile-tour-search.png](layout-tabler/screenshots/mobile-tour-search.png) |
 
 Timestamp, commit aplikasi saat capture, versi Chromium, dimensi kontainer,
 jumlah tile aktual dan SHA-256 PNG tercatat dalam
@@ -177,15 +235,12 @@ capture. Cache tile berada di direktori sementara, tidak masuk repository.
 
 ## Batas integrasi yang tersisa
 
-1. **Onboarding/guided tour lama:** anchor dan copy belum disesuaikan penuh;
-   suite layout menutup onboarding untuk menguji aplikasi utama. Perlu review
-   terpisah sebelum produksi.
-2. **Gestur drag/swipe bottom sheet:** belum tersedia; gunakan tombol handle.
-3. **Safari/iOS, perangkat sentuh nyata, keyboard virtual dan screen reader:**
+1. **Gestur drag/swipe bottom sheet:** belum tersedia; gunakan tombol handle.
+2. **Safari/iOS, perangkat sentuh nyata, keyboard virtual dan screen reader:**
    belum divalidasi menyeluruh; pengujian memakai Chromium headless.
-4. **Ketergantungan helper UI global:** perubahan engine memerlukan regresi
+3. **Ketergantungan helper UI global:** perubahan engine memerlukan regresi
    layout. CSS komponen lama juga masih memiliki aturan berulang.
-5. **A01 dan audit data:** bug toggle non-eksisting tetap mengikuti PR A01;
+4. **A01 dan audit data:** bug toggle non-eksisting tetap mengikuti PR A01;
    konflik STOP_ID/GEOM_ID dan temuan lain tetap ada.
 
 Prototipe disiapkan untuk review layout melalui Draft PR, belum untuk

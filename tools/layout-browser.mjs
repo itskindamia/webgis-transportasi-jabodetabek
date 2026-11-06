@@ -5,14 +5,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 
-const root = fileURLToPath(new URL("../", import.meta.url));
+const root = process.env.LAYOUT_APP_ROOT || fileURLToPath(new URL("../", import.meta.url));
 const require = createRequire(import.meta.url);
 const leaflet = path.dirname(require.resolve("leaflet/dist/leaflet.js"));
 const origin = "http://127.0.0.1:5173";
 const tile = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64");
 const mime = { ".html": "text/html", ".js": "application/javascript", ".css": "text/css", ".geojson": "application/geo+json", ".svg": "image/svg+xml", ".png": "image/png" };
 
-export async function openLayout(browser, width = 1366, height = 900) {
+export async function openLayout(browser, width = 1366, height = 900, { dismissOnboarding = true } = {}) {
   const context = await browser.newContext({ viewport: { width, height } });
   const page = await context.newPage();
   const errors = [];
@@ -48,7 +48,7 @@ export async function openLayout(browser, width = 1366, height = 900) {
   await page.waitForFunction(() => document.documentElement.dataset.layoutReady === "true"
     && typeof stopData !== "undefined" && stopData?.features?.length > 0);
   await page.waitForTimeout(400);
-  await page.evaluate(() => {
+  if (dismissOnboarding) await page.evaluate(() => {
     startupExperienceActive = false;
     clearTimeout(startupTourTimerId);
     setInfoModalOpen(false);
