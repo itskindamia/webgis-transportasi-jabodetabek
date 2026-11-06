@@ -7,6 +7,18 @@
 
 # Jaringan Transportasi Umum Jabodetabek
 
+## Prototipe layout Tabler + Leaflet
+
+Branch review: `feat/layout-tabler-prototype`. Jalankan `npm run dev` (Node 20+),
+lalu buka `http://localhost:5173/`. CSS hasil build sudah disertakan; dependensi
+pengembangan hanya diperlukan untuk build ulang dan pengujian.
+
+[Laporan layout, cara pengujian, dan batas integrasi](docs/LAYOUT_TABLER_PROTOTYPE.md) ·
+[Screenshot desktop, tablet, dan mobile](docs/layout-tabler/screenshots/)
+
+Prototipe ini belum digabung ke main dan tidak dideploy. Data jaringan dan
+`js/map.js` tetap memakai baseline proyek.
+
 WebGIS statis untuk eksplorasi jaringan transportasi umum Jabodetabek, termasuk BRT dan jaringan rel, halte/stasiun, status jaringan, serta integrasi antarmoda.
 
 **Baseline saat ini: v0.16 — 14 September 2026.**

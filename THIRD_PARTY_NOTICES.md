@@ -21,6 +21,14 @@ Leaflet 1.9.4 tersedia di bawah lisensi BSD 2-Clause.
 - Proyek: https://leafletjs.com/
 - Lisensi: https://github.com/Leaflet/Leaflet/blob/v1.9.4/LICENSE
 
+## Tabler UI, Bootstrap, dan Tabler Icons — prototipe layout
+
+- Komponen CSS Tabler UI **1.4.0**, lisensi MIT: https://github.com/tabler/tabler
+- Bootstrap **5.3.7**, dependensi Sass Tabler, lisensi MIT: https://getbootstrap.com/
+- Subset 17 ikon Tabler Icons **3.35.0**, lisensi MIT: https://github.com/tabler/tabler-icons
+- Salinan lisensi berada di `assets/licenses/`. CSS komponen dipilih melalui
+  `css/tabler-components.scss`; bundle JavaScript Tabler tidak dimuat.
+
 ## Esri basemaps
 
 Basemap Light Gray Canvas dan World Imagery dimuat dari layanan ArcGIS Online.
