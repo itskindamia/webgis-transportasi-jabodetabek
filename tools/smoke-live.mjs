@@ -112,6 +112,7 @@ try {
     assert.equal(await page.locator("#routeSelect").getAttribute("title"), fullName);
     assert.equal(await page.locator("#tlRouteFullName").innerText(), fullName);
     assert.equal(await page.locator("#tlMapContext").getAttribute("title"), fullName);
+    if (await page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none")) await page.click("#tlNetworkToggle");
     await page.locator("#routeCompareAdd").click({ trial: true });
     if (width < 768) {
       const intrinsic = await page.locator(".filter-panel-content").evaluate(el => {
