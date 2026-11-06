@@ -59,6 +59,9 @@
     script.src = MAP_SCRIPT;
     script.async = false;
     script.onerror = showStartupFailure;
+    script.onload = () => {
+      window.dispatchEvent(new Event("webgis:map-ready"));
+    };
 
     document.body.appendChild(script);
   }
