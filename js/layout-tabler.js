@@ -418,7 +418,7 @@
       const frameWidth = mobile() ? 48 : 12;
       const maxWidth = Math.min(compactLandscape ? 440 : 330, Math.max(160, availableWidth - frameWidth));
       return {
-        maxWidth, minWidth: Math.min(245, maxWidth),
+        maxWidth, minWidth: compactLandscape ? maxWidth : Math.min(245, maxWidth),
         // A larger fixed minimum can place actions outside a short map. Use
         // the actual available height; compact columns expose services early.
         maxHeight: Math.min(540, Math.max(64, size.y - padding.paddingTopLeft[1] - padding.paddingBottomRight[1] - (compactLandscape ? 32 : 40))),
