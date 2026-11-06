@@ -7,17 +7,16 @@
 
 # Jaringan Transportasi Umum Jabodetabek
 
-## Prototipe layout Tabler + Leaflet
+## Antarmuka Tabler + Leaflet
 
-Branch review: `feat/layout-tabler-prototype`. Jalankan `npm run dev` (Node 20+),
-lalu buka `http://localhost:5173/`. CSS hasil build sudah disertakan; dependensi
-pengembangan hanya diperlukan untuk build ulang dan pengujian.
+Jalankan `npm run dev` (Node 20+), lalu buka `http://localhost:5173/`.
+Aplikasi memakai PT Sans 400/700 lokal, popup LRT berbasis metadata dan layout
+responsif dengan bottom sheet mobile. CSS hasil build sudah disertakan.
 
-[Laporan layout, cara pengujian, dan batas integrasi](docs/LAYOUT_TABLER_PROTOTYPE.md) ·
-[Screenshot desktop, tablet, dan mobile](docs/layout-tabler/screenshots/)
-
-Prototipe ini belum digabung ke main dan tidak dideploy. Data jaringan dan
-`js/map.js` tetap memakai baseline proyek.
+[Validasi rilis dan rollback](docs/RELEASE_20261106.md) ·
+[Laporan popup/font/mobile](docs/LRT_POPUP_PT_SANS_MOBILE.md) ·
+[Screenshot akhir](docs/release-20261106/screenshots/) ·
+[Website](https://itskindamia.github.io/webgis-transportasi-jabodetabek/)
 
 WebGIS statis untuk eksplorasi jaringan transportasi umum Jabodetabek, termasuk BRT dan jaringan rel, halte/stasiun, status jaringan, serta integrasi antarmoda.
 

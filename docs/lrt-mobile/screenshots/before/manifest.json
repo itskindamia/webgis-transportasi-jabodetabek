@@ -1,0 +1,114 @@
+{
+  "capturedAt": "2026-11-06T13:34:01.317Z",
+  "applicationCommit": "4e0985d69d51694840d72e28d48bb91800bb0abf",
+  "modifiedTrackedFiles": [],
+  "browser": "155.0.8059.79",
+  "origin": "local HTTP preview (no deployment)",
+  "realTileResponses": 386,
+  "runtimeErrors": [],
+  "tileFailures": [],
+  "notes": [
+    "Actual provider tiles via inherited HTTPS proxy and temporary cache.",
+    "Pinned Leaflet CDN bytes supplied by identical npm package.",
+    "Before: optional Google Fonts isolated with system fallback. After: real local PT Sans 400/700 loaded.",
+    "Actual application/data served over local HTTP; station IDs in this tool are test fixtures only."
+  ],
+  "captured": [
+    {
+      "file": "lrt-jakarta-1366.png",
+      "description": "Velodrome: metadata, lin dan integrasi berasal dari data aktual",
+      "viewport": [
+        1366,
+        900
+      ],
+      "documentWidth": 1366,
+      "mapSize": [
+        786,
+        836
+      ],
+      "mapContainer": [
+        786,
+        836
+      ],
+      "route": "LRT_JKT_S",
+      "stop": "LRTJ006_01",
+      "detailTab": "selected",
+      "font": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded",
+      "loadedTiles": 16,
+      "sha256": "45ee39e4db5d6dd401052f37f18da67953ab22c1727557997725107466994acc"
+    },
+    {
+      "file": "lrt-jabodebek-multiline-1366.png",
+      "description": "Cawang: dua lin LRT Jabodebek, konteks aktif Lin Bekasi",
+      "viewport": [
+        1366,
+        900
+      ],
+      "documentWidth": 1366,
+      "mapSize": [
+        786,
+        836
+      ],
+      "mapContainer": [
+        786,
+        836
+      ],
+      "route": "LRT_JB_BK",
+      "stop": "LRTJB008_01",
+      "detailTab": "selected",
+      "font": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded",
+      "loadedTiles": 25,
+      "sha256": "5e6610d76ef1159c5803dd2eb666289f2c42f355bfed6441295d7a0851a5b947"
+    },
+    {
+      "file": "lrt-jakarta-390.png",
+      "description": "Velodrome: metadata, lin dan integrasi berasal dari data aktual",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "LRT_JKT_S",
+      "stop": "LRTJ006_01",
+      "detailTab": "stops",
+      "font": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded tl-stop-popup-open",
+      "loadedTiles": 15,
+      "sha256": "5d7cb45ddeb8f0b92cf4318a8084c08b738b78137ac18d89af8a401295e81301"
+    },
+    {
+      "file": "lrt-jabodebek-multiline-390.png",
+      "description": "Cawang: dua lin LRT Jabodebek, konteks aktif Lin Bekasi",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "LRT_JB_BK",
+      "stop": "LRTJB008_01",
+      "detailTab": "stops",
+      "font": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded tl-stop-popup-open",
+      "loadedTiles": 15,
+      "sha256": "94c57a46576ba71fa443c375f628a416c0e913ba04f3da9e3da46c04cd5bc0d5"
+    }
+  ]
+}

@@ -40,8 +40,13 @@ secara dinamis pada kontrol atribusi peta.
 
 ## PT Sans
 
-PT Sans dimuat dari Google Fonts dan didistribusikan menurut SIL Open Font
-License 1.1.
+PT Sans adalah font utama aplikasi, dengan bobot Regular 400 dan Bold 700 serta
+fallback `"PT Sans", Arial, sans-serif`. Dua berkas WOFF2 Latin disajikan lokal
+dari `assets/fonts/` melalui satu stylesheet untuk seluruh aplikasi, termasuk
+popup/label Leaflet; tidak ada stylesheet/font Google yang diminta saat runtime.
+Tulisan yang menjadi bagian dari gambar tile basemap tidak diubah. Font
+didistribusikan menurut SIL Open Font License 1.1; salinannya berada di
+`assets/fonts/OFL.txt`. Provenance dan hash berkas ada di `assets/fonts/README.md`.
 
 - Informasi font: https://fonts.google.com/specimen/PT+Sans
 - SIL Open Font License: https://openfontlicense.org/

@@ -47,6 +47,7 @@ for (const [width, height] of [[390, 844], [768, 1024], [1366, 900], [1600, 1000
     if (width <= 760) {
       const peek = (await page.locator("#tlDetailPanel").boundingBox()).height;
       await page.click("#tlDetailExpand");
+      await page.waitForFunction(height => document.getElementById("tlDetailPanel").getBoundingClientRect().height > height, peek);
       assert.ok((await page.locator("#tlDetailPanel").boundingBox()).height > peek);
       await page.click("#mobileBottomRouteButton");
       assert.equal(await page.locator("#tlMobileDetails").getAttribute("aria-expanded"), "false");

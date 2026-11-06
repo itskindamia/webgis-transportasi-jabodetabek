@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: source geometry, attributes, operation engine and existing DOM hooks remain intact
+ok 1 - source geometry, attributes, operation engine and existing DOM hooks remain intact
+  ---
+  duration_ms: 297.99708
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 390px
+ok 2 - responsive layout and real Leaflet resizing at 390px
+  ---
+  duration_ms: 5401.040845
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 768px
+ok 3 - responsive layout and real Leaflet resizing at 768px
+  ---
+  duration_ms: 5388.341435
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 1366px
+ok 4 - responsive layout and real Leaflet resizing at 1366px
+  ---
+  duration_ms: 6274.025126
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 1600px
+ok 5 - responsive layout and real Leaflet resizing at 1600px
+  ---
+  duration_ms: 5847.018837
+  type: 'test'
+  ...
+# Subtest: stop selection, popup navigation, integration links, tabs and URL remain connected
+ok 6 - stop selection, popup navigation, integration links, tabs and URL remain connected
+  ---
+  duration_ms: 10116.677221
+  type: 'test'
+  ...
+# Subtest: global transport search, online place search, basemaps, legend and about remain reachable
+ok 7 - global transport search, online place search, basemaps, legend and about remain reachable
+  ---
+  duration_ms: 6734.304544
+  type: 'test'
+  ...
+# Subtest: keyboard tabs and crossing mobile/tablet/desktop breakpoints keep controls usable
+ok 8 - keyboard tabs and crossing mobile/tablet/desktop breakpoints keep controls usable
+  ---
+  duration_ms: 6278.269524
+  type: 'test'
+  ...
+# Subtest: mobile stop popup and provider attribution stay above the detail sheet
+ok 9 - mobile stop popup and provider attribution stay above the detail sheet
+  ---
+  duration_ms: 8582.631417
+  type: 'test'
+  ...
+# Subtest: GPS, home, zoom and route comparison controls still drive Leaflet
+ok 10 - GPS, home, zoom and route comparison controls still drive Leaflet
+  ---
+  duration_ms: 7620.825767
+  type: 'test'
+  ...
+# Subtest: mobile popup and detail take turns without changing selection, tab, URL, or markers
+ok 11 - mobile popup and detail take turns without changing selection, tab, URL, or markers
+  ---
+  duration_ms: 6780.739678
+  type: 'test'
+  ...
+# Subtest: visual label decluttering preserves every marker and stop identity at 390px
+ok 12 - visual label decluttering preserves every marker and stop identity at 390px
+  ---
+  duration_ms: 9065.268156
+  type: 'test'
+  ...
+# Subtest: visual label decluttering preserves every marker and stop identity at 1366px
+ok 13 - visual label decluttering preserves every marker and stop identity at 1366px
+  ---
+  duration_ms: 9564.747377
+  type: 'test'
+  ...
+# Subtest: Tabler guided tour has visible anchors and restores UI/transport state at 390px
+ok 14 - Tabler guided tour has visible anchors and restores UI/transport state at 390px
+  ---
+  duration_ms: 10022.05843
+  type: 'test'
+  ...
+# Subtest: Tabler guided tour has visible anchors and restores UI/transport state at 768px
+ok 15 - Tabler guided tour has visible anchors and restores UI/transport state at 768px
+  ---
+  duration_ms: 8376.161431
+  type: 'test'
+  ...
+# Subtest: Tabler guided tour has visible anchors and restores UI/transport state at 1366px
+ok 16 - Tabler guided tour has visible anchors and restores UI/transport state at 1366px
+  ---
+  duration_ms: 8114.207112
+  type: 'test'
+  ...
+# Subtest: guided tour skip and Escape preserve an empty overview and the open network sheet
+ok 17 - guided tour skip and Escape preserve an empty overview and the open network sheet
+  ---
+  duration_ms: 2374.942731
+  type: 'test'
+  ...
+# Subtest: startup disclaimer continues to the adapted tour through the normal buttons
+ok 18 - startup disclaimer continues to the adapted tour through the normal buttons
+  ---
+  duration_ms: 1876.487221
+  type: 'test'
+  ...
+# Subtest: primary mobile controls and detail actions offer at least 44px touch targets
+ok 19 - primary mobile controls and detail actions offer at least 44px touch targets
+  ---
+  duration_ms: 6192.236636
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 125915.190252
