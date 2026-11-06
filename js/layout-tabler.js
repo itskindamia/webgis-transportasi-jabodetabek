@@ -271,7 +271,9 @@
         );
       }
       const availableWidth = size.x - padding.paddingTopLeft[0] - padding.paddingBottomRight[0];
-      const maxWidth = Math.min(330, Math.max(200, availableWidth - 12));
+      // Mobile popup content also needs room for Leaflet's outside margins.
+      const frameWidth = mobile() ? 48 : 12;
+      const maxWidth = Math.min(330, Math.max(200, availableWidth - frameWidth));
       return {
         maxWidth, minWidth: Math.min(245, maxWidth),
         maxHeight: Math.min(540, Math.max(150, size.y - padding.paddingTopLeft[1] - padding.paddingBottomRight[1] - 28)),

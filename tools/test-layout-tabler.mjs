@@ -185,7 +185,9 @@ test("mobile stop popup and provider attribution stay above the detail sheet", a
   const detail = await page.locator("#tlDetailPanel").boundingBox();
   const search = await page.locator("#globalSearchPanel").boundingBox();
   const attribution = await page.locator("#map .leaflet-control-attribution").boundingBox();
+  const controlRail = await page.locator("#floatingZoom").boundingBox();
   await page.locator(".leaflet-popup-close-button").click({ trial: true, timeout: 2000 });
+  assert.ok(popup.x + popup.width < controlRail.x, "popup clears the map control rail");
   assert.ok(popup.y >= search.y + search.height, "popup clears search");
   assert.ok(popup.y + popup.height <= detail.y, "popup clears detail sheet");
   assert.ok(popup.y + popup.height < attribution.y, "popup clears provider credits");

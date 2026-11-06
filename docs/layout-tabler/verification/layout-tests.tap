@@ -2,61 +2,61 @@ TAP version 13
 # Subtest: source geometry, attributes, operation engine and existing DOM hooks remain intact
 ok 1 - source geometry, attributes, operation engine and existing DOM hooks remain intact
   ---
-  duration_ms: 217.339601
+  duration_ms: 198.769034
   type: 'test'
   ...
 # Subtest: responsive layout and real Leaflet resizing at 390px
 ok 2 - responsive layout and real Leaflet resizing at 390px
   ---
-  duration_ms: 4930.276519
+  duration_ms: 4938.703285
   type: 'test'
   ...
 # Subtest: responsive layout and real Leaflet resizing at 768px
 ok 3 - responsive layout and real Leaflet resizing at 768px
   ---
-  duration_ms: 4859.726444
+  duration_ms: 4952.082582
   type: 'test'
   ...
 # Subtest: responsive layout and real Leaflet resizing at 1366px
 ok 4 - responsive layout and real Leaflet resizing at 1366px
   ---
-  duration_ms: 5118.860273
+  duration_ms: 5340.828227
   type: 'test'
   ...
 # Subtest: responsive layout and real Leaflet resizing at 1600px
 ok 5 - responsive layout and real Leaflet resizing at 1600px
   ---
-  duration_ms: 5603.822078
+  duration_ms: 5190.309674
   type: 'test'
   ...
 # Subtest: stop selection, popup navigation, integration links, tabs and URL remain connected
 ok 6 - stop selection, popup navigation, integration links, tabs and URL remain connected
   ---
-  duration_ms: 9693.784029
+  duration_ms: 9893.651585
   type: 'test'
   ...
 # Subtest: global transport search, online place search, basemaps, legend and about remain reachable
 ok 7 - global transport search, online place search, basemaps, legend and about remain reachable
   ---
-  duration_ms: 6524.717013
+  duration_ms: 6633.251549
   type: 'test'
   ...
 # Subtest: keyboard tabs and crossing mobile/tablet/desktop breakpoints keep controls usable
 ok 8 - keyboard tabs and crossing mobile/tablet/desktop breakpoints keep controls usable
   ---
-  duration_ms: 5543.543916
+  duration_ms: 5525.004355
   type: 'test'
   ...
 # Subtest: mobile stop popup and provider attribution stay above the detail sheet
 ok 9 - mobile stop popup and provider attribution stay above the detail sheet
   ---
-  duration_ms: 9463.362728
+  duration_ms: 7954.01171
   type: 'test'
   ...
 # Subtest: GPS, home, zoom and route comparison controls still drive Leaflet
 ok 10 - GPS, home, zoom and route comparison controls still drive Leaflet
   ---
-  duration_ms: 7153.574916
+  duration_ms: 7018.808027
   type: 'test'
   ...
 1..10
@@ -67,4 +67,4 @@ ok 10 - GPS, home, zoom and route comparison controls still drive Leaflet
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 59519.789259
+# duration_ms 58057.255998

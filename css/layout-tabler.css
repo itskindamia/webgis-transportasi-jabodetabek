@@ -250,6 +250,7 @@
     .tl-basemap .basemap-preview-map { height: 78px; }
     .tl-app .info-modal { max-height: calc(100dvh - 32px); max-width: calc(100vw - 24px); }
     .tl-app .route-plan-intro-card { max-width: calc(100vw - 24px); }
+    .tl-app .stop-popup { width: 100%; min-width: 0; max-width: 100%; }
   }
   @media (prefers-reduced-motion: reduce) {
     .tl-app *, .tl-app *::before, .tl-app *::after { scroll-behavior: auto; transition-duration: 0s; animation-duration: 0s; }
