@@ -52,6 +52,7 @@
     for (const [name, value] of Object.entries(values)) if (root.style.getPropertyValue(name) !== value) root.style.setProperty(name, value);
     body.classList.toggle("tl-keyboard-open", keyboard);
     body.classList.toggle("tl-short-viewport", mobile() && height < 560);
+    body.classList.toggle("tl-short-landscape", innerWidth <= 1023 && innerWidth > height && height < 560);
     if (ready) { syncPopupPresentation(); resizeMap(); }
   }
 
@@ -380,6 +381,11 @@
       const size = map.getSize();
       const padding = mapPadding();
       const mapRect = byId("map").getBoundingClientRect();
+      const compactLandscape = body.classList.contains("tl-short-landscape");
+      if (compactLandscape) {
+        padding.paddingTopLeft[1] = 10;
+        padding.paddingBottomRight[1] = 10;
+      }
       for (const selector of [".tl-map-actions", ".tl-map-navigation"]) {
         const control = document.querySelector(selector), style = getComputedStyle(control), rect = control.getBoundingClientRect();
         if (style.display !== "none" && style.visibility !== "hidden" && rect.right > mapRect.left && rect.left < mapRect.right) padding.paddingBottomRight[0] = Math.max(padding.paddingBottomRight[0], mapRect.right - rect.left + 12);
@@ -399,13 +405,19 @@
           (Number.parseFloat(credits.style.marginBottom) || 0) + credits.getBoundingClientRect().height + 12
         );
       }
+      if (compactLandscape) {
+        const credits = map.attributionControl?.getContainer();
+        if (credits) padding.paddingBottomRight[1] = Math.max(padding.paddingBottomRight[1], credits.getBoundingClientRect().height + 10);
+      }
       const availableWidth = size.x - padding.paddingTopLeft[0] - padding.paddingBottomRight[0];
       // Mobile popup content also needs room for Leaflet's outside margins.
       const frameWidth = mobile() ? 48 : 12;
-      const maxWidth = Math.min(330, Math.max(160, availableWidth - frameWidth));
+      const maxWidth = Math.min(compactLandscape ? 440 : 330, Math.max(160, availableWidth - frameWidth));
       return {
         maxWidth, minWidth: Math.min(245, maxWidth),
-        maxHeight: Math.min(540, Math.max(64, size.y - padding.paddingTopLeft[1] - padding.paddingBottomRight[1] - 40)),
+        // A larger fixed minimum can place actions outside a short map. Use
+        // the actual available height; compact columns expose services early.
+        maxHeight: Math.min(540, Math.max(64, size.y - padding.paddingTopLeft[1] - padding.paddingBottomRight[1] - (compactLandscape ? 32 : 40))),
         autoPan: true, keepInView: true, ...{
           autoPanPaddingTopLeft: padding.paddingTopLeft,
           autoPanPaddingBottomRight: padding.paddingBottomRight

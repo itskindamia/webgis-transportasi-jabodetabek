@@ -358,6 +358,10 @@
     .tl-short-viewport .tl-network { max-height: calc(100% - 8px); }
   }
   @media (max-width: 767px) and (min-width: 480px) and (max-height: 559px) {
+    :root { --tl-header: calc(48px + env(safe-area-inset-top, 0px)); }
+    .tl-shell { grid-template-rows: var(--tl-header) minmax(0, 1fr) calc(48px + env(safe-area-inset-bottom, 0px)); }
+    .tl-dock { padding-top: 2px; padding-bottom: calc(2px + env(safe-area-inset-bottom, 0px)); }
+    .tl-dock button { min-height: 44px; padding-top: 2px; padding-bottom: 2px; }
     .tl-header { grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; }
     .tl-brand > span:last-child { display: none; }
     .tl-search { position: relative; top: auto; left: auto; right: auto; width: 100%; filter: none; }
@@ -372,6 +376,7 @@
     .tl-detail-panel .tl-detail-heading h2 { font-size: 14px; margin: 0; }
     .tl-route-content { padding: 8px 12px; }
   }
+  .tl-short-landscape .tl-map-caption { display: none; }
   @media (max-width: 359px) {
     .tl-brand { gap: 6px; }
     .tl-brand-mark { display: none; }

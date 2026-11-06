@@ -15,7 +15,7 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const appRoot = process.env.LAYOUT_APP_ROOT || root;
 const stage = process.env.CAPTURE_STAGE || "after";
 assert.ok(["before", "after"].includes(stage));
-const output = path.join(root, "docs/lrt-mobile/screenshots", stage);
+const output = process.env.LAYOUT_CAPTURE_OUTPUT ? path.resolve(root, process.env.LAYOUT_CAPTURE_OUTPUT) : path.join(root, "docs/lrt-mobile/screenshots", stage);
 const require = createRequire(import.meta.url);
 const leaflet = path.dirname(require.resolve("leaflet/dist/leaflet.js"));
 const exec = promisify(execFile);
@@ -129,6 +129,9 @@ try {
         await page.setViewportSize({ width: 568, height: 320 });
         await page.waitForTimeout(400);
         await capture(page, "lrt-landscape-568.png", "Orientasi landscape pendek: peta diprioritaskan, popup dapat di-scroll");
+        await page.setViewportSize({ width: 844, height: 390 });
+        await page.waitForTimeout(400);
+        await capture(page, "lrt-landscape-844.png", "Landscape tablet compact dengan informasi pelayanan terlihat di samping header");
       }
     } finally { await context.close(); }
   }

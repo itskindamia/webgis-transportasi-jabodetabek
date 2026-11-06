@@ -9,6 +9,8 @@
     color: var(--tl-ink); font-size: 14px; line-height: 1.45;
   }
   .tl-app .lrt-popup-body { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; }
+  .tl-app .lrt-popup-main { min-width: 0; }
+  .tl-app .lrt-popup-scroll-hint { flex: 0 0 auto; padding: 3px 0; border-top: 1px solid var(--tl-border); text-align: center; font-size: 11px; line-height: 16px; color: var(--tl-muted); }
   .tl-app .lrt-popup .stop-popup-scroll { display: block; height: auto; max-height: none; padding: 0 8px 8px; overflow: visible; }
   .tl-app .lrt-popup-header { padding: 4px 2px 16px; border-bottom: 1px solid var(--tl-border); margin-bottom: 14px; }
   .tl-app .lrt-popup .stop-popup-eyebrow { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 12px; font-weight: 700; letter-spacing: .8px; color: var(--tl-muted); }
@@ -56,10 +58,38 @@
   .tl-app .lrt-popup .stop-popup-nav-name { font-size: 13px; line-height: 1.3; white-space: normal; overflow-wrap: anywhere; }
   .tl-app .lrt-popup .stop-popup-nav-arrow { color: var(--lrt-accent); }
   @media (max-width: 767px) {
+    .tl-app .lrt-popup-header { padding: 0 2px 8px; margin-bottom: 8px; }
+    .tl-app .lrt-popup .stop-popup-section { margin-top: 8px; }
+    .tl-app .lrt-popup .stop-popup-action-row { margin-top: 8px; }
+    .tl-app .lrt-popup .integration-group { padding: 8px; }
+    .tl-app .lrt-popup .stop-popup-station-code { margin: 4px 0 6px; }
+    .tl-app .lrt-popup .lrt-service-button { min-height: 64px; padding: 8px 10px; }
     .tl-app .lrt-popup .stop-popup-scroll { padding: 0 2px 8px; }
-    .tl-app .lrt-popup .lrt-service-button { padding: 12px 10px; gap: 10px; }
+    .tl-app .lrt-popup .lrt-service-button { padding: 8px 10px; gap: 10px; }
     .tl-app .lrt-popup .stop-popup-navigation { padding: 10px 2px 2px; }
     .tl-app .lrt-popup .stop-popup-title { font-size: 19px; }
+  }
+  @media (max-width: 1023px) and (max-height: 559px) and (orientation: landscape) {
+    .tl-app .lrt-popup { padding-top: 24px; }
+    .tl-app .lrt-popup-body { display: grid; grid-template-columns: minmax(100px, .8fr) minmax(140px, 1.2fr); gap: 10px; align-items: start; }
+    .tl-app .lrt-popup-header { position: sticky; top: 0; padding: 0 4px 6px 0; margin: 0; border: 0; background: white; }
+    .tl-app .lrt-popup .stop-popup-eyebrow { font-size: 11px; margin-bottom: 3px; letter-spacing: .3px; }
+    .tl-app .lrt-popup .stop-popup-title { font-size: 18px; padding-right: 0; }
+    .tl-app .lrt-popup .stop-popup-station-code { margin: 3px 0; font-size: 12px; }
+    .tl-app .lrt-popup .stop-popup-meta-row { margin-top: 5px; gap: 4px; }
+    .tl-app .lrt-popup .stop-popup-meta-row > * { padding: 3px 5px; }
+    .tl-app .lrt-popup .stop-popup-scroll { padding: 0 0 6px; }
+    .tl-app .lrt-popup .stop-popup-section { margin-top: 6px; }
+    .tl-app .lrt-popup .stop-popup-section--service { margin-top: 0; }
+    .tl-app .lrt-popup .lrt-service-button { min-height: 52px; padding: 7px; gap: 8px; }
+    .tl-app .lrt-popup .lrt-service-copy { padding-left: 7px; }
+    .tl-app .lrt-popup .lrt-service-operator { font-size: 13px; }
+    .tl-app .lrt-popup .lrt-line-symbol { flex-basis: 30px; width: 30px; height: 30px; border-width: 3px; outline-offset: 2px; font-size: 13px; }
+    .tl-app .lrt-popup .stop-popup-direct-routes { gap: 6px; }
+    .tl-app .lrt-popup .stop-popup-navigation { padding: 6px 0 0; gap: 6px; }
+    .tl-app .lrt-popup .stop-popup-nav-button { min-height: 44px; padding: 6px; }
+    .tl-app .lrt-popup .integration-group { padding: 6px; }
+    .tl-app .lrt-popup-scroll-hint { padding: 1px 0; }
   }
 }
 /* Leaflet's vendor sheet is unlayered. Keep its outer box from becoming

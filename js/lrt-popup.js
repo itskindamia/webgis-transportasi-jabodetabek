@@ -54,8 +54,17 @@
     // reachable even in short landscape viewports. Preserve original nodes.
     const body = document.createElement("div");
     body.className = "lrt-popup-body";
-    body.append(...root.childNodes);
+    body.tabIndex = 0;
+    body.setAttribute("aria-label", "Informasi stasiun, gulir untuk melihat seluruh isi");
+    const main = document.createElement("div");
+    main.className = "lrt-popup-main";
+    body.append(header);
+    main.append(...root.childNodes);
+    body.append(main);
     root.append(body);
+    const hint = textElement("div", "lrt-popup-scroll-hint", "Gulir untuk info lainnya ↓");
+    hint.setAttribute("aria-hidden", "true");
+    root.append(hint);
     return root;
   }
 
