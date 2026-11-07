@@ -16,6 +16,7 @@ for (const [width, height] of [[320, 568], [390, 844], [568, 320], [1366, 900]])
     const { page, context, errors } = await openLayout(browser, width, height);
     t.after(() => context.close());
     if (width < 768) await page.click("#mobileBottomRouteButton");
+    await page.selectOption("#statusSelect", "ALL");
     await page.click('#tlModeChoices [data-mode="MRT"]');
     await page.selectOption("#routeSelect", "MRT_NS");
     await page.waitForTimeout(750);
@@ -27,7 +28,7 @@ for (const [width, height] of [[320, 568], [390, 844], [568, 320], [1366, 900]])
         row.querySelector(".stop-list-badges-left") &&
         row.querySelector(".stop-list-badges-right")
       );
-      if (!sample) return { found: false, total: rows.length };
+      if (!sample) return { found: false, total: rows.length, activeMode: document.querySelector("#modeSelect").value, activeStatus: document.querySelector("#statusSelect").value, activeRoute: document.querySelector("#routeSelect").value, examples: rows.slice(0, 8).map(row => ({ text: row.textContent.trim().replace(/\\s+/g, " ").slice(0,160), hasStatus: !!row.querySelector(".stop-status-badge"), hasRole: !!row.querySelector(".stop-role"), html: row.querySelector(".stop-list-badges")?.outerHTML.slice(0,350) })) };
       const status = sample.querySelector(".stop-status-badge").getBoundingClientRect();
       const role = sample.querySelector(".stop-role").getBoundingClientRect();
       const meta = sample.querySelector(".stop-list-badges");
@@ -46,7 +47,7 @@ for (const [width, height] of [[320, 568], [390, 844], [568, 320], [1366, 900]])
         pageWidth: document.documentElement.scrollWidth
       };
     });
-    assert.equal(result.found, true, "MRT north-south provides a paired status + role row");
+    assert.equal(result.found, true, `MRT north-south provides a paired status + role row: ${JSON.stringify(result)}`);
     assert.ok(result.pageWidth <= width + 1, "no horizontal viewport overflow");
     if (width < 768) {
       assert.ok(result.topDifference <= 2, `status and role must share a line, got ${result.topDifference}`);
