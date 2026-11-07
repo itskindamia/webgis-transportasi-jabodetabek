@@ -1,0 +1,31 @@
+{
+  "baseline": {
+    "log": "baseline-layout.tap",
+    "tests": 76.0,
+    "pass": 76.0,
+    "fail": 0.0,
+    "skipped": 0.0,
+    "duration_ms": 605852.31052
+  },
+  "compact": {
+    "log": "final-layout.tap",
+    "tests": 76.0,
+    "pass": 76.0,
+    "fail": 0.0,
+    "skipped": 0.0,
+    "duration_ms": 458335.903199
+  },
+  "a01Integration": {
+    "log": "integration.tap",
+    "tests": 3.0,
+    "pass": 3.0,
+    "fail": 0.0,
+    "skipped": 0.0,
+    "duration_ms": 31284.966986
+  },
+  "beforeCommit": "0daafe3970070779b083d0e7868df29c207c258c",
+  "runtimeSourceCommit": "e955ef78010bfb70a8e23e0c15e3c5e8a84c93f2",
+  "candidateBeforeEvidence": "006dc7494c7623fe7559ce76457791bad22fc593",
+  "recordedAt": "2026-11-07T11:36:38.894303+07:00",
+  "mergedOrDeployed": false
+}

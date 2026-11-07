@@ -50,6 +50,9 @@ Ini pengukuran tinggi konten, bukan pengurangan tinggi sheet atau perubahan kame
 Nilai, nama dan catatan asli tetap ada. Snapshot metadata, overflow dan accordion tetap
 diuji. [Pengukuran sebelum/sesudah](summary-refinement/compact/verification/comparison.json).
 Log regresi compact: [final-layout.tap](summary-refinement/compact/verification/final-layout.tap).
+Hasil akhir compact: **76/76 lulus, 0 gagal/dilewati** (458.335,90 ms), serta **3/3**
+tes integrasi dengan A01. Penggabungan lokal bersih; branch A01 dan main tidak diubah.
+[Log integrasi compact](summary-refinement/compact/verification/integration.tap).
 
 Screenshot compact terbaru, dibandingkan langsung dengan versi PR #7 sebelumnya:
 
