@@ -32,7 +32,8 @@ engine pada PR A01.
 
 ## Pengujian
 
-Baseline: 62 tes layout/font/LRT pada main lulus. Tambahan 14 skenario memeriksa:
+Baseline: **62/62** tes layout/font/LRT pada main lulus. Kandidat akhir:
+**76/76 lulus, 0 gagal, 0 dilewati** (605.852,31 ms), termasuk 14 skenario tambahan:
 
 - BRT Koridor 1, 3, 9; MRT_NS, LRT Jakarta S, LRT Jabodebek BK dan KRL Tanjung Priok.
 - Desktop 1366×900 dan mobile 390×844.
@@ -44,6 +45,9 @@ Baseline: 62 tes layout/font/LRT pada main lulus. Tambahan 14 skenario memeriksa
 
 Perintah akhir: `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:layout`.
 Log otoritatif: [final-verified.tap](summary-refinement/verification/final-verified.tap).
+Pemeriksaan gabungan lokal dengan A01: **3/3 lulus**, tanpa konflik penggabungan atau
+perubahan main; [log](summary-refinement/verification/integration.tap) dan
+[metadata](summary-refinement/verification/integration.json).
 Snapshot: [baseline-summary.json](summary-refinement/verification/baseline-summary.json).
 Percobaan awal yang digantikan disimpan dalam `verification/iterations`, dengan penjelasan
 kesalahan asumsi tes panjang rail; bukan perubahan matematika aplikasi.

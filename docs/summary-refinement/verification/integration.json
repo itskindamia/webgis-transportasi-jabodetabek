@@ -4,5 +4,15 @@
   "tree": "8456d388f1d019bb929d307db09a862927455532",
   "localIntegrationCommit": "e24fdfac893d4f30be2bba94b5ee62fb5fac1278",
   "conflicts": [],
-  "mainUpdated": false
+  "mainUpdated": false,
+  "tests": {
+    "pass": 3,
+    "fail": 0,
+    "log": "integration.tap",
+    "scenarios": [
+      "K13 Existing selection at 390px",
+      "K13 pending closed popup at 1366px",
+      "K3 summary at 390px"
+    ]
+  }
 }
