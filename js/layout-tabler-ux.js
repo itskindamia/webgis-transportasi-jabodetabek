@@ -92,7 +92,7 @@
       card.style.width = `${Math.min(mobile() ? 336 : 360, innerWidth - 24)}px`;
       const width = card.offsetWidth;
       let height = Math.min(card.scrollHeight + card.offsetHeight - card.clientHeight, innerHeight - 24);
-      let allowedHeight = innerHeight - 24;
+      let allowedHeight = mobile() ? Math.min(innerHeight - 24, 320, Math.max(180, innerHeight * .54)) : innerHeight - 24;
       if (mobile()) {
         const verticalRoom = Math.max(focus.top - 28, innerHeight - focus.bottom - 28);
         const horizontalRoom = Math.max(focus.left - 28, innerWidth - focus.right - 28);
