@@ -637,6 +637,46 @@
     .tl-mode-choices .tl-mode-button { padding: 5px 3px; gap: 3px; font-size: 10px; }
   }
 
+
+  /* Compact guided tour: keep the spotlight dominant, not the instruction card. */
+  @media (max-width: 767px) {
+    .tl-app .product-tour-card {
+      padding: 14px 16px;
+      border-radius: 12px;
+      max-height: min(54dvh, 320px);
+    }
+    .tl-app .product-tour-progress {
+      margin-bottom: 6px;
+      font-size: 10px;
+      line-height: 1.25;
+    }
+    .tl-app .product-tour-card h2 {
+      margin-bottom: 6px;
+      font-size: 17px;
+      line-height: 1.25;
+    }
+    .tl-app .product-tour-card p {
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .tl-app .product-tour-footer {
+      flex-wrap: nowrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .tl-app .product-tour-nav { gap: 6px; }
+    .tl-app .product-tour-card button {
+      min-height: 44px;
+      padding: 7px 9px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+  }
+  @media (max-width: 359px) {
+    .tl-app .product-tour-card { padding: 12px; }
+    .tl-app .product-tour-footer, .tl-app .product-tour-nav { gap: 4px; }
+    .tl-app .product-tour-card button { padding: 7px 6px; font-size: 11px; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .tl-app .tl-detail-panel { transition: none; }
   }
