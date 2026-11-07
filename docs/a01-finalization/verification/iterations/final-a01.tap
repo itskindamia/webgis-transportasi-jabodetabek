@@ -1,0 +1,172 @@
+TAP version 13
+# Subtest: Koridor 13: toggle on/off without a selected stop
+ok 1 - Koridor 13: toggle on/off without a selected stop
+  ---
+  duration_ms: 10223.991908
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 1366px
+ok 2 - Koridor 13: retain an Existing selection across on/off at 1366px
+  ---
+  duration_ms: 16083.862428
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 390px
+ok 3 - Koridor 13: retain an Existing selection across on/off at 390px
+  ---
+  duration_ms: 14490.938409
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 568px
+ok 4 - Koridor 13: retain an Existing selection across on/off at 568px
+  ---
+  duration_ms: 13871.916986
+  type: 'test'
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 1366px
+not ok 5 - Koridor 15–19: non-existing visibility and selected stop removal at 1366px
+  ---
+  duration_ms: 14793.58149
+  type: 'test'
+  location: '/workspace/work/webgis-a01/tools/test-a01-toggle.mjs:253:39'
+  failureType: 'testCodeFailure'
+  error: |-
+    page.selectOption: Timeout 12000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('#routeSelect')[22m
+    [2m    - locator resolved to <select id="routeSelect" class="form-select" title="Semua Koridor" aria-describedby="tlRouteFullName">…</select>[22m
+    [2m  - attempting select option action[22m
+    [2m    2 × waiting for element to be visible and enabled[22m
+    [2m      - did not find some options[22m
+    [2m    - retrying select option action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible and enabled[22m
+    [2m      - did not find some options[22m
+    [2m    - retrying select option action[22m
+    [2m      - waiting 100ms[22m
+    [2m    23 × waiting for element to be visible and enabled[22m
+    [2m       - did not find some options[22m
+    [2m     - retrying select option action[22m
+    [2m       - waiting 500ms[22m
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    openRoute (/workspace/work/webgis-a01/tools/test-a01-toggle.mjs:88:14)
+    async TestContext.<anonymous> (/workspace/work/webgis-a01/tools/test-a01-toggle.mjs:254:15)
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 390px
+not ok 6 - Koridor 15–19: non-existing visibility and selected stop removal at 390px
+  ---
+  duration_ms: 14503.969221
+  type: 'test'
+  location: '/workspace/work/webgis-a01/tools/test-a01-toggle.mjs:253:39'
+  failureType: 'testCodeFailure'
+  error: |-
+    page.selectOption: Timeout 12000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('#routeSelect')[22m
+    [2m    - locator resolved to <select id="routeSelect" class="form-select" title="Semua Koridor" aria-describedby="tlRouteFullName">…</select>[22m
+    [2m  - attempting select option action[22m
+    [2m    2 × waiting for element to be visible and enabled[22m
+    [2m      - did not find some options[22m
+    [2m    - retrying select option action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible and enabled[22m
+    [2m      - did not find some options[22m
+    [2m    - retrying select option action[22m
+    [2m      - waiting 100ms[22m
+    [2m    23 × waiting for element to be visible and enabled[22m
+    [2m       - did not find some options[22m
+    [2m     - retrying select option action[22m
+    [2m       - waiting 500ms[22m
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    openRoute (/workspace/work/webgis-a01/tools/test-a01-toggle.mjs:88:14)
+    async TestContext.<anonymous> (/workspace/work/webgis-a01/tools/test-a01-toggle.mjs:254:15)
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 568px
+not ok 7 - Koridor 15–19: non-existing visibility and selected stop removal at 568px
+  ---
+  duration_ms: 14605.589467
+  type: 'test'
+  location: '/workspace/work/webgis-a01/tools/test-a01-toggle.mjs:253:39'
+  failureType: 'testCodeFailure'
+  error: |-
+    page.selectOption: Timeout 12000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('#routeSelect')[22m
+    [2m    - locator resolved to <select id="routeSelect" class="form-select" title="Semua Koridor" aria-describedby="tlRouteFullName">…</select>[22m
+    [2m  - attempting select option action[22m
+    [2m    2 × waiting for element to be visible and enabled[22m
+    [2m      - did not find some options[22m
+    [2m    - retrying select option action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible and enabled[22m
+    [2m      - did not find some options[22m
+    [2m    - retrying select option action[22m
+    [2m      - waiting 100ms[22m
+    [2m    23 × waiting for element to be visible and enabled[22m
+    [2m       - did not find some options[22m
+    [2m     - retrying select option action[22m
+    [2m       - waiting 500ms[22m
+    [2m    - waiting for element to be visible and enabled[22m
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    openRoute (/workspace/work/webgis-a01/tools/test-a01-toggle.mjs:88:14)
+    async TestContext.<anonymous> (/workspace/work/webgis-a01/tools/test-a01-toggle.mjs:254:15)
+  ...
+# Subtest: BRT_13: disabling clears a selected Conceptual stop
+ok 8 - BRT_13: disabling clears a selected Conceptual stop
+  ---
+  duration_ms: 13219.205972
+  type: 'test'
+  ...
+# Subtest: BRT_11: disabling clears a selected Proposed stop
+ok 9 - BRT_11: disabling clears a selected Proposed stop
+  ---
+  duration_ms: 14892.887786
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a panned view and open popup at 1366px
+ok 10 - Koridor 13: preserve a panned view and open popup at 1366px
+  ---
+  duration_ms: 20824.469228
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a closed popup during pending selection at 1366px
+not ok 11 - Koridor 13: preserve a closed popup during pending selection at 1366px
+  ---
+  duration_ms: 10802.209977
+  type: 'test'
+  location: '/workspace/work/webgis-a01/tools/test-a01-toggle.mjs:305:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    tab
+    + actual - expected
+    
+    + 'selected'
+    - 'route'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'route'
+  actual: 'selected'
+  operator: 'strictEqual'
+  stack: |-
+    assertUiPreserved (file:///workspace/work/webgis-a01/tools/test-a01-toggle.mjs:182:87)
+    TestContext.<anonymous> (file:///workspace/work/webgis-a01/tools/test-a01-toggle.mjs:327:5)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: Koridor 13: keep a manually dismissed popup closed at 1366px
+ok 12 - Koridor 13: keep a manually dismissed popup closed at 1366px
+  ---
+  duration_ms: 16689.590937
+  type: 'test'
+  ...
+# Interrupted while running: tools/test-a01-toggle.mjs at /workspace/work/webgis-a01/tools/test-a01-toggle.mjs:1:1

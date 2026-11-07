@@ -1,0 +1,44 @@
+name: Release regression QA (A01 + Ringkasan)
+on:
+  push:
+    branches:
+      - fix/a01-toggle-non-existing
+      - fix/mobile-ux-refinement
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Set up system Chrome
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install chromium
+          fi
+      - name: Validate generated CSS and source integrity
+        run: npm run build:ui && git diff --exit-code -- css/tabler-components.css css/legacy-components.css
+      - name: Full layout and A01 browser regression
+        run: npm run test:regression
+      - name: Audit navigation and data (informational baseline)
+        if: success()
+        shell: bash
+        run: |
+          node tools/audit-navigation.mjs
+          node tools/audit.mjs > /tmp/audit-baseline.log 2>&1 || {
+            echo "Existing audit issues remain; see log excerpt"
+            tail -30 /tmp/audit-baseline.log
+          }

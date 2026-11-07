@@ -20898,6 +20898,8 @@ routeInfoEl
         return;
       }
 
+      const layoutState = window.webgisLayout?.capture?.();
+
       setNonExistingStopsVisible(
         Boolean(toggle.checked)
       );
@@ -20925,23 +20927,19 @@ routeInfoEl
           selectedFeature &&
           (
             (
-              isProposedStopFeature(
+              isProposedStop(
                 selectedFeature
               )
               &&
-              !isOptionalStopVisible(
-                "Proposed"
-              )
+              !showProposedStops
             )
             ||
             (
-              isConceptualStopFeature(
+              isConceptualStop(
                 selectedFeature
               )
               &&
-              !isOptionalStopVisible(
-                "Conceptual"
-              )
+              !showConceptualStops
             )
           );
 
@@ -20949,6 +20947,13 @@ routeInfoEl
           clearSelectedStop();
         }
       }
+
+      /* drawStops mengganti marker; pulihkan seleksi yang masih terlihat. */
+      const selectedStopKey =
+        currentSelectedStopKey;
+      const selectedPopupWasOpen = Boolean(
+        stopMarkerByKey.get(selectedStopKey)?.isPopupOpen()
+      );
 
       renderRouteInfo(
         getRouteById(
@@ -20963,6 +20968,24 @@ routeInfoEl
       drawStops(
         routeId
       );
+
+      if (selectedStopKey) {
+        selectStop(
+          selectedStopKey,
+          routeId,
+          false,
+          undefined,
+          {
+            restoreOnly: true,
+            popupWasOpen: selectedPopupWasOpen
+          }
+        );
+      } else {
+        syncUrlState();
+      }
+
+      // Restore Tabler's shelved popup after the redraw's auto-pan guard settles.
+      if (layoutState) queueMicrotask(() => requestAnimationFrame(() => window.webgisLayout.restore(layoutState)));
     }
   );
 
@@ -27755,7 +27778,11 @@ function selectStop(
   stopKey,
   routeId,
   zoomIn = true,
-  panDuration = 0.42
+  panDuration = 0.42,
+  {
+    restoreOnly = false,
+    popupWasOpen = false
+  } = {}
 ) {
   /*
     Memilih halte baru berarti user kembali berinteraksi
@@ -27765,7 +27792,7 @@ function selectStop(
 
   clearSelectedStop();
 
-  if (isMobileLayout()) {
+  if (isMobileLayout() && !restoreOnly) {
     setMobileFilterOpen(
       false
     );
@@ -27790,7 +27817,9 @@ function selectStop(
     return;
   }
 
-  clearPoiMarker();
+  if (!restoreOnly) {
+    clearPoiMarker();
+  }
 
   currentSelectedStopKey =
     String(stopKey);
@@ -27819,7 +27848,23 @@ function selectStop(
 
   marker.bringToFront();
 
-  if (zoomIn) {
+  if (restoreOnly) {
+
+    if (popupWasOpen) {
+      const popup = marker.getPopup();
+      const autoPan = popup.options.autoPan;
+
+      /* Cegah auto-pan saat openPopup dan update layout pada frame berikutnya. */
+      popup.options.autoPan = false;
+      marker.openPopup();
+      popup.options.autoPan = false;
+
+      requestAnimationFrame(() => {
+        popup.options.autoPan = autoPan;
+      });
+    }
+
+  } else if (zoomIn) {
 
     map.flyTo(
       marker.getLatLng(),
