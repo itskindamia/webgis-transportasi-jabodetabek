@@ -1,0 +1,51 @@
+name: Layout precision QA
+
+on:
+  push:
+    branches:
+      - fix/desktop-layout-precision-k8
+  pull_request:
+    paths:
+      - 'css/layout-tabler.css'
+      - 'js/layout-tabler*.js'
+      - 'tools/test-layout-*.mjs'
+      - '.github/workflows/layout-precision.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Locate installed Chrome or install Playwright Chromium
+        id: browser
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+            google-chrome --version
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+            chromium --version
+          else
+            npx playwright install chromium
+          fi
+      - name: Check generated styles
+        run: npm run build:ui && git diff --exit-code -- css/tabler-components.css css/legacy-components.css
+      - name: Run full browser regression including cross-network precision
+        run: npm run test:layout
+      - name: Capture build and test metadata
+        if: always()
+        run: |
+          git status --short
+          git log -1 --format='%h %s'
