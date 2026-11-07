@@ -1,0 +1,69 @@
+{
+  "baselineCommit": "26c6086ccdcdbe5caf53df4f54ede0a728874919",
+  "applicationCommit": "c9fa5d2ec2b2e7798dacd14b70ca2729568956bd",
+  "scenario": "BRT_01, Existing, height 900px; panelHeight at 390px measured after selecting ASEAN",
+  "before": {
+    "390": {
+      "labels": {
+        "total": 23,
+        "shown": 23,
+        "overlaps": 14,
+        "markers": 26,
+        "list": 23
+      },
+      "errors": [],
+      "panelHeight": 232,
+      "touch": [
+        36,
+        36
+      ]
+    },
+    "1366": {
+      "labels": {
+        "total": 23,
+        "shown": 23,
+        "overlaps": 14,
+        "markers": 26,
+        "list": 23
+      },
+      "errors": [],
+      "panelHeight": 836,
+      "touch": [
+        106.46875,
+        36
+      ]
+    }
+  },
+  "after": {
+    "390": {
+      "labels": {
+        "total": 23,
+        "shown": 12,
+        "overlaps": 0,
+        "markers": 26,
+        "list": 23
+      },
+      "errors": [],
+      "panelHeight": 72,
+      "touch": [
+        44,
+        44
+      ]
+    },
+    "1366": {
+      "labels": {
+        "total": 23,
+        "shown": 12,
+        "overlaps": 0,
+        "markers": 26,
+        "list": 23
+      },
+      "errors": [],
+      "panelHeight": 836,
+      "touch": [
+        106.46875,
+        44
+      ]
+    }
+  }
+}

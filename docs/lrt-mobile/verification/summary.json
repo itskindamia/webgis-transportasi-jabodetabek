@@ -1,0 +1,68 @@
+{
+  "baselineCommit": "4e0985d69d51694840d72e28d48bb91800bb0abf",
+  "implementationCommit": "10ca0c20c75b2b5538b847de0bcfcd6d445ff708",
+  "browser": "155.0.8059.79",
+  "testEnvironment": "Automated Chromium; physical devices and Safari iOS unavailable",
+  "viewports": [
+    [
+      320,
+      568
+    ],
+    [
+      360,
+      800
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      768,
+      1024
+    ],
+    [
+      1366,
+      900
+    ],
+    [
+      1600,
+      1000
+    ]
+  ],
+  "screenshots": {
+    "before": 4,
+    "after": 13
+  },
+  "runtimeErrors": [],
+  "tileFailures": [],
+  "notes": [
+    "No data or js/map.js changes",
+    "Navigation/data audits compared against baseline; known failures retained",
+    "No merge or deployment"
+  ],
+  "tests": {
+    "baseline": {
+      "passed": 19,
+      "failed": 0,
+      "durationMs": 156217.658433
+    },
+    "after": {
+      "passed": 45,
+      "failed": 0,
+      "durationMs": 333577.164167
+    },
+    "groups": {
+      "existingLayoutAndUx": 19,
+      "mobile": 11,
+      "font": 2,
+      "lrt": 13
+    }
+  },
+  "auditExitCodes": {
+    "navigation": 0,
+    "generalData": 1,
+    "scopedRail": 1
+  },
+  "auditOutputsIdenticalToBaseline": true,
+  "protectedHashesMatch": 8
+}

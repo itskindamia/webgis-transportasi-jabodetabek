@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: compact landscape exposes services and all LRT actions at 568x320
+ok 1 - compact landscape exposes services and all LRT actions at 568x320
+  ---
+  duration_ms: 13336.389627
+  type: 'test'
+  ...
+# Subtest: compact landscape exposes services and all LRT actions at 844x390
+ok 2 - compact landscape exposes services and all LRT actions at 844x390
+  ---
+  duration_ms: 12170.123792
+  type: 'test'
+  ...
+# Subtest: portrait popup scroll hint and source/navigation remain reachable at 320, 360 and 390
+ok 3 - portrait popup scroll hint and source/navigation remain reachable at 320, 360 and 390
+  ---
+  duration_ms: 14920.55295
+  type: 'test'
+  ...
+# Subtest: direct-link reload restores LRT station, active line and actionable popup
+ok 4 - direct-link reload restores LRT station, active line and actionable popup
+  ---
+  duration_ms: 8911.272352
+  type: 'test'
+  ...
+# Subtest: all four production GeoJSON resources load through the app
+ok 5 - all four production GeoJSON resources load through the app
+  ---
+  duration_ms: 1600.644517
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 51446.427901

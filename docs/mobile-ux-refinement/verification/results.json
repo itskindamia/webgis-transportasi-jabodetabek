@@ -1,0 +1,19 @@
+{
+  "baseline": {
+    "tests": 50.0,
+    "pass": 50.0,
+    "fail": 0.0,
+    "skipped": 0.0,
+    "duration_ms": 341921.680594
+  },
+  "candidate": {
+    "tests": 62.0,
+    "pass": 62.0,
+    "fail": 0.0,
+    "skipped": 0.0,
+    "duration_ms": 452887.515537
+  },
+  "candidateSourceCommit": "779450176fadc4bca314423ea86a3be6fa26fb3d",
+  "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:layout",
+  "recordedAt": "2026-11-06T19:33:00.285251+00:00"
+}

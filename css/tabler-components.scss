@@ -1,0 +1,23 @@
+// Only the Tabler components used by the prototype; no Tabler JavaScript bundle.
+$enable-dark-mode: false;
+$enable-social-colors: false;
+$enable-extra-colors: false;
+@import "@tabler/core/scss/config";
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/badge";
+@import "bootstrap/scss/nav";
+@import "@tabler/core/scss/props";
+@import "@tabler/core/scss/layout/root";
+@import "@tabler/core/scss/layout/core";
+@import "@tabler/core/scss/ui/type";
+@import "@tabler/core/scss/ui/buttons";
+@import "@tabler/core/scss/ui/cards";
+@import "@tabler/core/scss/ui/forms";
+@import "@tabler/core/scss/ui/badges";
+@import "@tabler/core/scss/ui/icons";
+@import "@tabler/core/scss/ui/nav";

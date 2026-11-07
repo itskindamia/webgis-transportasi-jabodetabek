@@ -21,6 +21,14 @@ Leaflet 1.9.4 tersedia di bawah lisensi BSD 2-Clause.
 - Proyek: https://leafletjs.com/
 - Lisensi: https://github.com/Leaflet/Leaflet/blob/v1.9.4/LICENSE
 
+## Tabler UI, Bootstrap, dan Tabler Icons — prototipe layout
+
+- Komponen CSS Tabler UI **1.4.0**, lisensi MIT: https://github.com/tabler/tabler
+- Bootstrap **5.3.7**, dependensi Sass Tabler, lisensi MIT: https://getbootstrap.com/
+- Subset 17 ikon Tabler Icons **3.35.0**, lisensi MIT: https://github.com/tabler/tabler-icons
+- Salinan lisensi berada di `assets/licenses/`. CSS komponen dipilih melalui
+  `css/tabler-components.scss`; bundle JavaScript Tabler tidak dimuat.
+
 ## Esri basemaps
 
 Basemap Light Gray Canvas dan World Imagery dimuat dari layanan ArcGIS Online.
@@ -32,8 +40,13 @@ secara dinamis pada kontrol atribusi peta.
 
 ## PT Sans
 
-PT Sans dimuat dari Google Fonts dan didistribusikan menurut SIL Open Font
-License 1.1.
+PT Sans adalah font utama aplikasi, dengan bobot Regular 400 dan Bold 700 serta
+fallback `"PT Sans", Arial, sans-serif`. Dua berkas WOFF2 Latin disajikan lokal
+dari `assets/fonts/` melalui satu stylesheet untuk seluruh aplikasi, termasuk
+popup/label Leaflet; tidak ada stylesheet/font Google yang diminta saat runtime.
+Tulisan yang menjadi bagian dari gambar tile basemap tidak diubah. Font
+didistribusikan menurut SIL Open Font License 1.1; salinannya berada di
+`assets/fonts/OFL.txt`. Provenance dan hash berkas ada di `assets/fonts/README.md`.
 
 - Informasi font: https://fonts.google.com/specimen/PT+Sans
 - SIL Open Font License: https://openfontlicense.org/

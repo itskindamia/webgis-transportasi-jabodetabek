@@ -1,0 +1,354 @@
+{
+  "capturedAt": "2026-11-06T15:28:43.131Z",
+  "applicationCommit": "4080476933be298d2c9c2cfb99157f571baa6059",
+  "modifiedTrackedFiles": [],
+  "browser": "155.0.8059.79",
+  "origin": "local HTTP preview (no deployment)",
+  "realTileResponses": 931,
+  "runtimeErrors": [],
+  "tileFailures": [],
+  "notes": [
+    "Actual provider tiles via inherited HTTPS proxy and temporary cache.",
+    "Pinned Leaflet CDN bytes supplied by identical npm package.",
+    "Before: optional Google Fonts isolated with system fallback. After: real local PT Sans 400/700 loaded.",
+    "Actual application/data served over local HTTP; station IDs in this tool are test fixtures only."
+  ],
+  "captured": [
+    {
+      "file": "lrt-jakarta-320.png",
+      "description": "Velodrome: metadata, lin dan integrasi berasal dari data aktual",
+      "viewport": [
+        320,
+        568
+      ],
+      "documentWidth": 320,
+      "mapSize": [
+        320,
+        448
+      ],
+      "mapContainer": [
+        320,
+        448
+      ],
+      "route": "LRT_JKT_S",
+      "stop": "LRTJ006_01",
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded tl-stop-popup-open",
+      "loadedTiles": 6,
+      "sha256": "4a7565b3fe2e1f1e6a779990036639f85aafcf85106e7a0bba967e6a93b82a9a"
+    },
+    {
+      "file": "koridor-1-360.png",
+      "description": "Koridor 1 dan daftar halte pada Android 360 px",
+      "viewport": [
+        360,
+        800
+      ],
+      "documentWidth": 360,
+      "mapSize": [
+        360,
+        680
+      ],
+      "mapContainer": [
+        360,
+        680
+      ],
+      "route": "BRT_01",
+      "stop": null,
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open",
+      "loadedTiles": 6,
+      "sha256": "640bd958c65b6f7258354948a21bfffe6f8fec4540fa4e57b5ab9d14adec3576"
+    },
+    {
+      "file": "first-open-390.png",
+      "description": "Tampilan pertama dan disclaimer asli pada smartphone",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": null,
+      "stop": null,
+      "detailTab": "route",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app info-modal-open",
+      "loadedTiles": 15,
+      "sha256": "869476642c16c336512e1230f6a15804fd64a090ee040452746ab704d6addb5a"
+    },
+    {
+      "file": "lrt-jakarta-390.png",
+      "description": "Velodrome: metadata, lin dan integrasi berasal dari data aktual",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "LRT_JKT_S",
+      "stop": "LRTJ006_01",
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded tl-stop-popup-open",
+      "loadedTiles": 6,
+      "sha256": "474662d5decd669880fc36d655720ecff18f7165d240001ceac52aa70b6f1e59"
+    },
+    {
+      "file": "lrt-jabodebek-multiline-390.png",
+      "description": "Cawang: dua lin LRT Jabodebek, konteks aktif Lin Bekasi",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "LRT_JB_BK",
+      "stop": "LRTJB008_01",
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded tl-stop-popup-open",
+      "loadedTiles": 15,
+      "sha256": "71f5882751e78b1405d6e7bfba5ee3c6468d1e13eaefcf91a02dc6d22176e892"
+    },
+    {
+      "file": "detail-sheet-390.png",
+      "description": "Panel detail ditampilkan kembali; popup dan seleksi tetap tersimpan",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "LRT_JB_BK",
+      "stop": "LRTJB008_01",
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded tl-stop-popup-open tl-popup-shelved",
+      "loadedTiles": 15,
+      "sha256": "755e1bac3b89d6b1203c8eb40f6ce9f934e728c01723a0967fab16069b933923"
+    },
+    {
+      "file": "network-sheet-390.png",
+      "description": "Filter moda, lin dan status mudah diakses melalui bottom sheet",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "LRT_JB_BK",
+      "stop": "LRTJB008_01",
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-stop-popup-open mobile-filter-open tl-popup-shelved",
+      "loadedTiles": 15,
+      "sha256": "7d805b01570f9b48288e859be7a1a09fd9508648c1b1c7f6239c5db4488820b1"
+    },
+    {
+      "file": "lrt-jakarta-actions-390.png",
+      "description": "Integrasi, tombol sumber/Maps dan navigasi tetap dapat di-scroll",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "LRT_JKT_S",
+      "stop": "LRTJ006_01",
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded tl-stop-popup-open",
+      "loadedTiles": 15,
+      "sha256": "9216a8786f9e958dab1f799bcfebe2693d3294e3ebce4eb6dca0bc7f560e7c3c"
+    },
+    {
+      "file": "lrt-landscape-568.png",
+      "description": "Orientasi landscape pendek: peta diprioritaskan, popup dapat di-scroll",
+      "viewport": [
+        568,
+        320
+      ],
+      "documentWidth": 568,
+      "mapSize": [
+        568,
+        224
+      ],
+      "mapContainer": [
+        568,
+        224
+      ],
+      "route": "LRT_JKT_S",
+      "stop": "LRTJ006_01",
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded tl-stop-popup-open tl-short-viewport tl-short-landscape",
+      "loadedTiles": 15,
+      "sha256": "9d2c07a33c42573cf028fd30c2b6e70cacb67214abebb998abdb2202691ce9cb"
+    },
+    {
+      "file": "lrt-landscape-844.png",
+      "description": "Landscape tablet compact dengan informasi pelayanan terlihat di samping header",
+      "viewport": [
+        844,
+        390
+      ],
+      "documentWidth": 844,
+      "mapSize": [
+        844,
+        326
+      ],
+      "mapContainer": [
+        844,
+        326
+      ],
+      "route": "LRT_JKT_S",
+      "stop": "LRTJ006_01",
+      "detailTab": "stops",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded tl-stop-popup-open tl-short-landscape left-panel-collapsed",
+      "loadedTiles": 15,
+      "sha256": "4b74bac2f7efeb6667df972bc6601675d382650d7a84e3f82dd880e0161c9840"
+    },
+    {
+      "file": "lrt-jabodebek-multiline-768.png",
+      "description": "Cawang: dua lin LRT Jabodebek, konteks aktif Lin Bekasi",
+      "viewport": [
+        768,
+        1024
+      ],
+      "documentWidth": 768,
+      "mapSize": [
+        768,
+        960
+      ],
+      "mapContainer": [
+        768,
+        960
+      ],
+      "route": "LRT_JB_BK",
+      "stop": "LRTJB008_01",
+      "detailTab": "selected",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app left-panel-collapsed tl-detail-open tl-detail-expanded",
+      "loadedTiles": 4,
+      "sha256": "3a7f2b9343cfb58dd2b8b92ea130b90ccfa4f720c1ef9053de3bfdcab3a860bb"
+    },
+    {
+      "file": "lrt-jakarta-1366.png",
+      "description": "Velodrome: metadata, lin dan integrasi berasal dari data aktual",
+      "viewport": [
+        1366,
+        900
+      ],
+      "documentWidth": 1366,
+      "mapSize": [
+        786,
+        836
+      ],
+      "mapContainer": [
+        786,
+        836
+      ],
+      "route": "LRT_JKT_S",
+      "stop": "LRTJ006_01",
+      "detailTab": "selected",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded",
+      "loadedTiles": 20,
+      "sha256": "b765973f21370cf39fa185effc8adcc8e4bb38fe013a122a06b57237bbe23f1f"
+    },
+    {
+      "file": "lrt-jabodebek-multiline-1366.png",
+      "description": "Cawang: dua lin LRT Jabodebek, konteks aktif Lin Bekasi",
+      "viewport": [
+        1366,
+        900
+      ],
+      "documentWidth": 1366,
+      "mapSize": [
+        786,
+        836
+      ],
+      "mapContainer": [
+        786,
+        836
+      ],
+      "route": "LRT_JB_BK",
+      "stop": "LRTJB008_01",
+      "detailTab": "selected",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded",
+      "loadedTiles": 16,
+      "sha256": "2451a985cdb2cf5bc9232103439714a87aeb8f83ea72b7a64cf1f98048fddf6d"
+    },
+    {
+      "file": "lrt-jabodebek-multiline-1600.png",
+      "description": "Cawang: dua lin LRT Jabodebek, konteks aktif Lin Bekasi",
+      "viewport": [
+        1600,
+        1000
+      ],
+      "documentWidth": 1600,
+      "mapSize": [
+        968,
+        936
+      ],
+      "mapContainer": [
+        968,
+        936
+      ],
+      "route": "LRT_JB_BK",
+      "stop": "LRTJB008_01",
+      "detailTab": "selected",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded",
+      "loadedTiles": 16,
+      "sha256": "5a70ce14eb03289731d220edf45bc9a3e37dc46393acf853d67860de700651ea"
+    }
+  ]
+}

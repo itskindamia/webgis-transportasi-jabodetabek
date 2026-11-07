@@ -7,6 +7,17 @@
 
 # Jaringan Transportasi Umum Jabodetabek
 
+## Antarmuka Tabler + Leaflet
+
+Jalankan `npm run dev` (Node 20+), lalu buka `http://localhost:5173/`.
+Aplikasi memakai PT Sans 400/700 lokal, popup LRT berbasis metadata dan layout
+responsif dengan bottom sheet mobile. CSS hasil build sudah disertakan.
+
+[Validasi rilis dan rollback](docs/RELEASE_20261106.md) ·
+[Laporan popup/font/mobile](docs/LRT_POPUP_PT_SANS_MOBILE.md) ·
+[Screenshot akhir](docs/release-20261106/screenshots/) ·
+[Website](https://itskindamia.github.io/webgis-transportasi-jabodetabek/)
+
 WebGIS statis untuk eksplorasi jaringan transportasi umum Jabodetabek, termasuk BRT dan jaringan rel, halte/stasiun, status jaringan, serta integrasi antarmoda.
 
 **Baseline saat ini: v0.16 — 14 September 2026.**
