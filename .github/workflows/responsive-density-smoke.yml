@@ -10,6 +10,7 @@ on:
       - 'tools/test-layout-compact-filter.mjs'
       - 'tools/test-layout-tour-compact.mjs'
       - 'tools/test-layout-mobile-sheets.mjs'
+      - 'tools/test-layout-inline-badges.mjs'
       - 'js/layout-tabler-ux.js'
       - 'js/layout-tabler.js'
       - '.github/workflows/responsive-density-smoke.yml'
@@ -41,4 +42,4 @@ jobs:
             npx playwright install chromium
           fi
       - name: Test responsive spacing and title
-        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-density.mjs tools/test-layout-brand-title.mjs tools/test-layout-compact-filter.mjs tools/test-layout-tour-compact.mjs tools/test-layout-mobile-sheets.mjs
+        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-density.mjs tools/test-layout-brand-title.mjs tools/test-layout-compact-filter.mjs tools/test-layout-tour-compact.mjs tools/test-layout-mobile-sheets.mjs tools/test-layout-inline-badges.mjs
