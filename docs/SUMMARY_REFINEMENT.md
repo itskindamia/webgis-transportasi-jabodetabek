@@ -54,6 +54,8 @@ Tidak ditemukan clipping atau overflow pada lima viewport pengukuran.
 [Pengukuran terbaru](summary-refinement/compact-font/verification/comparison.json),
 [log regresi](summary-refinement/compact-font/verification/final-layout.tap),
 dan [integrasi A01](summary-refinement/compact-font/verification/integration.tap).
+Hasil akhir font compact: **76/76 lulus, 0 gagal/dilewati** (467.137,59 ms), serta
+**3/3** tes integrasi dengan A01. Seluruh delapan hash terlindungi tetap identik.
 
 | Skenario | Sebelum penyesuaian font | Sesudah |
 | --- | --- | --- |
