@@ -1,0 +1,222 @@
+TAP version 13
+# Subtest: summary preserves metadata, controls and accordion state: BRT_01 at 1366px
+ok 1 - summary preserves metadata, controls and accordion state: BRT_01 at 1366px
+  ---
+  duration_ms: 20659.461272
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_03 at 1366px
+ok 2 - summary preserves metadata, controls and accordion state: BRT_03 at 1366px
+  ---
+  duration_ms: 23851.422222
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_09 at 1366px
+ok 3 - summary preserves metadata, controls and accordion state: BRT_09 at 1366px
+  ---
+  duration_ms: 14360.209162
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: MRT_NS at 1366px
+not ok 4 - summary preserves metadata, controls and accordion state: MRT_NS at 1366px
+  ---
+  duration_ms: 8437.112254
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:33:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: LRT_JKT_S at 1366px
+not ok 5 - summary preserves metadata, controls and accordion state: LRT_JKT_S at 1366px
+  ---
+  duration_ms: 7009.54542
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:33:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: LRT_JB_BK at 1366px
+not ok 6 - summary preserves metadata, controls and accordion state: LRT_JB_BK at 1366px
+  ---
+  duration_ms: 8682.447509
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:33:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: KRL_TP at 1366px
+not ok 7 - summary preserves metadata, controls and accordion state: KRL_TP at 1366px
+  ---
+  duration_ms: 7518.049965
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:33:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_01 at 390px
+ok 8 - summary preserves metadata, controls and accordion state: BRT_01 at 390px
+  ---
+  duration_ms: 22252.435315
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_03 at 390px
+ok 9 - summary preserves metadata, controls and accordion state: BRT_03 at 390px
+  ---
+  duration_ms: 21547.020629
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_09 at 390px
+ok 10 - summary preserves metadata, controls and accordion state: BRT_09 at 390px
+  ---
+  duration_ms: 13852.949126
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: MRT_NS at 390px
+not ok 11 - summary preserves metadata, controls and accordion state: MRT_NS at 390px
+  ---
+  duration_ms: 7734.239939
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:33:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: LRT_JKT_S at 390px
+not ok 12 - summary preserves metadata, controls and accordion state: LRT_JKT_S at 390px
+  ---
+  duration_ms: 6889.017946
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:33:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: LRT_JB_BK at 390px
+not ok 13 - summary preserves metadata, controls and accordion state: LRT_JB_BK at 390px
+  ---
+  duration_ms: 7980.585156
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:33:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: KRL_TP at 390px
+not ok 14 - summary preserves metadata, controls and accordion state: KRL_TP at 390px
+  ---
+  duration_ms: 6086.577659
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:33:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 6
+# fail 8
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 177803.058353

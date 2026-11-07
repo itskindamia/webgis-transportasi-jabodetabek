@@ -1,0 +1,581 @@
+
+> test:layout
+> node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-*.mjs tools/test-font-pt-sans.mjs tools/test-lrt-popup.mjs
+
+TAP version 13
+# Subtest: PT Sans is the shared app typography token, with no duplicated Google stylesheet
+ok 1 - PT Sans is the shared app typography token, with no duplicated Google stylesheet
+  ---
+  duration_ms: 217.237014
+  type: 'test'
+  ...
+# Subtest: real PT Sans regular/bold load once and apply to controls, popups, labels and tour
+ok 2 - real PT Sans regular/bold load once and apply to controls, popups, labels and tour
+  ---
+  duration_ms: 5648.69148
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 320x568
+ok 3 - mobile-first shell and popup bounds at 320x568
+  ---
+  duration_ms: 5642.943992
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 360x800
+ok 4 - mobile-first shell and popup bounds at 360x800
+  ---
+  duration_ms: 5278.04793
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 390x844
+ok 5 - mobile-first shell and popup bounds at 390x844
+  ---
+  duration_ms: 5264.042552
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 768x1024
+ok 6 - mobile-first shell and popup bounds at 768x1024
+  ---
+  duration_ms: 5083.163639
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 1366x900
+ok 7 - mobile-first shell and popup bounds at 1366x900
+  ---
+  duration_ms: 5098.285605
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 1600x1000
+ok 8 - mobile-first shell and popup bounds at 1600x1000
+  ---
+  duration_ms: 5148.416158
+  type: 'test'
+  ...
+# Subtest: three sheet positions and closing/reopening preserve the route and selection
+ok 9 - three sheet positions and closing/reopening preserve the route and selection
+  ---
+  duration_ms: 6003.731471
+  type: 'test'
+  ...
+# Subtest: panel scrolling does not pan/zoom the map or repeatedly invalidate its unchanged size
+ok 10 - panel scrolling does not pan/zoom the map or repeatedly invalidate its unchanged size
+  ---
+  duration_ms: 5878.118959
+  type: 'test'
+  ...
+# Subtest: orientation and keyboard-sized visual viewport remain usable and preserve selection
+ok 11 - orientation and keyboard-sized visual viewport remain usable and preserve selection
+  ---
+  duration_ms: 12808.755239
+  type: 'test'
+  ...
+# Subtest: pan and zoom with all existing network layers retain layer identities
+ok 12 - pan and zoom with all existing network layers retain layer identities
+  ---
+  duration_ms: 3192.050919
+  type: 'test'
+  ...
+# Subtest: guided tour remains readable and closable on a small phone
+ok 13 - guided tour remains readable and closable on a small phone
+  ---
+  duration_ms: 10275.821559
+  type: 'test'
+  ...
+# Subtest: regenerated CSS retains every info-guide component and matches committed output
+ok 14 - regenerated CSS retains every info-guide component and matches committed output
+  ---
+  duration_ms: 2551.470276
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 320x568
+ok 15 - network sizing, full route labels, list density and guide cards at 320x568
+  ---
+  duration_ms: 8609.789044
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 360x800
+ok 16 - network sizing, full route labels, list density and guide cards at 360x800
+  ---
+  duration_ms: 8918.514747
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 390x844
+ok 17 - network sizing, full route labels, list density and guide cards at 390x844
+  ---
+  duration_ms: 9063.068164
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 768x1024
+ok 18 - network sizing, full route labels, list density and guide cards at 768x1024
+  ---
+  duration_ms: 7237.935041
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 1366x900
+ok 19 - network sizing, full route labels, list density and guide cards at 1366x900
+  ---
+  duration_ms: 8516.35292
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 1600x1000
+ok 20 - network sizing, full route labels, list density and guide cards at 1600x1000
+  ---
+  duration_ms: 7242.502729
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 568x320
+ok 21 - network sizing, full route labels, list density and guide cards at 568x320
+  ---
+  duration_ms: 7606.864948
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 844x390
+ok 22 - network sizing, full route labels, list density and guide cards at 844x390
+  ---
+  duration_ms: 7225.960279
+  type: 'test'
+  ...
+# Subtest: list identities, sequence and all line/role/status/direction badges match baseline K1 and K3
+ok 23 - list identities, sequence and all line/role/status/direction badges match baseline K1 and K3
+  ---
+  duration_ms: 14990.224517
+  type: 'test'
+  ...
+# Subtest: Mini/half/full and tab changes preserve selected LRT, filters, URL and camera
+ok 24 - Mini/half/full and tab changes preserve selected LRT, filters, URL and camera
+  ---
+  duration_ms: 14511.38921
+  type: 'test'
+  ...
+# Subtest: network content reflows across modes/status and comparison while chrome stays reachable
+ok 25 - network content reflows across modes/status and comparison while chrome stays reachable
+  ---
+  duration_ms: 25420.473505
+  type: 'test'
+  ...
+# Subtest: compact landscape exposes services and all LRT actions at 568x320
+ok 26 - compact landscape exposes services and all LRT actions at 568x320
+  ---
+  duration_ms: 22095.929847
+  type: 'test'
+  ...
+# Subtest: compact landscape exposes services and all LRT actions at 844x390
+ok 27 - compact landscape exposes services and all LRT actions at 844x390
+  ---
+  duration_ms: 21967.044632
+  type: 'test'
+  ...
+# Subtest: portrait popup scroll hint and source/navigation remain reachable at 320, 360 and 390
+ok 28 - portrait popup scroll hint and source/navigation remain reachable at 320, 360 and 390
+  ---
+  duration_ms: 42911.37476
+  type: 'test'
+  ...
+# Subtest: direct-link reload restores LRT station, active line and actionable popup
+ok 29 - direct-link reload restores LRT station, active line and actionable popup
+  ---
+  duration_ms: 19536.108163
+  type: 'test'
+  ...
+# Subtest: all four production GeoJSON resources load through the app
+ok 30 - all four production GeoJSON resources load through the app
+  ---
+  duration_ms: 6476.250844
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_01 at 1366px
+ok 31 - summary preserves metadata, controls and accordion state: BRT_01 at 1366px
+  ---
+  duration_ms: 30695.112979
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_03 at 1366px
+ok 32 - summary preserves metadata, controls and accordion state: BRT_03 at 1366px
+  ---
+  duration_ms: 45968.699169
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_09 at 1366px
+ok 33 - summary preserves metadata, controls and accordion state: BRT_09 at 1366px
+  ---
+  duration_ms: 24738.447972
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: MRT_NS at 1366px
+not ok 34 - summary preserves metadata, controls and accordion state: MRT_NS at 1366px
+  ---
+  duration_ms: 10460.687675
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:31:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: LRT_JKT_S at 1366px
+not ok 35 - summary preserves metadata, controls and accordion state: LRT_JKT_S at 1366px
+  ---
+  duration_ms: 10845.632691
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:31:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: LRT_JB_BK at 1366px
+not ok 36 - summary preserves metadata, controls and accordion state: LRT_JB_BK at 1366px
+  ---
+  duration_ms: 10550.723604
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:31:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: KRL_TP at 1366px
+not ok 37 - summary preserves metadata, controls and accordion state: KRL_TP at 1366px
+  ---
+  duration_ms: 6130.594103
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:31:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_01 at 390px
+ok 38 - summary preserves metadata, controls and accordion state: BRT_01 at 390px
+  ---
+  duration_ms: 19666.357032
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_03 at 390px
+ok 39 - summary preserves metadata, controls and accordion state: BRT_03 at 390px
+  ---
+  duration_ms: 20805.58187
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_09 at 390px
+ok 40 - summary preserves metadata, controls and accordion state: BRT_09 at 390px
+  ---
+  duration_ms: 10976.077824
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: MRT_NS at 390px
+not ok 41 - summary preserves metadata, controls and accordion state: MRT_NS at 390px
+  ---
+  duration_ms: 5651.722509
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:31:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: LRT_JKT_S at 390px
+not ok 42 - summary preserves metadata, controls and accordion state: LRT_JKT_S at 390px
+  ---
+  duration_ms: 6987.28682
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:31:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: LRT_JB_BK at 390px
+not ok 43 - summary preserves metadata, controls and accordion state: LRT_JB_BK at 390px
+  ---
+  duration_ms: 6576.953694
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:31:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: KRL_TP at 390px
+not ok 44 - summary preserves metadata, controls and accordion state: KRL_TP at 390px
+  ---
+  duration_ms: 7514.416973
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:11:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await note.innerText()).includes("dua arah"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-summary.mjs:31:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: source geometry, attributes, operation engine and existing DOM hooks remain intact
+ok 45 - source geometry, attributes, operation engine and existing DOM hooks remain intact
+  ---
+  duration_ms: 893.570941
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 390px
+ok 46 - responsive layout and real Leaflet resizing at 390px
+  ---
+  duration_ms: 16364.136318
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 768px
+ok 47 - responsive layout and real Leaflet resizing at 768px
+  ---
+  duration_ms: 17011.606677
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 1366px
+ok 48 - responsive layout and real Leaflet resizing at 1366px
+  ---
+  duration_ms: 20697.027693
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 1600px
+not ok 49 - responsive layout and real Leaflet resizing at 1600px
+  ---
+  duration_ms: 14742.774028
+  type: 'test'
+  location: '/workspace/work/webgis-mobile-ux/tools/test-layout-tabler.mjs:28:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+    +   1320,
+    -   968,
+        936
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 968
+    1: 936
+  actual:
+    0: 1320
+    1: 936
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis-mobile-ux/tools/test-layout-tabler.mjs:40:12)
+    runNextTicks (node:internal/process/task_queues:65:5)
+    process.processImmediate (node:internal/timers:541:9)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: stop selection, popup navigation, integration links, tabs and URL remain connected
+ok 50 - stop selection, popup navigation, integration links, tabs and URL remain connected
+  ---
+  duration_ms: 24805.149501
+  type: 'test'
+  ...
+# Subtest: global transport search, online place search, basemaps, legend and about remain reachable
+ok 51 - global transport search, online place search, basemaps, legend and about remain reachable
+  ---
+  duration_ms: 12036.175468
+  type: 'test'
+  ...
+# Subtest: keyboard tabs and crossing mobile/tablet/desktop breakpoints keep controls usable
+ok 52 - keyboard tabs and crossing mobile/tablet/desktop breakpoints keep controls usable
+  ---
+  duration_ms: 8675.914964
+  type: 'test'
+  ...
+# Subtest: mobile stop popup and provider attribution stay above the detail sheet
+ok 53 - mobile stop popup and provider attribution stay above the detail sheet
+  ---
+  duration_ms: 11266.569804
+  type: 'test'
+  ...
+# Subtest: GPS, home, zoom and route comparison controls still drive Leaflet
+ok 54 - GPS, home, zoom and route comparison controls still drive Leaflet
+  ---
+  duration_ms: 9940.819652
+  type: 'test'
+  ...
+# Subtest: mobile popup and detail take turns without changing selection, tab, URL, or markers
+ok 55 - mobile popup and detail take turns without changing selection, tab, URL, or markers
+  ---
+  duration_ms: 12909.130412
+  type: 'test'
+  ...
+# Subtest: visual label decluttering preserves every marker and stop identity at 390px
+ok 56 - visual label decluttering preserves every marker and stop identity at 390px
+  ---
+  duration_ms: 13296.388363
+  type: 'test'
+  ...
+# Subtest: visual label decluttering preserves every marker and stop identity at 1366px
+ok 57 - visual label decluttering preserves every marker and stop identity at 1366px
+  ---
+  duration_ms: 12580.090044
+  type: 'test'
+  ...
+# Subtest: Tabler guided tour has visible anchors and restores UI/transport state at 390px
+ok 58 - Tabler guided tour has visible anchors and restores UI/transport state at 390px
+  ---
+  duration_ms: 13622.058865
+  type: 'test'
+  ...
+# Subtest: Tabler guided tour has visible anchors and restores UI/transport state at 768px
+ok 59 - Tabler guided tour has visible anchors and restores UI/transport state at 768px
+  ---
+  duration_ms: 14578.531311
+  type: 'test'
+  ...
+# Subtest: Tabler guided tour has visible anchors and restores UI/transport state at 1366px
+ok 60 - Tabler guided tour has visible anchors and restores UI/transport state at 1366px
+  ---
+  duration_ms: 14614.818319
+  type: 'test'
+  ...
+# Subtest: guided tour skip and Escape preserve an empty overview and the open network sheet
+ok 61 - guided tour skip and Escape preserve an empty overview and the open network sheet
+  ---
+  duration_ms: 5315.3419
+  type: 'test'
+  ...
+# Subtest: startup disclaimer continues to the adapted tour through the normal buttons
+ok 62 - startup disclaimer continues to the adapted tour through the normal buttons
+  ---
+  duration_ms: 4510.168909
+  type: 'test'
+  ...
+# Subtest: primary mobile controls and detail actions offer at least 44px touch targets
+ok 63 - primary mobile controls and detail actions offer at least 44px touch targets
+  ---
+  duration_ms: 12387.945973
+  type: 'test'
+  ...
+# Subtest: Velodrome popup reads Jakarta operator, code/status/structure, service metadata and preserves links
+ok 64 - Velodrome popup reads Jakarta operator, code/status/structure, service metadata and preserves links
+  ---
+  duration_ms: 9887.054179
+  type: 'test'
+  ...
+# Subtest: single-line Jabodebek popup uses its own operator and source line color
+ok 65 - single-line Jabodebek popup uses its own operator and source line color
+  ---
+  duration_ms: 8695.222593
+  type: 'test'
+  ...
+# Subtest: shared Cawang retains route-switch handlers and follows the active line for both navigation branches
+ok 66 - shared Cawang retains route-switch handlers and follows the active line for both navigation branches
+  ---
+  duration_ms: 19868.093421
+  type: 'test'
+  ...
+# Subtest: LRT integration buttons still navigate to the related source feature
+ok 67 - LRT integration buttons still navigate to the related source feature
+  ---
+  duration_ms: 13203.649806
+  type: 'test'
+  ...
+# Subtest: mobile station search, status filters and guided tour preserve LRT selection and popup scroll
+ok 68 - mobile station search, status filters and guided tour preserve LRT selection and popup scroll
+  ---
+  duration_ms: 14120.095681
+  type: 'test'
+  ...
+# Subtest: long previous-station names wrap without truncation on a small phone
+ok 69 - long previous-station names wrap without truncation on a small phone
+  ---
+  duration_ms: 9414.94193
+  type: 'test'
+  ...
+# Subtest: LRT presentation renders escaped supplied station names and omits missing station codes
+ok 70 - LRT presentation renders escaped supplied station names and omits missing station codes
+  ---
+  duration_ms: 3161.831798
+  type: 'test'
+  ...
+# Interrupted while running: tools/test-lrt-popup.mjs at /workspace/work/webgis-mobile-ux/tools/test-lrt-popup.mjs:1:1
