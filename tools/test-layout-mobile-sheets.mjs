@@ -31,13 +31,15 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844], [568, 320], [
           panel: panel.toJSON(), heading: heading.toJSON(),
           eyebrowHidden: getComputedStyle(eyebrow).display === "none",
           statusHeight: select.height, corridorHeight: corridor.height,
+          headingTransform: getComputedStyle(document.querySelector(".tl-network .tl-panel-heading h2")).textTransform,
           buttonHeights: buttons.map(b => b.height),
           footer: footer.toJSON(), pageWidth: document.documentElement.scrollWidth
         };
       });
       assert.ok(result.heading.height <= 54, "mobile network heading should be compact");
       assert.equal(result.eyebrowHidden, true, "redundant mobile eyebrow hidden");
-      assert.ok(result.statusHeight >= 44 && result.corridorHeight >= 44, "select controls remain tappable");
+      assert.ok(result.statusHeight >= 39 && result.statusHeight <= 41 && result.corridorHeight >= 39 && result.corridorHeight <= 41, "both selectors have compact 40px height");
+      assert.equal(result.headingTransform, "uppercase", "mobile heading is all caps");
       assert.equal(result.buttonHeights.length, 5);
       assert.ok(result.buttonHeights.every(h => h >= 44), "mode controls keep 44px touch height");
       assert.ok(result.footer.bottom <= result.panel.bottom + 1, "filter footer remains inside panel");
@@ -60,6 +62,9 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844], [568, 320], [
     } else {
       const eyebrow = await page.locator(".tl-network .tl-panel-heading .tl-eyebrow").evaluate(el => getComputedStyle(el).display);
       assert.notEqual(eyebrow, "none", "desktop network heading unchanged");
+      const [headingTransform, selectHeight] = await page.evaluate(() => [getComputedStyle(document.querySelector(".tl-network .tl-panel-heading h2")).textTransform, document.querySelector("#statusSelect").getBoundingClientRect().height]);
+      assert.notEqual(headingTransform, "uppercase", "desktop heading casing unaffected");
+      assert.ok(selectHeight >= 44, "desktop select stays at prior height");
     }
     assert.deepEqual(errors, [], "no JavaScript runtime errors");
   });
