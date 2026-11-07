@@ -36,6 +36,15 @@ async function chooseNetwork(page, { mode, route, status }) {
     const selected = String(currentSelectedRouteId || "ALL");
     return selected === expected && map.getSize().x > 0 && map.getSize().y > 0;
   }, route);
+
+  // Planned BRT corridors deliberately show an informational dialog.
+  // Dismiss it using the same visible UI as an actual visitor before
+  // switching to the next network. Otherwise the dialog intercepts taps.
+  if (route === "BRT_16") {
+    await page.locator("#routePlanIntro").waitFor({ state: "visible", timeout: 5000 });
+    await page.click("#routePlanIntroDismiss");
+    await page.locator("#routePlanIntro").waitFor({ state: "hidden" });
+  }
   await page.evaluate(() => new Promise(resolve => {
     requestAnimationFrame(() => requestAnimationFrame(resolve));
   }));
