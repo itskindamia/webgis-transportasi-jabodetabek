@@ -1,0 +1,79 @@
+{
+  "BRT_01": {
+    "text": "TransJakarta 1 Koridor 1 Blok M - Kota Kondisi trase Saat ini Reguler Menampilkan trase operasional yang sedang berlaku. Tampilan trase Semua trase Sesuai arah Menampilkan seluruh trase koridor; semua halte koridor ditampilkan. Moda BRT Status Eksisting Halte 23 Transit 5 Terminus 2 Panjang ± 28,8 km * Panjang merupakan estimasi total trase dua arah (pergi–kembali), bukan panjang satu arah. ↗ Sumber Data Sumber & Dasar Data › HOT_InAWARESurvey_2017 TransJakarta MRT Jakarta ! Pengalihan Sementara Koridor 1 (Blok M - Kota) › Trase sementara Koridor 1 akibat penyesuaian pelayanan selama pembangunan MRT Ja Sumber TransJakarta; MRT Jakarta",
+    "stats": [
+      "Moda BRT",
+      "Status Eksisting",
+      "Halte 23",
+      "Transit 5",
+      "Terminus 2",
+      "Panjang ± 28,8 km"
+    ]
+  },
+  "BRT_03": {
+    "text": "TransJakarta 3 Koridor 3 Kalideres - Monumen Nasional via Veteran Kondisi trase Saat ini Reguler Menampilkan trase operasional yang sedang berlaku. Tampilan trase Semua trase Sesuai arah Menampilkan seluruh trase koridor; semua halte koridor ditampilkan. Moda BRT Status Eksisting Halte 14 Transit 1 Terminus 2 Panjang ± 31,4 km * Panjang merupakan estimasi total trase dua arah (pergi–kembali), bukan panjang satu arah. ↗ Sumber Data Sumber & Dasar Data › TransJakarta ! Pengalihan Sementara Koridor 3 (Kalideres - Monumen Nasional) › Pengalihan sementara akibat pembangunan MRT Jakarta Fase 2A Terminus sementara Monumen Nasional Halte yang tidak dilayani 4 Titik berikut tidak dilayani selama pengalihan sementara. Harmoni Pecenongan Juanda Pasar Baru Halte yang dilayani selama pengalihan 2 Titik berikut dilayani selama pengalihan dan tidak dicampur ke daftar halte reguler. Petojo Monumen Nasional Sumber MRT Jakarta; TransJakarta",
+    "stats": [
+      "Moda BRT",
+      "Status Eksisting",
+      "Halte 14",
+      "Transit 1",
+      "Terminus 2",
+      "Panjang ± 31,4 km"
+    ]
+  },
+  "BRT_09": {
+    "text": "TransJakarta 9 Koridor 9 Pinang Ranti - Pluit Tampilan trase Semua trase Sesuai arah Menampilkan seluruh trase koridor; semua halte koridor ditampilkan. Moda BRT Status Eksisting Halte 25 Transit 7 Terminus 2 Panjang ± 55,8 km * Panjang merupakan estimasi total trase dua arah (pergi–kembali), bukan panjang satu arah. ↗ Sumber Data Sumber & Dasar Data › TransJakarta RTRW DKI Jakarta",
+    "stats": [
+      "Moda BRT",
+      "Status Eksisting",
+      "Halte 25",
+      "Transit 7",
+      "Terminus 2",
+      "Panjang ± 55,8 km"
+    ]
+  },
+  "MRT_NS": {
+    "text": "MRT Jakarta NS Lin Utara - Selatan Lebak Bulus - Bundaran HI Moda MRT Status Eksisting Struktur jalur Layang · Transisi · Bawah tanah Stasiun 13 Transit 3 Terminus 2 Panjang ± 15,6 km * Panjang merupakan estimasi geometri lin yang ditampilkan. ↗ Sumber Data Sumber & Dasar Data › MRT Jakarta Buka sumber ↗",
+    "stats": [
+      "Moda MRT",
+      "Status Eksisting",
+      "Stasiun 13",
+      "Transit 3",
+      "Terminus 2",
+      "Panjang ± 15,6 km"
+    ]
+  },
+  "LRT_JKT_S": {
+    "text": "LRT Jakarta S Lin Selatan Manggarai - Kelapa Gading Moda LRT Status Eksisting Struktur jalur Layang Stasiun 11 Transit 0 Terminus 2 Panjang ± 12,2 km * Panjang merupakan estimasi geometri lin yang ditampilkan. ↗ Sumber Data Sumber & Dasar Data › Pemprov DKI Jakarta LRT Jakarta Buka sumber ↗ Tampilkan stasiun non-eksisting 1 Mencakup status Usulan dan Skenario.",
+    "stats": [
+      "Moda LRT",
+      "Status Eksisting",
+      "Stasiun 11",
+      "Transit 0",
+      "Terminus 2",
+      "Panjang ± 12,2 km"
+    ]
+  },
+  "LRT_JB_BK": {
+    "text": "LRT Jabodebek BK Lin Bekasi Dukuh Atas - Jati Mulya Moda LRT Status Eksisting Struktur jalur Layang Stasiun 14 Transit 1 Terminus 2 Panjang ± 27,9 km * Panjang merupakan estimasi geometri lin yang ditampilkan. ↗ Sumber Data Sumber & Dasar Data › LRT Jabodebek Buka sumber ↗",
+    "stats": [
+      "Moda LRT",
+      "Status Eksisting",
+      "Stasiun 14",
+      "Transit 1",
+      "Terminus 2",
+      "Panjang ± 27,9 km"
+    ]
+  },
+  "KRL_TP": {
+    "text": "KAI Commuter TP Commuter Line Tanjung Priok Kota - Tanjung Priok Moda KRL Status Eksisting Struktur jalur Campuran Stasiun 5 Transit 2 Terminus 2 Panjang ± 8,1 km * Panjang merupakan estimasi geometri lin yang ditampilkan. ↗ Sumber Data Sumber & Dasar Data › KAI Commuter Buka sumber ↗ IRPS Buka sumber ↗",
+    "stats": [
+      "Moda KRL",
+      "Status Eksisting",
+      "Stasiun 5",
+      "Transit 2",
+      "Terminus 2",
+      "Panjang ± 8,1 km"
+    ]
+  }
+}
