@@ -20898,6 +20898,8 @@ routeInfoEl
         return;
       }
 
+      const layoutState = window.webgisLayout?.capture?.();
+
       setNonExistingStopsVisible(
         Boolean(toggle.checked)
       );
@@ -20981,6 +20983,9 @@ routeInfoEl
       } else {
         syncUrlState();
       }
+
+      // Restore Tabler's shelved popup after the redraw's auto-pan guard settles.
+      if (layoutState) requestAnimationFrame(() => window.webgisLayout.restore(layoutState));
     }
   );
 

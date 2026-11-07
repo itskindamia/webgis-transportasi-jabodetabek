@@ -37,9 +37,10 @@ before(async () => {
 after(async () => { await browser?.close(); });
 
 async function openRoute(t, routeId = "BRT_13", width = 1366) {
-  const context = await browser.newContext({ viewport: { width, height: 900 } });
+  const context = await browser.newContext({ viewport: { width, height: width === 568 ? 320 : width === 390 ? 844 : 900 } });
   t.after(() => context.close());
   const page = await context.newPage();
+  page.setDefaultTimeout(12000);
   const errors = [];
   page.on("pageerror", error => errors.push(error.message));
 
@@ -83,10 +84,13 @@ async function openRoute(t, routeId = "BRT_13", width = 1366) {
     closeProductTour();
     setMobileFilterOpen(true);
   });
-  await page.selectOption("#modeSelect", "BRT");
+  await page.click('[data-mode="BRT"]');
   await page.selectOption("#routeSelect", routeId);
   // Let the existing adaptive-layout fit finish before selecting a stop.
   await page.waitForTimeout(750);
+  await page.waitForFunction(() => document.documentElement.dataset.layoutReady === "true");
+  await page.evaluate(() => { webgisLayout.showPopupDetails(); webgisLayout.setTab("route"); });
+  await page.waitForTimeout(100);
   await page.evaluate(installView);
   return { page, errors, t };
 }
@@ -124,10 +128,17 @@ function installView() {
       globalPopupOpen: Boolean(map._popup?.isOpen()),
       sharedStop: new URL(location.href).searchParams.get("stop"),
       center: [map.getCenter().lat, map.getCenter().lng], zoom: map.getZoom(),
+      centerPixel: [map.project(map.getCenter()).x, map.project(map.getCenter()).y],
       filterOpen: document.body.classList.contains("mobile-filter-open"),
       filterExpanded: mobileFilterToggle.getAttribute("aria-expanded"),
       bottomRouteExpanded: mobileBottomRouteButton.getAttribute("aria-expanded"),
       cameraCalls: [...window.a01CameraCalls]
+      , tab: document.querySelector("#tlDetailPanel").dataset.tab,
+      sheet: document.querySelector("#tlDetailPanel").dataset.sheetPosition,
+      shelved: document.body.classList.contains("tl-popup-shelved"),
+      detailOpen: document.body.classList.contains("tl-detail-open"),
+      route: currentSelectedRouteId, mode: modeSelect.value, status: statusSelect.value,
+      url: location.href
     };
   };
 }
@@ -164,10 +175,15 @@ function assertUiPreserved(app, before, after) {
   }
   assert.deepEqual(after.cameraCalls, [], "toggle must not invoke camera navigation");
   assert.equal(after.zoom, before.zoom, "toggle must preserve zoom");
-  assert.deepEqual(after.center, before.center, "toggle must preserve the panned map center");
+  assert.ok(Math.hypot(after.centerPixel[0] - before.centerPixel[0], after.centerPixel[1] - before.centerPixel[1]) <= 1, "camera stays within Leaflet's one-pixel projection rounding");
   assert.equal(after.filterOpen, before.filterOpen, "mobile filter must retain its open/closed state");
   assert.equal(after.filterExpanded, before.filterExpanded, "filter aria-expanded");
   assert.equal(after.bottomRouteExpanded, before.bottomRouteExpanded, "mobile route aria-expanded");
+  for (const key of ["tab", "sheet", "detailOpen", "route", "mode", "status"]) assert.equal(after[key], before[key], key);
+  if (before.selectedKey === after.selectedKey) {
+    assert.equal(after.shelved, before.shelved, "popup presentation under the detail sheet");
+    assert.equal(after.url, before.url, "direct link stays unchanged");
+  }
   if (before.selectedKey && before.selectedKey === after.selectedKey) {
     assert.equal(after.popupOpen, before.popupOpen, "toggle must preserve popup open/closed state");
     assert.equal(after.popupAutoPan, before.popupAutoPan, "normal popup auto-pan option must be restored");
@@ -178,7 +194,8 @@ function assertUiPreserved(app, before, after) {
 
 async function toggle(app, checked) {
   const { page, errors } = app;
-  await page.evaluate(() => setMobileFilterOpen(true));
+  await page.evaluate(() => { webgisLayout.showPopupDetails(); webgisLayout.setTab("route"); });
+  await page.waitForTimeout(100);
   const input = page.locator("[data-optional-stop-toggle]");
   assert.notEqual(await input.isChecked(), checked, "exercise a real toggle change");
   await page.evaluate(() => { window.a01CameraCalls = []; });
@@ -192,7 +209,7 @@ async function toggle(app, checked) {
 }
 
 async function selectStatus({ page, errors }, status) {
-  await page.evaluate(() => setMobileFilterOpen(true));
+  await page.evaluate(() => { webgisLayout.showPopupDetails(); webgisLayout.setTab("stops"); });
   const key = await page.evaluate(wanted => {
     const row = [...document.querySelectorAll("#stopList .stop-list-item")].find(row =>
       getStopStatus(getStopByKey(row.dataset.stopKey)) === wanted
@@ -202,7 +219,7 @@ async function selectStatus({ page, errors }, status) {
   assert.ok(key, `real dataset contains a visible ${status} stop`);
   await page.locator(`#stopList [data-stop-key="${key}"]`).click();
   await page.waitForFunction(key => currentSelectedStopKey === key && stopMarkerByKey.get(key)?.isPopupOpen(), key);
-  await page.waitForTimeout(350);
+  await page.waitForTimeout(650);
   assert.deepEqual(errors, [], "selecting a stop must not emit JavaScript errors");
   return view(page);
 }
@@ -219,7 +236,7 @@ test("Koridor 13: toggle on/off without a selected stop", async t => {
   assert.equal(disabled.markerCount, initial.markerCount);
 });
 
-for (const width of [1366, 390]) {
+for (const width of [1366, 390, 568]) {
   test(`Koridor 13: retain an Existing selection across on/off at ${width}px`, async t => {
     const app = await openRoute(t, "BRT_13", width);
     const selected = await selectStatus(app, "Existing");
@@ -232,6 +249,26 @@ for (const width of [1366, 390]) {
     assert.equal(disabled.markerCount, selected.markerCount);
   });
 }
+
+for (const width of [1366, 390, 568]) test(`Koridor 15–19: non-existing visibility and selected stop removal at ${width}px`, async t => {
+  const app = await openRoute(t, "BRT_15", width);
+  for (const id of ["BRT_15", "BRT_16", "BRT_17", "BRT_18", "BRT_19"]) {
+    if (await app.page.evaluate(() => currentSelectedRouteId) !== id) {
+      if (await app.page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none")) await app.page.click("#tlNetworkToggle");
+      await app.page.selectOption("#routeSelect", id); await app.page.waitForTimeout(650);
+    }
+    await app.page.evaluate(() => { webgisLayout.showPopupDetails(); webgisLayout.setTab("route"); });
+    assertConsistent(await view(app.page), false);
+    assertConsistent(await toggle(app, true), true);
+    const selected = await selectStatus(app, "Conceptual");
+    assertConsistent(selected, true, selected);
+    const hidden = await toggle(app, false);
+    assertConsistent(hidden, false);
+    assert.equal(hidden.route, id);
+    assert.equal(new URL(hidden.url).searchParams.get("route"), id);
+    assert.ok(!hidden.markerLogical.includes(selected.selectedLogical));
+  }
+});
 
 for (const [status, routeId] of [["Conceptual", "BRT_13"], ["Proposed", "BRT_11"]]) {
   test(`${routeId}: disabling clears a selected ${status} stop`, async t => {
@@ -247,7 +284,7 @@ for (const [status, routeId] of [["Conceptual", "BRT_13"], ["Proposed", "BRT_11"
   });
 }
 
-for (const width of [1366, 390]) {
+for (const width of [1366, 390, 568]) {
   test(`Koridor 13: preserve a panned view and open popup at ${width}px`, async t => {
     const app = await openRoute(t, "BRT_13", width);
     const initial = await selectStatus(app, "Existing");
