@@ -1,0 +1,13 @@
+{
+  "layoutCI": "layout-ci.json",
+  "releaseCI": "release-ci.json",
+  "a01Local": {
+    "tests": 18,
+    "pass": 18,
+    "fail": 0,
+    "skipped": 0
+  },
+  "a01LocalLog": "../a01-current-branch.tap",
+  "dataChangedByFontTask": false,
+  "mainMergedOrDeployedByFontTask": false
+}

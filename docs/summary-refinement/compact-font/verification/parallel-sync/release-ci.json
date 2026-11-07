@@ -1,0 +1,91 @@
+{
+  "workflowRun": 42340956222,
+  "url": "https://github.com/itskindamia/webgis-transportasi-jabodetabek/actions/runs/42340956222",
+  "sourceCommit": "a320b32e36df7ccb5724eb01c778de821cbda137",
+  "sourceTree": "62e06865d3b4eed4d5d89bb9ea9ca4c0f9a42fb7",
+  "equivalentLocalSource": "8538584d4a7395b2eb7eb5f7a6833fb01acd8f69",
+  "status": "completed",
+  "conclusion": "success",
+  "command": "npm run test:regression",
+  "layoutSuiteCases": 112,
+  "a01SuiteCases": 18,
+  "expectedCombinedCases": 130,
+  "jobs": [
+    {
+      "id": 128308294267,
+      "name": "regression",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 42340956222,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Install locked dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Set up system Chrome",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Validate generated CSS and source integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Full layout and A01 browser regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Audit navigation and data (informational baseline)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        }
+      ]
+    }
+  ]
+}
