@@ -2,6 +2,11 @@
 
 Branch `fix/mobile-ux-refinement`, baseline main
 `3946e21011c681a3c6a3cc4d8f8ffc4e4b2b04ae`.
+Baseline main terkini disinkronkan ke `19f49e8d50f18dcbb3f19147b3466b295b616f07`.
+Saat finalisasi, proses paralel juga mengintegrasikan A01 ke branch PR #7 pada `a320b32`.
+Sinkronisasi lokal `8538584` mempertahankan tree yang persis sama dengan integrasi remote itu.
+PR #7 saat ini memuat patch A01 yang sudah masuk tersebut; perubahan font di sini tidak
+menambahkan perubahan mesin di atasnya. Branch PR #1 tidak diubah oleh pekerjaan font ini.
 Kelanjutan Mobile UX Refinement & UI Consistency pada PR #5, bukan redesign panel baru.
 PR #5 sudah merged sebelum scope tambahan diterima, sehingga perubahan dilanjutkan pada
 branch yang sama melalui PR lanjutan yang menautkan PR #5. Tidak ada merge/deployment tahap ini.
@@ -24,16 +29,18 @@ teks desktop dan hierarki statistik belum diseragamkan.
 | Referensi/pengalihan | Accordion ditumpuk satu kolom pada panel sempit; judul 13 px, isi 12–13 px; target interaktif minimal 44 px. Klik summary tetap native. |
 | Ruang panel | Konten tetap memakai scroll panel yang sudah ada. Tidak menambahkan konten dekoratif atau mengisi sisa ruang putih. |
 
-Tidak ada perubahan `js/map.js`, GeoJSON, statistik, sequence, arah/status, pengalihan,
-warna jaringan, maupun event handler. Tidak menambahkan `!important`, font atau dependensi.
+Perubahan font hanya CSS dan query asset: GeoJSON, statistik, sequence, arah/status,
+pengalihan, warna jaringan dan event handler tidak diedit oleh revisi font.
+Perbedaan `js/map.js` terhadap main berasal dari integrasi A01 yang sudah ada pada `a320b32`.
+Tidak menambahkan `!important`, font atau dependensi.
 Cache-busting hanya mengubah query `css/layout-tabler.css` menjadi
-`mobile-ux-summary-20261107-3`; ini juga menjaga perubahan index independen dari versi
-engine pada PR A01.
+`summary-precision-a01-20261107-1`, mengikuti versi asset integrasi remote.
 
 ## Revisi font compact terbaru
 
 Baseline revisi font: head PR #7 sebelumnya `3e7ae37`, dengan runtime yang identik dengan
-source `e955ef7`. Source font baru: `03704d1`. Font PT Sans 400/700 tetap dari aset lokal.
+source `e955ef7`. Source font baru: `03704d1`, kini bersama layout precision dan A01
+pada tree `a320b32`/`8538584`. Font PT Sans 400/700 tetap dari aset lokal.
 Judul dan angka yang sebelumnya 18/20 px kini 16 px; informasi pendukung 12–13 px,
 operator dan kategori accordion 11 px. Jarak dan padding dipadatkan kembali.
 
@@ -46,29 +53,44 @@ catatan, atau kontrol yang disembunyikan. Label dapat membungkus bila perlu.
 | 320×568 | 656,6 px | 572,8 px | 12,8% |
 | 390×844 | 609,5 px | 539,7 px | 11,4% |
 | 768×1024 | 639,8 px | 556,6 px | 13,0% |
-| 1366×900 | 638,8 px | 555,6 px | 13,0% |
+| 1366×900 | 638,8 px | 571,8 px | 10,5% |
 | 568×320 | 575,9 px | 507,3 px | 11,9% |
 
 Ukuran ini adalah tinggi konten; posisi/tinggi sheet, kamera, dan state tetap.
+Inset desktop 20 px dari main terbaru dipertahankan, sehingga teks membutuhkan satu
+baris tambahan dibanding pengukuran 555,6 px sebelum sinkronisasi layout precision.
 Tidak ditemukan clipping atau overflow pada lima viewport pengukuran.
-[Pengukuran terbaru](summary-refinement/compact-font/verification/comparison.json),
-[log regresi](summary-refinement/compact-font/verification/final-layout.tap),
-dan [integrasi A01](summary-refinement/compact-font/verification/integration.tap).
-Hasil akhir font compact: **76/76 lulus, 0 gagal/dilewati** (467.137,59 ms), serta
-**3/3** tes integrasi dengan A01. Seluruh delapan hash terlindungi tetap identik.
+[Pengukuran terbaru](summary-refinement/compact-font/verification/parallel-sync/comparison-current.json).
+
+Validasi baseline terintegrasi terkini:
+
+- [Layout precision QA](https://github.com/itskindamia/webgis-transportasi-jabodetabek/actions/runs/42340960726)
+  sukses, menjalankan suite layout yang kini mencakup 112 kasus/subkasus.
+- [Release regression QA](https://github.com/itskindamia/webgis-transportasi-jabodetabek/actions/runs/42340956222)
+  sukses menjalankan `npm run test:regression` (layout 112 + A01 18).
+- [A01 lokal](summary-refinement/compact-font/verification/a01-current-branch.tap): **18/18 lulus**,
+  0 gagal/dilewati. Validasi sumber CI dan tree lokal identik dicatat pada
+  [metadata](summary-refinement/compact-font/verification/parallel-sync/current-results.json).
+- Empat GeoJSON tetap identik. Hash mesin cocok dengan patch A01 yang sudah terintegrasi,
+  bukan dinyatakan identik dengan mesin main sebelum A01.
+
+Sebelum update paralel, font compact sudah lulus 76/76 lokal dan 3/3 integrasi;
+log tersebut tetap disimpan sebagai bukti tahap awal. Pengujian layout lokal duplikat
+dihentikan setelah CI pada tree identik sukses; log parsial tidak diklaim sebagai tes lengkap.
 
 | Skenario | Sebelum penyesuaian font | Sesudah |
 | --- | --- | --- |
-| K1 desktop | [PNG](summary-refinement/compact/screenshots/after/brt_01-1366.png) | [PNG](summary-refinement/compact-font/screenshots/after/brt_01-1366.png) |
-| K3 desktop | [PNG](summary-refinement/compact/screenshots/after/brt_03-1366.png) | [PNG](summary-refinement/compact-font/screenshots/after/brt_03-1366.png) |
-| K3 mobile | [PNG](summary-refinement/compact/screenshots/after/brt_03-390.png) | [PNG](summary-refinement/compact-font/screenshots/after/brt_03-390.png) |
-| K9 mobile | [PNG](summary-refinement/compact/screenshots/after/brt_09-390.png) | [PNG](summary-refinement/compact-font/screenshots/after/brt_09-390.png) |
-| MRT desktop | [PNG](summary-refinement/compact/screenshots/after/mrt_ns-1366.png) | [PNG](summary-refinement/compact-font/screenshots/after/mrt_ns-1366.png) |
-| LRT Jabodebek mobile | [PNG](summary-refinement/compact/screenshots/after/lrt_jb_bk-390.png) | [PNG](summary-refinement/compact-font/screenshots/after/lrt_jb_bk-390.png) |
+| K1 desktop | [PNG](summary-refinement/compact/screenshots/after/brt_01-1366.png) | [PNG](summary-refinement/compact-font/screenshots/current-branch/brt_01-1366.png) |
+| K3 desktop | [PNG](summary-refinement/compact/screenshots/after/brt_03-1366.png) | [PNG](summary-refinement/compact-font/screenshots/current-branch/brt_03-1366.png) |
+| K3 mobile | [PNG](summary-refinement/compact/screenshots/after/brt_03-390.png) | [PNG](summary-refinement/compact-font/screenshots/current-branch/brt_03-390.png) |
+| K9 mobile | [PNG](summary-refinement/compact/screenshots/after/brt_09-390.png) | [PNG](summary-refinement/compact-font/screenshots/current-branch/brt_09-390.png) |
+| MRT desktop | [PNG](summary-refinement/compact/screenshots/after/mrt_ns-1366.png) | [PNG](summary-refinement/compact-font/screenshots/current-branch/mrt_ns-1366.png) |
+| LRT Jabodebek mobile | [PNG](summary-refinement/compact/screenshots/after/lrt_jb_bk-390.png) | [PNG](summary-refinement/compact-font/screenshots/current-branch/lrt_jb_bk-390.png) |
 
 Screenshot sebelum berasal dari pengambilan browser aktual pada revisi sebelumnya;
-runtime-nya identik dengan baseline `3e7ae37`. Screenshot sesudah diambil ulang dari
-source `03704d1`, dengan tile provider aktual. Main dan branch A01 tidak berubah.
+runtime-nya identik dengan baseline `3e7ae37`. Screenshot sesudah terkini diambil ulang
+dari source gabungan `8538584` (tree identik `a320b32`), dengan tile provider aktual.
+Tidak ada merge/deployment ke main oleh pekerjaan font ini.
 
 ## Revisi compact pertama
 

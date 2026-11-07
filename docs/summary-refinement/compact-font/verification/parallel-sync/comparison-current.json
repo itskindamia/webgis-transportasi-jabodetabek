@@ -1,0 +1,53 @@
+{
+  "baselineMain": "19f49e8d50f18dcbb3f19147b3466b295b616f07",
+  "beforeCommit": "3e7ae371c21552118da3324102beaf2a8c6d3d6a",
+  "currentRemoteSource": "a320b32e36df7ccb5724eb01c778de821cbda137",
+  "equivalentLocalSource": "8538584d4a7395b2eb7eb5f7a6833fb01acd8f69",
+  "measurements": [
+    {
+      "viewport": [
+        320,
+        568
+      ],
+      "beforeHeight": 656.625,
+      "afterHeight": 572.78125,
+      "reductionPercent": 12.768893965353131
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "beforeHeight": 609.453125,
+      "afterHeight": 539.703125,
+      "reductionPercent": 11.444686578643763
+    },
+    {
+      "viewport": [
+        768,
+        1024
+      ],
+      "beforeHeight": 639.828125,
+      "afterHeight": 556.59375,
+      "reductionPercent": 13.008864685340301
+    },
+    {
+      "viewport": [
+        1366,
+        900
+      ],
+      "beforeHeight": 638.828125,
+      "afterHeight": 571.78125,
+      "reductionPercent": 10.49529167176226
+    },
+    {
+      "viewport": [
+        568,
+        320
+      ],
+      "beforeHeight": 575.859375,
+      "afterHeight": 507.328125,
+      "reductionPercent": 11.9006919006919
+    }
+  ]
+}

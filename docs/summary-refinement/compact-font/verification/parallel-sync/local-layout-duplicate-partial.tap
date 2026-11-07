@@ -1,0 +1,394 @@
+
+> test:layout
+> node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-*.mjs tools/test-font-pt-sans.mjs tools/test-lrt-popup.mjs
+
+TAP version 13
+# Subtest: PT Sans is the shared app typography token, with no duplicated Google stylesheet
+ok 1 - PT Sans is the shared app typography token, with no duplicated Google stylesheet
+  ---
+  duration_ms: 429.219709
+  type: 'test'
+  ...
+# Subtest: real PT Sans regular/bold load once and apply to controls, popups, labels and tour
+ok 2 - real PT Sans regular/bold load once and apply to controls, popups, labels and tour
+  ---
+  duration_ms: 8290.294534
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 320x568
+ok 3 - mobile-first shell and popup bounds at 320x568
+  ---
+  duration_ms: 8956.094718
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 360x800
+ok 4 - mobile-first shell and popup bounds at 360x800
+  ---
+  duration_ms: 8823.041718
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 390x844
+ok 5 - mobile-first shell and popup bounds at 390x844
+  ---
+  duration_ms: 8807.087436
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 768x1024
+ok 6 - mobile-first shell and popup bounds at 768x1024
+  ---
+  duration_ms: 9972.108163
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 1366x900
+ok 7 - mobile-first shell and popup bounds at 1366x900
+  ---
+  duration_ms: 10227.869237
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 1600x1000
+ok 8 - mobile-first shell and popup bounds at 1600x1000
+  ---
+  duration_ms: 11008.120369
+  type: 'test'
+  ...
+# Subtest: three sheet positions and closing/reopening preserve the route and selection
+ok 9 - three sheet positions and closing/reopening preserve the route and selection
+  ---
+  duration_ms: 10439.158838
+  type: 'test'
+  ...
+# Subtest: panel scrolling does not pan/zoom the map or repeatedly invalidate its unchanged size
+ok 10 - panel scrolling does not pan/zoom the map or repeatedly invalidate its unchanged size
+  ---
+  duration_ms: 9842.090813
+  type: 'test'
+  ...
+# Subtest: orientation and keyboard-sized visual viewport remain usable and preserve selection
+ok 11 - orientation and keyboard-sized visual viewport remain usable and preserve selection
+  ---
+  duration_ms: 12834.299584
+  type: 'test'
+  ...
+# Subtest: pan and zoom with all existing network layers retain layer identities
+ok 12 - pan and zoom with all existing network layers retain layer identities
+  ---
+  duration_ms: 2152.837187
+  type: 'test'
+  ...
+# Subtest: guided tour remains readable and closable on a small phone
+ok 13 - guided tour remains readable and closable on a small phone
+  ---
+  duration_ms: 6859.40761
+  type: 'test'
+  ...
+# Subtest: alignment and map controls across all network modes at 1366x900
+    # Subtest: Semua Layanan
+    ok 1 - Semua Layanan
+      ---
+      duration_ms: 316.263671
+      type: 'test'
+      ...
+    # Subtest: BRT Koridor 8
+    ok 2 - BRT Koridor 8
+      ---
+      duration_ms: 3459.823537
+      type: 'test'
+      ...
+    # Subtest: BRT rencana Koridor 16
+    ok 3 - BRT rencana Koridor 16
+      ---
+      duration_ms: 2586.844267
+      type: 'test'
+      ...
+    # Subtest: MRT Jakarta
+    ok 4 - MRT Jakarta
+      ---
+      duration_ms: 1537.102578
+      type: 'test'
+      ...
+    # Subtest: LRT Jakarta
+    ok 5 - LRT Jakarta
+      ---
+      duration_ms: 1519.613252
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Bekasi
+    ok 6 - LRT Jabodebek Bekasi
+      ---
+      duration_ms: 2081.450834
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Cibubur
+    ok 7 - LRT Jabodebek Cibubur
+      ---
+      duration_ms: 1287.646519
+      type: 'test'
+      ...
+    # Subtest: KRL Rangkasbitung
+    ok 8 - KRL Rangkasbitung
+      ---
+      duration_ms: 1927.22527
+      type: 'test'
+      ...
+    1..8
+ok 14 - alignment and map controls across all network modes at 1366x900
+  ---
+  duration_ms: 16859.004992
+  type: 'test'
+  ...
+# Subtest: alignment and map controls across all network modes at 1600x1000
+    # Subtest: Semua Layanan
+    ok 1 - Semua Layanan
+      ---
+      duration_ms: 427.306021
+      type: 'test'
+      ...
+    # Subtest: BRT Koridor 8
+    ok 2 - BRT Koridor 8
+      ---
+      duration_ms: 2936.174809
+      type: 'test'
+      ...
+    # Subtest: BRT rencana Koridor 16
+    ok 3 - BRT rencana Koridor 16
+      ---
+      duration_ms: 2561.870662
+      type: 'test'
+      ...
+    # Subtest: MRT Jakarta
+    ok 4 - MRT Jakarta
+      ---
+      duration_ms: 1352.379002
+      type: 'test'
+      ...
+    # Subtest: LRT Jakarta
+    ok 5 - LRT Jakarta
+      ---
+      duration_ms: 1305.843119
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Bekasi
+    ok 6 - LRT Jabodebek Bekasi
+      ---
+      duration_ms: 1570.077689
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Cibubur
+    ok 7 - LRT Jabodebek Cibubur
+      ---
+      duration_ms: 1223.617234
+      type: 'test'
+      ...
+    # Subtest: KRL Rangkasbitung
+    ok 8 - KRL Rangkasbitung
+      ---
+      duration_ms: 2005.300919
+      type: 'test'
+      ...
+    1..8
+ok 15 - alignment and map controls across all network modes at 1600x1000
+  ---
+  duration_ms: 15154.586684
+  type: 'test'
+  ...
+# Subtest: alignment and map controls across all network modes at 768x1024
+    # Subtest: Semua Layanan
+    ok 1 - Semua Layanan
+      ---
+      duration_ms: 441.804649
+      type: 'test'
+      ...
+    # Subtest: BRT Koridor 8
+    ok 2 - BRT Koridor 8
+      ---
+      duration_ms: 3242.66841
+      type: 'test'
+      ...
+    # Subtest: BRT rencana Koridor 16
+    ok 3 - BRT rencana Koridor 16
+      ---
+      duration_ms: 2636.057563
+      type: 'test'
+      ...
+    # Subtest: MRT Jakarta
+    ok 4 - MRT Jakarta
+      ---
+      duration_ms: 1625.5119
+      type: 'test'
+      ...
+    # Subtest: LRT Jakarta
+    ok 5 - LRT Jakarta
+      ---
+      duration_ms: 1337.400137
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Bekasi
+    ok 6 - LRT Jabodebek Bekasi
+      ---
+      duration_ms: 2091.490803
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Cibubur
+    ok 7 - LRT Jabodebek Cibubur
+      ---
+      duration_ms: 1591.986315
+      type: 'test'
+      ...
+    # Subtest: KRL Rangkasbitung
+    ok 8 - KRL Rangkasbitung
+      ---
+      duration_ms: 1899.671753
+      type: 'test'
+      ...
+    1..8
+ok 16 - alignment and map controls across all network modes at 768x1024
+  ---
+  duration_ms: 16943.880372
+  type: 'test'
+  ...
+# Subtest: alignment and map controls across all network modes at 390x844
+    # Subtest: Semua Layanan
+    ok 1 - Semua Layanan
+      ---
+      duration_ms: 655.85138
+      type: 'test'
+      ...
+    # Subtest: BRT Koridor 8
+    ok 2 - BRT Koridor 8
+      ---
+      duration_ms: 3800.598428
+      type: 'test'
+      ...
+    # Subtest: BRT rencana Koridor 16
+    ok 3 - BRT rencana Koridor 16
+      ---
+      duration_ms: 2547.194862
+      type: 'test'
+      ...
+    # Subtest: MRT Jakarta
+    ok 4 - MRT Jakarta
+      ---
+      duration_ms: 1664.351511
+      type: 'test'
+      ...
+    # Subtest: LRT Jakarta
+    ok 5 - LRT Jakarta
+      ---
+      duration_ms: 1489.945125
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Bekasi
+    ok 6 - LRT Jabodebek Bekasi
+      ---
+      duration_ms: 1744.83556
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Cibubur
+    ok 7 - LRT Jabodebek Cibubur
+      ---
+      duration_ms: 1915.170335
+      type: 'test'
+      ...
+    # Subtest: KRL Rangkasbitung
+    ok 8 - KRL Rangkasbitung
+      ---
+      duration_ms: 2281.90032
+      type: 'test'
+      ...
+    1..8
+ok 17 - alignment and map controls across all network modes at 390x844
+  ---
+  duration_ms: 17928.549166
+  type: 'test'
+  ...
+# Subtest: regenerated CSS retains every info-guide component and matches committed output
+ok 18 - regenerated CSS retains every info-guide component and matches committed output
+  ---
+  duration_ms: 1570.784506
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 320x568
+ok 19 - network sizing, full route labels, list density and guide cards at 320x568
+  ---
+  duration_ms: 6010.773994
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 360x800
+ok 20 - network sizing, full route labels, list density and guide cards at 360x800
+  ---
+  duration_ms: 6210.150511
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 390x844
+ok 21 - network sizing, full route labels, list density and guide cards at 390x844
+  ---
+  duration_ms: 6596.808441
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 768x1024
+ok 22 - network sizing, full route labels, list density and guide cards at 768x1024
+  ---
+  duration_ms: 6598.842304
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 1366x900
+ok 23 - network sizing, full route labels, list density and guide cards at 1366x900
+  ---
+  duration_ms: 6665.636699
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 1600x1000
+ok 24 - network sizing, full route labels, list density and guide cards at 1600x1000
+  ---
+  duration_ms: 6668.900974
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 568x320
+ok 25 - network sizing, full route labels, list density and guide cards at 568x320
+  ---
+  duration_ms: 6681.557475
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 844x390
+ok 26 - network sizing, full route labels, list density and guide cards at 844x390
+  ---
+  duration_ms: 5867.280408
+  type: 'test'
+  ...
+# Subtest: list identities, sequence and all line/role/status/direction badges match baseline K1 and K3
+ok 27 - list identities, sequence and all line/role/status/direction badges match baseline K1 and K3
+  ---
+  duration_ms: 11281.699929
+  type: 'test'
+  ...
+# Subtest: Mini/half/full and tab changes preserve selected LRT, filters, URL and camera
+ok 28 - Mini/half/full and tab changes preserve selected LRT, filters, URL and camera
+  ---
+  duration_ms: 10372.985282
+  type: 'test'
+  ...
+# Subtest: network content reflows across modes/status and comparison while chrome stays reachable
+ok 29 - network content reflows across modes/status and comparison while chrome stays reachable
+  ---
+  duration_ms: 13873.654324
+  type: 'test'
+  ...
+# Subtest: compact landscape exposes services and all LRT actions at 568x320
+ok 30 - compact landscape exposes services and all LRT actions at 568x320
+  ---
+  duration_ms: 13067.145384
+  type: 'test'
+  ...
+# Subtest: compact landscape exposes services and all LRT actions at 844x390
+ok 31 - compact landscape exposes services and all LRT actions at 844x390
+  ---
+  duration_ms: 12749.583309
+  type: 'test'
+  ...
+# Subtest: portrait popup scroll hint and source/navigation remain reachable at 320, 360 and 390
+ok 32 - portrait popup scroll hint and source/navigation remain reachable at 320, 360 and 390
+  ---
+  duration_ms: 16248.502007
+  type: 'test'
+  ...
+# Interrupted while running: tools/test-layout-release.mjs at /workspace/work/webgis-mobile-ux/tools/test-layout-release.mjs:1:1
