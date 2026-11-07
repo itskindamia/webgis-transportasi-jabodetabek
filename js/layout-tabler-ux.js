@@ -65,11 +65,11 @@
     // Reuse the existing tour DOM and navigation bindings, replacing only its
     // layout-specific steps. No demo routes, markers, filters or URL mutations.
     const steps = [
-      { title: "Pilih jaringan", text: "Buka Jaringan, pilih jenis layanan dan status, lalu pilih lin atau koridor. Pilihan ini memakai data jaringan yang sama.", target: "network" },
-      { title: "Daftar dan detail", text: "Gunakan tab Ringkasan, Daftar halte atau stasiun, dan Terpilih. Pada mobile, handle memperbesar detail; saat popup aktif, sheet menjadi ringkasan kecil.", target: "details" },
-      { title: "Popup dan integrasi", text: "Ketuk marker halte untuk membuka popup. Badge dan tautan integrasi membawa kamu ke layanan terkait. Tombol Detail menampilkan panel tanpa membuang seleksi; tutup panel untuk kembali ke popup.", target: "popup" },
-      { title: "Cari tujuan", text: "Ketik halte, stasiun, koridor, atau tempat langsung di kotak pencarian pada bagian atas. Tombol Cari menjalankan pencarian tempat daring.", target: "search" },
-      { title: "Peta dasar dan legenda", text: "Peta dasar mengganti latar dan opasitas. Legenda menjelaskan simbol jaringan; pada mobile, buka Info. Marker dan daftar halte tetap tersedia ketika sebagian label diringkas agar peta lebih terbaca.", target: "basemap" }
+      { title: "Pilih jaringan", text: "Pilih jenis layanan, status, serta lin atau koridor melalui panel Jaringan.", target: "network" },
+      { title: "Daftar dan detail", text: "Buka Ringkasan, Daftar halte/stasiun, atau Terpilih. Atur tinggi panel dengan Mini, Sedang, dan Penuh.", target: "details" },
+      { title: "Popup dan integrasi", text: "Ketuk marker halte atau stasiun untuk melihat popup dan integrasi. Tombol Detail membuka informasi lebih lengkap tanpa menghapus pilihan.", target: "popup" },
+      { title: "Cari tujuan", text: "Temukan halte, stasiun, koridor, atau tempat dari sini. Tombol Cari juga mencari tempat secara daring.", target: "search" },
+      { title: "Peta dasar dan legenda", text: "Ganti latar peta lewat Peta dasar. Untuk keterangan simbol jaringan dan legenda, buka Info.", target: "basemap" }
     ];
     PRODUCT_TOUR_STEPS.splice(0, PRODUCT_TOUR_STEPS.length, ...steps);
     let snapshot = null;
@@ -89,10 +89,10 @@
         right: Math.min(innerWidth - 8, rect.right + 5), bottom: Math.min(innerHeight - 8, rect.bottom + 5) };
       Object.assign(spotlight.style, { left: `${focus.left}px`, top: `${focus.top}px`, width: `${focus.right - focus.left}px`, height: `${focus.bottom - focus.top}px` });
       spotlight.hidden = false;
-      card.style.width = `${Math.min(360, innerWidth - 24)}px`;
+      card.style.width = `${Math.min(mobile() ? 336 : 360, innerWidth - 24)}px`;
       const width = card.offsetWidth;
       let height = Math.min(card.scrollHeight + card.offsetHeight - card.clientHeight, innerHeight - 24);
-      let allowedHeight = innerHeight - 24;
+      let allowedHeight = mobile() ? Math.min(innerHeight - 24, 320, Math.max(180, innerHeight * .54)) : innerHeight - 24;
       if (mobile()) {
         const verticalRoom = Math.max(focus.top - 28, innerHeight - focus.bottom - 28);
         const horizontalRoom = Math.max(focus.left - 28, innerWidth - focus.right - 28);
@@ -102,13 +102,14 @@
       height = card.offsetHeight;
       const clampX = value => Math.max(12, Math.min(innerWidth - width - 12, value));
       const clampY = value => Math.max(12, Math.min(innerHeight - height - 12, value));
+      const centeredX = mobile() ? clampX((innerWidth - width) / 2) : clampX(focus.left);
       const choices = [
         { x: focus.right + 16, y: clampY(focus.top) }, { x: focus.left - width - 16, y: clampY(focus.top) },
-        { x: clampX(focus.left), y: focus.bottom + 16 }, { x: clampX(focus.left), y: focus.top - height - 16 }
+        { x: centeredX, y: focus.bottom + 16 }, { x: centeredX, y: focus.top - height - 16 }
       ];
       if (mobile()) choices.unshift(choices.pop(), choices.pop());
       const fits = item => item.x >= 12 && item.y >= 12 && item.x + width <= innerWidth - 12 && item.y + height <= innerHeight - 12;
-      const pick = choices.find(fits) || { x: 12, y: clampY(focus.top - height - 16) };
+      const pick = choices.find(fits) || { x: centeredX, y: clampY(focus.top - height - 16) };
       Object.assign(card.style, { left: `${pick.x}px`, top: `${pick.y}px`, right: "auto", bottom: "auto", transform: "none" });
       tour.dataset.target = target.id || target.className;
     }
@@ -127,6 +128,8 @@
         target = byId("tlModeChoices");
       } else if (step.target === "details") {
         ui.showPopupDetails();
+        // Preview tabs in a half sheet instead of covering the mobile map.
+        if (mobile()) ui.setSheetPosition("half");
         target = document.querySelector(".tl-detail-tabs");
       } else if (step.target === "popup") {
         setMobileFilterOpen(false); setMobileInfoOpen(false); setBasemapPanelOpen(false);
