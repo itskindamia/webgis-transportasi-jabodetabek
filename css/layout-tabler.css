@@ -711,6 +711,26 @@
     .tl-sheet-collapsed #tlDetailSubtitle { display: none; }
     .tl-sheet-collapsed:not(.tl-stop-popup-open):not(.tl-short-viewport) .tl-map-navigation { bottom: 112px; }
   }
+
+  /* Mobile panel heading + compact native selectors (desktop unchanged). */
+  @media (max-width: 767px) {
+    .tl-network .tl-panel-heading h2 {
+      text-transform: uppercase;
+      letter-spacing: -.2px;
+    }
+    .tl-app .tl-network #statusSelect,
+    .tl-app .tl-network #routeSelect {
+      height: 40px;
+      min-height: 40px;
+      padding: 6px 36px 6px 12px;
+      font-size: 15px;
+      line-height: 1.2;
+      border-radius: 10px;
+    }
+    .tl-network .filter-grid .form-field:not([hidden]) {
+      min-height: 40px;
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .tl-app .tl-detail-panel { transition: none; }
   }
