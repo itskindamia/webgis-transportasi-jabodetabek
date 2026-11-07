@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: Koridor 13: toggle on/off without a selected stop
+ok 1 - Koridor 13: toggle on/off without a selected stop
+  ---
+  duration_ms: 19098.229722
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 1366px
+ok 2 - Koridor 13: retain an Existing selection across on/off at 1366px
+  ---
+  duration_ms: 13214.133465
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 390px
+ok 3 - Koridor 13: retain an Existing selection across on/off at 390px
+  ---
+  duration_ms: 15019.302042
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 568px
+ok 4 - Koridor 13: retain an Existing selection across on/off at 568px
+  ---
+  duration_ms: 16265.609369
+  type: 'test'
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 1366px
+ok 5 - Koridor 15–19: non-existing visibility and selected stop removal at 1366px
+  ---
+  duration_ms: 90096.721679
+  type: 'test'
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 390px
+ok 6 - Koridor 15–19: non-existing visibility and selected stop removal at 390px
+  ---
+  duration_ms: 85181.559539
+  type: 'test'
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 568px
+ok 7 - Koridor 15–19: non-existing visibility and selected stop removal at 568px
+  ---
+  duration_ms: 55733.433109
+  type: 'test'
+  ...
+# Subtest: BRT_13: disabling clears a selected Conceptual stop
+ok 8 - BRT_13: disabling clears a selected Conceptual stop
+  ---
+  duration_ms: 9942.4683
+  type: 'test'
+  ...
+# Subtest: BRT_11: disabling clears a selected Proposed stop
+ok 9 - BRT_11: disabling clears a selected Proposed stop
+  ---
+  duration_ms: 9857.269968
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a panned view and open popup at 1366px
+ok 10 - Koridor 13: preserve a panned view and open popup at 1366px
+  ---
+  duration_ms: 11018.291458
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a closed popup during pending selection at 1366px
+ok 11 - Koridor 13: preserve a closed popup during pending selection at 1366px
+  ---
+  duration_ms: 9589.435748
+  type: 'test'
+  ...
+# Subtest: Koridor 13: keep a manually dismissed popup closed at 1366px
+ok 12 - Koridor 13: keep a manually dismissed popup closed at 1366px
+  ---
+  duration_ms: 15050.937089
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a panned view and open popup at 390px
+ok 13 - Koridor 13: preserve a panned view and open popup at 390px
+  ---
+  duration_ms: 14242.516702
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a closed popup during pending selection at 390px
+ok 14 - Koridor 13: preserve a closed popup during pending selection at 390px
+  ---
+  duration_ms: 10077.232224
+  type: 'test'
+  ...
+# Subtest: Koridor 13: keep a manually dismissed popup closed at 390px
+ok 15 - Koridor 13: keep a manually dismissed popup closed at 390px
+  ---
+  duration_ms: 14145.155477
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a panned view and open popup at 568px
+ok 16 - Koridor 13: preserve a panned view and open popup at 568px
+  ---
+  duration_ms: 14289.824483
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a closed popup during pending selection at 568px
+ok 17 - Koridor 13: preserve a closed popup during pending selection at 568px
+  ---
+  duration_ms: 9973.76954
+  type: 'test'
+  ...
+# Subtest: Koridor 13: keep a manually dismissed popup closed at 568px
+ok 18 - Koridor 13: keep a manually dismissed popup closed at 568px
+  ---
+  duration_ms: 13502.272405
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 427234.293412

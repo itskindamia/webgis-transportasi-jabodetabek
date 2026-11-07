@@ -1,0 +1,246 @@
+{
+  "capturedAt": "2026-11-07T02:47:15.759Z",
+  "applicationCommit": "99bf1bbcb6bf9046b4c4c26145a38d32d74df6ef",
+  "kind": "a01",
+  "stage": "after",
+  "browser": "155.0.8059.79",
+  "realTileResponses": 247,
+  "runtimeErrors": [],
+  "tileFailures": [],
+  "captured": [
+    {
+      "file": "brt_13-1366.png",
+      "description": "Existing selection after optional stop redraw; panned camera and summary sheet",
+      "viewport": [
+        1366,
+        900
+      ],
+      "documentWidth": 1366,
+      "mapSize": [
+        786,
+        836
+      ],
+      "mapContainer": [
+        786,
+        836
+      ],
+      "route": "BRT_13",
+      "stop": "STOP_BRT137",
+      "detailTab": "route",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded",
+      "loadedTiles": 4,
+      "networkHeight": 836,
+      "detailHeight": 836,
+      "rows": [
+        {
+          "name": "Tegal Mampang",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Bangka",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Rawa Barat",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pasar Santa",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "CSW",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Mayestik",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Velbak",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Kebayoran Lama",
+          "top": 0,
+          "height": 0
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "dbacc9d4f6f311c5eb089dd6766cc765894e3fd08090383d738a7e6b9c5db9e0",
+      "popupShelved": false,
+      "stats": [
+        "\n        Moda\n        BRT\n      ",
+        "\n        Status\n        Eksisting\n      ",
+        "\n        Halte\n        19\n      ",
+        "\n        Transit\n        2\n      ",
+        "\n        Terminus\n        2\n      ",
+        "\n        Panjang\n        ± 22,7 km\n      "
+      ]
+    },
+    {
+      "file": "brt_13-390.png",
+      "description": "Existing selection after optional stop redraw; panned camera and summary sheet",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "BRT_13",
+      "stop": "STOP_BRT137",
+      "detailTab": "route",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded tl-stop-popup-open tl-popup-shelved",
+      "loadedTiles": 4,
+      "networkHeight": 0,
+      "detailHeight": 648,
+      "rows": [
+        {
+          "name": "Tegal Mampang",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Bangka",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Rawa Barat",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pasar Santa",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "CSW",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Mayestik",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Velbak",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Kebayoran Lama",
+          "top": 0,
+          "height": 0
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "c29851498accf3b300339f45ebafc0078181a2c93650fef5485f9e27e5b35b15",
+      "popupShelved": true,
+      "stats": [
+        "\n        Moda\n        BRT\n      ",
+        "\n        Status\n        Eksisting\n      ",
+        "\n        Halte\n        19\n      ",
+        "\n        Transit\n        2\n      ",
+        "\n        Terminus\n        2\n      ",
+        "\n        Panjang\n        ± 22,7 km\n      "
+      ]
+    },
+    {
+      "file": "brt_13-568.png",
+      "description": "Existing selection after optional stop redraw; panned camera and summary sheet",
+      "viewport": [
+        568,
+        320
+      ],
+      "documentWidth": 568,
+      "mapSize": [
+        568,
+        224
+      ],
+      "mapContainer": [
+        568,
+        224
+      ],
+      "route": "BRT_13",
+      "stop": "STOP_BRT137",
+      "detailTab": "route",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-short-viewport tl-short-landscape tl-detail-open tl-detail-expanded tl-stop-popup-open tl-popup-shelved",
+      "loadedTiles": 8,
+      "networkHeight": 0,
+      "detailHeight": 216,
+      "rows": [
+        {
+          "name": "Tegal Mampang",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Bangka",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Rawa Barat",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pasar Santa",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "CSW",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Mayestik",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Velbak",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Kebayoran Lama",
+          "top": 0,
+          "height": 0
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "21376de08c4733cc3197eb0a041b73cf171072b44a8c91324f429de9a8aac671",
+      "popupShelved": true,
+      "stats": [
+        "\n        Moda\n        BRT\n      ",
+        "\n        Status\n        Eksisting\n      ",
+        "\n        Halte\n        19\n      ",
+        "\n        Transit\n        2\n      ",
+        "\n        Terminus\n        2\n      ",
+        "\n        Panjang\n        ± 22,7 km\n      "
+      ]
+    }
+  ]
+}

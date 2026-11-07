@@ -2,7 +2,7 @@
   "use strict";
 
   const MAP_SCRIPT =
-    "js/map.js?v=20260915-v0.16-part1-tip1-v10";
+    "js/map.js?v=a01-20261107-1";
 
   const FALLBACK_LEAFLET_JS =
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js";

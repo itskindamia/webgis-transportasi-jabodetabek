@@ -1,0 +1,18 @@
+{
+  "a01Source": "eae8e02916f6a9021e7c3dfb03a3102575a83211",
+  "summarySource": "70f78235cb88adccb67926e476e0c4bb7142afae",
+  "tree": "8456d388f1d019bb929d307db09a862927455532",
+  "localIntegrationCommit": "e24fdfac893d4f30be2bba94b5ee62fb5fac1278",
+  "conflicts": [],
+  "mainUpdated": false,
+  "tests": {
+    "pass": 3,
+    "fail": 0,
+    "log": "integration.tap",
+    "scenarios": [
+      "K13 Existing selection at 390px",
+      "K13 pending closed popup at 1366px",
+      "K3 summary at 390px"
+    ]
+  }
+}
