@@ -68,6 +68,9 @@ async function readPrecision(page) {
       route: String(currentSelectedRouteId || "ALL"),
       status: elem("#statusSelect").value,
       searchLeft: rect(".tl-search").left,
+      searchRight: rect(".tl-search").right,
+      brandRight: rect(".tl-brand").right,
+      headerActionsLeft: rect(".tl-header-actions").left,
       mapCaptionLeft: mapCaption.left,
       mapCaptionRight: mapCaption.right,
       mapActionsLeft: mapActions.left,
@@ -112,8 +115,13 @@ for (const [width, height] of [
         assert.equal(state.mapTitle, state.mapText, details + ": full route label is accessible");
 
         if (width >= 1024) {
-          assert.ok(Math.abs(state.searchLeft - state.mapCaptionLeft) <= 2,
-            details + ": Search and map context follow one horizontal grid");
+          // The complete desktop brand now occupies a wider first header
+          // column; enforce non-overlap rather than an obsolete x-alignment
+          // between the search bar and the map's 20px context inset.
+          assert.ok(state.brandRight + 8 <= state.searchLeft,
+            details + ": brand and Search do not overlap");
+          assert.ok(state.searchRight + 8 <= state.headerActionsLeft,
+            details + ": Search and header actions do not overlap");
           assert.ok(state.mapCaptionRight + 8 <= state.mapActionsLeft,
             details + ": context badge does not overlap map controls");
           if (state.detailVisible) {
