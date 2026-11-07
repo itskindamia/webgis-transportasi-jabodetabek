@@ -489,6 +489,88 @@
     .tl-header-action span { display: none; }
     .tl-header-action { width: 44px; padding: 8px; }
   }
+  /*
+   * Responsive density pass (2026-11-07).
+   * Desktop saves vertical space in fixed chrome and side panels.
+   * Mobile preserves >=44px touch targets while returning more area to the map.
+   */
+  @media (min-width: 1024px) {
+    :root { --tl-header: 56px; }
+    .tl-panel-heading, .tl-detail-heading { min-height: 68px; }
+    .tl-panel-heading { padding-top: 12px; padding-bottom: 12px; }
+    .tl-detail-heading { padding-top: 12px; padding-bottom: 10px; }
+    .tl-panel-heading h2, .tl-detail-heading h2 { margin-top: 3px; }
+    .tl-detail-heading p { margin-top: 3px; }
+    .filter-panel-content { padding-top: 16px; padding-bottom: 16px; }
+    .tl-mode-section { margin-bottom: 16px; }
+    .tl-section-label, .tl-app .form-label { margin-bottom: 6px; }
+    .filter-controls-card .form-field { margin-bottom: 14px; }
+    .filter-controls-card .route-select-field { margin-bottom: 8px; }
+    .tl-network-footer { padding-top: 10px; padding-bottom: 12px; }
+    .tl-note-link { padding-top: 6px; }
+    .tl-detail-tabs .nav-link { min-height: 44px; padding-top: 7px; padding-bottom: 7px; }
+    .tl-route-content { padding-top: 8px; padding-bottom: 8px; }
+    .tl-map-caption { top: 14px; height: 34px; }
+    .tl-map-actions { top: 14px; }
+    .tl-legend { top: 56px; }
+    .right-info-header { padding-top: 10px; padding-bottom: 10px; }
+    .right-info-body { padding-top: 14px; padding-bottom: 14px; }
+    .tl-basemap { padding: 14px; }
+  }
+  @media (min-width: 768px) and (max-width: 1023px) {
+    :root { --tl-header: 58px; }
+    .tl-panel-heading, .tl-detail-heading { min-height: 68px; padding-top: 12px; padding-bottom: 12px; }
+    .filter-panel-content { padding: 16px; }
+    .tl-mode-section { margin-bottom: 16px; }
+    .tl-section-label, .tl-app .form-label { margin-bottom: 6px; }
+    .filter-controls-card .form-field { margin-bottom: 14px; }
+    .tl-network-footer { padding: 10px 16px 12px; }
+    .tl-note-link { padding-top: 6px; }
+    .tl-detail-tabs .nav-link { min-height: 44px; padding-top: 7px; padding-bottom: 7px; }
+    .right-info-header { padding-top: 10px; padding-bottom: 10px; }
+    .right-info-body { padding: 14px; }
+  }
+  @media (max-width: 767px) {
+    :root { --tl-mobile-dock: calc(56px + env(safe-area-inset-bottom, 0px)); }
+    .tl-search { top: calc(var(--tl-header) + 8px); }
+    .tl-search .form-control { height: 44px; min-height: 44px; }
+    .tl-search .global-search-submit { top: 0; height: 44px; min-height: 44px; }
+    .global-search-clear { top: 0; height: 44px; }
+    .tl-map-caption { top: 60px; height: 28px; }
+    .tl-map-actions { top: 98px; }
+    .tl-dock { padding-top: 3px; padding-bottom: calc(3px + env(safe-area-inset-bottom, 0px)); }
+    .tl-dock #mobileBottomRouteButton, .tl-dock #tlMobileDetails,
+    .tl-dock #infoButton, .tl-dock .btn { min-height: 44px; padding: 4px; gap: 2px; }
+    .tl-dock .icon, .tl-dock .toolbar-icon { width: 20px; height: 20px; }
+    .tl-panel-heading { min-height: 56px; padding: 8px 12px; }
+    .filter-panel-content { padding: 10px 12px; }
+    .tl-mode-section { margin-bottom: 10px; }
+    .tl-section-label, .tl-app .form-label { margin-bottom: 6px; }
+    .filter-controls-card .form-field { margin-bottom: 10px; }
+    .tl-network-footer { padding: 8px 12px; }
+    .tl-note-link { padding-top: 4px; }
+    .tl-app .tl-detail-panel {
+      height: min(300px, 47%);
+      min-height: min(192px, calc(100% - 76px));
+    }
+    .tl-sheet-collapsed .tl-detail-panel { height: 100px; min-height: 100px; max-height: 100px; }
+    .tl-detail-open:not(.tl-detail-expanded):not(.tl-sheet-collapsed):not(.tl-stop-popup-open) .tl-map-navigation {
+      bottom: calc(min(300px, 47%) + 22px);
+    }
+    .tl-sheet-collapsed:not(.tl-stop-popup-open) .tl-map-navigation { bottom: 120px; }
+    .tl-legend .right-info-header { padding: 10px 12px; }
+    .right-info-body { padding: 12px; }
+    .tl-basemap { padding: 12px; }
+    .tl-basemap .basemap-header { margin-bottom: 8px; }
+    .tl-basemap .basemap-preview-map { height: 64px; }
+  }
+  /* The landscape keyboard-height layout keeps search inside its header row. */
+  @media (min-width: 480px) and (max-width: 767px) and (max-height: 559px) {
+    .tl-search { top: auto; }
+    .tl-dock { padding-top: 1px; padding-bottom: calc(1px + env(safe-area-inset-bottom, 0px)); }
+    .tl-short-landscape .tl-map-navigation { bottom: 12px; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .tl-app .tl-detail-panel { transition: none; }
   }
