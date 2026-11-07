@@ -1,5 +1,13 @@
 # Tambahan scope: Ringkasan Koridor
 
+Status terbaru, 7 November 2026: PR #1 dan #7 telah di-merge oleh proses paralel.
+Main live `4939453abb2872e49d8a3dea6f6b13e9f93e0959` sudah memuat font compact.
+[GitHub Pages berhasil](https://github.com/itskindamia/webgis-transportasi-jabodetabek/actions/runs/42341917863).
+Verifikasi browser produksi pada desktop 1366×900 dan mobile 390×844 memastikan
+PT Sans lokal 400/700, judul/statistik 16 px, label 12 px, dan target tombol 44 px.
+[Bukti dan screenshot live](summary-refinement/compact-font/production/README.md).
+Catatan berikut menyimpan riwayat implementasi dan pengujian sebelum publikasi tersebut.
+
 Branch `fix/mobile-ux-refinement`, baseline main
 `3946e21011c681a3c6a3cc4d8f8ffc4e4b2b04ae`.
 Baseline main terkini disinkronkan ke `19f49e8d50f18dcbb3f19147b3466b295b616f07`.

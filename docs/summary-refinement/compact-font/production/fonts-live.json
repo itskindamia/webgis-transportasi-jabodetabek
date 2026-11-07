@@ -1,0 +1,609 @@
+{
+  "verifiedAt": "2026-11-07T05:23:16.949Z",
+  "productionMain": "4939453abb2872e49d8a3dea6f6b13e9f93e0959",
+  "site": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/",
+  "browser": "155.0.8059.79",
+  "transport": "Actual HTTPS bytes through inherited proxy with Python TLS validation; no mocked assets, fonts, tiles or data.",
+  "resources": [
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/",
+      "status": 200,
+      "sha256": "4b7d12fc5c11b7ca62a9d9304aae9f26c4a4050ac84a24a8a70e297b1d8f30fc",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+      "status": 200,
+      "sha256": "a7837102824184820dfa198d1ebcd109ff6d0ff9a2672a074b9a1b4d147d04c6"
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/css/tabler-components.css?v=mobile-ux-20261107-1",
+      "status": 200,
+      "sha256": "cd5c45d86ce872ea85baf8f729807290c456ddd0b1254c30acdf84da00da3382",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/assets/fonts/pt-sans-latin-400-normal.woff2",
+      "status": 200,
+      "sha256": "2dea6190c113af617923c6b71f7f10ffbdf72074556f79963610254fe40e49be",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/css/legacy-components.css?v=mobile-ux-20261107-1",
+      "status": 200,
+      "sha256": "ec67bc476c3c2910d920e145d1019bfbc138879ce6bd44c3e60c8cc464ec56fe",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/css/layout-tabler.css?v=summary-precision-a01-20261107-1",
+      "status": 200,
+      "sha256": "7e1b0cab0d2bb71b286d730893b5738c2adf2b5c5d0eedde1205444e62992aeb",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/css/lrt-popup.css?v=mobile-ux-20261107-1",
+      "status": 200,
+      "sha256": "edf7bc3c061c0811deeb565636bf12a0ead6cedd78ce715f8967bfdb31b0a065",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/assets/icons/tabler.svg",
+      "status": 200,
+      "sha256": "214c5c9ebd8e8979d84525b16099584962c27594c32e2fb93f3d775779a21b18",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/css/font-pt-sans.css?v=mobile-ux-20261107-1",
+      "status": 200,
+      "sha256": "2b4903816269d9e72b371dfd11195083dd833285d9b3aa0959de872e7a30b596",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/js/layout-tabler.js?v=mobile-ux-20261107-1",
+      "status": 200,
+      "sha256": "abd06897a660eafdba1e5cb4ba1e08f67177a0f819774abbde3c215b5d995293",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/assets/fonts/pt-sans-latin-700-normal.woff2",
+      "status": 200,
+      "sha256": "05ea99a48ece3c624fd9df15f5cf4e1d94703bde9ed2b384495900f55e28befe",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/js/layout-tabler-ux.js?v=mobile-ux-20261107-1",
+      "status": 200,
+      "sha256": "eed841e67e2f5fe2db35c0ece88ebe0fde91678ba464104018ca605ca3390e28",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/js/lrt-popup.js?v=mobile-ux-20261107-1",
+      "status": 200,
+      "sha256": "7950ec232680020f928d3451f67bd21817d6a417fbce5c519c759d5e9cdaf423",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+      "status": 200,
+      "sha256": "db49d009c841f5ca34a888c96511ae936fd9f5533e90d8b2c4d57596f4e5641a"
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/js/app-loader.js?v=a01-20261107-1",
+      "status": 200,
+      "sha256": "3113efe39c6612391720bd310d441fe4fe8b21572d40f920fe58e58e7de9f3dc",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/js/map.js?v=a01-20261107-1",
+      "status": 200,
+      "sha256": "b834672903007050f3f6d81b46fd1c9760e91bfc051820e09d9be72126c02eb9",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/data/rail_stop.geojson",
+      "status": 200,
+      "sha256": "fe720e7d2f83b15d0d315ce781950c68d60f47bdb9f20b01f4c7113f4822dbf0",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/data/rail_route.geojson",
+      "status": 200,
+      "sha256": "5432ca4f826c2bc96ecc6a4e8f63be61700bf2a0459bfbac761a85dc33505d34",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/data/brt_route.geojson",
+      "status": 200,
+      "sha256": "0369b4fe57af28694b47bb691fedae546a639fe7340008dd72eb052e7e28d10d",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://itskindamia.github.io/webgis-transportasi-jabodetabek/data/brt_stop.geojson",
+      "status": 200,
+      "sha256": "814a0589857e0629f06b848fab0af23804166b55396923376f8408d8907f5321",
+      "matchesLocal": true
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1058/1631",
+      "status": 200,
+      "sha256": "b62fb304a58d6af427a14d4742b97f9e08896afeda53bb39993f04506fa2915d"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1058/1632",
+      "status": 200,
+      "sha256": "6da5f87f7f977c95224272d9fb75719f695c63f9f2af97959caf6c581da4e170"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1058/1630",
+      "status": 200,
+      "sha256": "6bcb3349af1578b0f695e61418d913f47427044c155a0cc90d1274fb19c5b325"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1059/1631",
+      "status": 200,
+      "sha256": "cd2efa0dc89f1826c7e1f8f726ecd20a4354266dbe06b3abddb65220ce6b1c3f"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1059/1632",
+      "status": 200,
+      "sha256": "9c50940aa96f4ec8e05b7a778723f9c7c880213f38eda753a9ccec1fd3e25c26"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1060/1631",
+      "status": 200,
+      "sha256": "36d35bd9ebbe33c59fdc92c6050c6d04cc2879eb4c883ba2c1818d7d100e6615"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1059/1630",
+      "status": 200,
+      "sha256": "791b8e5c8e7c053434e68a5b8fc7550b84683481f2a01ae7d5536c5b89bf145e"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1057/1631",
+      "status": 200,
+      "sha256": "7287f4002bb0a2776f8d5c36edd9425f18c856207eca796399f8ce7f507a7047"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1057/1630",
+      "status": 200,
+      "sha256": "262a481d878a7a664543e9dcb33e6d44e07111d34fad177ee80393778fc15836"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1060/1632",
+      "status": 200,
+      "sha256": "202cd4b81896091faabaa2f16790418d0ac156b36334190d58ba328eccc2d699"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1060/1630",
+      "status": 200,
+      "sha256": "8f7409c4b759844c43cb2b0383e4f58df407a00562f13364c5f8add8c31f11e5"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1057/1632",
+      "status": 200,
+      "sha256": "6eb8bcdb4844d975f212467b01d0e651684e48080c21c7618b318a9a6e117b80"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1058/1629",
+      "status": 200,
+      "sha256": "88c84707850abebd5e0dcb71305f15262c210365944cb6c9977aafe7a458a755"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1059/1629",
+      "status": 200,
+      "sha256": "e830035818bc8e327163b1d1705a345c40adb577e974650fa08bfdf4a390873b"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1057/1629",
+      "status": 200,
+      "sha256": "b777c140d72b89d5a754dae6137f9b34b437d09a30b7e82672da74dff03ebdb2"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1058/1633",
+      "status": 200,
+      "sha256": "e051d2c75c5610d6bc7c89265925deaf8ab83c705e1388e831e606da5ed7a4cb"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1059/1633",
+      "status": 200,
+      "sha256": "df1c0dd95366bf5928eeecc1ebb7cc01b6820d077e6f482244288e85517c4ce7"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1057/1633",
+      "status": 200,
+      "sha256": "d48a5a438df266c647aad40da8d569ead8e6bdc405bdcc2309899434c72d3818"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1060/1633",
+      "status": 200,
+      "sha256": "8ab70be82708cb80bd101a6a761083d264c28a1b7ac5cdfe203c433a9134f38c"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/529/815",
+      "status": 200,
+      "sha256": "aed3e79aec2a6546cd6cde92cf2ae07aafb46e9142e606c7ecea63bd68fa5205"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1060/1629",
+      "status": 200,
+      "sha256": "65c8307ad07991924f571fc2480737afef33e13f89c5381b22aff45d255c523a"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/10/529/815",
+      "status": 200,
+      "sha256": "8a26347b0786436e88d59e72abe0198e3b9cc6fdd8e4e5273da095f29aed8ff9"
+    },
+    {
+      "url": "https://tile.openstreetmap.org/10/815/529.png",
+      "status": 200,
+      "sha256": "1d28bbb20f8f1dfe44812a9430741a15d35870e1750f2a7319383cde1d569418"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/529/814",
+      "status": 200,
+      "sha256": "24711a75db6a787d30a5ff222433a577045227648305c9030fa6ced4abf8681b"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/530/814",
+      "status": 200,
+      "sha256": "a8ee49fdd01f4804a274a167a81a90af87e701b83a12a0f6dda803bf1bc51c65"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/530/815",
+      "status": 200,
+      "sha256": "76b4910db71205b3c06677b962ab3c4d7c2741a276ab7e1a545ab45a514b4e02"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/529/816",
+      "status": 200,
+      "sha256": "1f26c522bd6d78a661b2a64f5059a8582674ad4ed7db2004c9973ed1b63d0b2e"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/14/8474/13053",
+      "status": 200,
+      "sha256": "5ff700e9e8405fd05c62c33f0cd10a33e5dbd1483175bec9d714f2e04b151674"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/530/816",
+      "status": 200,
+      "sha256": "e35d9a6d07efe70f98880ff191bdb141100a82aa3b8c00012128c7829eafa457"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/528/815",
+      "status": 200,
+      "sha256": "8028dd77e59dc4a8e3aa56de116eb515c2641885ff7604e1da1e0658c7b7a87e"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/531/815",
+      "status": 200,
+      "sha256": "924913c3d848fc21d110f6dada43478de9eb4d0c5d01116ed194f1035249c19f"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/528/814",
+      "status": 200,
+      "sha256": "b0ea309a31107512b9b413b944503af0d9fc133fde681b87a50fa095e80eac98"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/528/816",
+      "status": 200,
+      "sha256": "446490cd884eca10b4c0974b484deda8118451c3afb653658140e2fd94ff106e"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/531/814",
+      "status": 200,
+      "sha256": "3086ec5323df07fb1fc940d70c94c4b6a7d8d300072b142e354275869cf19733"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/531/816",
+      "status": 200,
+      "sha256": "d93f466ed13610dbe70ecf5fa01ff31ec6e751015cf3cb1ba9680f0f113d08e8"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/529/817",
+      "status": 200,
+      "sha256": "2ef41efd064b4095745330a38780aec0fec7fea34b4e6c8dcbb1e36faa1c2645"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/530/813",
+      "status": 200,
+      "sha256": "b0e2129e9a1509fbaafe8b2493f66429bdce44478460865ac731e111ca2b77be"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/529/813",
+      "status": 200,
+      "sha256": "d46a9d52a552c0a31e1532a66bfc5c5a69042407f3b0c9187334ebf7cbe7c648"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/530/817",
+      "status": 200,
+      "sha256": "8d95eed818b692924f722da3aa7aadd5e0c11f739caae3641919cef97f20f0a0"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/528/813",
+      "status": 200,
+      "sha256": "d41da6e2bc22e761936d2e0f3eb4c86d17f36e8421ad1cc925129c2aa9c46ba1"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/528/817",
+      "status": 200,
+      "sha256": "e810eabc7c5b8ebd399659da6f11dad8375089d3ddc1ff4cb0c77e693b2a362d"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/531/813",
+      "status": 200,
+      "sha256": "1e586a5c99ce59f8977e1c3e50d6e358146c0fefbc73d663f4e7da34b873976a"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/10/531/817",
+      "status": 200,
+      "sha256": "15468e9cb46372beea3123c82a270b63ab609e49396a01c4292a548a7bcd40d1"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/9/265/407",
+      "status": 200,
+      "sha256": "09aaea1a0c32318181a10b6355d627e7e228eb271ca17381e06dc7489c59aec7"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/9/265/407",
+      "status": 200,
+      "sha256": "531824bad2c03d2de793ff0e29b5a1966883b17d7eaf7048ae8c1a80b7edbef5"
+    },
+    {
+      "url": "https://tile.openstreetmap.org/9/407/265.png",
+      "status": 200,
+      "sha256": "e431ff8fe927d69694572208a6fb595affa32e86216a7a3a1f381fe529f2aa8e"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2119/3263",
+      "status": 200,
+      "sha256": "5a7522506d43fcedc88f198bdaf744fd9f43c148a4ae5bfc19883a571327d283"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2118/3264",
+      "status": 200,
+      "sha256": "d05360de44868c802e8a37f1ffda7f294cbb7502ab811c8e1960445fcda0a59a"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2118/3263",
+      "status": 200,
+      "sha256": "9396e1c52244a0bdc17b39b3f8bb07725ee2f55cf9f36cc6fd4c62b4d317eb18"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2119/3262",
+      "status": 200,
+      "sha256": "be2a0a06a52284e151ef47a36130e105db87310858c397d2752920e9c418da6f"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2118/3262",
+      "status": 200,
+      "sha256": "79d9edc1202adc52050d645a875167ab2515259744c9647bd023a94695b8a5e9"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2119/3264",
+      "status": 200,
+      "sha256": "8c78f9f3f5decded49df66b2f094b85e8b4dacd16a6ce37f5ac98a993ef1f015"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2120/3263",
+      "status": 200,
+      "sha256": "b7d6987bb1d945370bb657ab8344338ebabe3d02bf64ab8106ac3a0680fd9ff0"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2117/3263",
+      "status": 200,
+      "sha256": "377e05b5263d32d3c91bd238b11509fa68a79dfc61abaf9ff61944d7cc1f110f"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2117/3264",
+      "status": 200,
+      "sha256": "c9b9163e0b306e018dd287956a8a6ac8900fc8d24ff29b4299549aa36a329d6e"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2117/3262",
+      "status": 200,
+      "sha256": "b8b6d8891127df5ba1af7b7467db4aaae312472100387c1620a247029e5b84bb"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2120/3262",
+      "status": 200,
+      "sha256": "2cc914ea9bbbe0a1c3c475b92ed236c38177fea050b854bd8cb0e61e9a32ee0c"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2120/3264",
+      "status": 200,
+      "sha256": "bce251005e36fcd1552b74693021a188d6272252e21852d8667e1cb30cb346b5"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2118/3265",
+      "status": 200,
+      "sha256": "96456adba223a54f2231adbb0547839c38a5bbca2b1239cc960c24eba25a5e06"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2119/3261",
+      "status": 200,
+      "sha256": "286f4e4325ea70812b68213431970fcd542e0848a6ba8ceff875c665b286bbc8"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2119/3265",
+      "status": 200,
+      "sha256": "e0f85bfd219781ffcb090d46a776eef45c0d0794520ed91bc997a14bb02863a7"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2118/3261",
+      "status": 200,
+      "sha256": "10ea6082e34bc0c93b0fe8d8c6520ef5f45f62f790c559bc4a41db153d375894"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2117/3261",
+      "status": 200,
+      "sha256": "ad56c6073872901f3c53311d168bb10e2ae08d929e76ec2cc78f7e9e749949ee"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2117/3265",
+      "status": 200,
+      "sha256": "8a0e3d0bf36aecd3e9a2c8854eacb855935bb4e804719aa4abf5e7e952ec4cb9"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/11/1059/1631",
+      "status": 200,
+      "sha256": "cd2efa0dc89f1826c7e1f8f726ecd20a4354266dbe06b3abddb65220ce6b1c3f"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2120/3261",
+      "status": 200,
+      "sha256": "875b7d04486831bc8e24d9be5eb80b7284d4dd5cf60308eecc5b48edb738357f"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2120/3265",
+      "status": 200,
+      "sha256": "e1c6c8a68b9107217cf3e9814fbfa19ffce528df8d72c72603e6b2ebca81684c"
+    },
+    {
+      "url": "https://tile.openstreetmap.org/11/1631/1059.png",
+      "status": 200,
+      "sha256": "35928f0ceddf40c7d6750fce61eee6aabb39a33266e915a04a09cfecfcdb0aff"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2116/3262",
+      "status": 200,
+      "sha256": "feff9ffb2abc2a6ee36d9be1f964c2180db880f04f09c517d29e8e2244608c70"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2116/3263",
+      "status": 200,
+      "sha256": "c9c0ddcd2f9b7d51a7761cf004f185aad8df7554a1a4e37c2d20757d059e63bf"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/11/1059/1631",
+      "status": 200,
+      "sha256": "b62ba1c61c27ad35f57f4bf41bafa23b322f63b2606b180a33ab4d49cd08a3aa"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2116/3261",
+      "status": 200,
+      "sha256": "06003b8898280844bf93cc9207f9232fea73b70d1413ef098500a0eff63c059b"
+    },
+    {
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/12/2116/3264",
+      "status": 200,
+      "sha256": "237daa38e59580142bc242f48c07738ac5d780c3c546a86c6e0b8041436eae28"
+    }
+  ],
+  "errors": [],
+  "captures": [
+    {
+      "file": "live-summary-1366.png",
+      "viewport": [
+        1366,
+        900
+      ],
+      "documentWidth": 1366,
+      "heading": "16px",
+      "stats": [
+        {
+          "size": "16px",
+          "text": "14"
+        },
+        {
+          "size": "16px",
+          "text": "1"
+        },
+        {
+          "size": "16px",
+          "text": "2"
+        },
+        {
+          "size": "16px",
+          "text": "± 31,4 km"
+        }
+      ],
+      "labels": [
+        "12px",
+        "12px",
+        "12px",
+        "12px"
+      ],
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "loadedWeights": [
+        "400",
+        "700"
+      ],
+      "controls": [
+        {
+          "height": 44,
+          "size": "12px"
+        },
+        {
+          "height": 44,
+          "size": "12px"
+        },
+        {
+          "height": 44,
+          "size": "12px"
+        },
+        {
+          "height": 44,
+          "size": "12px"
+        }
+      ],
+      "sha256": "53fe53ea9e9ad9ee13c0532fdcea874695d5d02821a81bd287d6f514ffc60e72"
+    },
+    {
+      "file": "live-summary-390.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "heading": "16px",
+      "stats": [
+        {
+          "size": "16px",
+          "text": "14"
+        },
+        {
+          "size": "16px",
+          "text": "1"
+        },
+        {
+          "size": "16px",
+          "text": "2"
+        },
+        {
+          "size": "16px",
+          "text": "± 31,4 km"
+        }
+      ],
+      "labels": [
+        "12px",
+        "12px",
+        "12px",
+        "12px"
+      ],
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "loadedWeights": [
+        "400",
+        "700"
+      ],
+      "controls": [
+        {
+          "height": 44,
+          "size": "12px"
+        },
+        {
+          "height": 44,
+          "size": "12px"
+        },
+        {
+          "height": 44,
+          "size": "12px"
+        },
+        {
+          "height": 44,
+          "size": "12px"
+        }
+      ],
+      "sha256": "5069a747a3304e8f8483fc2ff2c5f7e1559041e7cd4a75cab2156d50ceaa8a98"
+    }
+  ]
+}

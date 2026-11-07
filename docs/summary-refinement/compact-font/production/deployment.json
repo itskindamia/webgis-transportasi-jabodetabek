@@ -1,0 +1,16 @@
+{
+  "verifiedAt": "2026-11-07T05:23:16.949Z",
+  "main": "4939453abb2872e49d8a3dea6f6b13e9f93e0959",
+  "pages": {
+    "id": 42341917863,
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/itskindamia/webgis-transportasi-jabodetabek/actions/runs/42341917863"
+  },
+  "mergeAndDeploymentInitiatedByFontTask": false,
+  "liveProbe": "fonts-live.json",
+  "layoutCasesAndSubcases": 112,
+  "a01Cases": 18,
+  "releaseRegressionRun": 42340956222,
+  "layoutPrecisionRun": 42340960726
+}
