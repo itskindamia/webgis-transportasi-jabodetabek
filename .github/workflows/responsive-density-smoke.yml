@@ -7,6 +7,8 @@ on:
       - 'index.html'
       - 'tools/test-layout-density.mjs'
       - 'tools/test-layout-brand-title.mjs'
+      - 'tools/test-layout-compact-filter.mjs'
+      - 'js/layout-tabler.js'
       - '.github/workflows/responsive-density-smoke.yml'
   workflow_dispatch:
 
@@ -36,4 +38,4 @@ jobs:
             npx playwright install chromium
           fi
       - name: Test responsive spacing and title
-        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-density.mjs tools/test-layout-brand-title.mjs
+        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-density.mjs tools/test-layout-brand-title.mjs tools/test-layout-compact-filter.mjs

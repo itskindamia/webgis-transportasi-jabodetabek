@@ -575,6 +575,68 @@
     .tl-short-landscape .tl-map-navigation { bottom: 12px; }
   }
 
+  /* Compact mode-control label: retain full accessible name in JavaScript. */
+  .tl-mode-label { min-width: 0; }
+  .tl-mode-all-compact { display: none; }
+
+  /*
+   * Small filter controls are laid out separately on desktop and mobile.
+   * Mobile: one-row five-mode selector + inline status selector.
+   */
+  @media (min-width: 768px) {
+    .tl-mode-button { padding-top: 7px; padding-bottom: 7px; }
+    .tl-app #statusSelect { height: 40px; }
+  }
+  @media (max-width: 767px) {
+    .tl-mode-all-full { display: none; }
+    .tl-mode-all-compact { display: inline; }
+    .tl-mode-choices {
+      grid-template-columns: minmax(68px, 1.25fr) repeat(4, minmax(0, 1fr));
+      gap: 5px;
+    }
+    .tl-mode-choices .tl-mode-button:first-child { grid-column: auto; }
+    .tl-mode-choices .tl-mode-button {
+      min-width: 0;
+      min-height: 44px;
+      padding: 6px 5px;
+      gap: 4px;
+      justify-content: center;
+      text-align: center;
+      white-space: nowrap;
+      font-size: 11px;
+      line-height: 1.15;
+    }
+    .tl-mode-choices .tl-mode-dot { flex: 0 0 7px; width: 7px; height: 7px; }
+    .filter-panel-content { padding: 8px 12px; }
+    .tl-mode-section { margin-bottom: 8px; }
+    .tl-section-label, .tl-app .form-label { margin-bottom: 4px; }
+    .filter-controls-card .form-field { margin-bottom: 8px; }
+    .filter-grid .form-field:not([hidden]) {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      min-height: 44px;
+    }
+    .filter-grid .form-field:not([hidden]) > .form-label { margin: 0; }
+    .filter-grid #statusSelect {
+      display: block;
+      width: 100%;
+      max-width: 220px;
+      height: 44px;
+      min-height: 44px;
+      justify-self: end;
+      font-size: 16px;
+    }
+    .filter-controls-card .route-select-field { margin-bottom: 0; }
+    .tl-network-footer { padding: 6px 12px; }
+    .tl-note-link { padding-top: 2px; }
+  }
+  @media (max-width: 359px) {
+    .tl-mode-choices { gap: 3px; }
+    .tl-mode-choices .tl-mode-button { padding: 5px 3px; gap: 3px; font-size: 10px; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .tl-app .tl-detail-panel { transition: none; }
   }

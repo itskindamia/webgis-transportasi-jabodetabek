@@ -278,7 +278,23 @@
         dot.className = "tl-mode-dot";
         dot.setAttribute("aria-hidden", "true");
         dot.style.setProperty("--mode-color", colors[option.value] || "#206bc4");
-        button.append(dot, document.createTextNode(option.value === "ALL" ? "Semua layanan" : option.text));
+        const label = option.value === "ALL" ? "Semua layanan" : option.text;
+        button.setAttribute("aria-label", label);
+        const caption = document.createElement("span");
+        caption.className = "tl-mode-label";
+        if (option.value === "ALL") {
+          const full = document.createElement("span");
+          full.className = "tl-mode-all-full";
+          full.textContent = label;
+          const short = document.createElement("span");
+          short.className = "tl-mode-all-compact";
+          short.textContent = "Semua";
+          short.setAttribute("aria-hidden", "true");
+          caption.append(full, short);
+        } else {
+          caption.textContent = label;
+        }
+        button.append(dot, caption);
         button.addEventListener("click", () => {
           if (select.value === option.value) return;
           select.value = option.value;
