@@ -1,0 +1,14 @@
+{
+  "baselineMain": "3946e21011c681a3c6a3cc4d8f8ffc4e4b2b04ae",
+  "protectedFilesUnchanged": {
+    "data/brt_route.geojson": "0369b4fe57af28694b47bb691fedae546a639fe7340008dd72eb052e7e28d10d",
+    "data/brt_stop.geojson": "814a0589857e0629f06b848fab0af23804166b55396923376f8408d8907f5321",
+    "data/rail_route.geojson": "5432ca4f826c2bc96ecc6a4e8f63be61700bf2a0459bfbac761a85dc33505d34",
+    "data/rail_stop.geojson": "fe720e7d2f83b15d0d315ce781950c68d60f47bdb9f20b01f4c7113f4822dbf0",
+    "js/map.js": "b15b1a2445fc5b9f601e7d72ee28b07839933d6a406d3ac0eb3addf2e158ddac",
+    "js/layout-concept.js": "7fd01a65b00f72fe56d59e589a65d0ae4ed4f6563eada0cab3b5cbc154293f5c",
+    "css/style.css": "4f500ae2ab3c13f1da3aa8e3df1b627cef8e4adaf1975c4fe3968d619f7e91ff",
+    "css/layout-concept.css": "9abadb8a1f7317006cae2441d406f2e8ddc5b85721d1d63c0531d789cb04c119"
+  },
+  "a01BranchUnchanged": "38d1376f49378eed02b0d35e70adb6437e16ed92"
+}

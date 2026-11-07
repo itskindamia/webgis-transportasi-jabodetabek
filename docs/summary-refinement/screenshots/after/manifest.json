@@ -1,0 +1,480 @@
+{
+  "capturedAt": "2026-11-07T02:47:40.403Z",
+  "applicationCommit": "f8cf931642e8569f8a5838094e3320d418502631",
+  "kind": "summary",
+  "stage": "after",
+  "browser": "155.0.8059.79",
+  "realTileResponses": 361,
+  "runtimeErrors": [],
+  "tileFailures": [],
+  "captured": [
+    {
+      "file": "brt_01-1366.png",
+      "description": "Existing corridor summary, source statistics and controls",
+      "viewport": [
+        1366,
+        900
+      ],
+      "documentWidth": 1366,
+      "mapSize": [
+        786,
+        836
+      ],
+      "mapContainer": [
+        786,
+        836
+      ],
+      "route": "BRT_01",
+      "stop": null,
+      "detailTab": "route",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded",
+      "loadedTiles": 25,
+      "networkHeight": 836,
+      "detailHeight": 836,
+      "rows": [
+        {
+          "name": "Blok M",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "ASEAN",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Kejaksaan Agung",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Masjid Agung",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Bundaran Senayan",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Senayan Bank Jakarta",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Polda Metro Jaya",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Bendungan Hilir",
+          "top": 0,
+          "height": 0
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "cb87b7c5ab92bc735d3b9e90cc70022624bfb4aff1ba1a422500b746202e1b48",
+      "popupShelved": false,
+      "stats": [
+        "\n        Moda\n        BRT\n      ",
+        "\n        Status\n        Eksisting\n      ",
+        "\n        Halte\n        23\n      ",
+        "\n        Transit\n        5\n      ",
+        "\n        Terminus\n        2\n      ",
+        "\n        Panjang\n        ± 28,8 km\n      "
+      ]
+    },
+    {
+      "file": "brt_03-1366.png",
+      "description": "Existing corridor summary, source statistics and controls",
+      "viewport": [
+        1366,
+        900
+      ],
+      "documentWidth": 1366,
+      "mapSize": [
+        786,
+        836
+      ],
+      "mapContainer": [
+        786,
+        836
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "route",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded",
+      "loadedTiles": 24,
+      "networkHeight": 836,
+      "detailHeight": 836,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pesakih",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Taman Kota",
+          "top": 0,
+          "height": 0
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "5488c681a500a3d3835e411e4500fb38fbdef9fe675ed2f4ad0880de898889aa",
+      "popupShelved": false,
+      "stats": [
+        "\n        Moda\n        BRT\n      ",
+        "\n        Status\n        Eksisting\n      ",
+        "\n        Halte\n        14\n      ",
+        "\n        Transit\n        1\n      ",
+        "\n        Terminus\n        2\n      ",
+        "\n        Panjang\n        ± 31,4 km\n      "
+      ]
+    },
+    {
+      "file": "brt_03-390.png",
+      "description": "Existing corridor summary, source statistics and controls",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "BRT_03",
+      "stop": null,
+      "detailTab": "route",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded",
+      "loadedTiles": 12,
+      "networkHeight": 0,
+      "detailHeight": 648,
+      "rows": [
+        {
+          "name": "Kalideres",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pesakih",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Sumur Bor",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Rawa Buaya",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Jembatan Baru",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pulo Nangka",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Jembatan Gantung",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Taman Kota",
+          "top": 0,
+          "height": 0
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "112c88b41e9ad080c2d3bee4491f102b720bfb63b061b8dde7c96041ea4aeb63",
+      "popupShelved": false,
+      "stats": [
+        "\n        Moda\n        BRT\n      ",
+        "\n        Status\n        Eksisting\n      ",
+        "\n        Halte\n        14\n      ",
+        "\n        Transit\n        1\n      ",
+        "\n        Terminus\n        2\n      ",
+        "\n        Panjang\n        ± 31,4 km\n      "
+      ]
+    },
+    {
+      "file": "brt_09-390.png",
+      "description": "Existing corridor summary, source statistics and controls",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "BRT_09",
+      "stop": null,
+      "detailTab": "route",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded",
+      "loadedTiles": 9,
+      "networkHeight": 0,
+      "detailHeight": 648,
+      "rows": [
+        {
+          "name": "Pinang Ranti",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Makasar",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Cawang Sentral",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Cawang",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Ciliwung",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Cikoko",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Tebet Eco Park",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pancoran Tugu",
+          "top": 0,
+          "height": 0
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "4bf6497f0cf73c411cb37d6f70fe983bc7014b17b0de1764d91b58dc3b19eb65",
+      "popupShelved": false,
+      "stats": [
+        "\n        Moda\n        BRT\n      ",
+        "\n        Status\n        Eksisting\n      ",
+        "\n        Halte\n        25\n      ",
+        "\n        Transit\n        7\n      ",
+        "\n        Terminus\n        2\n      ",
+        "\n        Panjang\n        ± 55,8 km\n      "
+      ]
+    },
+    {
+      "file": "mrt_ns-1366.png",
+      "description": "Existing corridor summary, source statistics and controls",
+      "viewport": [
+        1366,
+        900
+      ],
+      "documentWidth": 1366,
+      "mapSize": [
+        786,
+        836
+      ],
+      "mapContainer": [
+        786,
+        836
+      ],
+      "route": "MRT_NS",
+      "stop": null,
+      "detailTab": "route",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded",
+      "loadedTiles": 20,
+      "networkHeight": 836,
+      "detailHeight": 836,
+      "rows": [
+        {
+          "name": "Lebak Bulus Bank Syariah Indonesia",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Fatmawati Indomaret",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Cipete Raya TUKU",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Haji Nawi",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Blok A Visa",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Blok M BCA",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "ASEAN Headquarters",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Senayan Mastercard",
+          "top": 0,
+          "height": 0
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "6f60f10931d4bf642227bc43061ff3ce010aceaca6edac4fdf7d5469c8094875",
+      "popupShelved": false,
+      "stats": [
+        "\n        Moda\n        MRT\n      ",
+        "\n        Status\n        Eksisting\n      ",
+        "\n        Stasiun\n        13\n      ",
+        "\n        Transit\n        3\n      ",
+        "\n        Terminus\n        2\n      ",
+        "\n        Panjang\n        ± 15,6 km\n      "
+      ]
+    },
+    {
+      "file": "lrt_jb_bk-390.png",
+      "description": "Existing corridor summary, source statistics and controls",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "mapSize": [
+        390,
+        724
+      ],
+      "mapContainer": [
+        390,
+        724
+      ],
+      "route": "LRT_JB_BK",
+      "stop": null,
+      "detailTab": "route",
+      "font": "\"PT Sans\", Arial, sans-serif",
+      "bodyClasses": "tl-app tl-detail-open tl-detail-expanded",
+      "loadedTiles": 15,
+      "networkHeight": 0,
+      "detailHeight": 648,
+      "rows": [
+        {
+          "name": "Dukuh Atas Bank Syariah Indonesia",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Setiabudi",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Rasuna Said",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Kuningan Visa",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Pancoran",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Cikoko",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Ciliwung",
+          "top": 0,
+          "height": 0
+        },
+        {
+          "name": "Cawang",
+          "top": 0,
+          "height": 0
+        }
+      ],
+      "guideDisplay": "grid",
+      "sha256": "71ea1c704abbbabc722948171f3bfa17b9d9f4c0c5200a84c9bd1b339cd924a7",
+      "popupShelved": false,
+      "stats": [
+        "\n        Moda\n        LRT\n      ",
+        "\n        Status\n        Eksisting\n      ",
+        "\n        Stasiun\n        14\n      ",
+        "\n        Transit\n        1\n      ",
+        "\n        Terminus\n        2\n      ",
+        "\n        Panjang\n        ± 27,9 km\n      "
+      ]
+    }
+  ]
+}

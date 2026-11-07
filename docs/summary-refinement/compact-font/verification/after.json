@@ -1,0 +1,476 @@
+{
+  "applicationRoot": "current checkout",
+  "browser": "155.0.8059.79",
+  "measurements": [
+    {
+      "viewport": [
+        320,
+        568
+      ],
+      "documentWidth": 320,
+      "routeHeight": 572.78125,
+      "contentHeight": 229,
+      "metadata": [
+        {
+          "text": "Moda BRT",
+          "height": 32,
+          "width": 132,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Status Eksisting",
+          "height": 32,
+          "width": 132,
+          "fontSize": "14px",
+          "clipped": false
+        }
+      ],
+      "stats": [
+        {
+          "text": "Halte 14",
+          "height": 36,
+          "width": 132,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Transit 1",
+          "height": 36,
+          "width": 132,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Terminus 2",
+          "height": 36,
+          "width": 132,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Panjang ± 31,4 km",
+          "height": 36,
+          "width": 132,
+          "fontSize": "14px",
+          "clipped": false
+        }
+      ],
+      "controls": [
+        {
+          "text": "Saat ini",
+          "height": 44,
+          "width": 132,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Reguler",
+          "height": 44,
+          "width": 132,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Semua trase",
+          "height": 44,
+          "width": 132,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Sesuai arah",
+          "height": 44,
+          "width": 132,
+          "fontSize": "12px",
+          "clipped": false
+        }
+      ],
+      "notes": [
+        {
+          "text": "* Panjang merupakan estimasi total trase dua arah (pergi–kembali), bukan panjang satu arah.",
+          "height": 44.375,
+          "width": 268,
+          "fontSize": "12px",
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "routeHeight": 539.703125,
+      "contentHeight": 505,
+      "metadata": [
+        {
+          "text": "Moda BRT",
+          "height": 32,
+          "width": 167,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Status Eksisting",
+          "height": 32,
+          "width": 167,
+          "fontSize": "14px",
+          "clipped": false
+        }
+      ],
+      "stats": [
+        {
+          "text": "Halte 14",
+          "height": 36,
+          "width": 167,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Transit 1",
+          "height": 36,
+          "width": 167,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Terminus 2",
+          "height": 36,
+          "width": 167,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Panjang ± 31,4 km",
+          "height": 36,
+          "width": 167,
+          "fontSize": "14px",
+          "clipped": false
+        }
+      ],
+      "controls": [
+        {
+          "text": "Saat ini",
+          "height": 44,
+          "width": 167,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Reguler",
+          "height": 44,
+          "width": 167,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Semua trase",
+          "height": 44,
+          "width": 167,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Sesuai arah",
+          "height": 44,
+          "width": 167,
+          "fontSize": "12px",
+          "clipped": false
+        }
+      ],
+      "notes": [
+        {
+          "text": "* Panjang merupakan estimasi total trase dua arah (pergi–kembali), bukan panjang satu arah.",
+          "height": 44.375,
+          "width": 338,
+          "fontSize": "12px",
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "viewport": [
+        768,
+        1024
+      ],
+      "documentWidth": 768,
+      "routeHeight": 556.59375,
+      "contentHeight": 774,
+      "metadata": [
+        {
+          "text": "Moda BRT",
+          "height": 32,
+          "width": 138,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Status Eksisting",
+          "height": 32,
+          "width": 138,
+          "fontSize": "14px",
+          "clipped": false
+        }
+      ],
+      "stats": [
+        {
+          "text": "Halte 14",
+          "height": 36,
+          "width": 138,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Transit 1",
+          "height": 36,
+          "width": 138,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Terminus 2",
+          "height": 36,
+          "width": 138,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Panjang ± 31,4 km",
+          "height": 36,
+          "width": 138,
+          "fontSize": "14px",
+          "clipped": false
+        }
+      ],
+      "controls": [
+        {
+          "text": "Saat ini",
+          "height": 44,
+          "width": 138,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Reguler",
+          "height": 44,
+          "width": 138,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Semua trase",
+          "height": 44,
+          "width": 138,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Sesuai arah",
+          "height": 44,
+          "width": 138,
+          "fontSize": "12px",
+          "clipped": false
+        }
+      ],
+      "notes": [
+        {
+          "text": "* Panjang merupakan estimasi total trase dua arah (pergi–kembali), bukan panjang satu arah.",
+          "height": 44.375,
+          "width": 280,
+          "fontSize": "12px",
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "viewport": [
+        1366,
+        900
+      ],
+      "documentWidth": 1366,
+      "routeHeight": 555.59375,
+      "contentHeight": 684,
+      "metadata": [
+        {
+          "text": "Moda BRT",
+          "height": 32,
+          "width": 138.5,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Status Eksisting",
+          "height": 32,
+          "width": 138.5,
+          "fontSize": "14px",
+          "clipped": false
+        }
+      ],
+      "stats": [
+        {
+          "text": "Halte 14",
+          "height": 36,
+          "width": 138.5,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Transit 1",
+          "height": 36,
+          "width": 138.5,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Terminus 2",
+          "height": 36,
+          "width": 138.5,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Panjang ± 31,4 km",
+          "height": 36,
+          "width": 138.5,
+          "fontSize": "14px",
+          "clipped": false
+        }
+      ],
+      "controls": [
+        {
+          "text": "Saat ini",
+          "height": 44,
+          "width": 138.5,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Reguler",
+          "height": 44,
+          "width": 138.5,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Semua trase",
+          "height": 44,
+          "width": 138.5,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Sesuai arah",
+          "height": 44,
+          "width": 138.5,
+          "fontSize": "12px",
+          "clipped": false
+        }
+      ],
+      "notes": [
+        {
+          "text": "* Panjang merupakan estimasi total trase dua arah (pergi–kembali), bukan panjang satu arah.",
+          "height": 44.375,
+          "width": 281,
+          "fontSize": "12px",
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "viewport": [
+        568,
+        320
+      ],
+      "documentWidth": 568,
+      "routeHeight": 507.328125,
+      "contentHeight": 113,
+      "metadata": [
+        {
+          "text": "Moda BRT",
+          "height": 32,
+          "width": 256,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Status Eksisting",
+          "height": 32,
+          "width": 256,
+          "fontSize": "14px",
+          "clipped": false
+        }
+      ],
+      "stats": [
+        {
+          "text": "Halte 14",
+          "height": 36,
+          "width": 256,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Transit 1",
+          "height": 36,
+          "width": 256,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Terminus 2",
+          "height": 36,
+          "width": 256,
+          "fontSize": "14px",
+          "clipped": false
+        },
+        {
+          "text": "Panjang ± 31,4 km",
+          "height": 36,
+          "width": 256,
+          "fontSize": "14px",
+          "clipped": false
+        }
+      ],
+      "controls": [
+        {
+          "text": "Saat ini",
+          "height": 44,
+          "width": 256,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Reguler",
+          "height": 44,
+          "width": 256,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Semua trase",
+          "height": 44,
+          "width": 256,
+          "fontSize": "12px",
+          "clipped": false
+        },
+        {
+          "text": "Sesuai arah",
+          "height": 44,
+          "width": 256,
+          "fontSize": "12px",
+          "clipped": false
+        }
+      ],
+      "notes": [
+        {
+          "text": "* Panjang merupakan estimasi total trase dua arah (pergi–kembali), bukan panjang satu arah.",
+          "height": 28.1875,
+          "width": 516,
+          "fontSize": "12px",
+          "clipped": false
+        }
+      ]
+    }
+  ]
+}

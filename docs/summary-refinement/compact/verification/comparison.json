@@ -1,0 +1,56 @@
+{
+  "beforeCommit": "0daafe3970070779b083d0e7868df29c207c258c",
+  "afterSourceCommit": "e955ef78010bfb70a8e23e0c15e3c5e8a84c93f2",
+  "measurements": [
+    {
+      "viewport": [
+        320,
+        568
+      ],
+      "beforeHeight": 841.21875,
+      "afterHeight": 656.625,
+      "savedPixels": 184.59375,
+      "reductionPercent": 21.943608603588544
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "beforeHeight": 784.03125,
+      "afterHeight": 609.453125,
+      "savedPixels": 174.578125,
+      "reductionPercent": 22.266730439634898
+    },
+    {
+      "viewport": [
+        768,
+        1024
+      ],
+      "beforeHeight": 823.21875,
+      "afterHeight": 639.828125,
+      "savedPixels": 183.390625,
+      "reductionPercent": 22.27726530767187
+    },
+    {
+      "viewport": [
+        1366,
+        900
+      ],
+      "beforeHeight": 822.21875,
+      "afterHeight": 638.828125,
+      "savedPixels": 183.390625,
+      "reductionPercent": 22.3043593934096
+    },
+    {
+      "viewport": [
+        568,
+        320
+      ],
+      "beforeHeight": 748.03125,
+      "afterHeight": 575.859375,
+      "savedPixels": 172.171875,
+      "reductionPercent": 23.016668755483142
+    }
+  ]
+}
