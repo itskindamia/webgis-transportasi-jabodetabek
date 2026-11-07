@@ -472,7 +472,7 @@
    */
   @media (min-width: 1024px) {
     .tl-header {
-      grid-template-columns: 400px minmax(180px, 520px) minmax(0, 1fr);
+      grid-template-columns: 400px minmax(180px, 520px) minmax(max-content, 1fr);
       gap: 20px;
     }
     .tl-panel-heading, .tl-detail-heading { min-height: 90px; }
