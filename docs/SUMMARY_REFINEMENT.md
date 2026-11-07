@@ -16,21 +16,59 @@ teks desktop dan hierarki statistik belum diseragamkan.
 
 | Komponen | Perbaikan |
 | --- | --- |
-| Identitas | PT Sans; judul 18 px, relasi 13 px, operator 12 px. Nama dan badge tetap dari renderer. |
-| Pilihan trase | Teks 12–13 px, target minimal 44 px, dua pilihan per baris. `is-active`, `aria-pressed`, value dan handler asli dipertahankan. |
-| Statistik | Label 12 px, angka 20 px; berjajar saat muat dan membungkus saat sempit, tanpa ellipsis. Kartu mengikuti konten, minimal 44 px; Moda/status 14 px dalam baris 36 px. |
+| Identitas | PT Sans; judul 16 px, relasi 12 px, operator 11 px. Nama dan badge tetap dari renderer. |
+| Pilihan trase | Teks 12 px, target minimal 44 px, dua pilihan per baris. `is-active`, `aria-pressed`, value dan handler asli dipertahankan. |
+| Statistik | Label 12 px, angka 16 px; berjajar saat muat dan membungkus saat sempit, tanpa ellipsis. Kartu statis minimal 36 px; Moda/status 13 px dalam baris 32 px. |
 | Panjang BRT | Catatan asli dua arah diberi ukuran 12 px, spacing dan latar yang jelas. Nilai/rumus/teks tidak diubah. |
 | Panjang rail | Mempertahankan deskripsi asli masing-masing moda; tidak diberi interpretasi dua arah baru. |
-| Referensi/pengalihan | Accordion ditumpuk satu kolom pada panel sempit; judul 14 px, isi 13 px; klik summary tetap native. |
+| Referensi/pengalihan | Accordion ditumpuk satu kolom pada panel sempit; judul 13 px, isi 12–13 px; target interaktif minimal 44 px. Klik summary tetap native. |
 | Ruang panel | Konten tetap memakai scroll panel yang sudah ada. Tidak menambahkan konten dekoratif atau mengisi sisa ruang putih. |
 
 Tidak ada perubahan `js/map.js`, GeoJSON, statistik, sequence, arah/status, pengalihan,
 warna jaringan, maupun event handler. Tidak menambahkan `!important`, font atau dependensi.
 Cache-busting hanya mengubah query `css/layout-tabler.css` menjadi
-`mobile-ux-summary-20261107-2`; ini juga menjaga perubahan index independen dari versi
+`mobile-ux-summary-20261107-3`; ini juga menjaga perubahan index independen dari versi
 engine pada PR A01.
 
-## Revisi compact terbaru
+## Revisi font compact terbaru
+
+Baseline revisi font: head PR #7 sebelumnya `3e7ae37`, dengan runtime yang identik dengan
+source `e955ef7`. Source font baru: `03704d1`. Font PT Sans 400/700 tetap dari aset lokal.
+Judul dan angka yang sebelumnya 18/20 px kini 16 px; informasi pendukung 12–13 px,
+operator dan kategori accordion 11 px. Jarak dan padding dipadatkan kembali.
+
+Kartu statistik adalah informasi statis setinggi 36 px, metadata 32 px. Tombol trase,
+close dan summary accordion tetap memiliki target minimal 44 px. Tidak ada bagian data,
+catatan, atau kontrol yang disembunyikan. Label dapat membungkus bila perlu.
+
+| Viewport | Tinggi konten K3 sebelumnya | Font compact | Pengurangan tambahan |
+| --- | --- | --- | --- |
+| 320×568 | 656,6 px | 572,8 px | 12,8% |
+| 390×844 | 609,5 px | 539,7 px | 11,4% |
+| 768×1024 | 639,8 px | 556,6 px | 13,0% |
+| 1366×900 | 638,8 px | 555,6 px | 13,0% |
+| 568×320 | 575,9 px | 507,3 px | 11,9% |
+
+Ukuran ini adalah tinggi konten; posisi/tinggi sheet, kamera, dan state tetap.
+Tidak ditemukan clipping atau overflow pada lima viewport pengukuran.
+[Pengukuran terbaru](summary-refinement/compact-font/verification/comparison.json),
+[log regresi](summary-refinement/compact-font/verification/final-layout.tap),
+dan [integrasi A01](summary-refinement/compact-font/verification/integration.tap).
+
+| Skenario | Sebelum penyesuaian font | Sesudah |
+| --- | --- | --- |
+| K1 desktop | [PNG](summary-refinement/compact/screenshots/after/brt_01-1366.png) | [PNG](summary-refinement/compact-font/screenshots/after/brt_01-1366.png) |
+| K3 desktop | [PNG](summary-refinement/compact/screenshots/after/brt_03-1366.png) | [PNG](summary-refinement/compact-font/screenshots/after/brt_03-1366.png) |
+| K3 mobile | [PNG](summary-refinement/compact/screenshots/after/brt_03-390.png) | [PNG](summary-refinement/compact-font/screenshots/after/brt_03-390.png) |
+| K9 mobile | [PNG](summary-refinement/compact/screenshots/after/brt_09-390.png) | [PNG](summary-refinement/compact-font/screenshots/after/brt_09-390.png) |
+| MRT desktop | [PNG](summary-refinement/compact/screenshots/after/mrt_ns-1366.png) | [PNG](summary-refinement/compact-font/screenshots/after/mrt_ns-1366.png) |
+| LRT Jabodebek mobile | [PNG](summary-refinement/compact/screenshots/after/lrt_jb_bk-390.png) | [PNG](summary-refinement/compact-font/screenshots/after/lrt_jb_bk-390.png) |
+
+Screenshot sebelum berasal dari pengambilan browser aktual pada revisi sebelumnya;
+runtime-nya identik dengan baseline `3e7ae37`. Screenshot sesudah diambil ulang dari
+source `03704d1`, dengan tile provider aktual. Main dan branch A01 tidak berubah.
+
+## Revisi compact pertama
 
 Baseline revisi ini adalah head PR #7 sebelumnya, `0daafe3`; source CSS compact pada
 `e955ef7`. Jarak judul, kontrol, hint dan accordion dirapatkan. Label/angka dapat membungkus
