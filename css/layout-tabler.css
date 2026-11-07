@@ -426,6 +426,25 @@
     .tl-mode-choices { gap: 5px; }
     .tl-mode-button { padding: 8px 5px; gap: 5px; }
   }
+  /*
+   * Desktop precision pass: the Search field and map context share one
+   * horizontal guide, while both detail headers, tabs and list contents
+   * use the same 20px inset. Do not affect tablet/mobile overlays.
+   */
+  @media (min-width: 1024px) {
+    .tl-header {
+      grid-template-columns: calc(var(--tl-sidebar) - 16px) minmax(220px, 520px) 1fr;
+      gap: 20px;
+    }
+    .tl-panel-heading, .tl-detail-heading { min-height: 90px; }
+    .tl-detail-tabs { padding-left: 20px; padding-right: 20px; }
+    .tl-route-content { padding-left: 20px; padding-right: 20px; }
+    .tl-route-content .stop-list-item { padding-left: 0; padding-right: 0; }
+    .tl-map-caption {
+      height: 44px;
+      max-width: calc(100% - 104px);
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .tl-app .tl-detail-panel { transition: none; }
   }
