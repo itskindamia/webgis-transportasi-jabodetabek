@@ -23,14 +23,14 @@ for (const [width, height] of [[1366, 900], [390, 844]]) for (const [mode, id] o
       assert.equal(await button.evaluate(el => el.classList.contains("is-active")), (await button.getAttribute("aria-pressed")) === "true");
     }
     for (const stat of await page.locator(".route-summary-grid .route-summary-item").all()) {
-      assert.ok((await stat.boundingBox()).height <= 64, "simple statistics stay compact while long values can wrap");
+      assert.ok((await stat.boundingBox()).height <= 40, "simple statistics stay compact while long values can wrap");
       assert.equal(await stat.locator("span").evaluate(el => parseFloat(getComputedStyle(el).fontSize)), 12);
-      assert.equal(await stat.locator("strong").evaluate(el => parseFloat(getComputedStyle(el).fontSize)), 20);
+      assert.equal(await stat.locator("strong").evaluate(el => parseFloat(getComputedStyle(el).fontSize)), 16);
       assert.equal(await stat.locator("span").evaluate(el => el.scrollWidth > el.clientWidth + 1), false, "statistic labels are readable without ellipsis");
       assert.ok(await stat.evaluate(el => el.scrollHeight <= el.clientHeight + 1), "statistic values fit their card");
     }
     for (const meta of await page.locator(".route-primary-meta-item").all()) {
-      assert.ok((await meta.boundingBox()).height <= 40, "mode and existing status use a compact row");
+      assert.ok((await meta.boundingBox()).height <= 36, "mode and existing status use a compact row");
     }
     if (await page.locator(".route-summary-length-note").count()) {
       const note = page.locator(".route-summary-length-note");
