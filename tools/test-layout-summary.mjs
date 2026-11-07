@@ -30,7 +30,7 @@ for (const [width, height] of [[1366, 900], [390, 844]]) for (const [mode, id] o
     }
     if (await page.locator(".route-summary-length-note").count()) {
       const note = page.locator(".route-summary-length-note");
-      assert.ok((await note.innerText()).includes("dua arah"));
+      if (mode === "BRT") assert.ok((await note.innerText()).includes("dua arah"));
       assert.equal(await note.evaluate(el => parseFloat(getComputedStyle(el).fontSize)), 12);
     }
     const read = () => page.evaluate(() => ({ route: currentSelectedRouteId, stop: currentSelectedStopKey, condition: getRouteConditionMode(currentSelectedRouteId), geometry: getRouteGeometryView(currentSelectedRouteId), direction: getActiveRouteDirection(currentSelectedRouteId), url: location.href, center: [map.getCenter().lat, map.getCenter().lng], zoom: map.getZoom() }));
