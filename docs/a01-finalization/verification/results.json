@@ -1,0 +1,38 @@
+{
+  "baseline": {
+    "log": "baseline-layout.tap",
+    "tests": 62.0,
+    "pass": 62.0,
+    "fail": 0.0,
+    "skipped": 0.0,
+    "duration_ms": 392073.632952
+  },
+  "layout": {
+    "log": "final-layout-verified.tap",
+    "tests": 62.0,
+    "pass": 62.0,
+    "fail": 0.0,
+    "skipped": 0.0,
+    "duration_ms": 504351.936412
+  },
+  "a01": {
+    "log": "final-a01-verified.tap",
+    "tests": 18.0,
+    "pass": 18.0,
+    "fail": 0.0,
+    "skipped": 0.0,
+    "duration_ms": 427234.293412
+  },
+  "integration": {
+    "log": "integration.tap",
+    "tests": 3.0,
+    "pass": 3.0,
+    "fail": 0.0,
+    "skipped": 0.0,
+    "duration_ms": 44078.680416
+  },
+  "baselineMain": "3946e21011c681a3c6a3cc4d8f8ffc4e4b2b04ae",
+  "candidateCommitBeforeEvidence": "8bf1b9bc2149ddaee87ff789507925937ec890dc",
+  "recordedAt": "2026-11-07T10:02:39.235762+07:00",
+  "mergedOrDeployed": false
+}

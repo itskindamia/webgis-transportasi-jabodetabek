@@ -40,13 +40,16 @@ Tidak ada perubahan styling atau desain UI di PR ini.
 | --- | --- |
 | Main saat ini | 62 tes regresi lulus; skenario A01 390 px gagal dengan `isProposedStopFeature is not defined`. |
 | PR A01 lama + main terbaru | ReferenceError sudah diatasi, tetapi popup yang disembunyikan untuk Detail kembali muncul. |
-| Kandidat final | Log seluruh regresi dan suite A01 pada tautan di bawah. |
+| Kandidat final | **62/62 regresi + 18/18 A01 lulus**, 0 gagal/dilewati. |
 
 [Reproduksi main](a01-finalization/verification/main-reproduction.tap),
 [reproduksi efek Tabler](a01-finalization/verification/tabler-before.tap),
 [baseline 62 tes](a01-finalization/verification/baseline-layout.tap),
 [regresi final](a01-finalization/verification/final-layout-verified.tap),
 [A01 final](a01-finalization/verification/final-a01-verified.tap).
+Suite regresi final selesai dalam 504.351,94 ms. Tiga tes gabungan lokal dengan scope
+Ringkasan baru juga lulus, tanpa konflik dan tanpa mengubah main:
+[log integrasi](a01-finalization/verification/integration.tap).
 
 Suite A01 mempertahankan skenario lama dan memperluasnya menjadi **18/18 tes lulus**
 (427.234,29 ms):
@@ -105,3 +108,7 @@ Manifest menyimpan ukuran panel/peta, state popup dan hash PNG.
 File runtime: `js/map.js` (A01 saja), `js/app-loader.js`, satu query loader pada `index.html`.
 File pendukung: tes A01 lama yang diperluas, script capture, npm scripts, manifest
 integritas dan dokumentasi. Perubahan Ringkasan CSS tetap di branch UI terpisah.
+
+Kesiapan: tidak ada regresi baru atau blocker teknis yang ditemukan pada browser otomatis.
+PR disiapkan untuk review akhir; belum di-merge atau di-deploy. Dua audit data baseline yang
+sudah gagal serta keterbatasan perangkat fisik/Safari iOS tetap berlaku.
