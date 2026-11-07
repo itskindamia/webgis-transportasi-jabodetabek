@@ -16,9 +16,9 @@ teks desktop dan hierarki statistik belum diseragamkan.
 
 | Komponen | Perbaikan |
 | --- | --- |
-| Identitas | PT Sans; judul 18 px, relasi 14 px, operator 12 px. Nama dan badge tetap dari renderer. |
+| Identitas | PT Sans; judul 18 px, relasi 13 px, operator 12 px. Nama dan badge tetap dari renderer. |
 | Pilihan trase | Teks 12–13 px, target minimal 44 px, dua pilihan per baris. `is-active`, `aria-pressed`, value dan handler asli dipertahankan. |
-| Statistik | Label 12 px, angka 20 px; label di atas angka sehingga Panjang tidak menjadi “P…”. Kartu mengikuti tinggi konten, tanpa tinggi baris legacy. Moda/status 14 px. |
+| Statistik | Label 12 px, angka 20 px; berjajar saat muat dan membungkus saat sempit, tanpa ellipsis. Kartu mengikuti konten, minimal 44 px; Moda/status 14 px dalam baris 36 px. |
 | Panjang BRT | Catatan asli dua arah diberi ukuran 12 px, spacing dan latar yang jelas. Nilai/rumus/teks tidak diubah. |
 | Panjang rail | Mempertahankan deskripsi asli masing-masing moda; tidak diberi interpretasi dua arah baru. |
 | Referensi/pengalihan | Accordion ditumpuk satu kolom pada panel sempit; judul 14 px, isi 13 px; klik summary tetap native. |
@@ -27,12 +27,44 @@ teks desktop dan hierarki statistik belum diseragamkan.
 Tidak ada perubahan `js/map.js`, GeoJSON, statistik, sequence, arah/status, pengalihan,
 warna jaringan, maupun event handler. Tidak menambahkan `!important`, font atau dependensi.
 Cache-busting hanya mengubah query `css/layout-tabler.css` menjadi
-`mobile-ux-summary-20261107-1`; ini juga menjaga perubahan index independen dari versi
+`mobile-ux-summary-20261107-2`; ini juga menjaga perubahan index independen dari versi
 engine pada PR A01.
 
-## Pengujian
+## Revisi compact terbaru
 
-Baseline: **62/62** tes layout/font/LRT pada main lulus. Kandidat akhir:
+Baseline revisi ini adalah head PR #7 sebelumnya, `0daafe3`; source CSS compact pada
+`e955ef7`. Jarak judul, kontrol, hint dan accordion dirapatkan. Label/angka dapat membungkus
+tanpa terpotong; target sentuh pilihan trase tetap ≥44 px. Metadata Moda/Status berkurang
+dari 69 menjadi 36 px. Kartu statistik sederhana berkurang dari 76,8 menjadi 44 px;
+nilai panjang yang perlu dua baris memakai 56,2 px. Tidak ada data/kontrol yang disembunyikan.
+
+| Viewport | Tinggi konten K3 sebelum | Sesudah | Pengurangan |
+| --- | --- | --- | --- |
+| 320×568 | 841,2 px | 656,6 px | 21,9% |
+| 390×844 | 784,0 px | 609,5 px | 22,3% |
+| 768×1024 | 823,2 px | 639,8 px | 22,3% |
+| 1366×900 | 822,2 px | 638,8 px | 22,3% |
+| 568×320 | 748,0 px | 575,9 px | 23,0% |
+
+Ini pengukuran tinggi konten, bukan pengurangan tinggi sheet atau perubahan kamera.
+Nilai, nama dan catatan asli tetap ada. Snapshot metadata, overflow dan accordion tetap
+diuji. [Pengukuran sebelum/sesudah](summary-refinement/compact/verification/comparison.json).
+Log regresi compact: [final-layout.tap](summary-refinement/compact/verification/final-layout.tap).
+
+Screenshot compact terbaru, dibandingkan langsung dengan versi PR #7 sebelumnya:
+
+| Skenario | Sebelum compact | Sesudah compact |
+| --- | --- | --- |
+| K1 desktop | [PNG](summary-refinement/compact/screenshots/before/brt_01-1366.png) | [PNG](summary-refinement/compact/screenshots/after/brt_01-1366.png) |
+| K3 desktop | [PNG](summary-refinement/compact/screenshots/before/brt_03-1366.png) | [PNG](summary-refinement/compact/screenshots/after/brt_03-1366.png) |
+| K3 mobile | [PNG](summary-refinement/compact/screenshots/before/brt_03-390.png) | [PNG](summary-refinement/compact/screenshots/after/brt_03-390.png) |
+| K9 mobile | [PNG](summary-refinement/compact/screenshots/before/brt_09-390.png) | [PNG](summary-refinement/compact/screenshots/after/brt_09-390.png) |
+| MRT desktop | [PNG](summary-refinement/compact/screenshots/before/mrt_ns-1366.png) | [PNG](summary-refinement/compact/screenshots/after/mrt_ns-1366.png) |
+| LRT Jabodebek mobile | [PNG](summary-refinement/compact/screenshots/before/lrt_jb_bk-390.png) | [PNG](summary-refinement/compact/screenshots/after/lrt_jb_bk-390.png) |
+
+## Pengujian tahap awal
+
+Baseline tahap awal: **62/62** tes layout/font/LRT pada main lulus. Kandidat sebelum compact:
 **76/76 lulus, 0 gagal, 0 dilewati** (605.852,31 ms), termasuk 14 skenario tambahan:
 
 - BRT Koridor 1, 3, 9; MRT_NS, LRT Jakarta S, LRT Jabodebek BK dan KRL Tanjung Priok.
@@ -57,7 +89,7 @@ Audit navigasi exit 0. Dua audit data lama exit 1 dengan output sebelum/sesudah 
 [integritas](summary-refinement/verification/protected-integrity.json) membuktikan seluruh
 delapan berkas terlindungi tetap sama, termasuk mesin map.js dan empat GeoJSON.
 
-## Screenshot browser aktual
+## Screenshot tahap awal (sebelum revisi compact)
 
 Server lokal, Leaflet serta font lokal asli, tile provider aktual melalui proxy TLS.
 Manifest menyimpan SHA sumber, versi Chromium, ukuran peta/panel dan hash PNG; bukan mockup.
@@ -77,4 +109,5 @@ Tidak diuji pada perangkat fisik atau Safari iOS. Panel panjang tetap memerlukan
 untuk mencapai sumber/pengalihan, terutama pada posisi Sedang. Main/live tidak diubah.
 
 File implementasi: `css/layout-tabler.css`, satu query stylesheet dalam `index.html`,
-`tools/test-layout-summary.mjs`, `tools/capture-review-panels.mjs`, serta laporan/artefak ini.
+`tools/test-layout-summary.mjs`, `tools/capture-review-panels.mjs`,
+`tools/measure-summary.mjs`, serta laporan/artefak ini.

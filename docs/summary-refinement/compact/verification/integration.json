@@ -1,0 +1,14 @@
+{
+  "uiSource": "e955ef78010bfb70a8e23e0c15e3c5e8a84c93f2",
+  "a01Source": "38d1376f49378eed02b0d35e70adb6437e16ed92",
+  "tree": "6cb5b6cd0d67c9c7a5102c76313465cbab17598f",
+  "localIntegrationCommit": "c0164fae633b9d8ff7aba01cf0f43460b5f31da3",
+  "conflicts": [],
+  "mainUpdated": false,
+  "a01BranchUpdated": false,
+  "tests": {
+    "pass": 3,
+    "fail": 0,
+    "log": "integration.tap"
+  }
+}
