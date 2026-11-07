@@ -677,6 +677,40 @@
     .tl-app .product-tour-footer, .tl-app .product-tour-nav { gap: 4px; }
     .tl-app .product-tour-card button { padding: 7px 6px; font-size: 11px; }
   }
+
+  /*
+   * Mobile-only sheet efficiency. Keep all inputs/buttons at least 44px.
+   * Desktop and tablet layouts are intentionally untouched.
+   */
+  @media (max-width: 767px) {
+    .tl-network .tl-panel-heading {
+      min-height: 52px;
+      padding: 4px 12px;
+    }
+    .tl-network .tl-panel-heading .tl-eyebrow { display: none; }
+    .tl-network .tl-panel-heading h2 { margin: 0; font-size: 16px; }
+    .tl-network .filter-panel-content { padding: 8px 12px 6px; }
+    .tl-network .tl-mode-section { margin-bottom: 6px; }
+    .tl-network .tl-section-label,
+    .tl-network .form-label { margin-bottom: 4px; }
+    .tl-network .filter-controls-card .form-field { margin-bottom: 6px; }
+    .tl-network .filter-grid .form-field:not([hidden]) { gap: 8px; }
+    .tl-network .tl-network-footer { padding: 5px 12px 6px; }
+    .tl-network .tl-note-link { padding-top: 2px; }
+  }
+  @media (max-width: 767px) and (min-height: 560px) {
+    .tl-sheet-collapsed .tl-detail-panel {
+      height: 92px;
+      min-height: 92px;
+      max-height: 92px;
+    }
+    .tl-sheet-collapsed .tl-detail-heading {
+      min-height: 44px;
+      padding: 0 12px;
+    }
+    .tl-sheet-collapsed #tlDetailSubtitle { display: none; }
+    .tl-sheet-collapsed:not(.tl-stop-popup-open):not(.tl-short-viewport) .tl-map-navigation { bottom: 112px; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .tl-app .tl-detail-panel { transition: none; }
   }
