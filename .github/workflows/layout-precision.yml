@@ -27,8 +27,19 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Locate installed Chrome or install Playwright Chromium
+        id: browser
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+            google-chrome --version
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+            chromium --version
+          else
+            npx playwright install chromium
+          fi
       - name: Check generated styles
         run: npm run build:ui && git diff --exit-code -- css/tabler-components.css css/legacy-components.css
       - name: Run full browser regression including cross-network precision
