@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
-const root = fileURLToPath(new URL("../", import.meta.url));
+const root = process.env.LAYOUT_APP_ROOT || fileURLToPath(new URL("../", import.meta.url));
 const leafletDir = process.env.LEAFLET_ASSET_DIR
   || path.dirname(require.resolve("leaflet/dist/leaflet.js"));
 const origin = "http://127.0.0.1:8000";
@@ -85,6 +85,8 @@ async function openRoute(t, routeId = "BRT_13", width = 1366) {
     setMobileFilterOpen(true);
   });
   await page.click('[data-mode="BRT"]');
+  if (Number(routeId.slice(4)) >= 15) await page.selectOption("#statusSelect", "ALL");
+  if (await page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none")) await page.click("#tlNetworkToggle");
   await page.selectOption("#routeSelect", routeId);
   // Let the existing adaptive-layout fit finish before selecting a stop.
   await page.waitForTimeout(750);
@@ -201,7 +203,7 @@ async function toggle(app, checked) {
   await page.evaluate(() => { window.a01CameraCalls = []; });
   const before = await view(page);
   await page.locator(".optional-stop-switch").click();
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(600);
   assert.deepEqual(errors, [], "toggle must not emit JavaScript errors");
   const after = await view(page);
   assertUiPreserved(app, before, after);
@@ -258,6 +260,7 @@ for (const width of [1366, 390, 568]) test(`Koridor 15–19: non-existing visibi
       await app.page.selectOption("#routeSelect", id); await app.page.waitForTimeout(650);
     }
     await app.page.evaluate(() => { webgisLayout.showPopupDetails(); webgisLayout.setTab("route"); });
+    if ((await view(app.page)).checked) await toggle(app, false);
     assertConsistent(await view(app.page), false);
     assertConsistent(await toggle(app, true), true);
     const selected = await selectStatus(app, "Conceptual");

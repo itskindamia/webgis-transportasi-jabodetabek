@@ -20985,7 +20985,7 @@ routeInfoEl
       }
 
       // Restore Tabler's shelved popup after the redraw's auto-pan guard settles.
-      if (layoutState) requestAnimationFrame(() => window.webgisLayout.restore(layoutState));
+      if (layoutState) queueMicrotask(() => requestAnimationFrame(() => window.webgisLayout.restore(layoutState)));
     }
   );
 
