@@ -35,7 +35,6 @@
   .tl-brand:hover { color: var(--tl-ink); text-decoration: none; }
   .tl-brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: #e9f2ff; color: var(--tl-blue); }
   .tl-brand strong { display: block; font-size: 16px; font-weight: 700; line-height: 1.2; letter-spacing: -.35px; }
-  .tl-brand small { display: block; font-size: 9px; color: var(--tl-muted); letter-spacing: 1.25px; font-weight: 600; margin-top: 4px; }
   /* A single uppercase title on desktop; two deliberate lines on smaller screens. */
   .tl-brand-text { display: block; min-width: 0; }
   .tl-brand .tl-brand-title-desktop { display: block; white-space: nowrap; font-size: 14px; letter-spacing: -.2px; font-weight: 700; }
@@ -228,13 +227,12 @@
   @media (max-width: 1023px) {
     .tl-brand .tl-brand-title-desktop { display: none; }
     .tl-brand .tl-brand-title-mobile { display: block; }
-    .tl-brand .tl-brand-title-mobile strong { display: block; font-size: 14px; line-height: 1.2; letter-spacing: -.2px; }
-    .tl-brand .tl-brand-title-mobile small { display: block; font-size: 9px; line-height: 1.25; margin-top: 2px; letter-spacing: .15px; font-weight: 700; }
+    .tl-brand .tl-brand-title-mobile strong { display: block; font-size: 14px; line-height: 1.2; letter-spacing: -.2px; font-weight: 700; color: var(--tl-ink); white-space: nowrap; }
   }
   @media (min-width: 768px) and (max-width: 1023px) {
     :root { --tl-sidebar: 280px; --tl-detail: 320px; }
     .tl-brand-mark { display: none; }
-    .tl-header { grid-template-columns: 210px minmax(160px, 1fr) auto; gap: 16px; padding-right: 16px; }
+    .tl-header { grid-template-columns: 250px minmax(160px, 1fr) auto; gap: 16px; padding-right: 16px; }
     .tl-header-action span { display: none; }
     .tl-header-action { width: 36px; padding: 8px; }
     .tl-main, .tl-detail-open .tl-main, .left-panel-collapsed .tl-main, .left-panel-collapsed.tl-detail-open .tl-main { display: block; }
@@ -251,8 +249,7 @@
     .tl-header { grid-template-columns: 1fr auto; gap: 12px; padding: 0 12px; }
     .tl-brand-area { gap: 6px; }
     .tl-brand-mark { width: 30px; height: 30px; border-radius: 8px; }
-    .tl-brand strong { font-size: 14px; }
-    .tl-brand small { font-size: 8px; letter-spacing: 1px; margin-top: 3px; }
+    .tl-brand .tl-brand-title-mobile strong { font-size: 13px; }
     .tl-header-actions { gap: 0; }
     #tlDetailsToggle { display: none; }
     .tl-header-action { width: 36px; padding: 8px; }
@@ -455,11 +452,15 @@
   .tl-short-landscape.tl-stop-popup-open:not(.tl-popup-shelved) .tl-map-actions,
   .tl-short-landscape.tl-stop-popup-open:not(.tl-popup-shelved) .tl-map-navigation { right: max(12px, env(safe-area-inset-right, 0px)); }
   .tl-short-landscape.tl-popup-shelved #map .leaflet-popup { visibility: hidden; pointer-events: none; }
-  @media (max-width: 359px) {
-    .tl-brand { gap: 6px; }
+  /* Keep both mobile title lines readable without overlapping header actions. */
+  @media (max-width: 389px) {
     .tl-brand-mark { display: none; }
-    .tl-brand strong { font-size: 14px; }
-    .tl-brand small { font-size: 7px; letter-spacing: .7px; }
+  }
+  @media (max-width: 359px) {
+    .tl-header { gap: 8px; padding: 0 8px; }
+    .tl-brand-area { gap: 4px; }
+    .tl-brand { gap: 4px; }
+    .tl-brand .tl-brand-title-mobile strong { font-size: 12px; }
     .tl-detail-tabs { gap: 12px; padding-left: 12px; padding-right: 12px; }
     .tl-detail-tabs .nav-link { font-size: 12px; }
     .tl-mode-choices { gap: 5px; }

@@ -27,7 +27,7 @@ for (const [width, height] of [
       const desktop = elem(".tl-brand-title-desktop");
       const mobile = elem(".tl-brand-title-mobile");
       const line1 = mobile.querySelector("strong");
-      const line2 = mobile.querySelector("small");
+      const line2 = mobile.querySelectorAll("strong")[1];
       const brand = rect(".tl-brand");
       const search = rect(".tl-search");
       const buttons = rect(".tl-header-actions");
@@ -40,7 +40,12 @@ for (const [width, height] of [
         mobileText2: line2.textContent.trim(),
         desktopShown: getComputedStyle(desktop).display !== "none" && desktop.getBoundingClientRect().width > 0,
         mobileShown: getComputedStyle(mobile).display !== "none" && mobile.getBoundingClientRect().width > 0,
-        mobileStacked: rect(".tl-brand-title-mobile small").top >= rect(".tl-brand-title-mobile strong").bottom - 1,
+        mobileStacked: rect(".tl-brand-title-mobile strong:nth-child(2)").top >= rect(".tl-brand-title-mobile strong:first-child").bottom - 1,
+        equalTypography: (() => {
+          const first = getComputedStyle(line1);
+          const second = getComputedStyle(line2);
+          return ["fontFamily", "fontSize", "fontWeight", "lineHeight", "letterSpacing", "color"].every(prop => first[prop] === second[prop]);
+        })(),
         brandFits: brand.right <= search.left - 4 || innerWidth < 768,
         titleFits: desktop.scrollWidth <= desktop.clientWidth + 1,
         searchFits: search.right <= buttons.left - 4 || innerWidth < 768,
@@ -66,6 +71,7 @@ for (const [width, height] of [
       assert.equal(result.desktopShown, false, "desktop title hidden on mobile/tablet");
       assert.equal(result.mobileShown, true, "stacked mobile title visible");
       assert.equal(result.mobileStacked, true, "second title line remains below first");
+      assert.equal(result.equalTypography, true, "both mobile title lines have identical typography");
       if (width >= 768) {
         assert.equal(result.brandFits, true, "tablet brand does not overlap Search");
         assert.equal(result.searchFits, true, "tablet Search does not overlap actions");
