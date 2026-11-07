@@ -25,6 +25,8 @@ for (const [width, height] of [[1366, 900], [390, 844]]) for (const [mode, id] o
     for (const stat of await page.locator(".route-summary-grid .route-summary-item").all()) {
       assert.equal(await stat.locator("span").evaluate(el => parseFloat(getComputedStyle(el).fontSize)), 12);
       assert.equal(await stat.locator("strong").evaluate(el => parseFloat(getComputedStyle(el).fontSize)), 20);
+      assert.equal(await stat.locator("span").evaluate(el => el.scrollWidth > el.clientWidth + 1), false, "statistic labels are readable without ellipsis");
+      assert.ok(await stat.evaluate(el => el.scrollHeight <= el.clientHeight + 1), "statistic values fit their card");
     }
     if (await page.locator(".route-summary-length-note").count()) {
       const note = page.locator(".route-summary-length-note");
