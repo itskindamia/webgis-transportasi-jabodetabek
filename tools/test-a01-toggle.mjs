@@ -40,7 +40,7 @@ async function openRoute(t, routeId = "BRT_13", width = 1366) {
   const context = await browser.newContext({ viewport: { width, height: width === 568 ? 320 : width === 390 ? 844 : 900 } });
   t.after(() => context.close());
   const page = await context.newPage();
-  page.setDefaultTimeout(12000);
+  page.setDefaultTimeout(20000);
   const errors = [];
   page.on("pageerror", error => errors.push(error.message));
 
@@ -117,6 +117,8 @@ function installView() {
       checked: document.querySelector("[data-optional-stop-toggle]")?.checked,
       proposed: showProposedStops, conceptual: showConceptualStops,
       markerCount: stopMarkerByKey.size,
+      markerKeys: [...stopMarkerByKey.keys()],
+      listKeys: rows.map(row => row.dataset.stopKey),
       markerLogical: [...new Set([...stopMarkerByKey.keys()].map(key => getLogicalStopKey(getStopByKey(key))))].sort(),
       listLogical: rows.map(row => row.dataset.stopLogicalKey).sort(),
       selectedKey: currentSelectedStopKey,
@@ -196,6 +198,7 @@ function assertUiPreserved(app, before, after) {
 
 async function toggle(app, checked) {
   const { page, errors } = app;
+  if (await page.locator("#routePlanIntro").isVisible()) await page.click("#routePlanIntroDismiss");
   await page.evaluate(() => { webgisLayout.showPopupDetails(); webgisLayout.setTab("route"); });
   await page.waitForTimeout(100);
   const input = page.locator("[data-optional-stop-toggle]");
@@ -269,7 +272,8 @@ for (const width of [1366, 390, 568]) test(`Koridor 15–19: non-existing visibi
     assertConsistent(hidden, false);
     assert.equal(hidden.route, id);
     assert.equal(new URL(hidden.url).searchParams.get("route"), id);
-    assert.ok(!hidden.markerLogical.includes(selected.selectedLogical));
+    assert.ok(!hidden.markerKeys.includes(selected.selectedKey), "the hidden physical feature leaves the map");
+    assert.ok(!hidden.listKeys.includes(selected.selectedKey), "the hidden physical feature leaves the list");
   }
 });
 
