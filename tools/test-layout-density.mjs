@@ -63,7 +63,7 @@ for (const [width, height] of [
         assert.ok(half.height <= 302 && half.height >= 180, "half sheet uses compact height");
         await page.click("#tlDetailCollapse");
         const collapsed = await page.locator("#tlDetailPanel").boundingBox();
-        assert.ok(collapsed.height <= 102 && collapsed.height >= 96, "collapsed sheet takes only necessary space");
+        assert.ok(collapsed.height <= 94 && collapsed.height >= 90, "mobile collapsed sheet uses compact 92px height");
       }
     }
     assert.deepEqual(errors, [], "no JavaScript runtime errors");
