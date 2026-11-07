@@ -56,7 +56,7 @@ for (const [width, height] of [
       assert.ok(result.buttonRects.every(b => Math.abs(b.top - result.buttonRects[0].top) <= 1), "all five modes stay in one row");
       assert.ok(result.buttonRects.every(b => b.height >= 44 && b.height <= 46), "mode touch targets remain 44px");
       assert.ok(result.statusWidth <= 221, "status selector does not span full panel");
-      assert.ok(result.statusHeight >= 44 && result.statusHeight <= 46, "status stays tappable");
+      assert.ok(result.statusHeight >= 39 && result.statusHeight <= 41, "mobile status selector renders at compact 40px");
       assert.ok(Math.abs(result.statusCenterY - result.labelCenterY) <= 2, "status label and selector share row");
     } else {
       assert.equal(result.shortShown, false, "desktop retains full label");
