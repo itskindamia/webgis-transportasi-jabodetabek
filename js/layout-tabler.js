@@ -29,7 +29,12 @@
     popupLayoutSignature = signature;
     stopPopup.getElement()?.style.setProperty("--tl-popup-content-height", `${dimensions.maxHeight}px`);
     Object.assign(stopPopup.options, dimensions);
-    stopPopup.update();
+    // A chrome-only size update must never pan the user's camera. Explicit
+    // station selection/navigation still uses the engine's auto-pan policy.
+    const autoPanBeforeUpdate = stopPopup.options.autoPan;
+    stopPopup.options.autoPan = false;
+    try { stopPopup.update(); }
+    finally { stopPopup.options.autoPan = autoPanBeforeUpdate; }
   }
 
   function queueAttribution() {
@@ -69,7 +74,8 @@
     const compactLandscape = body.classList.contains("tl-short-landscape");
     const open = Boolean((mobile() || compactLandscape) && stopPopup?.isOpen());
     const overlay = body.classList.contains("mobile-filter-open") || body.classList.contains("mobile-info-open") || body.classList.contains("tl-keyboard-open") || (compactLandscape && body.classList.contains("tl-legend-open")) || !byId("basemapPanel").hidden;
-    const shelved = open && (detailsOverPopup || overlay);
+    const narrowOverlay = tablet() && body.classList.contains("tl-left-aux-open");
+    const shelved = (open && (detailsOverPopup || overlay)) || (Boolean(stopPopup?.isOpen()) && narrowOverlay);
     const element = stopPopup?.getElement();
     body.classList.toggle("tl-stop-popup-open", open);
     body.classList.toggle("tl-popup-shelved", shelved);
@@ -178,6 +184,7 @@
     byId("tlLegendToggle").setAttribute("aria-expanded", String(legendOpen));
     byId("globalSearchPanel").inert = !mobile() && !searchOpen;
     byId("tlSearchToggle").setAttribute("aria-expanded", String(mobile() || searchOpen));
+    if (ready && stopPopup) syncPopupPresentation();
     queueAttribution();
   }
 

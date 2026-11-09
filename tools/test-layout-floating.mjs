@@ -141,3 +141,31 @@ test('breakpoint and orientation changes keep one auxiliary panel and retain rou
   }
   assert.deepEqual(app.errors,[]);
 });
+
+for (const width of [768,1366]) test(`auxiliary panels retain an open station popup and never pan its camera at ${width}px`, async t => {
+  const app = await openLayout(browser,width,900);t.after(()=>app.context.close());const {page}=app;
+  await chooseRoute(page);
+  await page.locator('#stopList [data-stop-key="BRT002_REG_A"]').click();
+  await page.waitForTimeout(1000);
+  await page.waitForFunction(()=>!map._panAnim?._inProgress&&!map._animatingZoom);
+  const before=await readMap(page),url=page.url();
+  await page.evaluate(()=>{
+    window.panelCameraCalls=[];
+    for(const method of ['panTo','panBy','setView','setZoom','fitBounds','flyTo']){
+      const original=map[method];map[method]=function(...args){panelCameraCalls.push(method);return original.apply(this,args);};
+    }
+  });
+  for(const id of ['tlLegendToggle','tlSearchToggle','basemapButton']){
+    await page.click('#'+id);await page.waitForTimeout(150);
+    assert.equal(await page.evaluate(()=>map._popup.isOpen()),true,'popup is retained by Leaflet');
+    if(width===768)assert.equal(await page.locator('.leaflet-popup').isVisible(),false,'narrow tablet yields popup space to the auxiliary panel');
+    const close={tlLegendToggle:'mobileInfoClose',tlSearchToggle:'tlSearchClose',basemapButton:'basemapClose'}[id];
+    await page.click('#'+close);await page.waitForTimeout(150);
+    assert.equal(await page.locator('.leaflet-popup').isVisible(),true);
+    assert.equal(await page.evaluate(()=>currentSelectedStopKey),'BRT002_REG_A');
+    assert.equal(page.url(),url);
+  }
+  assert.deepEqual(await page.evaluate(()=>panelCameraCalls),[],'chrome never pans an open popup');
+  assert.deepEqual((await readMap(page)).center,before.center);
+  assert.deepEqual(app.errors,[]);
+});
