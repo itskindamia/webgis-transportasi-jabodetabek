@@ -16,7 +16,10 @@ for (const [width, height] of viewports) test(`mobile-first shell and popup boun
   assert.deepEqual(state.size, state.container);
   if (width >= 1024) {
     const network = await page.locator("#filterPanel").boundingBox(), detail = await page.locator("#tlDetailPanel").boundingBox(), map = await page.locator("#map").boundingBox();
-    assert.ok(network.x + network.width <= map.x + 1 && map.x + map.width <= detail.x + 1);
+    assert.equal(map.width, width, "map spans the viewport underneath floating panels");
+    assert.ok(network.x >= map.x + 12 && network.x + network.width + 12 <= detail.x,
+      "left and right panels have separate, inset areas");
+    assert.ok(detail.x + detail.width <= map.x + map.width - 12, "detail panel fits within map workspace");
   }
   if (width < 768) await page.click("#tlDetailExpand");
   await page.locator('#stopList [data-stop-key="BRT002_REG_A"]').click();
