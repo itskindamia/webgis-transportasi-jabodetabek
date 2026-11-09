@@ -30,6 +30,7 @@ for (const [width, height] of [[1440,900],[1280,720],[1024,768],[768,1024],[390,
         heading:document.querySelector('.tl-brand-text').tagName, width:document.documentElement.scrollWidth };
     });
     assert.equal(geometry.heading,'H1');
+    assert.equal(await page.getByRole('heading',{level:1,name:'PETA JARINGAN TRANSPORTASI JABODETABEK',exact:true}).isVisible(),true,'the responsive title retains its accessible heading name');
     assert.equal(geometry.width,width);
     assert.ok(geometry.title.right <= geometry.actions.left, 'header title and actions do not overlap');
     assert.ok(geometry.panel.top >= geometry.map.top && geometry.panel.bottom <= geometry.map.bottom, 'panel fits map');
