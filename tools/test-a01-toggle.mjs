@@ -318,6 +318,10 @@ for (const width of [1366, 390, 568]) {
         getStopStatus(getStopByKey(row.dataset.stopKey)) === "Existing"
       );
       row.click();
+      // stop() can schedule an animated snap from flyTo's fractional zoom.
+      // Commit that snap synchronously before taking the toggle baseline;
+      // the selection popup is still pending in this same event turn.
+      map.setZoom(map.getZoom(), { animate: false });
       map.stop();
       map.panBy([160, 80], { animate: false });
       setMobileFilterOpen(width !== 390);
