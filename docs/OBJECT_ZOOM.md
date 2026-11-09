@@ -39,6 +39,10 @@ Tes startup tutorial menunggu target spotlight siap pada animation frame,
 kemudian mempertahankan assertion target yang sama. Ini menggantikan pemeriksaan
 yang terlalu dini segera setelah dialog muncul.
 
+Fixture A01 menyelesaikan zoom snap Leaflet secara sinkron sebelum mengambil
+snapshot pending-selection. Popup tetap belum dibuka pada event turn yang sama;
+assertion zoom persis, kamera, seleksi, serta state lainnya tidak dilonggarkan.
+
 ## Paket lengkap dan preview
 
 [Unduh ZIP runtime lengkap](object-zoom/webgis-layout-lama-zoom-penuh.zip?raw=true)

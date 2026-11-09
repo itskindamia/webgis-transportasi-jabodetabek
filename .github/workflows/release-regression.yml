@@ -6,6 +6,7 @@ on:
       - 'index.html'
       - 'tools/test-layout-object-zoom.mjs'
       - 'tools/test-layout-ux.mjs'
+      - 'tools/test-a01-toggle.mjs'
       - '.github/workflows/release-regression.yml'
   push:
     branches:
@@ -38,10 +39,10 @@ jobs:
           fi
       - name: Validate generated CSS and source integrity
         run: npm run build:ui && git diff --exit-code -- css/tabler-components.css css/legacy-components.css
-      - name: Check full-object zoom before the full regression
-        run: node --test --test-reporter=tap tools/test-layout-object-zoom.mjs
-      - name: Full layout and A01 browser regression
-        run: npm run test:regression
+      - name: A01 browser regression
+        run: npm run test:a01
+      - name: Full layout browser regression
+        run: npm run test:layout
       - name: Audit navigation and data (informational baseline)
         if: success()
         shell: bash
