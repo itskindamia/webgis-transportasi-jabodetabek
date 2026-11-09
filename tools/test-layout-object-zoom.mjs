@@ -15,6 +15,20 @@ const routes = [
   { mode: "KRL", route: "KRL_RK" }
 ];
 
+async function settleView(page) {
+  await page.evaluate(() => { window.objectZoomSettled = { key: "", frames: 0 }; });
+  await page.waitForFunction(() => {
+    const center = map.getCenter(), size = map.getSize();
+    const key = JSON.stringify([center.lat, center.lng, map.getZoom(), size.x, size.y, getRouteFitPadding()]);
+    const still = !map._animatingZoom && !map._panAnim?._inProgress && document.getAnimations().every(animation => animation.playState !== "running");
+    const state = window.objectZoomSettled;
+    state.frames = still && state.key === key ? state.frames + 1 : 0;
+    state.key = key;
+    return state.frames >= 3;
+  }, null, { timeout: 5000 });
+  await page.evaluate(() => { delete window.objectZoomSettled; });
+}
+
 async function fitState(page) {
   return page.evaluate(() => {
     const bounds = routeLayer.getBounds(), size = map.getSize();
@@ -47,12 +61,13 @@ for (const [width, height] of [[1440, 900], [768, 1024], [390, 844]]) {
         await page.selectOption("#routeSelect", scenario.route);
         await page.waitForFunction(route => currentSelectedRouteId === route, scenario.route);
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-        await page.waitForFunction(() => !map._animatingZoom && !map._panAnim?._inProgress);
+        await settleView(page);
         const state = await fitState(page);
+        console.log("object-zoom", width, scenario.route, JSON.stringify(state));
         assert.equal(state.floatingStylesheet, false, "the experimental floating layout is not loaded");
         assert.equal(state.route, scenario.route);
-        assert.ok(state.left >= state.available.left - 2 && state.right <= state.available.right + 2, "both horizontal endpoints fit");
-        assert.ok(state.top >= state.available.top - 2 && state.bottom <= state.available.bottom + 2, "both vertical endpoints fit");
+        assert.ok(state.left >= state.available.left - 2 && state.right <= state.available.right + 2, "both horizontal endpoints fit: " + JSON.stringify(state));
+        assert.ok(state.top >= state.available.top - 2 && state.bottom <= state.available.bottom + 2, "both vertical endpoints fit: " + JSON.stringify(state));
         assert.ok(state.fill >= 0.9 || state.zoom === state.maxZoom, `object fills the available workspace: ${state.fill}`);
 
         // Recenter must use the same full extent without changing the filter

@@ -38,6 +38,8 @@ jobs:
           fi
       - name: Validate generated CSS and source integrity
         run: npm run build:ui && git diff --exit-code -- css/tabler-components.css css/legacy-components.css
+      - name: Check full-object zoom before the full regression
+        run: node --test --test-reporter=tap tools/test-layout-object-zoom.mjs
       - name: Full layout and A01 browser regression
         run: npm run test:regression
       - name: Audit navigation and data (informational baseline)
