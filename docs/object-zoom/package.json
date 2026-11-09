@@ -1,0 +1,9 @@
+{
+  "file": "webgis-layout-lama-zoom-penuh.zip",
+  "sourceCommit": "12610754e32fa1377e8a37e19ed870ee93818751",
+  "layoutBaseline": "46c3913042934b67712327d566e34c287178845e",
+  "files": 52,
+  "bytes": 1209778,
+  "sha256": "c8c51c2de38b3f8b7da50a0cd3bd4e9deba7e67b1a3a6935df170e8fadaa5173",
+  "type": "complete static runtime replacement"
+}
