@@ -158,7 +158,7 @@
       const search = byId("globalSearchResults");
       snapshot = { ui: ui.capture(), focus: document.activeElement, inert: shell.inert, manual,
         center: map.getCenter(), zoom: map.getZoom(), searchNodes: [...search.childNodes], searchHidden: search.hidden,
-        searchExpanded: byId("globalSearchInput").getAttribute("aria-expanded") };
+        searchExpanded: byId("globalSearchInput").getAttribute("aria-expanded"), searchScroll: search.scrollTop };
       shell.inert = true;
       tour.hidden = false;
       card.setAttribute("aria-modal", "true");
@@ -185,6 +185,7 @@
         map.setView(saved.center, saved.zoom, { animate: false });
         const focus = saved.focus?.isConnected && !saved.focus.closest("[inert]") && visibleRect(saved.focus) ? saved.focus : byId("tlNetworkToggle");
         focus.focus({ preventScroll: true });
+        search.scrollTop = saved.searchScroll;
         scheduleLabels();
       });
     };

@@ -20,6 +20,15 @@
   let fullViewportHeight = innerHeight;
   let previousViewportWidth = innerWidth;
   let popupLayoutSignature = "";
+  let searchScrollTop = 0;
+  let searchScrollQuery = "";
+  byId("globalSearchResults").addEventListener("scroll", () => {
+    const results = byId("globalSearchResults");
+    if (!results.hidden && results.getClientRects().length) {
+      searchScrollTop = results.scrollTop;
+      searchScrollQuery = byId("globalSearchInput").value;
+    }
+  }, { passive: true });
 
   function refreshPopupLayout() {
     if (!ready || !stopPopup?.isOpen() || detailsOverPopup || body.classList.contains("tl-popup-shelved")) return;
@@ -189,6 +198,11 @@
   }
 
   function setSearchOpen(open, { focus = false } = {}) {
+    const results = byId("globalSearchResults"), input = byId("globalSearchInput");
+    if (!open && !mobile() && body.classList.contains("tl-search-open") && results.getClientRects().length) {
+      searchScrollTop = results.scrollTop;
+      searchScrollQuery = input.value;
+    }
     body.classList.toggle("tl-search-open", Boolean(open));
     if (open && !mobile()) {
       body.classList.remove("tl-legend-open");
@@ -196,6 +210,8 @@
     }
     syncPanelControls();
     if (focus && open) byId("globalSearchInput").focus({ preventScroll: true });
+    // The original focus handler rebuilds results. Restore only the same query.
+    if (open && input.value === searchScrollQuery) results.scrollTop = searchScrollTop;
   }
 
   function syncAttribution() {
@@ -234,7 +250,10 @@
   }
 
   byId("tlNetworkToggle").addEventListener("click", toggleNetwork);
-  byId("tlSearchToggle").addEventListener("click", () => setSearchOpen(!body.classList.contains("tl-search-open"), { focus: true }));
+  byId("tlSearchToggle").addEventListener("click", event => {
+    event.stopPropagation(); // Do not let the original outside-click handler hide freshly opened results.
+    setSearchOpen(!body.classList.contains("tl-search-open"), { focus: true });
+  });
   byId("tlSearchClose").addEventListener("click", () => {
     setSearchOpen(false);
     byId("tlSearchToggle").focus({ preventScroll: true });

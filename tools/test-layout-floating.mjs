@@ -90,18 +90,24 @@ for (const [width, height] of [[1440,900],[1280,720],[1024,768],[768,1024],[390,
 }
 
 test('desktop search and legend remain reachable through keyboard and the tour restores an open search', async t => {
-  const app = await openLayout(browser,1280,720); t.after(() => app.context.close());
+  const app = await openLayout(browser,1280,400); t.after(() => app.context.close());
   const { page } = app;
   await page.focus('#tlSearchToggle'); await page.keyboard.press('Enter');
   assert.equal(await page.locator('#globalSearchInput').evaluate(el => el === document.activeElement),true);
-  await page.fill('#globalSearchInput','Cawang');
+  await page.fill('#globalSearchInput','Blok M');
   await page.waitForSelector('#globalSearchResults [data-global-type="transport"]');
+  await page.locator('#globalSearchResults').evaluate(el => el.scrollTop = 40);
+  const resultScroll = await page.locator('#globalSearchResults').evaluate(el => el.scrollTop);
+  assert.ok(resultScroll > 0, 'exercise actual result overflow');
+  await page.click('#tlLegendToggle'); await page.click('#tlSearchToggle');
+  assert.equal(await page.locator('#globalSearchResults').evaluate(el => el.scrollTop),resultScroll);
   const before = await readMap(page);
   await page.evaluate(() => startProductTour({manual:true}));
   for (let i=0;i<5;i++) await page.click('#productTourNext');
   await page.waitForTimeout(250);
   assert.equal(await page.locator('#globalSearchPanel').isVisible(),true);
-  assert.equal(await page.inputValue('#globalSearchInput'),'Cawang');
+  assert.equal(await page.inputValue('#globalSearchInput'),'Blok M');
+  assert.equal(await page.locator('#globalSearchResults').evaluate(el => el.scrollTop),resultScroll,'tour restores the scrolled results after focus rebuilds them');
   assert.equal(await page.locator('#tlSearchToggle').getAttribute('aria-expanded'),'true');
   assert.equal((await readMap(page)).zoom,before.zoom);
   await page.keyboard.press('Escape');
