@@ -52,6 +52,9 @@ for (const [width, height] of [[1440,900],[1280,720],[1024,768],[768,1024],[390,
       assert.equal(await page.locator('#globalSearchResults').evaluate(el => el.scrollTop),scroll,'result scroll survives panel changes');
       await page.click('#tlSearchClose');
       assert.equal(await page.locator('#tlSearchToggle').evaluate(el => el === document.activeElement),true);
+      await page.click('#basemapButton');
+      assert.equal(await page.locator('#filterPanel').isVisible(),false,'basemap also uses the auxiliary panel area');
+      await page.locator('#basemapClose').click();
       await page.click('#tlNetworkToggle');
       if (await page.locator('#filterPanel').evaluate(el => el.inert)) await page.click('#tlNetworkToggle');
       await page.click('#tlNetworkCollapse');

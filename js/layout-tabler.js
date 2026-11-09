@@ -164,7 +164,7 @@
 
   function syncPanelControls() {
     const searchOpen = !mobile() && body.classList.contains("tl-search-open");
-    const auxiliaryOpen = searchOpen || (!mobile() && body.classList.contains("tl-legend-open"));
+    const auxiliaryOpen = !mobile() && (searchOpen || body.classList.contains("tl-legend-open") || !byId("basemapPanel").hidden);
     body.classList.toggle("tl-left-aux-open", auxiliaryOpen);
     const networkOpen = mobile()
       ? body.classList.contains("mobile-filter-open")
@@ -481,6 +481,7 @@
       if (!collapsed) {
         setSearchOpen(false);
         body.classList.remove("tl-legend-open");
+        setBasemapPanelOpen(false);
       }
       if (!collapsed && tablet()) setDetail(false);
       body.classList.toggle("left-panel-collapsed", Boolean(collapsed));
