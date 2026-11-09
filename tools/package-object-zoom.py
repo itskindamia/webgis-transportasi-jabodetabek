@@ -25,7 +25,7 @@ entries['BACA_DULU.md'] = f'''# WebGIS — layout lama, zoom objek penuh
 
 Sumber runtime: {source}
 Layout dasar: {baseline}
-Versi: full-object-zoom-20261109-1
+Versi: full-object-zoom-20261109-2
 
 Paket penggantian penuh runtime statis: index.html, assets/, css/, data/, js/,
 dan lisensi disertakan lengkap. Tidak memuat layout floating eksperimental.

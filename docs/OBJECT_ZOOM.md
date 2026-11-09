@@ -16,6 +16,9 @@ bottom sheet mobile, serta seluruh data transportasi mengikuti versi stabil.
   berada di luar container peta pada layout stabil.
 - Tombol Pusatkan menggunakan extent yang sama tanpa menghapus pilihan rute,
   jenis layanan, status, arah, atau URL.
+- Perhitungan extent menunggu ukuran peta, panel, dan animasi stabil, kemudian
+  memperbarui ukuran Leaflet sebelum fit. Memilih stasiun lain atau menggeser
+  peta membatalkan permintaan fit yang belum dijalankan.
 - Navigasi stasiun tetap memakai perilaku engine semula.
 
 ## Validasi dan batas pemeriksaan

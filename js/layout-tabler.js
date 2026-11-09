@@ -421,6 +421,55 @@
       }
       return padding;
     };
+    // Route selection changes the grid width and may animate the mobile sheet.
+    // Coalesce the engine's fit requests until that workspace is stable, then
+    // invalidate Leaflet's cached size before calculating the complete extent.
+    const originalRouteFit = fitRouteToScreen;
+    let objectFitFrame = 0, pendingObjectFit = null;
+    const cancelObjectFit = () => {
+      if (objectFitFrame) cancelAnimationFrame(objectFitFrame);
+      objectFitFrame = 0;
+      pendingObjectFit = null;
+      document.documentElement.dataset.routeFitPending = "false";
+    };
+    const finishObjectFit = () => {
+      objectFitFrame = 0;
+      const pending = pendingObjectFit;
+      if (!pending) return;
+      if (String(currentSelectedRouteId || "") !== pending.route || String(currentSelectedStopKey || "") !== pending.stop) {
+        cancelObjectFit();
+        return;
+      }
+      const rect = byId("map").getBoundingClientRect(), center = map.getCenter();
+      const signature = JSON.stringify([rect.width, rect.height, detail.getBoundingClientRect().height, center.lat, center.lng, map.getZoom(), getRouteFitPadding()]);
+      const animated = map._animatingZoom || map._panAnim?._inProgress || detail.getAnimations?.().some(animation => animation.playState === "running");
+      pending.frames = !animated && signature === pending.signature ? pending.frames + 1 : 0;
+      pending.signature = signature;
+      if (pending.frames < 3) {
+        objectFitFrame = requestAnimationFrame(finishObjectFit);
+        return;
+      }
+      const options = pending.options;
+      cancelObjectFit();
+      map.stop();
+      const element = byId("map"), size = map.getSize();
+      if (size.x !== element.clientWidth || size.y !== element.clientHeight) {
+        map.invalidateSize({ animate: false, pan: true, debounceMoveend: true });
+      }
+      originalRouteFit(options);
+    };
+    fitRouteToScreen = (options = {}) => {
+      if (!routeLayer?.getBounds().isValid()) return;
+      pendingObjectFit = {
+        route: String(currentSelectedRouteId || ""), stop: String(currentSelectedStopKey || ""),
+        options, signature: "", frames: 0
+      };
+      document.documentElement.dataset.routeFitPending = "true";
+      if (!objectFitFrame) objectFitFrame = requestAnimationFrame(finishObjectFit);
+    };
+    map.on("dragstart", cancelObjectFit);
+    byId("map").addEventListener("wheel", cancelObjectFit, { passive: true });
+    for (const id of ["zoomInButton", "zoomOutButton", "gpsButton"]) byId(id).addEventListener("click", cancelObjectFit, true);
     getStopPopupOptions = () => {
       const size = map.getSize();
       const padding = mapPadding();

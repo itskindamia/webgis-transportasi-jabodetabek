@@ -20,7 +20,7 @@ async function settleView(page) {
   await page.waitForFunction(() => {
     const center = map.getCenter(), size = map.getSize();
     const key = JSON.stringify([center.lat, center.lng, map.getZoom(), size.x, size.y, getRouteFitPadding()]);
-    const still = !map._animatingZoom && !map._panAnim?._inProgress && document.getAnimations().every(animation => animation.playState !== "running");
+    const still = document.documentElement.dataset.routeFitPending !== "true" && !map._animatingZoom && !map._panAnim?._inProgress && document.getAnimations().every(animation => animation.playState !== "running");
     const state = window.objectZoomSettled;
     state.frames = still && state.key === key ? state.frames + 1 : 0;
     state.key = key;
