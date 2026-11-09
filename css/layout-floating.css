@@ -91,6 +91,8 @@
     .tl-app .tl-search .global-search-clear { width: 44px; right: 50px; }
     .tl-app .tl-search .form-control { padding-right: 100px; }
     .tl-app .tl-network #statusSelect, .tl-app .tl-network #routeSelect { height: 44px; min-height: 44px; }
+    .tl-network .tl-note-link, .tl-legend button, .tl-legend summary,
+    .tl-search .global-search-result { min-height: 44px; }
   }
   @media (max-width: 389px) {
     .tl-brand .tl-brand-title-mobile strong { font-size: 12px; }

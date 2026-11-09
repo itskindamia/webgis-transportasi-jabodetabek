@@ -60,6 +60,7 @@ for (const [width, height] of [[1440,900],[1280,720],[1024,768],[768,1024],[390,
       await page.click('#tlNetworkCollapse');
       await page.click('#tlNetworkToggle');
     } else {
+      assert.ok((await page.locator('#tlNetworkAbout').boundingBox()).height >= 44, 'network information link keeps a touch target');
       await page.click('#mobileFilterClose');
       await page.click('#tlMobileDetails');
       for (const id of ['tlDetailCollapse','tlDetailHalf','tlDetailExpand']) await page.click('#'+id);
