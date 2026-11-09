@@ -145,6 +145,9 @@ test("startup disclaimer continues to the adapted tour through the normal button
   const app = await openLayout(browser, 390, 844, { dismissOnboarding: false }); t.after(() => app.context.close()); const { page } = app;
   await page.click("#infoModalAccept");
   await page.waitForSelector("#productTour", { state: "visible" });
+  // The spotlight target is committed in requestAnimationFrame after the
+  // dialog becomes visible. Wait for that ready state, then keep the assertion.
+  await page.waitForFunction(() => document.getElementById("productTour").dataset.target === "tlModeChoices");
   assert.equal(await page.locator("#productTour").getAttribute("data-target"), "tlModeChoices");
   await page.click("#productTourSkip");
   assert.equal(await page.locator("#tlShell").evaluate(el => el.inert), false);

@@ -404,7 +404,23 @@
     };
     clearOldMeasurements();
     requestAnimationFrame(clearOldMeasurements);
-    getRouteFitPadding = mapPadding;
+    // Fit the complete object tightly in the existing map workspace. Fractional
+    // steps avoid losing almost one whole zoom level when the next integer
+    // zoom would clip an endpoint. Button zoomDelta remains unchanged.
+    map.options.zoomSnap = 0.1;
+    getRouteFitTuning = bounds => ({ bounds, maxZoom: map.getMaxZoom() });
+    getRouteFitPadding = () => {
+      const padding = mapPadding();
+      const mapRect = byId("map").getBoundingClientRect();
+      for (const selector of [".tl-map-actions", ".tl-map-navigation"]) {
+        const control = document.querySelector(selector);
+        const style = getComputedStyle(control), rect = control.getBoundingClientRect();
+        if (style.display !== "none" && style.visibility !== "hidden" && rect.right > mapRect.left && rect.left < mapRect.right && rect.bottom > mapRect.top && rect.top < mapRect.bottom) {
+          padding.paddingBottomRight[0] = Math.max(padding.paddingBottomRight[0], mapRect.right - rect.left + 12);
+        }
+      }
+      return padding;
+    };
     getStopPopupOptions = () => {
       const size = map.getSize();
       const padding = mapPadding();

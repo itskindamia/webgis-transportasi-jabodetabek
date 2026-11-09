@@ -1,5 +1,12 @@
 name: Release regression QA (A01 + Ringkasan)
 on:
+  pull_request:
+    paths:
+      - 'js/layout-tabler.js'
+      - 'index.html'
+      - 'tools/test-layout-object-zoom.mjs'
+      - 'tools/test-layout-ux.mjs'
+      - '.github/workflows/release-regression.yml'
   push:
     branches:
       - fix/a01-toggle-non-existing
