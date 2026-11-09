@@ -244,7 +244,7 @@
     byId("tlNetworkToggle").focus({ preventScroll: true });
   });
   byId("tlLegendToggle").addEventListener("click", toggleLegend);
-  const focusLegendToggle = () => byId(mobile() && innerWidth < 359 ? "infoButton" : "tlLegendToggle").focus({ preventScroll: true });
+  const focusLegendToggle = () => (byId("tlLegendToggle").getClientRects().length ? byId("tlLegendToggle") : byId("infoButton")).focus({ preventScroll: true });
   byId("mobileInfoClose").addEventListener("click", focusLegendToggle);
   byId("mobileFilterClose").addEventListener("click", () => byId("tlNetworkToggle").focus({ preventScroll: true }));
   byId("basemapClose").addEventListener("click", () => byId("basemapButton").focus({ preventScroll: true }));
