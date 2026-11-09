@@ -104,6 +104,9 @@ test('desktop search and legend remain reachable through keyboard and the tour r
   assert.equal((await readMap(page)).zoom,before.zoom);
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('#globalSearchPanel').isVisible(),false);
+  await page.click('#tlLegendToggle');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#tlLegendToggle').evaluate(el => el === document.activeElement),true);
   assert.deepEqual(app.errors,[]);
 });
 

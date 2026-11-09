@@ -237,6 +237,10 @@
     byId("tlNetworkToggle").focus({ preventScroll: true });
   });
   byId("tlLegendToggle").addEventListener("click", toggleLegend);
+  const focusLegendToggle = () => byId(mobile() && innerWidth < 359 ? "infoButton" : "tlLegendToggle").focus({ preventScroll: true });
+  byId("mobileInfoClose").addEventListener("click", focusLegendToggle);
+  byId("mobileFilterClose").addEventListener("click", () => byId("tlNetworkToggle").focus({ preventScroll: true }));
+  byId("basemapClose").addEventListener("click", () => byId("basemapButton").focus({ preventScroll: true }));
   for (const id of ["tlDetailsToggle", "tlMobileDetails"]) {
     byId(id).addEventListener("click", () => {
       if ((mobile() || body.classList.contains("tl-short-landscape")) && stopPopup?.isOpen() && !detailsOverPopup) showPopupDetails();
@@ -610,9 +614,16 @@
       if (!mobile() && body.classList.contains("tl-search-open")) {
         setSearchOpen(false);
         byId("tlSearchToggle").focus({ preventScroll: true });
-      } else if (body.classList.contains("mobile-filter-open")) setMobileFilterOpen(false);
-      else if (body.classList.contains("mobile-info-open") || body.classList.contains("tl-legend-open")) setMobileInfoOpen(false);
-      else if (!byId("basemapPanel").hidden) setBasemapPanelOpen(false);
+      } else if (body.classList.contains("mobile-filter-open")) {
+        setMobileFilterOpen(false);
+        byId("tlNetworkToggle").focus({ preventScroll: true });
+      } else if (body.classList.contains("mobile-info-open") || body.classList.contains("tl-legend-open")) {
+        setMobileInfoOpen(false);
+        focusLegendToggle();
+      } else if (!byId("basemapPanel").hidden) {
+        setBasemapPanelOpen(false);
+        byId("basemapButton").focus({ preventScroll: true });
+      }
       else if (detail.contains(document.activeElement)) {
         setDetail(false);
         byId(mobile() ? "tlMobileDetails" : "tlDetailsToggle").focus();
