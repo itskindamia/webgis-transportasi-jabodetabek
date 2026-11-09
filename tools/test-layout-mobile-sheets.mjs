@@ -38,7 +38,7 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844], [568, 320], [
       });
       assert.ok(result.heading.height <= 54, "mobile network heading should be compact");
       assert.equal(result.eyebrowHidden, true, "redundant mobile eyebrow hidden");
-      assert.ok(result.statusHeight >= 39 && result.statusHeight <= 41 && result.corridorHeight >= 39 && result.corridorHeight <= 41, "both selectors have compact 40px height");
+      assert.ok(result.statusHeight >= 44 && result.statusHeight <= 46 && result.corridorHeight >= 44 && result.corridorHeight <= 46, "both selectors keep 44px touch targets");
       assert.equal(result.headingTransform, "uppercase", "mobile heading is all caps");
       assert.equal(result.buttonHeights.length, 5);
       assert.ok(result.buttonHeights.every(h => h >= 44), "mode controls keep 44px touch height");

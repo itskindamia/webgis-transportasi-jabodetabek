@@ -46,9 +46,9 @@ for (const [width, height] of [
           const second = getComputedStyle(line2);
           return ["fontFamily", "fontSize", "fontWeight", "lineHeight", "letterSpacing", "color"].every(prop => first[prop] === second[prop]);
         })(),
-        brandFits: brand.right <= search.left - 4 || innerWidth < 768,
+        brandFits: brand.right <= buttons.left - 4,
         titleFits: desktop.scrollWidth <= desktop.clientWidth + 1,
-        searchFits: search.right <= buttons.left - 4 || innerWidth < 768,
+        actionsFit: buttons.right <= header.right,
         headerWithinViewport: header.right <= innerWidth + 1,
         documentWidth: document.documentElement.scrollWidth,
         width: innerWidth
@@ -65,16 +65,16 @@ for (const [width, height] of [
       assert.equal(result.desktopShown, true, "one-line desktop title visible");
       assert.equal(result.mobileShown, false, "stacked title hidden on desktop");
       assert.equal(result.titleFits, true, "desktop title fits without clipping");
-      assert.equal(result.brandFits, true, "desktop brand and Search do not collide");
-      assert.equal(result.searchFits, true, "Search and header actions do not collide");
+      assert.equal(result.brandFits, true, "desktop brand and header actions do not collide");
+      assert.equal(result.actionsFit, true, "header actions fit within the header");
     } else {
       assert.equal(result.desktopShown, false, "desktop title hidden on mobile/tablet");
       assert.equal(result.mobileShown, true, "stacked mobile title visible");
       assert.equal(result.mobileStacked, true, "second title line remains below first");
       assert.equal(result.equalTypography, true, "both mobile title lines have identical typography");
       if (width >= 768) {
-        assert.equal(result.brandFits, true, "tablet brand does not overlap Search");
-        assert.equal(result.searchFits, true, "tablet Search does not overlap actions");
+        assert.equal(result.brandFits, true, "tablet brand does not overlap actions");
+        assert.equal(result.actionsFit, true, "tablet header actions fit");
       }
     }
     assert.deepEqual(errors, [], "no runtime errors");

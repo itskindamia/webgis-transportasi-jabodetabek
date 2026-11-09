@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'css/layout-tabler.css'
+      - 'css/layout-floating.css'
       - 'index.html'
       - 'tools/test-layout-density.mjs'
       - 'tools/test-layout-brand-title.mjs'

@@ -136,7 +136,10 @@
         ui.revealPopup();
         target = document.querySelector(".leaflet-popup .stop-popup-direct-routes");
         if (!visibleRect(target)) target = byId(mobile() ? "tlMobileDetails" : "tlDetailsToggle");
-      } else if (step.target === "search") target = byId("globalSearchPanel");
+      } else if (step.target === "search") {
+        ui.setSearchOpen(true);
+        target = byId("globalSearchPanel");
+      }
       else target = byId("basemapButton");
       byId("productTourProgress").textContent = `TIP ${productTourIndex + 1} DARI ${steps.length}`;
       byId("productTourTitle").textContent = step.title;

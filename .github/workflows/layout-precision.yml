@@ -7,6 +7,8 @@ on:
   pull_request:
     paths:
       - 'css/layout-tabler.css'
+      - 'css/layout-floating.css'
+      - 'index.html'
       - 'js/layout-tabler*.js'
       - 'tools/test-layout-*.mjs'
       - '.github/workflows/layout-precision.yml'

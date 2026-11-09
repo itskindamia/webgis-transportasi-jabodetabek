@@ -14,33 +14,57 @@
     <link rel="stylesheet" href="css/legacy-components.css?v=mobile-ux-20261107-1">
     <link rel="stylesheet" href="css/layout-tabler.css?v=inline-stop-badges-20261107-8">
     <link rel="stylesheet" href="css/lrt-popup.css?v=mobile-ux-20261107-1">
+    <link rel="stylesheet" href="css/layout-floating.css?v=floating-20261109-1">
     <link rel="stylesheet" href="css/font-pt-sans.css?v=mobile-ux-20261107-1">
   </head>
   <body class="tl-app">
     <div class="tl-shell" id="tlShell">
       <header class="tl-header">
         <div class="tl-brand-area">
-          <button id="tlNetworkToggle" class="btn btn-icon" type="button" aria-label="Buka atau tutup jaringan" title="Buka atau tutup jaringan">
-            <svg class="icon" aria-hidden="true">
-              <use href="assets/icons/tabler.svg#menu-2"></use>
-            </svg>
-          </button>
           <a class="tl-brand" href="#map" aria-label="PETA JARINGAN TRANSPORTASI JABODETABEK" title="PETA JARINGAN TRANSPORTASI JABODETABEK">
             <span class="tl-brand-mark">
               <svg class="icon" aria-hidden="true">
                 <use href="assets/icons/tabler.svg#route"></use>
               </svg>
             </span>
-            <span class="tl-brand-text">
+            <h1 class="tl-brand-text">
               <strong class="tl-brand-title-desktop">PETA JARINGAN TRANSPORTASI JABODETABEK</strong>
               <span class="tl-brand-title-mobile" aria-hidden="true">
                 <strong>PETA JARINGAN</strong>
                 <strong>TRANSPORTASI JABODETABEK</strong>
               </span>
-            </span>
+            </h1>
           </a>
         </div>
+        <nav class="tl-header-actions" aria-label="Panel peta">
+          <button id="tlSearchToggle" class="btn tl-header-action" type="button" aria-label="Cari" aria-controls="globalSearchPanel" aria-expanded="false" title="Cari halte, stasiun, atau tempat">
+            <svg class="icon" aria-hidden="true"><use href="assets/icons/tabler.svg#search"></use></svg>
+            <span>Cari</span>
+          </button>
+          <button id="tlNetworkToggle" class="btn tl-header-action" type="button" aria-label="Jaringan" aria-controls="filterPanel" aria-expanded="true" title="Jaringan transportasi">
+            <svg class="icon" aria-hidden="true"><use href="assets/icons/tabler.svg#route"></use></svg>
+            <span>Jaringan</span>
+          </button>
+          <button id="tlLegendToggle" class="btn tl-header-action" type="button" aria-label="Legenda" aria-controls="rightInfoPanel" aria-expanded="false">
+            <svg class="icon" aria-hidden="true">
+              <use href="assets/icons/tabler.svg#layers-subtract"></use>
+            </svg>
+            <span>Legenda</span>
+          </button>
+          <button id="tlAbout" class="btn tl-header-action" type="button" aria-label="Tentang" aria-controls="infoModal" aria-haspopup="dialog" aria-expanded="false" title="Tentang peta">
+            <svg class="icon" aria-hidden="true">
+              <use href="assets/icons/tabler.svg#info-circle"></use>
+            </svg>
+            <span>Tentang</span>
+          </button>
+        </nav>
+      </header>
+      <main class="tl-main">
         <section aria-label="Pencarian lokasi" class="global-search-panel tl-search" id="globalSearchPanel">
+          <div class="tl-search-heading">
+            <h2>Cari lokasi</h2>
+            <button id="tlSearchClose" class="btn btn-icon" type="button" aria-label="Tutup pencarian" title="Tutup pencarian"><svg class="icon" aria-hidden="true"><use href="assets/icons/tabler.svg#x"></use></svg></button>
+          </div>
           <label for="globalSearchInput" class="tl-sr-only">Cari Lokasi</label>
           <div class="global-search-input-wrap">
             <svg aria-hidden="true" class="global-search-icon" viewbox="0 0 24 24">
@@ -53,27 +77,7 @@
           </div>
           <div aria-label="Hasil pencarian lokasi" class="global-search-results" hidden="" id="globalSearchResults" role="listbox"></div>
         </section>
-        <nav class="tl-header-actions" aria-label="Panel peta">
-          <button id="tlLegendToggle" class="btn tl-header-action" type="button" aria-label="Legenda" aria-controls="rightInfoPanel" aria-expanded="false">
-            <svg class="icon" aria-hidden="true">
-              <use href="assets/icons/tabler.svg#layers-subtract"></use>
-            </svg>
-            <span>Legenda</span>
-          </button>
-          <button id="tlDetailsToggle" class="btn tl-header-action" type="button" aria-label="Detail" aria-controls="tlDetailPanel" aria-expanded="false">
-            <svg class="icon" aria-hidden="true">
-              <use href="assets/icons/tabler.svg#list"></use>
-            </svg>
-            <span>Detail</span>
-          </button>
-          <button id="tlAbout" class="btn btn-icon" type="button" aria-label="Informasi dan catatan" title="Informasi dan catatan">
-            <svg class="icon" aria-hidden="true">
-              <use href="assets/icons/tabler.svg#info-circle"></use>
-            </svg>
-          </button>
-        </nav>
-      </header>
-      <main class="tl-main">
+
         <aside class="filter-panel tl-network card" id="filterPanel" aria-label="Filter jaringan transportasi">
           <div class="tl-panel-heading card-header">
             <div>
@@ -219,7 +223,7 @@
           <aside class="right-info-panel tl-legend card" id="rightInfoPanel" aria-label="Legenda dan informasi peta">
             <header class="right-info-header">
               <div class="right-info-heading">
-                <h1>Legenda &amp; informasi</h1>
+                <h2>Legenda &amp; informasi</h2>
               </div>
               <button aria-label="Tutup panel informasi" class="mobile-info-close btn btn-icon" id="mobileInfoClose" type="button">
                 <svg class="icon" aria-hidden="true">
@@ -462,6 +466,13 @@
         </aside>
       </main>
       <div class="bottom-toolbar tl-dock" id="bottomToolbar">
+          <button id="tlDetailsToggle" class="toolbar-button btn" type="button" aria-label="Detail" aria-controls="tlDetailPanel" aria-expanded="false">
+            <svg class="icon" aria-hidden="true">
+              <use href="assets/icons/tabler.svg#list"></use>
+            </svg>
+            <span class="mobile-toolbar-label">Detail</span>
+          </button>
+
         <button aria-expanded="false" aria-label="Buka panel rute" class="toolbar-button mobile-bottom-route btn" id="mobileBottomRouteButton" title="Rute" type="button">
           <svg aria-hidden="true" class="toolbar-icon" viewbox="0 0 24 24">
             <circle cx="6" cy="6" fill="none" r="2" stroke="currentColor" stroke-width="1.7"></circle>
@@ -972,8 +983,8 @@
         </div>
       </div>
     </div>
-    <script src="js/layout-tabler.js?v=compact-filter-20261107-4"></script>
-    <script src="js/layout-tabler-ux.js?v=compact-tour-20261107-5"></script>
+    <script src="js/layout-tabler.js?v=floating-20261109-1"></script>
+    <script src="js/layout-tabler-ux.js?v=floating-20261109-1"></script>
     <script src="js/lrt-popup.js?v=mobile-ux-20261107-1"></script>
     <script crossorigin="anonymous" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/app-loader.js?v=a01-20261107-1"></script>

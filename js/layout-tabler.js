@@ -10,7 +10,6 @@
   let syncFrame = 0;
   let lastRoute = "";
   let lastStop = "";
-  let lastTablet = tablet();
   let modeSignature = "";
   let stopPopup = null;
   let detailsOverPopup = false;
@@ -164,9 +163,12 @@
   }
 
   function syncPanelControls() {
+    const searchOpen = !mobile() && body.classList.contains("tl-search-open");
+    const auxiliaryOpen = searchOpen || (!mobile() && body.classList.contains("tl-legend-open"));
+    body.classList.toggle("tl-left-aux-open", auxiliaryOpen);
     const networkOpen = mobile()
       ? body.classList.contains("mobile-filter-open")
-      : !body.classList.contains("left-panel-collapsed");
+      : !body.classList.contains("left-panel-collapsed") && !auxiliaryOpen;
     const legendOpen = mobile()
       ? body.classList.contains("mobile-info-open")
       : body.classList.contains("tl-legend-open");
@@ -174,7 +176,19 @@
     byId("rightInfoPanel").inert = !legendOpen;
     byId("tlNetworkToggle").setAttribute("aria-expanded", String(networkOpen));
     byId("tlLegendToggle").setAttribute("aria-expanded", String(legendOpen));
+    byId("globalSearchPanel").inert = !mobile() && !searchOpen;
+    byId("tlSearchToggle").setAttribute("aria-expanded", String(mobile() || searchOpen));
     queueAttribution();
+  }
+
+  function setSearchOpen(open, { focus = false } = {}) {
+    body.classList.toggle("tl-search-open", Boolean(open));
+    if (open && !mobile()) {
+      body.classList.remove("tl-legend-open");
+      if (ready) setBasemapPanelOpen(false);
+    }
+    syncPanelControls();
+    if (focus && open) byId("globalSearchInput").focus({ preventScroll: true });
   }
 
   function syncAttribution() {
@@ -196,7 +210,7 @@
   function toggleNetwork() {
     if (!ready) return;
     if (mobile()) setMobileFilterOpen(!body.classList.contains("mobile-filter-open"));
-    else setDesktopPanelCollapsed("left", !body.classList.contains("left-panel-collapsed"));
+    else setDesktopPanelCollapsed("left", body.classList.contains("tl-left-aux-open") ? false : !body.classList.contains("left-panel-collapsed"));
   }
 
   function toggleLegend() {
@@ -204,6 +218,7 @@
     if (mobile()) setMobileInfoOpen(!body.classList.contains("mobile-info-open"));
     else {
       const open = !body.classList.contains("tl-legend-open");
+      setSearchOpen(false);
       body.classList.toggle("tl-legend-open", open);
       if (open) setBasemapPanelOpen(false);
       syncPanelControls();
@@ -212,6 +227,11 @@
   }
 
   byId("tlNetworkToggle").addEventListener("click", toggleNetwork);
+  byId("tlSearchToggle").addEventListener("click", () => setSearchOpen(!body.classList.contains("tl-search-open"), { focus: true }));
+  byId("tlSearchClose").addEventListener("click", () => {
+    setSearchOpen(false);
+    byId("tlSearchToggle").focus({ preventScroll: true });
+  });
   byId("tlNetworkCollapse").addEventListener("click", () => {
     if (ready) setDesktopPanelCollapsed("left", true);
     byId("tlNetworkToggle").focus({ preventScroll: true });
@@ -380,10 +400,11 @@
       if (body.classList.contains("tl-detail-open")) {
         bottom = Math.min(rect.height * .55, byId("tlDetailPanel").getBoundingClientRect().height + 24);
       }
-    } else if (tablet()) {
-      if (!body.classList.contains("left-panel-collapsed")) left = 312;
-      if (body.classList.contains("tl-detail-open")) right = 352;
-      // Only one side overlay is opened at a time, leaving usable map space.
+    } else {
+      if (!body.classList.contains("left-panel-collapsed") || body.classList.contains("tl-left-aux-open")) left = byId("filterPanel").getBoundingClientRect().width + 32;
+      if (body.classList.contains("tl-detail-open")) right = byId("tlDetailPanel").getBoundingClientRect().width + 88;
+      // Floating panels reserve space when fitting a route, never when switching panels.
+      top = 68;
     }
     return { paddingTopLeft: [left, top], paddingBottomRight: [right, bottom] };
   }
@@ -457,6 +478,10 @@
     };
     setDesktopPanelCollapsed = (side, collapsed) => {
       if (side !== "left" || mobile()) return;
+      if (!collapsed) {
+        setSearchOpen(false);
+        body.classList.remove("tl-legend-open");
+      }
       if (!collapsed && tablet()) setDetail(false);
       body.classList.toggle("left-panel-collapsed", Boolean(collapsed));
       byId("leftPanelCollapse").hidden = Boolean(collapsed);
@@ -476,7 +501,10 @@
     };
     setMobileInfoOpen = open => {
       if (open && mobile()) setDetail(false);
-      if (!mobile()) body.classList.toggle("tl-legend-open", Boolean(open));
+      if (!mobile()) {
+        if (open) setSearchOpen(false);
+        body.classList.toggle("tl-legend-open", Boolean(open));
+      }
       originalInfo(open);
       syncPanelControls();
       syncPopupPresentation();
@@ -489,6 +517,32 @@
       syncPanelControls();
       syncPopupPresentation();
       resizeMap();
+    };
+    const originalInfoModal = setInfoModalOpen;
+    setInfoModalOpen = (...args) => {
+      originalInfoModal(...args);
+      byId("tlAbout").setAttribute("aria-expanded", String(!byId("infoModalBackdrop").hidden));
+    };
+    byId("tlAbout").setAttribute("aria-expanded", String(!byId("infoModalBackdrop").hidden));
+    const originalPanelMode = syncPanelModeAfterResize;
+    let wasMobile = mobile();
+    syncPanelModeAfterResize = () => {
+      const nowMobile = mobile();
+      if (nowMobile === wasMobile) return originalPanelMode();
+      const legend = body.classList.contains(wasMobile ? "mobile-info-open" : "tl-legend-open");
+      const network = wasMobile ? body.classList.contains("mobile-filter-open") : !body.classList.contains("left-panel-collapsed") && !body.classList.contains("tl-left-aux-open");
+      const detailOpen = body.classList.contains("tl-detail-open");
+      wasMobile = nowMobile;
+      originalPanelMode();
+      body.classList.remove("tl-legend-open");
+      if (nowMobile) {
+        if (legend) setMobileInfoOpen(true);
+        else if (network && !detailOpen) setMobileFilterOpen(true);
+      } else {
+        body.classList.toggle("left-panel-collapsed", !network || (tablet() && detailOpen));
+        body.classList.toggle("tl-legend-open", legend);
+      }
+      syncPanelControls();
     };
     setRouteDetailCollapsed(false, { persist: false });
     setTab("route");
@@ -546,17 +600,16 @@
       syncPopupPresentation();
     });
     window.addEventListener("resize", () => {
-      if (tablet() !== lastTablet) {
-        lastTablet = tablet();
-        if (tablet()) setDesktopPanelCollapsed("left", true);
-      }
       syncPanelControls();
       syncPopupPresentation();
       resizeMap();
     });
     document.addEventListener("keydown", event => {
       if (event.key !== "Escape" || event.defaultPrevented || !byId("productTour").hidden) return;
-      if (body.classList.contains("mobile-filter-open")) setMobileFilterOpen(false);
+      if (!mobile() && body.classList.contains("tl-search-open")) {
+        setSearchOpen(false);
+        byId("tlSearchToggle").focus({ preventScroll: true });
+      } else if (body.classList.contains("mobile-filter-open")) setMobileFilterOpen(false);
       else if (body.classList.contains("mobile-info-open") || body.classList.contains("tl-legend-open")) setMobileInfoOpen(false);
       else if (!byId("basemapPanel").hidden) setBasemapPanelOpen(false);
       else if (detail.contains(document.activeElement)) {
@@ -570,7 +623,7 @@
     document.documentElement.dataset.layoutReady = "true";
     // UI-only bridge for the tour; no transport state setters are exposed.
     window.webgisLayout = Object.freeze({
-      setDetail, setTab, setDetailExpanded, setSheetPosition, revealPopup, showPopupDetails,
+      setDetail, setTab, setDetailExpanded, setSheetPosition, revealPopup, showPopupDetails, setSearchOpen,
       capture() {
         return {
           leftCollapsed: body.classList.contains("left-panel-collapsed"),
@@ -578,6 +631,7 @@
           tab: detail.dataset.tab, sheetPosition, detailsOverPopup,
           filter: body.classList.contains("mobile-filter-open"), info: body.classList.contains("mobile-info-open"),
           legend: body.classList.contains("tl-legend-open"), basemap: !byId("basemapPanel").hidden,
+          searchOpen: body.classList.contains("tl-search-open"),
           scroll: [...document.querySelectorAll(".filter-panel-content, .tl-route-content, .stop-list-scroll, .right-info-body, .leaflet-popup-content, .stop-popup-scroll, .lrt-popup-body")].map(element => ({ element, top: element.scrollTop }))
         };
       },
@@ -589,6 +643,7 @@
         if (state.info) setMobileInfoOpen(true);
         if (state.basemap) setBasemapPanelOpen(true);
         body.classList.toggle("tl-legend-open", state.legend);
+        body.classList.toggle("tl-search-open", Boolean(state.searchOpen));
         detailsOverPopup = state.detailsOverPopup;
         syncPanelControls(); syncPopupPresentation(); resizeMap();
         for (const item of state.scroll) if (item.element.isConnected) item.element.scrollTop = item.top;

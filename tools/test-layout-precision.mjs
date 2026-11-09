@@ -115,13 +115,9 @@ for (const [width, height] of [
         assert.equal(state.mapTitle, state.mapText, details + ": full route label is accessible");
 
         if (width >= 1024) {
-          // The complete desktop brand now occupies a wider first header
-          // column; enforce non-overlap rather than an obsolete x-alignment
-          // between the search bar and the map's 20px context inset.
-          assert.ok(state.brandRight + 8 <= state.searchLeft,
-            details + ": brand and Search do not overlap");
-          assert.ok(state.searchRight + 8 <= state.headerActionsLeft,
-            details + ": Search and header actions do not overlap");
+          // Search is now a floating panel opened by the header's Cari action.
+          assert.ok(state.brandRight + 8 <= state.headerActionsLeft,
+            details + ": brand and header actions do not overlap");
           assert.ok(state.mapCaptionRight + 8 <= state.mapActionsLeft,
             details + ": context badge does not overlap map controls");
           if (state.detailVisible) {

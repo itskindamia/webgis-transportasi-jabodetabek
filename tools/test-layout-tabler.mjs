@@ -65,7 +65,7 @@ for (const [width, height] of [[390, 844], [768, 1024], [1366, 900], [1600, 1000
         await page.click("#tlNetworkCollapse");
         await page.waitForTimeout(200);
         const expanded = await readMap(page);
-        assert.ok(expanded.size[0] > current.size[0]);
+        assert.equal(expanded.size[0], current.size[0], "floating sidebar leaves map dimensions unchanged");
         assert.equal(expanded.zoom, current.zoom, "sidebar does not change zoom");
         const shift = await page.evaluate(([a, b]) => map.project(a).distanceTo(map.project(b)), [expanded.center, current.center]);
         assert.ok(shift <= 1, `center stays within Leaflet pixel rounding: ${shift}`);
@@ -124,6 +124,7 @@ test("global transport search, online place search, basemaps, legend and about r
   const app = await openLayout(browser);
   t.after(() => app.context.close());
   const { page } = app;
+  await page.click("#tlSearchToggle");
   await page.fill("#globalSearchInput", "Blok M");
   await page.waitForSelector("#globalSearchResults .global-search-result");
   await page.locator('#globalSearchResults [data-global-type="transport"]').first().click();
