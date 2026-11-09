@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="id">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Perbandingan layout WebGIS</title>
+<style>
+@font-face{font-family:PT;src:url(../../assets/fonts/pt-sans-latin-400-normal.woff2)}@font-face{font-family:PT;src:url(../../assets/fonts/pt-sans-latin-700-normal.woff2);font-weight:700}
+*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#18283b;font:16px/1.5 PT,Arial,sans-serif}header{background:#fff;border-bottom:1px solid #e4e9ef;padding:24px;position:sticky;top:0;z-index:1}h1{font-size:24px;margin:0 0 8px}p{margin:8px 0}nav{display:flex;gap:16px;align-items:center;flex-wrap:wrap}select,a{font:inherit;min-height:44px}select{padding:8px;border:1px solid #b8c6d6;border-radius:8px;background:#fff}label{display:flex;align-items:center;gap:8px}a{color:#206bc4}main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;padding:24px}figure{margin:0}figcaption{font-weight:700;margin-bottom:12px}img{display:block;max-width:100%;height:auto;border:1px solid #dfe5ec;border-radius:8px;background:#fff}a:focus-visible,select:focus-visible{outline:3px solid #89b8f0;outline-offset:4px}.note{font-size:14px;color:#5a6b7f}@media(max-width:700px){main{grid-template-columns:1fr}header,main{padding:16px}}
+</style></head><body>
+<header><h1>Perbandingan layout WebGIS</h1><p>Screenshot aplikasi sebenarnya, memakai PT Sans lokal dan tile penyedia basemap proyek. Klik gambar untuk melihat ukuran penuh.</p>
+<nav><label>Viewport <select id="viewport"><option>1440</option><option>1280</option><option>1024</option><option>768</option><option>390</option><option>360</option></select></label><label>Tampilan <select id="scenario"><option value="network">Panel Jaringan</option><option value="stops">Daftar halte</option></select></label><a href="../../index.html">Buka preview aplikasi</a><a href="webgis-runtime.zip" download>Unduh ZIP runtime lengkap</a></nav>
+<p class="note" id="size" aria-live="polite"></p></header>
+<main><figure><figcaption>Sebelum · main 46c3913</figcaption><a id="beforeLink"><img id="before" alt="Layout sebelum perubahan"></a></figure><figure><figcaption>Sesudah · panel mengambang</figcaption><a id="afterLink"><img id="after" alt="Layout sesudah perubahan"></a></figure></main>
+<script>
+const viewport=document.getElementById('viewport'),scenario=document.getElementById('scenario');
+function update(){const w=viewport.value,h={1440:900,1280:720,1024:768,768:1024,390:844,360:800}[w];for(const stage of ['before','after']){const path=`screenshots/${stage}/${scenario.value}-${w}.png`;document.getElementById(stage).src=path;document.getElementById(stage+'Link').href=path;}document.getElementById('size').textContent=`${w} × ${h} · Koridor 3 · Eksisting. Kamera mengikuti mekanisme fit rute yang sama, dengan padding sesuai ruang panel masing-masing layout.`;}
+viewport.addEventListener('change',update);scenario.addEventListener('change',update);update();
+</script></body></html>

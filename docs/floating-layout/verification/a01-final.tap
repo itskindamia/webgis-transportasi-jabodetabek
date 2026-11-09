@@ -1,0 +1,127 @@
+
+> test:a01
+> node --test --test-reporter=tap tools/test-a01-toggle.mjs
+
+TAP version 13
+# Subtest: Koridor 13: toggle on/off without a selected stop
+ok 1 - Koridor 13: toggle on/off without a selected stop
+  ---
+  duration_ms: 7265.907898
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 1366px
+ok 2 - Koridor 13: retain an Existing selection across on/off at 1366px
+  ---
+  duration_ms: 8491.47095
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 390px
+ok 3 - Koridor 13: retain an Existing selection across on/off at 390px
+  ---
+  duration_ms: 8894.414761
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 568px
+ok 4 - Koridor 13: retain an Existing selection across on/off at 568px
+  ---
+  duration_ms: 8395.720775
+  type: 'test'
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 1366px
+ok 5 - Koridor 15–19: non-existing visibility and selected stop removal at 1366px
+  ---
+  duration_ms: 41318.691305
+  type: 'test'
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 390px
+ok 6 - Koridor 15–19: non-existing visibility and selected stop removal at 390px
+  ---
+  duration_ms: 41783.181614
+  type: 'test'
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 568px
+ok 7 - Koridor 15–19: non-existing visibility and selected stop removal at 568px
+  ---
+  duration_ms: 41815.052425
+  type: 'test'
+  ...
+# Subtest: BRT_13: disabling clears a selected Conceptual stop
+ok 8 - BRT_13: disabling clears a selected Conceptual stop
+  ---
+  duration_ms: 8347.775629
+  type: 'test'
+  ...
+# Subtest: BRT_11: disabling clears a selected Proposed stop
+ok 9 - BRT_11: disabling clears a selected Proposed stop
+  ---
+  duration_ms: 8223.880494
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a panned view and open popup at 1366px
+ok 10 - Koridor 13: preserve a panned view and open popup at 1366px
+  ---
+  duration_ms: 9149.03785
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a closed popup during pending selection at 1366px
+ok 11 - Koridor 13: preserve a closed popup during pending selection at 1366px
+  ---
+  duration_ms: 5669.954953
+  type: 'test'
+  ...
+# Subtest: Koridor 13: keep a manually dismissed popup closed at 1366px
+ok 12 - Koridor 13: keep a manually dismissed popup closed at 1366px
+  ---
+  duration_ms: 8681.854551
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a panned view and open popup at 390px
+ok 13 - Koridor 13: preserve a panned view and open popup at 390px
+  ---
+  duration_ms: 9120.448756
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a closed popup during pending selection at 390px
+ok 14 - Koridor 13: preserve a closed popup during pending selection at 390px
+  ---
+  duration_ms: 5679.843043
+  type: 'test'
+  ...
+# Subtest: Koridor 13: keep a manually dismissed popup closed at 390px
+ok 15 - Koridor 13: keep a manually dismissed popup closed at 390px
+  ---
+  duration_ms: 8625.627771
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a panned view and open popup at 568px
+ok 16 - Koridor 13: preserve a panned view and open popup at 568px
+  ---
+  duration_ms: 9053.035506
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a closed popup during pending selection at 568px
+ok 17 - Koridor 13: preserve a closed popup during pending selection at 568px
+  ---
+  duration_ms: 5868.599036
+  type: 'test'
+  ...
+# Subtest: Koridor 13: keep a manually dismissed popup closed at 568px
+ok 18 - Koridor 13: keep a manually dismissed popup closed at 568px
+  ---
+  duration_ms: 10012.000458
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 246779.675459
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

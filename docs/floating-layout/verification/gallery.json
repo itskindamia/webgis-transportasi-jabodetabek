@@ -1,0 +1,6 @@
+{
+  "checks": "all 24 screenshot images and runtime ZIP load over HTTP; viewport and scenario selectors work",
+  "browser": "156.0.8078.79",
+  "errors": [],
+  "failures": []
+}

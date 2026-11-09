@@ -1,0 +1,1166 @@
+diff --git a/.github/workflows/layout-precision.yml b/.github/workflows/layout-precision.yml
+index 57e8a93..0bb9619 100644
+--- a/.github/workflows/layout-precision.yml
++++ b/.github/workflows/layout-precision.yml
+@@ -7,6 +7,8 @@ on:
+   pull_request:
+     paths:
+       - 'css/layout-tabler.css'
++      - 'css/layout-floating.css'
++      - 'index.html'
+       - 'js/layout-tabler*.js'
+       - 'tools/test-layout-*.mjs'
+       - '.github/workflows/layout-precision.yml'
+diff --git a/.github/workflows/release-regression.yml b/.github/workflows/release-regression.yml
+index 3fb9143..5e0d7b3 100644
+--- a/.github/workflows/release-regression.yml
++++ b/.github/workflows/release-regression.yml
+@@ -1,5 +1,12 @@
+ name: Release regression QA (A01 + Ringkasan)
+ on:
++  pull_request:
++    paths:
++      - 'css/layout-floating.css'
++      - 'js/layout-tabler*.js'
++      - 'index.html'
++      - 'tools/test-layout-floating.mjs'
++      - '.github/workflows/release-regression.yml'
+   push:
+     branches:
+       - fix/a01-toggle-non-existing
+diff --git a/.github/workflows/responsive-density-smoke.yml b/.github/workflows/responsive-density-smoke.yml
+index a07ec8b..4df6dd5 100644
+--- a/.github/workflows/responsive-density-smoke.yml
++++ b/.github/workflows/responsive-density-smoke.yml
+@@ -4,6 +4,7 @@ on:
+   pull_request:
+     paths:
+       - 'css/layout-tabler.css'
++      - 'css/layout-floating.css'
+       - 'index.html'
+       - 'tools/test-layout-density.mjs'
+       - 'tools/test-layout-brand-title.mjs'
+diff --git a/css/layout-floating.css b/css/layout-floating.css
+new file mode 100644
+index 0000000..19d37f1
+--- /dev/null
++++ b/css/layout-floating.css
+@@ -0,0 +1,118 @@
++/* Floating map chrome; reuse the existing controls and responsive sheets. */
++@layer prototype {
++  .tl-header {
++    grid-template-columns: minmax(0, 1fr) auto;
++    gap: 16px;
++    padding: env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
++  }
++  .tl-brand-text { margin: 0; font: inherit; }
++  .tl-brand { min-width: 0; }
++  .tl-header-action { min-height: 44px; }
++  .tl-search-heading { display: none; }
++  .right-info-header h2 { margin: 0; font-size: 16px; font-weight: 700; }
++  .tl-dock #tlDetailsToggle { display: flex; }
++  .tl-dock .btn { min-height: 44px; }
++  .tl-popup-shelved #map .leaflet-popup { visibility: hidden; pointer-events: none; }
++  .tl-search input::-webkit-search-cancel-button { -webkit-appearance: none; }
++  .tl-basemap .basemap-close { width: 44px; min-width: 44px; min-height: 44px; }
++
++  @media (min-width: 768px) {
++    :root { --tl-sidebar: 320px; --tl-detail: 320px; --tl-header: calc(56px + env(safe-area-inset-top, 0px)); }
++    .tl-main, .tl-detail-open .tl-main,
++    .left-panel-collapsed .tl-main, .left-panel-collapsed.tl-detail-open .tl-main { display: block; }
++    .tl-map-workspace { width: 100%; height: 100%; }
++    .tl-app .tl-network, .tl-app .tl-detail-panel, .tl-legend {
++      position: absolute;
++      top: 16px;
++      bottom: 88px;
++      width: var(--tl-sidebar);
++      max-height: calc(100% - 104px);
++      border: 1px solid var(--tl-border);
++      border-radius: 12px;
++      box-shadow: var(--tl-shadow);
++    }
++    .tl-app .tl-network { left: 16px; height: fit-content; }
++    .tl-app .tl-network .filter-panel-content { flex: 0 1 auto; overscroll-behavior: contain; }
++    .tl-app .tl-detail-panel { right: 16px; left: auto; width: var(--tl-detail); bottom: 16px; max-height: calc(100% - 32px); }
++    .tl-left-aux-open .tl-network { visibility: hidden; }
++    .tl-legend { left: 16px; right: auto; height: fit-content; }
++    .tl-search {
++      position: absolute;
++      display: none;
++      top: 16px;
++      left: 16px;
++      width: var(--tl-sidebar);
++      max-height: calc(100% - 104px);
++      padding: 12px;
++      border: 1px solid var(--tl-border);
++      border-radius: 12px;
++      box-shadow: var(--tl-shadow);
++      background: white;
++      z-index: 1050;
++    }
++    .tl-search-open .tl-search { display: flex; flex-direction: column; }
++    .tl-search-heading { display: flex; justify-content: space-between; align-items: center; margin: -4px -4px 8px 4px; }
++    .tl-search-heading h2 { margin: 0; font-size: 16px; font-weight: 700; }
++    .tl-search .form-control { height: 44px; min-height: 44px; padding-left: 32px; padding-right: 96px; font-size: 14px; }
++    .tl-search .global-search-icon { left: 9px; }
++    .tl-search .global-search-submit { top: 0; right: 0; height: 44px; min-height: 44px; min-width: 48px; }
++    .tl-search .global-search-clear { top: 0; right: 48px; width: 44px; height: 44px; }
++    .tl-search .global-search-results { position: relative; top: auto; margin-top: 8px; box-shadow: none; max-height: none; flex: 0 1 auto; min-height: 0; }
++    .tl-dock, .left-panel-collapsed .tl-dock { left: max(16px, env(safe-area-inset-left, 0px)); bottom: 24px; }
++    .tl-map-caption { left: 352px; top: 16px; height: 36px; max-width: calc(100% - 428px); }
++    .left-panel-collapsed:not(.tl-left-aux-open) .tl-map-caption { left: 16px; max-width: calc(100% - 92px); }
++    .tl-detail-open .tl-map-caption { max-width: calc(100% - 780px); }
++    .left-panel-collapsed.tl-detail-open:not(.tl-left-aux-open) .tl-map-caption { max-width: calc(100% - 444px); }
++    .tl-map-actions { top: 16px; right: 16px; gap: 8px; }
++    .tl-map-navigation { top: 120px; bottom: auto; right: 16px; gap: 8px; }
++    .tl-detail-open .tl-map-actions, .tl-detail-open .tl-map-navigation { right: calc(var(--tl-detail) + 32px); }
++    .tl-map-navigation .floating-zoom { display: grid; }
++    .tl-basemap { left: 16px; top: 16px; bottom: auto; width: var(--tl-sidebar); max-height: calc(100% - 104px); overflow: auto; }
++  }
++  @media (min-width: 1024px) {
++    .tl-brand .tl-brand-title-desktop { font-size: 16px; }
++    .tl-header-action span { display: inline; }
++    .tl-header-action { width: auto; padding: 8px 14px; }
++    .tl-brand-mark { flex-shrink: 0; }
++  }
++  @media (min-width: 768px) and (max-width: 1023px) {
++    .tl-header-action { width: 44px; padding: 8px; }
++    .tl-header-action span { display: none; }
++    .tl-detail-open .tl-map-caption { display: none; }
++  }
++  @media (max-width: 767px) {
++    :root { --tl-header: calc(56px + env(safe-area-inset-top, 0px)); }
++    .tl-header { gap: 4px; padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px)); }
++    .tl-brand-mark { display: none; }
++    .tl-header-actions { gap: 0; }
++    .tl-header-action { width: 44px; padding: 8px; }
++    .tl-header #tlSearchToggle { display: none; }
++    .tl-dock #tlDetailsToggle { display: none; }
++    .tl-search { top: 8px; left: 12px; right: 12px; width: auto; }
++    .tl-app .tl-search .global-search-clear { width: 44px; right: 50px; }
++    .tl-app .tl-search .form-control { padding-right: 100px; }
++    .tl-app .tl-network #statusSelect, .tl-app .tl-network #routeSelect { height: 44px; min-height: 44px; }
++    .tl-network .tl-note-link, .tl-legend button, .tl-legend summary,
++    .tl-search .global-search-result { min-height: 44px; }
++  }
++  @media (max-width: 389px) {
++    .tl-brand .tl-brand-title-mobile strong { font-size: 12px; }
++  }
++  @media (max-width: 359px) {
++    .tl-header #tlLegendToggle { display: none; }
++  }
++  @media (min-width: 480px) and (max-width: 767px) and (max-height: 559px) {
++    :root { --tl-header: calc(48px + env(safe-area-inset-top, 0px)); }
++    .tl-header { grid-template-columns: 170px minmax(0, 1fr) auto; gap: 12px; }
++    .tl-header-actions { grid-column: 3; }
++    /* Reserve a header column for Search, retaining the short map's sheet space. */
++    .tl-search { position: fixed; top: calc(var(--tl-viewport-top, 0px) + env(safe-area-inset-top, 0px) + 2px); left: calc(max(12px, env(safe-area-inset-left, 0px)) + 182px); right: calc(max(8px, env(safe-area-inset-right, 0px)) + 144px); width: auto; }
++  }
++  @media (min-width: 480px) and (max-width: 559px) and (max-height: 559px) {
++    .tl-header #tlLegendToggle { display: none; }
++    .tl-search { right: calc(max(8px, env(safe-area-inset-right, 0px)) + 100px); }
++  }
++  @media (prefers-reduced-motion: reduce) {
++    .tl-search, .tl-network, .tl-detail-panel { transition: none; }
++  }
++}
+diff --git a/index.html b/index.html
+index 56b86ce..ae9587b 100644
+--- a/index.html
++++ b/index.html
+@@ -14,66 +14,70 @@
+     <link rel="stylesheet" href="css/legacy-components.css?v=mobile-ux-20261107-1">
+     <link rel="stylesheet" href="css/layout-tabler.css?v=inline-stop-badges-20261107-8">
+     <link rel="stylesheet" href="css/lrt-popup.css?v=mobile-ux-20261107-1">
++    <link rel="stylesheet" href="css/layout-floating.css?v=floating-20261109-1">
+     <link rel="stylesheet" href="css/font-pt-sans.css?v=mobile-ux-20261107-1">
+   </head>
+   <body class="tl-app">
+     <div class="tl-shell" id="tlShell">
+       <header class="tl-header">
+         <div class="tl-brand-area">
+-          <button id="tlNetworkToggle" class="btn btn-icon" type="button" aria-label="Buka atau tutup jaringan" title="Buka atau tutup jaringan">
+-            <svg class="icon" aria-hidden="true">
+-              <use href="assets/icons/tabler.svg#menu-2"></use>
+-            </svg>
+-          </button>
+           <a class="tl-brand" href="#map" aria-label="PETA JARINGAN TRANSPORTASI JABODETABEK" title="PETA JARINGAN TRANSPORTASI JABODETABEK">
+             <span class="tl-brand-mark">
+               <svg class="icon" aria-hidden="true">
+                 <use href="assets/icons/tabler.svg#route"></use>
+               </svg>
+             </span>
+-            <span class="tl-brand-text">
++            <h1 class="tl-brand-text" aria-label="PETA JARINGAN TRANSPORTASI JABODETABEK">
+               <strong class="tl-brand-title-desktop">PETA JARINGAN TRANSPORTASI JABODETABEK</strong>
+               <span class="tl-brand-title-mobile" aria-hidden="true">
+                 <strong>PETA JARINGAN</strong>
+                 <strong>TRANSPORTASI JABODETABEK</strong>
+               </span>
+-            </span>
++            </h1>
+           </a>
+         </div>
+-        <section aria-label="Pencarian lokasi" class="global-search-panel tl-search" id="globalSearchPanel">
+-          <label for="globalSearchInput" class="tl-sr-only">Cari Lokasi</label>
+-          <div class="global-search-input-wrap">
+-            <svg aria-hidden="true" class="global-search-icon" viewbox="0 0 24 24">
+-              <circle cx="10.5" cy="10.5" fill="none" r="6.2" stroke="currentColor" stroke-width="1.8"></circle>
+-              <path d="M15.2 15.2L20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+-            </svg>
+-            <input aria-autocomplete="list" aria-controls="globalSearchResults" aria-expanded="false" aria-label="Cari halte, stasiun, koridor, atau tempat" autocomplete="off" id="globalSearchInput" placeholder="Cari halte, stasiun, atau tempat…" spellcheck="false" type="search" class="form-control">
+-            <button aria-label="Hapus pencarian" class="global-search-clear" hidden="" id="globalSearchClear" title="Hapus pencarian" type="button">×</button>
+-            <button aria-label="Cari tempat secara daring" class="global-search-submit btn btn-primary btn-sm" id="globalSearchSubmit" title="Cari tempat secara daring" type="button">Cari</button>
+-          </div>
+-          <div aria-label="Hasil pencarian lokasi" class="global-search-results" hidden="" id="globalSearchResults" role="listbox"></div>
+-        </section>
+         <nav class="tl-header-actions" aria-label="Panel peta">
++          <button id="tlSearchToggle" class="btn tl-header-action" type="button" aria-label="Cari" aria-controls="globalSearchPanel" aria-expanded="false" title="Cari halte, stasiun, atau tempat">
++            <svg class="icon" aria-hidden="true"><use href="assets/icons/tabler.svg#search"></use></svg>
++            <span>Cari</span>
++          </button>
++          <button id="tlNetworkToggle" class="btn tl-header-action" type="button" aria-label="Jaringan" aria-controls="filterPanel" aria-expanded="true" title="Jaringan transportasi">
++            <svg class="icon" aria-hidden="true"><use href="assets/icons/tabler.svg#route"></use></svg>
++            <span>Jaringan</span>
++          </button>
+           <button id="tlLegendToggle" class="btn tl-header-action" type="button" aria-label="Legenda" aria-controls="rightInfoPanel" aria-expanded="false">
+             <svg class="icon" aria-hidden="true">
+               <use href="assets/icons/tabler.svg#layers-subtract"></use>
+             </svg>
+             <span>Legenda</span>
+           </button>
+-          <button id="tlDetailsToggle" class="btn tl-header-action" type="button" aria-label="Detail" aria-controls="tlDetailPanel" aria-expanded="false">
+-            <svg class="icon" aria-hidden="true">
+-              <use href="assets/icons/tabler.svg#list"></use>
+-            </svg>
+-            <span>Detail</span>
+-          </button>
+-          <button id="tlAbout" class="btn btn-icon" type="button" aria-label="Informasi dan catatan" title="Informasi dan catatan">
++          <button id="tlAbout" class="btn tl-header-action" type="button" aria-label="Tentang" aria-controls="infoModal" aria-haspopup="dialog" aria-expanded="false" title="Tentang peta">
+             <svg class="icon" aria-hidden="true">
+               <use href="assets/icons/tabler.svg#info-circle"></use>
+             </svg>
++            <span>Tentang</span>
+           </button>
+         </nav>
+       </header>
+       <main class="tl-main">
++        <section aria-label="Pencarian lokasi" class="global-search-panel tl-search" id="globalSearchPanel">
++          <div class="tl-search-heading">
++            <h2>Cari lokasi</h2>
++            <button id="tlSearchClose" class="btn btn-icon" type="button" aria-label="Tutup pencarian" title="Tutup pencarian"><svg class="icon" aria-hidden="true"><use href="assets/icons/tabler.svg#x"></use></svg></button>
++          </div>
++          <label for="globalSearchInput" class="tl-sr-only">Cari Lokasi</label>
++          <div class="global-search-input-wrap">
++            <svg aria-hidden="true" class="global-search-icon" viewbox="0 0 24 24">
++              <circle cx="10.5" cy="10.5" fill="none" r="6.2" stroke="currentColor" stroke-width="1.8"></circle>
++              <path d="M15.2 15.2L20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
++            </svg>
++            <input aria-autocomplete="list" aria-controls="globalSearchResults" aria-expanded="false" aria-label="Cari halte, stasiun, koridor, atau tempat" autocomplete="off" id="globalSearchInput" placeholder="Cari halte, stasiun, atau tempat…" spellcheck="false" type="search" class="form-control">
++            <button aria-label="Hapus pencarian" class="global-search-clear" hidden="" id="globalSearchClear" title="Hapus pencarian" type="button">×</button>
++            <button aria-label="Cari tempat secara daring" class="global-search-submit btn btn-primary btn-sm" id="globalSearchSubmit" title="Cari tempat secara daring" type="button">Cari</button>
++          </div>
++          <div aria-label="Hasil pencarian lokasi" class="global-search-results" hidden="" id="globalSearchResults" role="listbox"></div>
++        </section>
++
+         <aside class="filter-panel tl-network card" id="filterPanel" aria-label="Filter jaringan transportasi">
+           <div class="tl-panel-heading card-header">
+             <div>
+@@ -219,7 +223,7 @@
+           <aside class="right-info-panel tl-legend card" id="rightInfoPanel" aria-label="Legenda dan informasi peta">
+             <header class="right-info-header">
+               <div class="right-info-heading">
+-                <h1>Legenda &amp; informasi</h1>
++                <h2>Legenda &amp; informasi</h2>
+               </div>
+               <button aria-label="Tutup panel informasi" class="mobile-info-close btn btn-icon" id="mobileInfoClose" type="button">
+                 <svg class="icon" aria-hidden="true">
+@@ -462,6 +466,13 @@
+         </aside>
+       </main>
+       <div class="bottom-toolbar tl-dock" id="bottomToolbar">
++          <button id="tlDetailsToggle" class="toolbar-button btn" type="button" aria-label="Detail" aria-controls="tlDetailPanel" aria-expanded="false">
++            <svg class="icon" aria-hidden="true">
++              <use href="assets/icons/tabler.svg#list"></use>
++            </svg>
++            <span class="mobile-toolbar-label">Detail</span>
++          </button>
++
+         <button aria-expanded="false" aria-label="Buka panel rute" class="toolbar-button mobile-bottom-route btn" id="mobileBottomRouteButton" title="Rute" type="button">
+           <svg aria-hidden="true" class="toolbar-icon" viewbox="0 0 24 24">
+             <circle cx="6" cy="6" fill="none" r="2" stroke="currentColor" stroke-width="1.7"></circle>
+@@ -972,8 +983,8 @@
+         </div>
+       </div>
+     </div>
+-    <script src="js/layout-tabler.js?v=compact-filter-20261107-4"></script>
+-    <script src="js/layout-tabler-ux.js?v=compact-tour-20261107-5"></script>
++    <script src="js/layout-tabler.js?v=floating-20261109-1"></script>
++    <script src="js/layout-tabler-ux.js?v=floating-20261109-1"></script>
+     <script src="js/lrt-popup.js?v=mobile-ux-20261107-1"></script>
+     <script crossorigin="anonymous" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+     <script src="js/app-loader.js?v=a01-20261107-1"></script>
+diff --git a/js/layout-tabler-ux.js b/js/layout-tabler-ux.js
+index bc3fe2e..874a956 100644
+--- a/js/layout-tabler-ux.js
++++ b/js/layout-tabler-ux.js
+@@ -136,7 +136,10 @@
+         ui.revealPopup();
+         target = document.querySelector(".leaflet-popup .stop-popup-direct-routes");
+         if (!visibleRect(target)) target = byId(mobile() ? "tlMobileDetails" : "tlDetailsToggle");
+-      } else if (step.target === "search") target = byId("globalSearchPanel");
++      } else if (step.target === "search") {
++        ui.setSearchOpen(true);
++        target = byId("globalSearchPanel");
++      }
+       else target = byId("basemapButton");
+       byId("productTourProgress").textContent = `TIP ${productTourIndex + 1} DARI ${steps.length}`;
+       byId("productTourTitle").textContent = step.title;
+@@ -155,7 +158,7 @@
+       const search = byId("globalSearchResults");
+       snapshot = { ui: ui.capture(), focus: document.activeElement, inert: shell.inert, manual,
+         center: map.getCenter(), zoom: map.getZoom(), searchNodes: [...search.childNodes], searchHidden: search.hidden,
+-        searchExpanded: byId("globalSearchInput").getAttribute("aria-expanded") };
++        searchExpanded: byId("globalSearchInput").getAttribute("aria-expanded"), searchScroll: search.scrollTop };
+       shell.inert = true;
+       tour.hidden = false;
+       card.setAttribute("aria-modal", "true");
+@@ -182,6 +185,7 @@
+         map.setView(saved.center, saved.zoom, { animate: false });
+         const focus = saved.focus?.isConnected && !saved.focus.closest("[inert]") && visibleRect(saved.focus) ? saved.focus : byId("tlNetworkToggle");
+         focus.focus({ preventScroll: true });
++        search.scrollTop = saved.searchScroll;
+         scheduleLabels();
+       });
+     };
+diff --git a/js/layout-tabler.js b/js/layout-tabler.js
+index 774be15..0246718 100644
+--- a/js/layout-tabler.js
++++ b/js/layout-tabler.js
+@@ -10,7 +10,6 @@
+   let syncFrame = 0;
+   let lastRoute = "";
+   let lastStop = "";
+-  let lastTablet = tablet();
+   let modeSignature = "";
+   let stopPopup = null;
+   let detailsOverPopup = false;
+@@ -21,6 +20,15 @@
+   let fullViewportHeight = innerHeight;
+   let previousViewportWidth = innerWidth;
+   let popupLayoutSignature = "";
++  let searchScrollTop = 0;
++  let searchScrollQuery = "";
++  byId("globalSearchResults").addEventListener("scroll", () => {
++    const results = byId("globalSearchResults");
++    if (!results.hidden && results.getClientRects().length) {
++      searchScrollTop = results.scrollTop;
++      searchScrollQuery = byId("globalSearchInput").value;
++    }
++  }, { passive: true });
+ 
+   function refreshPopupLayout() {
+     if (!ready || !stopPopup?.isOpen() || detailsOverPopup || body.classList.contains("tl-popup-shelved")) return;
+@@ -30,7 +38,12 @@
+     popupLayoutSignature = signature;
+     stopPopup.getElement()?.style.setProperty("--tl-popup-content-height", `${dimensions.maxHeight}px`);
+     Object.assign(stopPopup.options, dimensions);
+-    stopPopup.update();
++    // A chrome-only size update must never pan the user's camera. Explicit
++    // station selection/navigation still uses the engine's auto-pan policy.
++    const autoPanBeforeUpdate = stopPopup.options.autoPan;
++    stopPopup.options.autoPan = false;
++    try { stopPopup.update(); }
++    finally { stopPopup.options.autoPan = autoPanBeforeUpdate; }
+   }
+ 
+   function queueAttribution() {
+@@ -70,7 +83,8 @@
+     const compactLandscape = body.classList.contains("tl-short-landscape");
+     const open = Boolean((mobile() || compactLandscape) && stopPopup?.isOpen());
+     const overlay = body.classList.contains("mobile-filter-open") || body.classList.contains("mobile-info-open") || body.classList.contains("tl-keyboard-open") || (compactLandscape && body.classList.contains("tl-legend-open")) || !byId("basemapPanel").hidden;
+-    const shelved = open && (detailsOverPopup || overlay);
++    const narrowOverlay = tablet() && body.classList.contains("tl-left-aux-open");
++    const shelved = (open && (detailsOverPopup || overlay)) || (Boolean(stopPopup?.isOpen()) && narrowOverlay);
+     const element = stopPopup?.getElement();
+     body.classList.toggle("tl-stop-popup-open", open);
+     body.classList.toggle("tl-popup-shelved", shelved);
+@@ -164,9 +178,12 @@
+   }
+ 
+   function syncPanelControls() {
++    const searchOpen = !mobile() && body.classList.contains("tl-search-open");
++    const auxiliaryOpen = !mobile() && (searchOpen || body.classList.contains("tl-legend-open") || !byId("basemapPanel").hidden);
++    body.classList.toggle("tl-left-aux-open", auxiliaryOpen);
+     const networkOpen = mobile()
+       ? body.classList.contains("mobile-filter-open")
+-      : !body.classList.contains("left-panel-collapsed");
++      : !body.classList.contains("left-panel-collapsed") && !auxiliaryOpen;
+     const legendOpen = mobile()
+       ? body.classList.contains("mobile-info-open")
+       : body.classList.contains("tl-legend-open");
+@@ -174,9 +191,29 @@
+     byId("rightInfoPanel").inert = !legendOpen;
+     byId("tlNetworkToggle").setAttribute("aria-expanded", String(networkOpen));
+     byId("tlLegendToggle").setAttribute("aria-expanded", String(legendOpen));
++    byId("globalSearchPanel").inert = !mobile() && !searchOpen;
++    byId("tlSearchToggle").setAttribute("aria-expanded", String(mobile() || searchOpen));
++    if (ready && stopPopup) syncPopupPresentation();
+     queueAttribution();
+   }
+ 
++  function setSearchOpen(open, { focus = false } = {}) {
++    const results = byId("globalSearchResults"), input = byId("globalSearchInput");
++    if (!open && !mobile() && body.classList.contains("tl-search-open") && results.getClientRects().length) {
++      searchScrollTop = results.scrollTop;
++      searchScrollQuery = input.value;
++    }
++    body.classList.toggle("tl-search-open", Boolean(open));
++    if (open && !mobile()) {
++      body.classList.remove("tl-legend-open");
++      if (ready) setBasemapPanelOpen(false);
++    }
++    syncPanelControls();
++    if (focus && open) byId("globalSearchInput").focus({ preventScroll: true });
++    // The original focus handler rebuilds results. Restore only the same query.
++    if (open && input.value === searchScrollQuery) results.scrollTop = searchScrollTop;
++  }
++
+   function syncAttribution() {
+     const attribution = map.attributionControl?.getContainer();
+     if (!attribution) return;
+@@ -196,7 +233,7 @@
+   function toggleNetwork() {
+     if (!ready) return;
+     if (mobile()) setMobileFilterOpen(!body.classList.contains("mobile-filter-open"));
+-    else setDesktopPanelCollapsed("left", !body.classList.contains("left-panel-collapsed"));
++    else setDesktopPanelCollapsed("left", body.classList.contains("tl-left-aux-open") ? false : !body.classList.contains("left-panel-collapsed"));
+   }
+ 
+   function toggleLegend() {
+@@ -204,6 +241,7 @@
+     if (mobile()) setMobileInfoOpen(!body.classList.contains("mobile-info-open"));
+     else {
+       const open = !body.classList.contains("tl-legend-open");
++      setSearchOpen(false);
+       body.classList.toggle("tl-legend-open", open);
+       if (open) setBasemapPanelOpen(false);
+       syncPanelControls();
+@@ -212,11 +250,23 @@
+   }
+ 
+   byId("tlNetworkToggle").addEventListener("click", toggleNetwork);
++  byId("tlSearchToggle").addEventListener("click", event => {
++    event.stopPropagation(); // Do not let the original outside-click handler hide freshly opened results.
++    setSearchOpen(!body.classList.contains("tl-search-open"), { focus: true });
++  });
++  byId("tlSearchClose").addEventListener("click", () => {
++    setSearchOpen(false);
++    byId("tlSearchToggle").focus({ preventScroll: true });
++  });
+   byId("tlNetworkCollapse").addEventListener("click", () => {
+     if (ready) setDesktopPanelCollapsed("left", true);
+     byId("tlNetworkToggle").focus({ preventScroll: true });
+   });
+   byId("tlLegendToggle").addEventListener("click", toggleLegend);
++  const focusLegendToggle = () => (byId("tlLegendToggle").getClientRects().length ? byId("tlLegendToggle") : byId("infoButton")).focus({ preventScroll: true });
++  byId("mobileInfoClose").addEventListener("click", focusLegendToggle);
++  byId("mobileFilterClose").addEventListener("click", () => byId("tlNetworkToggle").focus({ preventScroll: true }));
++  byId("basemapClose").addEventListener("click", () => byId("basemapButton").focus({ preventScroll: true }));
+   for (const id of ["tlDetailsToggle", "tlMobileDetails"]) {
+     byId(id).addEventListener("click", () => {
+       if ((mobile() || body.classList.contains("tl-short-landscape")) && stopPopup?.isOpen() && !detailsOverPopup) showPopupDetails();
+@@ -380,10 +430,11 @@
+       if (body.classList.contains("tl-detail-open")) {
+         bottom = Math.min(rect.height * .55, byId("tlDetailPanel").getBoundingClientRect().height + 24);
+       }
+-    } else if (tablet()) {
+-      if (!body.classList.contains("left-panel-collapsed")) left = 312;
+-      if (body.classList.contains("tl-detail-open")) right = 352;
+-      // Only one side overlay is opened at a time, leaving usable map space.
++    } else {
++      if (!body.classList.contains("left-panel-collapsed") || body.classList.contains("tl-left-aux-open")) left = byId("filterPanel").getBoundingClientRect().width + 32;
++      if (body.classList.contains("tl-detail-open")) right = byId("tlDetailPanel").getBoundingClientRect().width + 88;
++      // Floating panels reserve space when fitting a route, never when switching panels.
++      top = 68;
+     }
+     return { paddingTopLeft: [left, top], paddingBottomRight: [right, bottom] };
+   }
+@@ -457,6 +508,11 @@
+     };
+     setDesktopPanelCollapsed = (side, collapsed) => {
+       if (side !== "left" || mobile()) return;
++      if (!collapsed) {
++        setSearchOpen(false);
++        body.classList.remove("tl-legend-open");
++        setBasemapPanelOpen(false);
++      }
+       if (!collapsed && tablet()) setDetail(false);
+       body.classList.toggle("left-panel-collapsed", Boolean(collapsed));
+       byId("leftPanelCollapse").hidden = Boolean(collapsed);
+@@ -476,7 +532,10 @@
+     };
+     setMobileInfoOpen = open => {
+       if (open && mobile()) setDetail(false);
+-      if (!mobile()) body.classList.toggle("tl-legend-open", Boolean(open));
++      if (!mobile()) {
++        if (open) setSearchOpen(false);
++        body.classList.toggle("tl-legend-open", Boolean(open));
++      }
+       originalInfo(open);
+       syncPanelControls();
+       syncPopupPresentation();
+@@ -490,6 +549,32 @@
+       syncPopupPresentation();
+       resizeMap();
+     };
++    const originalInfoModal = setInfoModalOpen;
++    setInfoModalOpen = (...args) => {
++      originalInfoModal(...args);
++      byId("tlAbout").setAttribute("aria-expanded", String(!byId("infoModalBackdrop").hidden));
++    };
++    byId("tlAbout").setAttribute("aria-expanded", String(!byId("infoModalBackdrop").hidden));
++    const originalPanelMode = syncPanelModeAfterResize;
++    let wasMobile = mobile();
++    syncPanelModeAfterResize = () => {
++      const nowMobile = mobile();
++      if (nowMobile === wasMobile) return originalPanelMode();
++      const legend = body.classList.contains(wasMobile ? "mobile-info-open" : "tl-legend-open");
++      const network = wasMobile ? body.classList.contains("mobile-filter-open") : !body.classList.contains("left-panel-collapsed") && !body.classList.contains("tl-left-aux-open");
++      const detailOpen = body.classList.contains("tl-detail-open");
++      wasMobile = nowMobile;
++      originalPanelMode();
++      body.classList.remove("tl-legend-open");
++      if (nowMobile) {
++        if (legend) setMobileInfoOpen(true);
++        else if (network && !detailOpen) setMobileFilterOpen(true);
++      } else {
++        body.classList.toggle("left-panel-collapsed", !network || (tablet() && detailOpen));
++        body.classList.toggle("tl-legend-open", legend);
++      }
++      syncPanelControls();
++    };
+     setRouteDetailCollapsed(false, { persist: false });
+     setTab("route");
+     if (tablet()) setDesktopPanelCollapsed("left", true);
+@@ -546,19 +631,25 @@
+       syncPopupPresentation();
+     });
+     window.addEventListener("resize", () => {
+-      if (tablet() !== lastTablet) {
+-        lastTablet = tablet();
+-        if (tablet()) setDesktopPanelCollapsed("left", true);
+-      }
+       syncPanelControls();
+       syncPopupPresentation();
+       resizeMap();
+     });
+     document.addEventListener("keydown", event => {
+       if (event.key !== "Escape" || event.defaultPrevented || !byId("productTour").hidden) return;
+-      if (body.classList.contains("mobile-filter-open")) setMobileFilterOpen(false);
+-      else if (body.classList.contains("mobile-info-open") || body.classList.contains("tl-legend-open")) setMobileInfoOpen(false);
+-      else if (!byId("basemapPanel").hidden) setBasemapPanelOpen(false);
++      if (!mobile() && body.classList.contains("tl-search-open")) {
++        setSearchOpen(false);
++        byId("tlSearchToggle").focus({ preventScroll: true });
++      } else if (body.classList.contains("mobile-filter-open")) {
++        setMobileFilterOpen(false);
++        byId("tlNetworkToggle").focus({ preventScroll: true });
++      } else if (body.classList.contains("mobile-info-open") || body.classList.contains("tl-legend-open")) {
++        setMobileInfoOpen(false);
++        focusLegendToggle();
++      } else if (!byId("basemapPanel").hidden) {
++        setBasemapPanelOpen(false);
++        byId("basemapButton").focus({ preventScroll: true });
++      }
+       else if (detail.contains(document.activeElement)) {
+         setDetail(false);
+         byId(mobile() ? "tlMobileDetails" : "tlDetailsToggle").focus();
+@@ -570,7 +661,7 @@
+     document.documentElement.dataset.layoutReady = "true";
+     // UI-only bridge for the tour; no transport state setters are exposed.
+     window.webgisLayout = Object.freeze({
+-      setDetail, setTab, setDetailExpanded, setSheetPosition, revealPopup, showPopupDetails,
++      setDetail, setTab, setDetailExpanded, setSheetPosition, revealPopup, showPopupDetails, setSearchOpen,
+       capture() {
+         return {
+           leftCollapsed: body.classList.contains("left-panel-collapsed"),
+@@ -578,6 +669,7 @@
+           tab: detail.dataset.tab, sheetPosition, detailsOverPopup,
+           filter: body.classList.contains("mobile-filter-open"), info: body.classList.contains("mobile-info-open"),
+           legend: body.classList.contains("tl-legend-open"), basemap: !byId("basemapPanel").hidden,
++          searchOpen: body.classList.contains("tl-search-open"),
+           scroll: [...document.querySelectorAll(".filter-panel-content, .tl-route-content, .stop-list-scroll, .right-info-body, .leaflet-popup-content, .stop-popup-scroll, .lrt-popup-body")].map(element => ({ element, top: element.scrollTop }))
+         };
+       },
+@@ -589,6 +681,7 @@
+         if (state.info) setMobileInfoOpen(true);
+         if (state.basemap) setBasemapPanelOpen(true);
+         body.classList.toggle("tl-legend-open", state.legend);
++        body.classList.toggle("tl-search-open", Boolean(state.searchOpen));
+         detailsOverPopup = state.detailsOverPopup;
+         syncPanelControls(); syncPopupPresentation(); resizeMap();
+         for (const item of state.scroll) if (item.element.isConnected) item.element.scrollTop = item.top;
+diff --git a/tools/capture-floating-layout.mjs b/tools/capture-floating-layout.mjs
+new file mode 100644
+index 0000000..beea78e
+--- /dev/null
++++ b/tools/capture-floating-layout.mjs
+@@ -0,0 +1,136 @@
++// Real local HTTP application + real provider tiles, never illustration/mockups.
++// LAYOUT_APP_ROOT can point to a detached baseline checkout for before images.
++import assert from "node:assert/strict";
++import { spawn, execFile } from "node:child_process";
++import { promisify } from "node:util";
++import { readFile, writeFile, mkdir } from "node:fs/promises";
++import { createHash } from "node:crypto";
++import path from "node:path";
++import os from "node:os";
++import { fileURLToPath } from "node:url";
++import { createRequire } from "node:module";
++import { chromium } from "playwright";
++
++const root = fileURLToPath(new URL("../", import.meta.url));
++const appRoot = process.env.LAYOUT_APP_ROOT || root;
++const stage = process.env.CAPTURE_STAGE || "after";
++const kind = "floating";
++assert.ok(["before", "after"].includes(stage));
++const output = process.env.LAYOUT_CAPTURE_OUTPUT ? path.resolve(root, process.env.LAYOUT_CAPTURE_OUTPUT) : path.join(root, "docs/floating-layout/screenshots", stage);
++const require = createRequire(import.meta.url);
++const leaflet = path.dirname(require.resolve("leaflet/dist/leaflet.js"));
++const exec = promisify(execFile);
++const port = process.env.LAYOUT_CAPTURE_PORT || "5191";
++const tileCache = process.env.LAYOUT_TILE_CACHE || path.join(os.tmpdir(), "webgis-tabler-tiles");
++const captured = [], runtimeErrors = [], tileFailures = [];
++let browser, requests = 0, fetching = 0;
++const queue = [];
++async function fetchTile(url) {
++  if (fetching >= 4) await new Promise(resolve => queue.push(resolve));
++  fetching++;
++  try {
++    const { stdout } = await exec(process.env.PYTHON || "python3", [path.join(root, "tools/fetch-preview-tile.py"), url, tileCache],
++      { encoding: "buffer", maxBuffer: 4 * 1024 * 1024 });
++    requests++;
++    return stdout;
++  } finally { fetching--; queue.shift()?.(); }
++}
++async function capture(page, filename, description, selector) {
++  await page.waitForFunction(() => {
++    const tiles = [...document.querySelectorAll("#map .leaflet-tile")];
++    return tiles.length && tiles.every(tile => tile.complete && tile.naturalWidth > 1);
++  }, null, { timeout: 60000 });
++  await page.waitForTimeout(300);
++  const state = await page.evaluate(() => {
++    const rect = document.getElementById("map").getBoundingClientRect();
++    return { viewport: [innerWidth, innerHeight], documentWidth: document.documentElement.scrollWidth,
++      mapSize: [map.getSize().x, map.getSize().y], mapContainer: [Math.round(rect.width), Math.round(rect.height)],
++      route: currentSelectedRouteId, stop: currentSelectedStopKey, detailTab: document.getElementById("tlDetailPanel").dataset.tab,
++      font: getComputedStyle(document.body).fontFamily, bodyClasses: document.body.className,
++      loadedTiles: document.querySelectorAll("#map .leaflet-tile-loaded").length,
++      networkHeight: document.getElementById("filterPanel").getBoundingClientRect().height,
++      detailHeight: document.getElementById("tlDetailPanel").getBoundingClientRect().height,
++      rows: [...document.querySelectorAll("#stopList .stop-list-item")].slice(0, 8).map(el => ({ name: el.querySelector(".stop-list-name")?.textContent.trim(), top: el.getBoundingClientRect().top, height: el.getBoundingClientRect().height })),
++      guideDisplay: getComputedStyle(document.querySelector(".info-guide-grid")).display };
++  });
++  assert.equal(state.documentWidth, state.viewport[0]);
++  assert.deepEqual(state.mapSize, state.mapContainer);
++  const bytes = await (selector ? page.locator(selector) : page).screenshot({ path: path.join(output, filename) });
++  captured.push({ file: filename, description, ...state, sha256: createHash("sha256").update(bytes).digest("hex") });
++  console.log(`Captured ${stage}/${filename}`);
++}
++async function choose(page, mode, routeId, stopId) {
++  if (await page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none" || getComputedStyle(el).visibility === "hidden")) await page.click("#tlNetworkToggle");
++  await page.click(`[data-mode="${mode}"]`);
++  await page.selectOption("#routeSelect", routeId);
++  await page.waitForTimeout(700);
++  if (!stopId) return;
++  const key = await page.evaluate(id => getStopKey(stopData.features.find(item => item.properties.STOP_ID === id)), stopId);
++  await page.evaluate(() => { window.webgisLayout.setTab("stops"); window.webgisLayout.setDetailExpanded(true); });
++  await page.locator(`#stopList [data-stop-key="${key}"]`).click();
++  await page.waitForTimeout(1000);
++}
++
++async function showDetail(page, tab = "stops", position = "half") {
++  await page.evaluate(({ tab, position }) => {
++    webgisLayout.setDetail(true);
++    webgisLayout.setTab(tab);
++    webgisLayout.setSheetPosition(position);
++  }, { tab, position });
++  await page.waitForTimeout(250);
++}
++async function guide(page, name) {
++  await page.click("#tlAbout");
++  await page.locator(".info-guide-section").evaluate(el => el.scrollIntoView({ block: "start", behavior: "instant" }));
++  await capture(page, name, "Kartu Cara Menggunakan dalam modal Informasi & Catatan");
++  await page.click("#infoModalClose");
++}
++
++await mkdir(output, { recursive: true });
++const server = spawn(process.execPath, [path.join(appRoot, "tools/serve-layout.mjs")], { cwd: appRoot, env: { ...process.env, PORT: port }, stdio: ["ignore", "pipe", "pipe"] });
++let serverError = "";
++server.stderr.on("data", data => { serverError += data; });
++try {
++  await new Promise((resolve, reject) => {
++    server.stdout.once("data", resolve);
++    server.once("error", reject);
++    server.once("exit", code => reject(new Error(`Preview server exited (${code}): ${serverError}`)));
++  });
++  browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined });
++  const cases = [[1440,900],[1280,720],[1024,768],[768,1024],[390,844],[360,800]];
++  for (const [width,height] of cases) {
++    const context = await browser.newContext({ viewport: { width, height } });
++    try {
++      const page = await context.newPage();
++      page.on("pageerror", error => runtimeErrors.push({ width, message: error.message }));
++      await context.route("https://**/*", async route => {
++        const url = new URL(route.request().url());
++        if (["unpkg.com", "cdnjs.cloudflare.com"].includes(url.hostname) && /\/leaflet\.(js|css)$/.test(url.pathname)) {
++          return route.fulfill({ status: 200, body: await readFile(path.join(leaflet, path.basename(url.pathname))),
++            contentType: url.pathname.endsWith(".js") ? "application/javascript" : "text/css", headers: { "Access-Control-Allow-Origin": "*" } });
++        }
++        if (["server.arcgisonline.com", "tile.openstreetmap.org"].includes(url.hostname)) {
++          try { return await route.fulfill({ status: 200, body: await fetchTile(url.href), contentType: url.hostname === "server.arcgisonline.com" ? "image/jpeg" : "image/png" }); }
++          catch (error) { tileFailures.push({ url: url.href, message: error.message }); return route.abort(); }
++        }
++        return route.abort();
++      });
++      await page.goto(`http://127.0.0.1:${port}`, { waitUntil: "load" });
++      await page.waitForFunction(() => document.documentElement.dataset.layoutReady === "true" && typeof stopData !== "undefined" && stopData?.features?.length > 0);
++      await page.click("#infoModalAccept");
++      await page.waitForSelector("#productTour", { state: "visible" });
++      await page.click("#productTourSkip");
++      await page.evaluate(async () => { await document.fonts.load('400 14px "PT Sans"'); await document.fonts.load('700 14px "PT Sans"'); await document.fonts.ready; });
++      await choose(page,"BRT","BRT_03");
++      if (width < 768) await page.click("#mobileBottomRouteButton");
++      else if (await page.locator("#filterPanel").evaluate(el => el.inert)) await page.click("#tlNetworkToggle");
++      await capture(page,`network-${width}.png`,"Jaringan Koridor 3, filter dan nama rute lengkap");
++      if (width < 768) await page.click("#mobileFilterClose");
++      await showDetail(page,"stops","half");
++      await capture(page,`stops-${width}.png`,"Daftar halte Koridor 3 dan ruang peta");
++    } finally { await context.close(); }
++  }
++  assert.deepEqual(runtimeErrors, []); assert.deepEqual(tileFailures, []);
++  const { stdout: commit } = await exec("git",["rev-parse","HEAD"],{cwd:appRoot});
++  await writeFile(path.join(output,"manifest.json"),JSON.stringify({capturedAt:new Date().toISOString(),applicationCommit:commit.trim(),kind,stage,browser:await browser.version(),realTileResponses:requests,runtimeErrors,tileFailures,captured},null,2)+"\n");
++} finally { await browser?.close(); server.kill("SIGTERM"); }
+diff --git a/tools/package-floating-layout.py b/tools/package-floating-layout.py
+new file mode 100644
+index 0000000..4029aa7
+--- /dev/null
++++ b/tools/package-floating-layout.py
+@@ -0,0 +1,62 @@
++"""Build a complete, deterministic static-runtime replacement for review."""
++import hashlib
++import json
++from pathlib import Path
++import subprocess
++import zipfile
++
++root = Path(__file__).resolve().parents[1]
++output = root / 'docs/floating-layout'
++output.mkdir(parents=True, exist_ok=True)
++source = subprocess.check_output(['git', 'log', '-1', '--format=%H', '--', 'index.html', 'css', 'js'], cwd=root, text=True).strip()
++files = [root / 'index.html', root / 'THIRD_PARTY_NOTICES.md']
++for directory in ['assets', 'css', 'data', 'js']:
++    files.extend(p for p in (root / directory).rglob('*') if p.is_file())
++entries = {str(p.relative_to(root)): p.read_bytes() for p in sorted(files)}
++entries['BACA_DULU.md'] = f'''# Paket runtime WebGIS — siap review
++
++Sumber runtime: {source}
++Repositori: https://github.com/itskindamia/webgis-transportasi-jabodetabek
++Branch: codex/floating-network-layout
++
++Paket ini adalah penggantian penuh runtime statis, bukan overlay potongan kode.
++`index.html`, `assets/`, `css/`, `data/`, dan `js/` disertakan lengkap.
++Empat GeoJSON, mesin transportasi, logo, ikon, PT Sans lokal 400/700, dan CSS
++hasil build tersedia. `node_modules` tidak dibutuhkan untuk menjalankan runtime.
++Dependensi development dan tes ada di branch sumber beserta package-lock.json.
++
++## Preview lokal
++
++1. Ekstrak ZIP ke folder kosong.
++2. Dari folder itu, jalankan `python3 -m http.server 8000`.
++3. Buka http://localhost:8000/ di browser. Jangan buka index.html melalui file://.
++
++Koneksi internet tetap diperlukan untuk Leaflet 1.9.4 dari CDN (dengan SRI dan
++fallback CDN), tile basemap serta pencarian tempat daring, sesuai konfigurasi
++proyek semula. Font, data jaringan, logo, ikon dan CSS aplikasi disertakan lokal.
++GPS memerlukan izin browser; localhost atau HTTPS diperlukan untuk lokasi.
++
++## Penerapan setelah review
++
++Tugas ini belum melakukan merge atau deploy. Sesudah disetujui, backup runtime
++lama, lalu ganti index.html serta keempat direktori runtime dengan isi paket ini.
++Jangan menyalin .git, node_modules, atau kredensial ke hosting. Daftar hash file
++tersedia di SHA256SUMS. Lisensi komponen tetap ada dalam paket.
++'''.encode()
++entries['SHA256SUMS'] = ''.join(f'{hashlib.sha256(data).hexdigest()}  {name}\n' for name, data in sorted(entries.items())).encode()
++archive = output / 'webgis-runtime.zip'
++with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as target:
++    for name, data in sorted(entries.items()):
++        info = zipfile.ZipInfo(name, date_time=(2026, 11, 9, 0, 0, 0))
++        info.compress_type = zipfile.ZIP_DEFLATED
++        info.external_attr = 0o100644 << 16
++        target.writestr(info, data)
++with zipfile.ZipFile(archive) as target:
++    assert target.testzip() is None
++    assert set(target.namelist()) == set(entries)
++    for name in entries:
++        assert target.read(name) == entries[name]
++report = {'file': archive.name, 'runtimeCommit': source, 'files': len(entries), 'bytes': archive.stat().st_size,
++          'sha256': hashlib.sha256(archive.read_bytes()).hexdigest(), 'type': 'complete static runtime replacement'}
++(output / 'verification/package.json').write_text(json.dumps(report, indent=2) + '\n')
++print(json.dumps(report))
+diff --git a/tools/smoke-runtime-package.mjs b/tools/smoke-runtime-package.mjs
+new file mode 100644
+index 0000000..9bc122a
+--- /dev/null
++++ b/tools/smoke-runtime-package.mjs
+@@ -0,0 +1,27 @@
++import assert from 'node:assert/strict';
++import {readFile,writeFile}from'node:fs/promises';
++import { chromium }from'playwright';
++const b=await chromium.launch({executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined});
++const context=await b.newContext({viewport:{width:390,height:844}}),page=await context.newPage();
++const errors=[],failedLocal=[];page.on('pageerror',e=>errors.push(e.message));
++page.on('response',r=>{if(r.url().startsWith('http://127.0.0.1:5188')&&r.status()>=400)failedLocal.push({url:r.url(),status:r.status()});});
++// Local package bytes are served over real HTTP. Isolate remote services as in regression tests.
++await context.route('https://**/*',async route=>{
++ const u=new URL(route.request().url());
++ if(/\/leaflet\.(js|css)$/.test(u.pathname))return route.fulfill({status:200,body:await readFile('node_modules/leaflet/dist/'+u.pathname.split('/').pop()),contentType:u.pathname.endsWith('.js')?'application/javascript':'text/css',headers:{'Access-Control-Allow-Origin':'*'}});
++ if(['server.arcgisonline.com','tile.openstreetmap.org'].includes(u.hostname))return route.fulfill({status:200,body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=','base64'),contentType:'image/png'});
++ return route.abort();
++});
++try{
++ await page.goto('http://127.0.0.1:5188/');
++ await page.waitForFunction(()=>document.documentElement.dataset.layoutReady==='true'&&typeof stopData!=='undefined'&&stopData?.features?.length>0);
++ await page.click('#infoModalAccept');await page.waitForSelector('#productTour',{state:'visible'});await page.click('#productTourSkip');
++ await page.click('#tlNetworkToggle');await page.click('[data-mode="LRT"]');await page.selectOption('#routeSelect','LRT_JB_BK');await page.waitForTimeout(800);
++ await page.evaluate(()=>{webgisLayout.showPopupDetails();webgisLayout.setTab('stops');webgisLayout.setSheetPosition('expanded');});
++ await page.locator('#stopList [data-stop-key="LRTJB008_01"]').click();await page.waitForTimeout(900);
++ await page.locator('.lrt-popup [data-stop-nav="next"]').click();await page.waitForTimeout(600);
++ assert.notEqual(await page.evaluate(()=>currentSelectedStopKey),'LRTJB008_01');
++ assert.deepEqual(errors,[]);assert.deepEqual(failedLocal,[]);
++ const report={archive:JSON.parse(await readFile('docs/floating-layout/verification/package.json','utf8')),origin:'http://127.0.0.1:5188/',browser:b.version(),checks:['extracted ZIP served by real HTTP','local runtime files have no HTTP 4xx/5xx','normal onboarding','LRT Bekasi line selection','Cawang popup','next station navigation'],errors,failedLocal,limitations:'CDN Leaflet uses identical installed 1.9.4 bytes; external tiles isolated, real provider screenshots captured separately.'};
++ await writeFile('docs/floating-layout/verification/package-smoke.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));
++}finally{await b.close();}
+diff --git a/tools/test-a01-toggle.mjs b/tools/test-a01-toggle.mjs
+index 7960371..045d7af 100644
+--- a/tools/test-a01-toggle.mjs
++++ b/tools/test-a01-toggle.mjs
+@@ -318,6 +318,10 @@ for (const width of [1366, 390, 568]) {
+         getStopStatus(getStopByKey(row.dataset.stopKey)) === "Existing"
+       );
+       row.click();
++      // stop() can schedule an animated snap from flyTo's fractional zoom.
++      // Commit that snap synchronously before taking the toggle baseline;
++      // the selection popup is still pending in this same event turn.
++      map.setZoom(map.getZoom(), { animate: false });
+       map.stop();
+       map.panBy([160, 80], { animate: false });
+       setMobileFilterOpen(width !== 390);
+diff --git a/tools/test-layout-brand-title.mjs b/tools/test-layout-brand-title.mjs
+index a9d2d36..e39bf63 100644
+--- a/tools/test-layout-brand-title.mjs
++++ b/tools/test-layout-brand-title.mjs
+@@ -46,9 +46,9 @@ for (const [width, height] of [
+           const second = getComputedStyle(line2);
+           return ["fontFamily", "fontSize", "fontWeight", "lineHeight", "letterSpacing", "color"].every(prop => first[prop] === second[prop]);
+         })(),
+-        brandFits: brand.right <= search.left - 4 || innerWidth < 768,
++        brandFits: brand.right <= buttons.left - 4,
+         titleFits: desktop.scrollWidth <= desktop.clientWidth + 1,
+-        searchFits: search.right <= buttons.left - 4 || innerWidth < 768,
++        actionsFit: buttons.right <= header.right,
+         headerWithinViewport: header.right <= innerWidth + 1,
+         documentWidth: document.documentElement.scrollWidth,
+         width: innerWidth
+@@ -65,16 +65,16 @@ for (const [width, height] of [
+       assert.equal(result.desktopShown, true, "one-line desktop title visible");
+       assert.equal(result.mobileShown, false, "stacked title hidden on desktop");
+       assert.equal(result.titleFits, true, "desktop title fits without clipping");
+-      assert.equal(result.brandFits, true, "desktop brand and Search do not collide");
+-      assert.equal(result.searchFits, true, "Search and header actions do not collide");
++      assert.equal(result.brandFits, true, "desktop brand and header actions do not collide");
++      assert.equal(result.actionsFit, true, "header actions fit within the header");
+     } else {
+       assert.equal(result.desktopShown, false, "desktop title hidden on mobile/tablet");
+       assert.equal(result.mobileShown, true, "stacked mobile title visible");
+       assert.equal(result.mobileStacked, true, "second title line remains below first");
+       assert.equal(result.equalTypography, true, "both mobile title lines have identical typography");
+       if (width >= 768) {
+-        assert.equal(result.brandFits, true, "tablet brand does not overlap Search");
+-        assert.equal(result.searchFits, true, "tablet Search does not overlap actions");
++        assert.equal(result.brandFits, true, "tablet brand does not overlap actions");
++        assert.equal(result.actionsFit, true, "tablet header actions fit");
+       }
+     }
+     assert.deepEqual(errors, [], "no runtime errors");
+diff --git a/tools/test-layout-compact-filter.mjs b/tools/test-layout-compact-filter.mjs
+index e300282..fd77dd8 100644
+--- a/tools/test-layout-compact-filter.mjs
++++ b/tools/test-layout-compact-filter.mjs
+@@ -56,7 +56,7 @@ for (const [width, height] of [
+       assert.ok(result.buttonRects.every(b => Math.abs(b.top - result.buttonRects[0].top) <= 1), "all five modes stay in one row");
+       assert.ok(result.buttonRects.every(b => b.height >= 44 && b.height <= 46), "mode touch targets remain 44px");
+       assert.ok(result.statusWidth <= 221, "status selector does not span full panel");
+-      assert.ok(result.statusHeight >= 39 && result.statusHeight <= 41, "mobile status selector renders at compact 40px");
++      assert.ok(result.statusHeight >= 44 && result.statusHeight <= 46, "mobile status selector keeps a 44px touch target");
+       assert.ok(Math.abs(result.statusCenterY - result.labelCenterY) <= 2, "status label and selector share row");
+     } else {
+       assert.equal(result.shortShown, false, "desktop retains full label");
+diff --git a/tools/test-layout-floating.mjs b/tools/test-layout-floating.mjs
+new file mode 100644
+index 0000000..3a8cbf6
+--- /dev/null
++++ b/tools/test-layout-floating.mjs
+@@ -0,0 +1,178 @@
++import assert from 'node:assert/strict';
++import { before, after, test } from 'node:test';
++import { chromium } from 'playwright';
++import { openLayout, chooseRoute, readMap } from './layout-browser.mjs';
++let browser;
++before(async () => { browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined }); });
++after(async () => { await browser?.close(); });
++
++for (const [width, height] of [[1440,900],[1280,720],[1024,768],[768,1024],[390,844],[360,800]]) {
++  test(`floating panels preserve the camera, layers and controls at ${width}x${height}`, async t => {
++    const app = await openLayout(browser, width, height);
++    t.after(() => app.context.close());
++    const { page } = app;
++    await chooseRoute(page, 'BRT_03');
++    await page.waitForFunction(() => !map._panAnim?._inProgress && !map._animatingZoom);
++    await page.evaluate(() => {
++      window.pinnedMap = map; window.pinnedRoutes = routeLayer; window.pinnedMarkers = [...stopMarkerByKey];
++      window.cameraCalls = [];
++      for (const method of ['setView','setZoom','panTo','panBy','flyTo','fitBounds','invalidateSize']) {
++        const original = map[method];
++        map[method] = function(...args) { cameraCalls.push(method); return original.apply(this,args); };
++      }
++    });
++    const before = await readMap(page), url = page.url();
++    if (width < 768) await page.click('#mobileBottomRouteButton');
++    else if (await page.locator('#filterPanel').evaluate(el => el.inert)) await page.click('#tlNetworkToggle');
++    const geometry = await page.evaluate(() => {
++      const r = selector => document.querySelector(selector).getBoundingClientRect().toJSON();
++      return { map:r('#map'), panel:r('#filterPanel'), title:r('.tl-brand'), actions:r('.tl-header-actions'), header:r('.tl-header'),
++        heading:document.querySelector('.tl-brand-text').tagName, width:document.documentElement.scrollWidth };
++    });
++    assert.equal(geometry.heading,'H1');
++    assert.equal(await page.getByRole('heading',{level:1,name:'PETA JARINGAN TRANSPORTASI JABODETABEK',exact:true}).isVisible(),true,'the responsive title retains its accessible heading name');
++    assert.equal(geometry.width,width);
++    assert.ok(geometry.title.right <= geometry.actions.left, 'header title and actions do not overlap');
++    assert.ok(geometry.panel.top >= geometry.map.top && geometry.panel.bottom <= geometry.map.bottom, 'panel fits map');
++    if (width >= 768) {
++      assert.equal(geometry.map.width,width,'map spans the full viewport beneath floating panels');
++      assert.ok(geometry.panel.left >= 12 && geometry.panel.width >= 300 && geometry.panel.width <= 340);
++      assert.deepEqual(await page.locator('.tl-header-actions button').allTextContents().then(items => items.map(x => x.trim())), ['Cari','Jaringan','Legenda','Tentang']);
++      await page.click('#tlSearchToggle');
++      assert.equal(await page.locator('#filterPanel').isVisible(),false);
++      assert.equal(await page.locator('#filterPanel').evaluate(el => el.inert),true);
++      await page.fill('#globalSearchInput','Blok M');
++      await page.waitForSelector('#globalSearchResults [data-global-type="transport"]');
++      await page.locator('#globalSearchResults').evaluate(el => el.scrollTop = 20);
++      const scroll = await page.locator('#globalSearchResults').evaluate(el => el.scrollTop);
++      await page.click('#tlLegendToggle');
++      assert.equal(await page.locator('#globalSearchPanel').isVisible(),false);
++      await page.click('#tlSearchToggle');
++      assert.equal(await page.locator('#rightInfoPanel').isVisible(),false);
++      assert.equal(await page.inputValue('#globalSearchInput'),'Blok M','query survives panel changes');
++      assert.equal(await page.locator('#globalSearchResults').evaluate(el => el.scrollTop),scroll,'result scroll survives panel changes');
++      await page.click('#tlSearchClose');
++      assert.equal(await page.locator('#tlSearchToggle').evaluate(el => el === document.activeElement),true);
++      await page.click('#basemapButton');
++      assert.equal(await page.locator('#filterPanel').isVisible(),false,'basemap also uses the auxiliary panel area');
++      await page.locator('#basemapClose').click();
++      await page.click('#tlNetworkToggle');
++      if (await page.locator('#filterPanel').evaluate(el => el.inert)) await page.click('#tlNetworkToggle');
++      await page.click('#tlNetworkCollapse');
++      await page.click('#tlNetworkToggle');
++    } else {
++      assert.ok((await page.locator('#tlNetworkAbout').boundingBox()).height >= 44, 'network information link keeps a touch target');
++      await page.click('#mobileFilterClose');
++      await page.click('#tlMobileDetails');
++      for (const id of ['tlDetailCollapse','tlDetailHalf','tlDetailExpand']) await page.click('#'+id);
++      await page.click('#tlDetailClose');
++    }
++    // Check actual hit targets; a visible rectangle alone does not prove usability.
++    for (const id of ['gpsButton','homeButton','northButton','zoomInButton','zoomOutButton']) {
++      const button = page.locator('#'+id), box = await button.boundingBox();
++      assert.ok(box.width >= 44 && box.height >= 44,id);
++      await button.click({trial:true});
++    }
++    await page.click('#tlAbout');
++    assert.equal(await page.locator('#tlAbout').getAttribute('aria-expanded'),'true');
++    await page.click('#infoModalClose');
++    assert.equal(await page.locator('#tlAbout').getAttribute('aria-expanded'),'false');
++    const after = await readMap(page);
++    assert.deepEqual(after.size,before.size);
++    assert.deepEqual(after.center,before.center);
++    assert.equal(after.zoom,before.zoom);
++    assert.equal(page.url(),url);
++    assert.equal(await page.inputValue('#routeSelect'),'BRT_03');
++    assert.equal(await page.evaluate(() => map === pinnedMap && routeLayer === pinnedRoutes && pinnedMarkers.every(([key,marker]) => stopMarkerByKey.get(key) === marker)),true);
++    assert.deepEqual(await page.evaluate(() => cameraCalls),[], 'panel switches never invoke camera or resize methods');
++    assert.deepEqual(app.errors,[]);
++  });
++}
++
++test('desktop search and legend remain reachable through keyboard and the tour restores an open search', async t => {
++  const app = await openLayout(browser,1280,400); t.after(() => app.context.close());
++  const { page } = app;
++  await page.focus('#tlSearchToggle'); await page.keyboard.press('Enter');
++  assert.equal(await page.locator('#globalSearchInput').evaluate(el => el === document.activeElement),true);
++  await page.fill('#globalSearchInput','Blok M');
++  await page.waitForSelector('#globalSearchResults [data-global-type="transport"]');
++  await page.locator('#globalSearchResults').evaluate(el => el.scrollTop = 40);
++  const resultScroll = await page.locator('#globalSearchResults').evaluate(el => el.scrollTop);
++  assert.ok(resultScroll > 0, 'exercise actual result overflow');
++  await page.click('#tlLegendToggle'); await page.click('#tlSearchToggle');
++  assert.equal(await page.locator('#globalSearchResults').evaluate(el => el.scrollTop),resultScroll);
++  const before = await readMap(page);
++  await page.evaluate(() => startProductTour({manual:true}));
++  for (let i=0;i<5;i++) await page.click('#productTourNext');
++  await page.waitForTimeout(250);
++  assert.equal(await page.locator('#globalSearchPanel').isVisible(),true);
++  assert.equal(await page.inputValue('#globalSearchInput'),'Blok M');
++  assert.equal(await page.locator('#globalSearchResults').evaluate(el => el.scrollTop),resultScroll,'tour restores the scrolled results after focus rebuilds them');
++  assert.equal(await page.locator('#tlSearchToggle').getAttribute('aria-expanded'),'true');
++  assert.equal((await readMap(page)).zoom,before.zoom);
++  await page.keyboard.press('Escape');
++  assert.equal(await page.locator('#globalSearchPanel').isVisible(),false);
++  await page.click('#tlLegendToggle');
++  await page.keyboard.press('Escape');
++  assert.equal(await page.locator('#tlLegendToggle').evaluate(el => el === document.activeElement),true);
++  assert.deepEqual(app.errors,[]);
++});
++
++test('breakpoint and orientation changes keep one auxiliary panel and retain route, query and sheet preference', async t => {
++  const app = await openLayout(browser,1280,720); t.after(() => app.context.close());
++  const { page } = app;
++  await chooseRoute(page,'BRT_03');
++  await page.click('#tlDetailClose');
++  await page.click('#tlSearchToggle');
++  await page.fill('#globalSearchInput','Cawang');
++  await page.click('#tlLegendToggle');
++  const url=page.url();
++  for (const [width,height] of [[390,844],[768,1024],[1024,768],[360,800]]) {
++    await page.setViewportSize({width,height}); await page.waitForTimeout(250);
++    assert.equal(await page.locator('#rightInfoPanel').isVisible(),true);
++    assert.equal(await page.locator('#filterPanel').isVisible(),false);
++    assert.equal(await page.locator('#rightInfoPanel').evaluate(el=>el.inert),false);
++    assert.equal(await page.inputValue('#routeSelect'),'BRT_03');
++    assert.equal(await page.inputValue('#globalSearchInput'),'Cawang');
++    assert.equal(page.url(),url);
++    assert.equal((await readMap(page)).documentWidth,width);
++    await page.locator('#mobileInfoClose').click({trial:true});
++  }
++  await page.click('#mobileInfoClose');
++  await page.click('#tlMobileDetails'); await page.click('#tlDetailExpand');
++  for(const [width,height] of [[1280,720],[568,320],[390,844]]) {
++    await page.setViewportSize({width,height}); await page.waitForTimeout(250);
++    assert.equal(await page.locator('#tlDetailPanel').getAttribute('data-sheet-position'),'expanded');
++    assert.equal(await page.locator('#tlDetailPanel').isVisible(),true);
++    await page.locator('#tlDetailClose').click({trial:true});
++  }
++  assert.deepEqual(app.errors,[]);
++});
++
++for (const width of [768,1366]) test(`auxiliary panels retain an open station popup and never pan its camera at ${width}px`, async t => {
++  const app = await openLayout(browser,width,900);t.after(()=>app.context.close());const {page}=app;
++  await chooseRoute(page);
++  await page.locator('#stopList [data-stop-key="BRT002_REG_A"]').click();
++  await page.waitForTimeout(1000);
++  await page.waitForFunction(()=>!map._panAnim?._inProgress&&!map._animatingZoom);
++  const before=await readMap(page),url=page.url();
++  await page.evaluate(()=>{
++    window.panelCameraCalls=[];
++    for(const method of ['panTo','panBy','setView','setZoom','fitBounds','flyTo']){
++      const original=map[method];map[method]=function(...args){panelCameraCalls.push(method);return original.apply(this,args);};
++    }
++  });
++  for(const id of ['tlLegendToggle','tlSearchToggle','basemapButton']){
++    await page.click('#'+id);await page.waitForTimeout(150);
++    assert.equal(await page.evaluate(()=>map._popup.isOpen()),true,'popup is retained by Leaflet');
++    if(width===768)assert.equal(await page.locator('.leaflet-popup').isVisible(),false,'narrow tablet yields popup space to the auxiliary panel');
++    const close={tlLegendToggle:'mobileInfoClose',tlSearchToggle:'tlSearchClose',basemapButton:'basemapClose'}[id];
++    await page.click('#'+close);await page.waitForTimeout(150);
++    assert.equal(await page.locator('.leaflet-popup').isVisible(),true);
++    assert.equal(await page.evaluate(()=>currentSelectedStopKey),'BRT002_REG_A');
++    assert.equal(page.url(),url);
++  }
++  assert.deepEqual(await page.evaluate(()=>panelCameraCalls),[],'chrome never pans an open popup');
++  assert.deepEqual((await readMap(page)).center,before.center);
++  assert.deepEqual(app.errors,[]);
++});
+diff --git a/tools/test-layout-mobile-sheets.mjs b/tools/test-layout-mobile-sheets.mjs
+index 49a2dbc..5c66e83 100644
+--- a/tools/test-layout-mobile-sheets.mjs
++++ b/tools/test-layout-mobile-sheets.mjs
+@@ -38,7 +38,7 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844], [568, 320], [
+       });
+       assert.ok(result.heading.height <= 54, "mobile network heading should be compact");
+       assert.equal(result.eyebrowHidden, true, "redundant mobile eyebrow hidden");
+-      assert.ok(result.statusHeight >= 39 && result.statusHeight <= 41 && result.corridorHeight >= 39 && result.corridorHeight <= 41, "both selectors have compact 40px height");
++      assert.ok(result.statusHeight >= 44 && result.statusHeight <= 46 && result.corridorHeight >= 44 && result.corridorHeight <= 46, "both selectors keep 44px touch targets");
+       assert.equal(result.headingTransform, "uppercase", "mobile heading is all caps");
+       assert.equal(result.buttonHeights.length, 5);
+       assert.ok(result.buttonHeights.every(h => h >= 44), "mode controls keep 44px touch height");
+diff --git a/tools/test-layout-mobile.mjs b/tools/test-layout-mobile.mjs
+index 07aaadc..732a6b3 100644
+--- a/tools/test-layout-mobile.mjs
++++ b/tools/test-layout-mobile.mjs
+@@ -16,7 +16,10 @@ for (const [width, height] of viewports) test(`mobile-first shell and popup boun
+   assert.deepEqual(state.size, state.container);
+   if (width >= 1024) {
+     const network = await page.locator("#filterPanel").boundingBox(), detail = await page.locator("#tlDetailPanel").boundingBox(), map = await page.locator("#map").boundingBox();
+-    assert.ok(network.x + network.width <= map.x + 1 && map.x + map.width <= detail.x + 1);
++    assert.equal(map.width, width, "map spans the viewport underneath floating panels");
++    assert.ok(network.x >= map.x + 12 && network.x + network.width + 12 <= detail.x,
++      "left and right panels have separate, inset areas");
++    assert.ok(detail.x + detail.width <= map.x + map.width - 12, "detail panel fits within map workspace");
+   }
+   if (width < 768) await page.click("#tlDetailExpand");
+   await page.locator('#stopList [data-stop-key="BRT002_REG_A"]').click();
+diff --git a/tools/test-layout-precision.mjs b/tools/test-layout-precision.mjs
+index cc5f3e9..7cc3c81 100644
+--- a/tools/test-layout-precision.mjs
++++ b/tools/test-layout-precision.mjs
+@@ -115,13 +115,9 @@ for (const [width, height] of [
+         assert.equal(state.mapTitle, state.mapText, details + ": full route label is accessible");
+ 
+         if (width >= 1024) {
+-          // The complete desktop brand now occupies a wider first header
+-          // column; enforce non-overlap rather than an obsolete x-alignment
+-          // between the search bar and the map's 20px context inset.
+-          assert.ok(state.brandRight + 8 <= state.searchLeft,
+-            details + ": brand and Search do not overlap");
+-          assert.ok(state.searchRight + 8 <= state.headerActionsLeft,
+-            details + ": Search and header actions do not overlap");
++          // Search is now a floating panel opened by the header's Cari action.
++          assert.ok(state.brandRight + 8 <= state.headerActionsLeft,
++            details + ": brand and header actions do not overlap");
+           assert.ok(state.mapCaptionRight + 8 <= state.mapActionsLeft,
+             details + ": context badge does not overlap map controls");
+           if (state.detailVisible) {
+diff --git a/tools/test-layout-tabler.mjs b/tools/test-layout-tabler.mjs
+index 85587c0..b3cd7eb 100644
+--- a/tools/test-layout-tabler.mjs
++++ b/tools/test-layout-tabler.mjs
+@@ -65,7 +65,7 @@ for (const [width, height] of [[390, 844], [768, 1024], [1366, 900], [1600, 1000
+         await page.click("#tlNetworkCollapse");
+         await page.waitForTimeout(200);
+         const expanded = await readMap(page);
+-        assert.ok(expanded.size[0] > current.size[0]);
++        assert.equal(expanded.size[0], current.size[0], "floating sidebar leaves map dimensions unchanged");
+         assert.equal(expanded.zoom, current.zoom, "sidebar does not change zoom");
+         const shift = await page.evaluate(([a, b]) => map.project(a).distanceTo(map.project(b)), [expanded.center, current.center]);
+         assert.ok(shift <= 1, `center stays within Leaflet pixel rounding: ${shift}`);
+@@ -124,6 +124,7 @@ test("global transport search, online place search, basemaps, legend and about r
+   const app = await openLayout(browser);
+   t.after(() => app.context.close());
+   const { page } = app;
++  await page.click("#tlSearchToggle");
+   await page.fill("#globalSearchInput", "Blok M");
+   await page.waitForSelector("#globalSearchResults .global-search-result");
+   await page.locator('#globalSearchResults [data-global-type="transport"]').first().click();

@@ -1,0 +1,33 @@
+✔ site brand uses exact uppercase copy and responsive composition at 320x568 (2832.534169ms)
+✔ site brand uses exact uppercase copy and responsive composition at 390x844 (2437.310364ms)
+✔ site brand uses exact uppercase copy and responsive composition at 568x320 (2210.858082ms)
+✔ site brand uses exact uppercase copy and responsive composition at 768x1024 (2661.323469ms)
+✔ site brand uses exact uppercase copy and responsive composition at 1024x768 (2235.20323ms)
+✔ site brand uses exact uppercase copy and responsive composition at 1366x900 (3085.450824ms)
+✔ site brand uses exact uppercase copy and responsive composition at 1600x1000 (2697.456295ms)
+✔ compact service and status controls at 320x568 (3271.829078ms)
+✔ compact service and status controls at 360x800 (2683.517226ms)
+✔ compact service and status controls at 390x844 (3081.886685ms)
+✔ compact service and status controls at 568x320 (3442.555801ms)
+✔ compact service and status controls at 768x1024 (3199.049722ms)
+✔ compact service and status controls at 1366x900 (2890.867227ms)
+✔ compact density keeps map controls accessible at 320x568 (8067.358815ms)
+✔ compact density keeps map controls accessible at 390x844 (6201.006521ms)
+✔ compact density keeps map controls accessible at 568x320 (6567.077892ms)
+✔ compact density keeps map controls accessible at 768x1024 (2449.938934ms)
+✔ compact density keeps map controls accessible at 1024x768 (2737.175729ms)
+✔ compact density keeps map controls accessible at 1366x900 (2599.394973ms)
+✔ compact density keeps map controls accessible at 1600x1000 (2334.292045ms)
+✔ short onboarding fits and retains the map at 320x568 (5749.824458ms)
+✔ short onboarding fits and retains the map at 360x800 (4901.080435ms)
+✔ short onboarding fits and retains the map at 390x844 (4616.621338ms)
+✔ short onboarding fits and retains the map at 568x320 (3188.797497ms)
+✔ short onboarding fits and retains the map at 1366x900 (4972.924411ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 93887.066112

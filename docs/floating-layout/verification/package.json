@@ -1,0 +1,8 @@
+{
+  "file": "webgis-runtime.zip",
+  "runtimeCommit": "d6c88684e124d03c755239567ae3e5f177d9cd47",
+  "files": 53,
+  "bytes": 1218217,
+  "sha256": "c6b763172a6af06123637ffe9ef829bbf26c279790545ac0c13910c2588851a1",
+  "type": "complete static runtime replacement"
+}

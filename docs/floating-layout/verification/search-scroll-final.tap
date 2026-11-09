@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: desktop search and legend remain reachable through keyboard and the tour restores an open search
+ok 1 - desktop search and legend remain reachable through keyboard and the tour restores an open search
+  ---
+  duration_ms: 2404.258153
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2745.651511

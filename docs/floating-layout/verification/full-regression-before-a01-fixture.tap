@@ -1,0 +1,1114 @@
+
+> test:regression
+> npm run test:layout && npm run test:a01
+
+
+> test:layout
+> node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-*.mjs tools/test-font-pt-sans.mjs tools/test-lrt-popup.mjs
+
+TAP version 13
+# Subtest: PT Sans is the shared app typography token, with no duplicated Google stylesheet
+ok 1 - PT Sans is the shared app typography token, with no duplicated Google stylesheet
+  ---
+  duration_ms: 257.095019
+  type: 'test'
+  ...
+# Subtest: real PT Sans regular/bold load once and apply to controls, popups, labels and tour
+ok 2 - real PT Sans regular/bold load once and apply to controls, popups, labels and tour
+  ---
+  duration_ms: 5791.333763
+  type: 'test'
+  ...
+# Subtest: site brand uses exact uppercase copy and responsive composition at 320x568
+ok 3 - site brand uses exact uppercase copy and responsive composition at 320x568
+  ---
+  duration_ms: 1747.651376
+  type: 'test'
+  ...
+# Subtest: site brand uses exact uppercase copy and responsive composition at 390x844
+ok 4 - site brand uses exact uppercase copy and responsive composition at 390x844
+  ---
+  duration_ms: 1378.067682
+  type: 'test'
+  ...
+# Subtest: site brand uses exact uppercase copy and responsive composition at 568x320
+ok 5 - site brand uses exact uppercase copy and responsive composition at 568x320
+  ---
+  duration_ms: 1379.828036
+  type: 'test'
+  ...
+# Subtest: site brand uses exact uppercase copy and responsive composition at 768x1024
+ok 6 - site brand uses exact uppercase copy and responsive composition at 768x1024
+  ---
+  duration_ms: 1425.365868
+  type: 'test'
+  ...
+# Subtest: site brand uses exact uppercase copy and responsive composition at 1024x768
+ok 7 - site brand uses exact uppercase copy and responsive composition at 1024x768
+  ---
+  duration_ms: 1489.746196
+  type: 'test'
+  ...
+# Subtest: site brand uses exact uppercase copy and responsive composition at 1366x900
+ok 8 - site brand uses exact uppercase copy and responsive composition at 1366x900
+  ---
+  duration_ms: 1446.697837
+  type: 'test'
+  ...
+# Subtest: site brand uses exact uppercase copy and responsive composition at 1600x1000
+ok 9 - site brand uses exact uppercase copy and responsive composition at 1600x1000
+  ---
+  duration_ms: 1503.306529
+  type: 'test'
+  ...
+# Subtest: compact service and status controls at 320x568
+ok 10 - compact service and status controls at 320x568
+  ---
+  duration_ms: 1965.326327
+  type: 'test'
+  ...
+# Subtest: compact service and status controls at 360x800
+ok 11 - compact service and status controls at 360x800
+  ---
+  duration_ms: 1538.262381
+  type: 'test'
+  ...
+# Subtest: compact service and status controls at 390x844
+ok 12 - compact service and status controls at 390x844
+  ---
+  duration_ms: 1589.232895
+  type: 'test'
+  ...
+# Subtest: compact service and status controls at 568x320
+ok 13 - compact service and status controls at 568x320
+  ---
+  duration_ms: 1518.62578
+  type: 'test'
+  ...
+# Subtest: compact service and status controls at 768x1024
+ok 14 - compact service and status controls at 768x1024
+  ---
+  duration_ms: 1665.959194
+  type: 'test'
+  ...
+# Subtest: compact service and status controls at 1366x900
+ok 15 - compact service and status controls at 1366x900
+  ---
+  duration_ms: 1575.201257
+  type: 'test'
+  ...
+# Subtest: compact density keeps map controls accessible at 320x568
+ok 16 - compact density keeps map controls accessible at 320x568
+  ---
+  duration_ms: 10456.296526
+  type: 'test'
+  ...
+# Subtest: compact density keeps map controls accessible at 390x844
+ok 17 - compact density keeps map controls accessible at 390x844
+  ---
+  duration_ms: 7567.326328
+  type: 'test'
+  ...
+# Subtest: compact density keeps map controls accessible at 568x320
+ok 18 - compact density keeps map controls accessible at 568x320
+  ---
+  duration_ms: 6440.809299
+  type: 'test'
+  ...
+# Subtest: compact density keeps map controls accessible at 768x1024
+ok 19 - compact density keeps map controls accessible at 768x1024
+  ---
+  duration_ms: 2289.448077
+  type: 'test'
+  ...
+# Subtest: compact density keeps map controls accessible at 1024x768
+ok 20 - compact density keeps map controls accessible at 1024x768
+  ---
+  duration_ms: 1530.659329
+  type: 'test'
+  ...
+# Subtest: compact density keeps map controls accessible at 1366x900
+ok 21 - compact density keeps map controls accessible at 1366x900
+  ---
+  duration_ms: 3463.626095
+  type: 'test'
+  ...
+# Subtest: compact density keeps map controls accessible at 1600x1000
+ok 22 - compact density keeps map controls accessible at 1600x1000
+  ---
+  duration_ms: 2250.32627
+  type: 'test'
+  ...
+# Subtest: floating panels preserve the camera, layers and controls at 1440x900
+ok 23 - floating panels preserve the camera, layers and controls at 1440x900
+  ---
+  duration_ms: 9222.446323
+  type: 'test'
+  ...
+# Subtest: floating panels preserve the camera, layers and controls at 1280x720
+ok 24 - floating panels preserve the camera, layers and controls at 1280x720
+  ---
+  duration_ms: 7836.32074
+  type: 'test'
+  ...
+# Subtest: floating panels preserve the camera, layers and controls at 1024x768
+ok 25 - floating panels preserve the camera, layers and controls at 1024x768
+  ---
+  duration_ms: 8059.794557
+  type: 'test'
+  ...
+# Subtest: floating panels preserve the camera, layers and controls at 768x1024
+ok 26 - floating panels preserve the camera, layers and controls at 768x1024
+  ---
+  duration_ms: 6652.063676
+  type: 'test'
+  ...
+# Subtest: floating panels preserve the camera, layers and controls at 390x844
+ok 27 - floating panels preserve the camera, layers and controls at 390x844
+  ---
+  duration_ms: 5163.405877
+  type: 'test'
+  ...
+# Subtest: floating panels preserve the camera, layers and controls at 360x800
+ok 28 - floating panels preserve the camera, layers and controls at 360x800
+  ---
+  duration_ms: 5063.545308
+  type: 'test'
+  ...
+# Subtest: desktop search and legend remain reachable through keyboard and the tour restores an open search
+ok 29 - desktop search and legend remain reachable through keyboard and the tour restores an open search
+  ---
+  duration_ms: 2048.518353
+  type: 'test'
+  ...
+# Subtest: breakpoint and orientation changes keep one auxiliary panel and retain route, query and sheet preference
+ok 30 - breakpoint and orientation changes keep one auxiliary panel and retain route, query and sheet preference
+  ---
+  duration_ms: 8227.558193
+  type: 'test'
+  ...
+# Subtest: auxiliary panels retain an open station popup and never pan its camera at 768px
+ok 31 - auxiliary panels retain an open station popup and never pan its camera at 768px
+  ---
+  duration_ms: 7771.306158
+  type: 'test'
+  ...
+# Subtest: auxiliary panels retain an open station popup and never pan its camera at 1366px
+ok 32 - auxiliary panels retain an open station popup and never pan its camera at 1366px
+  ---
+  duration_ms: 8053.095343
+  type: 'test'
+  ...
+# Subtest: paired station status and role badges are aligned at 320x568
+ok 33 - paired station status and role badges are aligned at 320x568
+  ---
+  duration_ms: 5596.237672
+  type: 'test'
+  ...
+# Subtest: paired station status and role badges are aligned at 390x844
+ok 34 - paired station status and role badges are aligned at 390x844
+  ---
+  duration_ms: 4870.14675
+  type: 'test'
+  ...
+# Subtest: paired station status and role badges are aligned at 568x320
+ok 35 - paired station status and role badges are aligned at 568x320
+  ---
+  duration_ms: 4780.729481
+  type: 'test'
+  ...
+# Subtest: paired station status and role badges are aligned at 1366x900
+ok 36 - paired station status and role badges are aligned at 1366x900
+  ---
+  duration_ms: 12008.906294
+  type: 'test'
+  ...
+# Subtest: mobile network and mini sheet use space efficiently at 320x568
+ok 37 - mobile network and mini sheet use space efficiently at 320x568
+  ---
+  duration_ms: 10059.40064
+  type: 'test'
+  ...
+# Subtest: mobile network and mini sheet use space efficiently at 360x800
+ok 38 - mobile network and mini sheet use space efficiently at 360x800
+  ---
+  duration_ms: 5870.485014
+  type: 'test'
+  ...
+# Subtest: mobile network and mini sheet use space efficiently at 390x844
+ok 39 - mobile network and mini sheet use space efficiently at 390x844
+  ---
+  duration_ms: 7312.686467
+  type: 'test'
+  ...
+# Subtest: mobile network and mini sheet use space efficiently at 568x320
+ok 40 - mobile network and mini sheet use space efficiently at 568x320
+  ---
+  duration_ms: 6598.157066
+  type: 'test'
+  ...
+# Subtest: mobile network and mini sheet use space efficiently at 1366x900
+ok 41 - mobile network and mini sheet use space efficiently at 1366x900
+  ---
+  duration_ms: 1971.210732
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 320x568
+ok 42 - mobile-first shell and popup bounds at 320x568
+  ---
+  duration_ms: 8857.69977
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 360x800
+ok 43 - mobile-first shell and popup bounds at 360x800
+  ---
+  duration_ms: 7611.567539
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 390x844
+ok 44 - mobile-first shell and popup bounds at 390x844
+  ---
+  duration_ms: 5552.402523
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 768x1024
+ok 45 - mobile-first shell and popup bounds at 768x1024
+  ---
+  duration_ms: 5169.156918
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 1366x900
+ok 46 - mobile-first shell and popup bounds at 1366x900
+  ---
+  duration_ms: 5197.661169
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 1600x1000
+ok 47 - mobile-first shell and popup bounds at 1600x1000
+  ---
+  duration_ms: 5217.092735
+  type: 'test'
+  ...
+# Subtest: three sheet positions and closing/reopening preserve the route and selection
+ok 48 - three sheet positions and closing/reopening preserve the route and selection
+  ---
+  duration_ms: 5991.846129
+  type: 'test'
+  ...
+# Subtest: panel scrolling does not pan/zoom the map or repeatedly invalidate its unchanged size
+ok 49 - panel scrolling does not pan/zoom the map or repeatedly invalidate its unchanged size
+  ---
+  duration_ms: 4851.231371
+  type: 'test'
+  ...
+# Subtest: orientation and keyboard-sized visual viewport remain usable and preserve selection
+ok 50 - orientation and keyboard-sized visual viewport remain usable and preserve selection
+  ---
+  duration_ms: 9204.266566
+  type: 'test'
+  ...
+# Subtest: pan and zoom with all existing network layers retain layer identities
+ok 51 - pan and zoom with all existing network layers retain layer identities
+  ---
+  duration_ms: 1806.470223
+  type: 'test'
+  ...
+# Subtest: guided tour remains readable and closable on a small phone
+ok 52 - guided tour remains readable and closable on a small phone
+  ---
+  duration_ms: 6099.096737
+  type: 'test'
+  ...
+# Subtest: alignment and map controls across all network modes at 1366x900
+    # Subtest: Semua Layanan
+    ok 1 - Semua Layanan
+      ---
+      duration_ms: 379.176137
+      type: 'test'
+      ...
+    # Subtest: BRT Koridor 8
+    ok 2 - BRT Koridor 8
+      ---
+      duration_ms: 2881.63518
+      type: 'test'
+      ...
+    # Subtest: BRT rencana Koridor 16
+    ok 3 - BRT rencana Koridor 16
+      ---
+      duration_ms: 2299.082258
+      type: 'test'
+      ...
+    # Subtest: MRT Jakarta
+    ok 4 - MRT Jakarta
+      ---
+      duration_ms: 1206.034937
+      type: 'test'
+      ...
+    # Subtest: LRT Jakarta
+    ok 5 - LRT Jakarta
+      ---
+      duration_ms: 1085.352099
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Bekasi
+    ok 6 - LRT Jabodebek Bekasi
+      ---
+      duration_ms: 1435.632149
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Cibubur
+    ok 7 - LRT Jabodebek Cibubur
+      ---
+      duration_ms: 1090.221572
+      type: 'test'
+      ...
+    # Subtest: KRL Rangkasbitung
+    ok 8 - KRL Rangkasbitung
+      ---
+      duration_ms: 1767.55572
+      type: 'test'
+      ...
+    1..8
+ok 53 - alignment and map controls across all network modes at 1366x900
+  ---
+  duration_ms: 13726.162666
+  type: 'test'
+  ...
+# Subtest: alignment and map controls across all network modes at 1600x1000
+    # Subtest: Semua Layanan
+    ok 1 - Semua Layanan
+      ---
+      duration_ms: 299.777215
+      type: 'test'
+      ...
+    # Subtest: BRT Koridor 8
+    ok 2 - BRT Koridor 8
+      ---
+      duration_ms: 2905.466371
+      type: 'test'
+      ...
+    # Subtest: BRT rencana Koridor 16
+    ok 3 - BRT rencana Koridor 16
+      ---
+      duration_ms: 1942.285164
+      type: 'test'
+      ...
+    # Subtest: MRT Jakarta
+    ok 4 - MRT Jakarta
+      ---
+      duration_ms: 1209.386576
+      type: 'test'
+      ...
+    # Subtest: LRT Jakarta
+    ok 5 - LRT Jakarta
+      ---
+      duration_ms: 1079.555452
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Bekasi
+    ok 6 - LRT Jabodebek Bekasi
+      ---
+      duration_ms: 1239.072738
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Cibubur
+    ok 7 - LRT Jabodebek Cibubur
+      ---
+      duration_ms: 999.3924
+      type: 'test'
+      ...
+    # Subtest: KRL Rangkasbitung
+    ok 8 - KRL Rangkasbitung
+      ---
+      duration_ms: 1641.20408
+      type: 'test'
+      ...
+    1..8
+ok 54 - alignment and map controls across all network modes at 1600x1000
+  ---
+  duration_ms: 12779.783752
+  type: 'test'
+  ...
+# Subtest: alignment and map controls across all network modes at 768x1024
+    # Subtest: Semua Layanan
+    ok 1 - Semua Layanan
+      ---
+      duration_ms: 393.032299
+      type: 'test'
+      ...
+    # Subtest: BRT Koridor 8
+    ok 2 - BRT Koridor 8
+      ---
+      duration_ms: 3020.592116
+      type: 'test'
+      ...
+    # Subtest: BRT rencana Koridor 16
+    ok 3 - BRT rencana Koridor 16
+      ---
+      duration_ms: 2129.550267
+      type: 'test'
+      ...
+    # Subtest: MRT Jakarta
+    ok 4 - MRT Jakarta
+      ---
+      duration_ms: 1236.837042
+      type: 'test'
+      ...
+    # Subtest: LRT Jakarta
+    ok 5 - LRT Jakarta
+      ---
+      duration_ms: 1152.635202
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Bekasi
+    ok 6 - LRT Jabodebek Bekasi
+      ---
+      duration_ms: 1170.229275
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Cibubur
+    ok 7 - LRT Jabodebek Cibubur
+      ---
+      duration_ms: 1063.047931
+      type: 'test'
+      ...
+    # Subtest: KRL Rangkasbitung
+    ok 8 - KRL Rangkasbitung
+      ---
+      duration_ms: 1570.929374
+      type: 'test'
+      ...
+    1..8
+ok 55 - alignment and map controls across all network modes at 768x1024
+  ---
+  duration_ms: 13070.30532
+  type: 'test'
+  ...
+# Subtest: alignment and map controls across all network modes at 390x844
+    # Subtest: Semua Layanan
+    ok 1 - Semua Layanan
+      ---
+      duration_ms: 315.605453
+      type: 'test'
+      ...
+    # Subtest: BRT Koridor 8
+    ok 2 - BRT Koridor 8
+      ---
+      duration_ms: 2869.961173
+      type: 'test'
+      ...
+    # Subtest: BRT rencana Koridor 16
+    ok 3 - BRT rencana Koridor 16
+      ---
+      duration_ms: 1911.466517
+      type: 'test'
+      ...
+    # Subtest: MRT Jakarta
+    ok 4 - MRT Jakarta
+      ---
+      duration_ms: 1270.442907
+      type: 'test'
+      ...
+    # Subtest: LRT Jakarta
+    ok 5 - LRT Jakarta
+      ---
+      duration_ms: 1007.025264
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Bekasi
+    ok 6 - LRT Jabodebek Bekasi
+      ---
+      duration_ms: 1249.996278
+      type: 'test'
+      ...
+    # Subtest: LRT Jabodebek Cibubur
+    ok 7 - LRT Jabodebek Cibubur
+      ---
+      duration_ms: 1209.572614
+      type: 'test'
+      ...
+    # Subtest: KRL Rangkasbitung
+    ok 8 - KRL Rangkasbitung
+      ---
+      duration_ms: 1816.248053
+      type: 'test'
+      ...
+    1..8
+ok 56 - alignment and map controls across all network modes at 390x844
+  ---
+  duration_ms: 12937.999082
+  type: 'test'
+  ...
+# Subtest: regenerated CSS retains every info-guide component and matches committed output
+ok 57 - regenerated CSS retains every info-guide component and matches committed output
+  ---
+  duration_ms: 1192.074883
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 320x568
+ok 58 - network sizing, full route labels, list density and guide cards at 320x568
+  ---
+  duration_ms: 5923.094377
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 360x800
+ok 59 - network sizing, full route labels, list density and guide cards at 360x800
+  ---
+  duration_ms: 5750.340848
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 390x844
+ok 60 - network sizing, full route labels, list density and guide cards at 390x844
+  ---
+  duration_ms: 5794.452556
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 768x1024
+ok 61 - network sizing, full route labels, list density and guide cards at 768x1024
+  ---
+  duration_ms: 5974.715324
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 1366x900
+ok 62 - network sizing, full route labels, list density and guide cards at 1366x900
+  ---
+  duration_ms: 5779.53595
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 1600x1000
+ok 63 - network sizing, full route labels, list density and guide cards at 1600x1000
+  ---
+  duration_ms: 5745.236671
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 568x320
+ok 64 - network sizing, full route labels, list density and guide cards at 568x320
+  ---
+  duration_ms: 5360.411612
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 844x390
+ok 65 - network sizing, full route labels, list density and guide cards at 844x390
+  ---
+  duration_ms: 5287.656448
+  type: 'test'
+  ...
+# Subtest: list identities, sequence and all line/role/status/direction badges match baseline K1 and K3
+ok 66 - list identities, sequence and all line/role/status/direction badges match baseline K1 and K3
+  ---
+  duration_ms: 9784.711659
+  type: 'test'
+  ...
+# Subtest: Mini/half/full and tab changes preserve selected LRT, filters, URL and camera
+ok 67 - Mini/half/full and tab changes preserve selected LRT, filters, URL and camera
+  ---
+  duration_ms: 8618.583847
+  type: 'test'
+  ...
+# Subtest: network content reflows across modes/status and comparison while chrome stays reachable
+ok 68 - network content reflows across modes/status and comparison while chrome stays reachable
+  ---
+  duration_ms: 11311.069326
+  type: 'test'
+  ...
+# Subtest: compact landscape exposes services and all LRT actions at 568x320
+ok 69 - compact landscape exposes services and all LRT actions at 568x320
+  ---
+  duration_ms: 11740.474614
+  type: 'test'
+  ...
+# Subtest: compact landscape exposes services and all LRT actions at 844x390
+ok 70 - compact landscape exposes services and all LRT actions at 844x390
+  ---
+  duration_ms: 11117.02588
+  type: 'test'
+  ...
+# Subtest: portrait popup scroll hint and source/navigation remain reachable at 320, 360 and 390
+ok 71 - portrait popup scroll hint and source/navigation remain reachable at 320, 360 and 390
+  ---
+  duration_ms: 13499.674617
+  type: 'test'
+  ...
+# Subtest: direct-link reload restores LRT station, active line and actionable popup
+ok 72 - direct-link reload restores LRT station, active line and actionable popup
+  ---
+  duration_ms: 7984.976548
+  type: 'test'
+  ...
+# Subtest: all four production GeoJSON resources load through the app
+ok 73 - all four production GeoJSON resources load through the app
+  ---
+  duration_ms: 1322.157431
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_01 at 1366px
+ok 74 - summary preserves metadata, controls and accordion state: BRT_01 at 1366px
+  ---
+  duration_ms: 8551.058737
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_03 at 1366px
+ok 75 - summary preserves metadata, controls and accordion state: BRT_03 at 1366px
+  ---
+  duration_ms: 9457.583173
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_09 at 1366px
+ok 76 - summary preserves metadata, controls and accordion state: BRT_09 at 1366px
+  ---
+  duration_ms: 6094.847713
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: MRT_NS at 1366px
+ok 77 - summary preserves metadata, controls and accordion state: MRT_NS at 1366px
+  ---
+  duration_ms: 3713.479726
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: LRT_JKT_S at 1366px
+ok 78 - summary preserves metadata, controls and accordion state: LRT_JKT_S at 1366px
+  ---
+  duration_ms: 3563.986017
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: LRT_JB_BK at 1366px
+ok 79 - summary preserves metadata, controls and accordion state: LRT_JB_BK at 1366px
+  ---
+  duration_ms: 3589.899611
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: KRL_TP at 1366px
+ok 80 - summary preserves metadata, controls and accordion state: KRL_TP at 1366px
+  ---
+  duration_ms: 3259.533467
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_01 at 390px
+ok 81 - summary preserves metadata, controls and accordion state: BRT_01 at 390px
+  ---
+  duration_ms: 8407.298248
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_03 at 390px
+ok 82 - summary preserves metadata, controls and accordion state: BRT_03 at 390px
+  ---
+  duration_ms: 9457.669756
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: BRT_09 at 390px
+ok 83 - summary preserves metadata, controls and accordion state: BRT_09 at 390px
+  ---
+  duration_ms: 6223.912744
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: MRT_NS at 390px
+ok 84 - summary preserves metadata, controls and accordion state: MRT_NS at 390px
+  ---
+  duration_ms: 3650.558253
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: LRT_JKT_S at 390px
+ok 85 - summary preserves metadata, controls and accordion state: LRT_JKT_S at 390px
+  ---
+  duration_ms: 3498.003653
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: LRT_JB_BK at 390px
+ok 86 - summary preserves metadata, controls and accordion state: LRT_JB_BK at 390px
+  ---
+  duration_ms: 3585.244729
+  type: 'test'
+  ...
+# Subtest: summary preserves metadata, controls and accordion state: KRL_TP at 390px
+ok 87 - summary preserves metadata, controls and accordion state: KRL_TP at 390px
+  ---
+  duration_ms: 3070.844227
+  type: 'test'
+  ...
+# Subtest: source geometry, attributes, operation engine and existing DOM hooks remain intact
+ok 88 - source geometry, attributes, operation engine and existing DOM hooks remain intact
+  ---
+  duration_ms: 192.621965
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 390px
+ok 89 - responsive layout and real Leaflet resizing at 390px
+  ---
+  duration_ms: 4501.311107
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 768px
+ok 90 - responsive layout and real Leaflet resizing at 768px
+  ---
+  duration_ms: 4560.11435
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 1366px
+ok 91 - responsive layout and real Leaflet resizing at 1366px
+  ---
+  duration_ms: 4760.264528
+  type: 'test'
+  ...
+# Subtest: responsive layout and real Leaflet resizing at 1600px
+ok 92 - responsive layout and real Leaflet resizing at 1600px
+  ---
+  duration_ms: 4802.695497
+  type: 'test'
+  ...
+# Subtest: stop selection, popup navigation, integration links, tabs and URL remain connected
+ok 93 - stop selection, popup navigation, integration links, tabs and URL remain connected
+  ---
+  duration_ms: 9637.743098
+  type: 'test'
+  ...
+# Subtest: global transport search, online place search, basemaps, legend and about remain reachable
+ok 94 - global transport search, online place search, basemaps, legend and about remain reachable
+  ---
+  duration_ms: 5951.081858
+  type: 'test'
+  ...
+# Subtest: keyboard tabs and crossing mobile/tablet/desktop breakpoints keep controls usable
+ok 95 - keyboard tabs and crossing mobile/tablet/desktop breakpoints keep controls usable
+  ---
+  duration_ms: 5319.263907
+  type: 'test'
+  ...
+# Subtest: mobile stop popup and provider attribution stay above the detail sheet
+ok 96 - mobile stop popup and provider attribution stay above the detail sheet
+  ---
+  duration_ms: 8191.969929
+  type: 'test'
+  ...
+# Subtest: GPS, home, zoom and route comparison controls still drive Leaflet
+ok 97 - GPS, home, zoom and route comparison controls still drive Leaflet
+  ---
+  duration_ms: 6905.120188
+  type: 'test'
+  ...
+# Subtest: short onboarding fits and retains the map at 320x568
+ok 98 - short onboarding fits and retains the map at 320x568
+  ---
+  duration_ms: 2639.845359
+  type: 'test'
+  ...
+# Subtest: short onboarding fits and retains the map at 360x800
+ok 99 - short onboarding fits and retains the map at 360x800
+  ---
+  duration_ms: 2492.378051
+  type: 'test'
+  ...
+# Subtest: short onboarding fits and retains the map at 390x844
+ok 100 - short onboarding fits and retains the map at 390x844
+  ---
+  duration_ms: 2396.096365
+  type: 'test'
+  ...
+# Subtest: short onboarding fits and retains the map at 568x320
+ok 101 - short onboarding fits and retains the map at 568x320
+  ---
+  duration_ms: 2240.667501
+  type: 'test'
+  ...
+# Subtest: short onboarding fits and retains the map at 1366x900
+ok 102 - short onboarding fits and retains the map at 1366x900
+  ---
+  duration_ms: 2432.951777
+  type: 'test'
+  ...
+# Subtest: mobile popup and detail take turns without changing selection, tab, URL, or markers
+ok 103 - mobile popup and detail take turns without changing selection, tab, URL, or markers
+  ---
+  duration_ms: 6098.722367
+  type: 'test'
+  ...
+# Subtest: visual label decluttering preserves every marker and stop identity at 390px
+ok 104 - visual label decluttering preserves every marker and stop identity at 390px
+  ---
+  duration_ms: 5738.218101
+  type: 'test'
+  ...
+# Subtest: visual label decluttering preserves every marker and stop identity at 1366px
+ok 105 - visual label decluttering preserves every marker and stop identity at 1366px
+  ---
+  duration_ms: 5777.599229
+  type: 'test'
+  ...
+# Subtest: Tabler guided tour has visible anchors and restores UI/transport state at 390px
+ok 106 - Tabler guided tour has visible anchors and restores UI/transport state at 390px
+  ---
+  duration_ms: 6963.421486
+  type: 'test'
+  ...
+# Subtest: Tabler guided tour has visible anchors and restores UI/transport state at 768px
+ok 107 - Tabler guided tour has visible anchors and restores UI/transport state at 768px
+  ---
+  duration_ms: 6488.055684
+  type: 'test'
+  ...
+# Subtest: Tabler guided tour has visible anchors and restores UI/transport state at 1366px
+ok 108 - Tabler guided tour has visible anchors and restores UI/transport state at 1366px
+  ---
+  duration_ms: 6717.650638
+  type: 'test'
+  ...
+# Subtest: guided tour skip and Escape preserve an empty overview and the open network sheet
+ok 109 - guided tour skip and Escape preserve an empty overview and the open network sheet
+  ---
+  duration_ms: 1899.675281
+  type: 'test'
+  ...
+# Subtest: startup disclaimer continues to the adapted tour through the normal buttons
+ok 110 - startup disclaimer continues to the adapted tour through the normal buttons
+  ---
+  duration_ms: 1564.411937
+  type: 'test'
+  ...
+# Subtest: primary mobile controls and detail actions offer at least 44px touch targets
+ok 111 - primary mobile controls and detail actions offer at least 44px touch targets
+  ---
+  duration_ms: 5467.658542
+  type: 'test'
+  ...
+# Subtest: Velodrome popup reads Jakarta operator, code/status/structure, service metadata and preserves links
+ok 112 - Velodrome popup reads Jakarta operator, code/status/structure, service metadata and preserves links
+  ---
+  duration_ms: 4517.402998
+  type: 'test'
+  ...
+# Subtest: single-line Jabodebek popup uses its own operator and source line color
+ok 113 - single-line Jabodebek popup uses its own operator and source line color
+  ---
+  duration_ms: 4301.649164
+  type: 'test'
+  ...
+# Subtest: shared Cawang retains route-switch handlers and follows the active line for both navigation branches
+ok 114 - shared Cawang retains route-switch handlers and follows the active line for both navigation branches
+  ---
+  duration_ms: 11053.247782
+  type: 'test'
+  ...
+# Subtest: LRT integration buttons still navigate to the related source feature
+ok 115 - LRT integration buttons still navigate to the related source feature
+  ---
+  duration_ms: 6573.993906
+  type: 'test'
+  ...
+# Subtest: mobile station search, status filters and guided tour preserve LRT selection and popup scroll
+ok 116 - mobile station search, status filters and guided tour preserve LRT selection and popup scroll
+  ---
+  duration_ms: 6813.75714
+  type: 'test'
+  ...
+# Subtest: long previous-station names wrap without truncation on a small phone
+ok 117 - long previous-station names wrap without truncation on a small phone
+  ---
+  duration_ms: 4619.145574
+  type: 'test'
+  ...
+# Subtest: LRT presentation renders escaped supplied station names and omits missing station codes
+ok 118 - LRT presentation renders escaped supplied station names and omits missing station codes
+  ---
+  duration_ms: 1397.423383
+  type: 'test'
+  ...
+# Subtest: LRT Jakarta and multi-line Jabodebek popups remain reachable at 320x568
+ok 119 - LRT Jakarta and multi-line Jabodebek popups remain reachable at 320x568
+  ---
+  duration_ms: 7797.361081
+  type: 'test'
+  ...
+# Subtest: LRT Jakarta and multi-line Jabodebek popups remain reachable at 360x800
+ok 120 - LRT Jakarta and multi-line Jabodebek popups remain reachable at 360x800
+  ---
+  duration_ms: 7763.358786
+  type: 'test'
+  ...
+# Subtest: LRT Jakarta and multi-line Jabodebek popups remain reachable at 390x844
+ok 121 - LRT Jakarta and multi-line Jabodebek popups remain reachable at 390x844
+  ---
+  duration_ms: 7887.224073
+  type: 'test'
+  ...
+# Subtest: LRT Jakarta and multi-line Jabodebek popups remain reachable at 768x1024
+ok 122 - LRT Jakarta and multi-line Jabodebek popups remain reachable at 768x1024
+  ---
+  duration_ms: 7830.940384
+  type: 'test'
+  ...
+# Subtest: LRT Jakarta and multi-line Jabodebek popups remain reachable at 1366x900
+ok 123 - LRT Jakarta and multi-line Jabodebek popups remain reachable at 1366x900
+  ---
+  duration_ms: 7230.834892
+  type: 'test'
+  ...
+# Subtest: LRT Jakarta and multi-line Jabodebek popups remain reachable at 1600x1000
+ok 124 - LRT Jakarta and multi-line Jabodebek popups remain reachable at 1600x1000
+  ---
+  duration_ms: 7522.221794
+  type: 'test'
+  ...
+1..124
+# tests 156
+# suites 0
+# pass 156
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 709407.640044
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice
+
+> test:a01
+> node --test --test-reporter=tap tools/test-a01-toggle.mjs
+
+TAP version 13
+# Subtest: Koridor 13: toggle on/off without a selected stop
+ok 1 - Koridor 13: toggle on/off without a selected stop
+  ---
+  duration_ms: 7204.789219
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 1366px
+ok 2 - Koridor 13: retain an Existing selection across on/off at 1366px
+  ---
+  duration_ms: 8462.58368
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 390px
+ok 3 - Koridor 13: retain an Existing selection across on/off at 390px
+  ---
+  duration_ms: 8320.446364
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 568px
+ok 4 - Koridor 13: retain an Existing selection across on/off at 568px
+  ---
+  duration_ms: 8121.289718
+  type: 'test'
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 1366px
+ok 5 - Koridor 15–19: non-existing visibility and selected stop removal at 1366px
+  ---
+  duration_ms: 43642.104924
+  type: 'test'
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 390px
+ok 6 - Koridor 15–19: non-existing visibility and selected stop removal at 390px
+  ---
+  duration_ms: 53867.032394
+  type: 'test'
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 568px
+ok 7 - Koridor 15–19: non-existing visibility and selected stop removal at 568px
+  ---
+  duration_ms: 46716.641315
+  type: 'test'
+  ...
+# Subtest: BRT_13: disabling clears a selected Conceptual stop
+ok 8 - BRT_13: disabling clears a selected Conceptual stop
+  ---
+  duration_ms: 8411.10142
+  type: 'test'
+  ...
+# Subtest: BRT_11: disabling clears a selected Proposed stop
+ok 9 - BRT_11: disabling clears a selected Proposed stop
+  ---
+  duration_ms: 7855.640865
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a panned view and open popup at 1366px
+ok 10 - Koridor 13: preserve a panned view and open popup at 1366px
+  ---
+  duration_ms: 9361.614576
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a closed popup during pending selection at 1366px
+ok 11 - Koridor 13: preserve a closed popup during pending selection at 1366px
+  ---
+  duration_ms: 5752.733032
+  type: 'test'
+  ...
+# Subtest: Koridor 13: keep a manually dismissed popup closed at 1366px
+ok 12 - Koridor 13: keep a manually dismissed popup closed at 1366px
+  ---
+  duration_ms: 8530.838446
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a panned view and open popup at 390px
+ok 13 - Koridor 13: preserve a panned view and open popup at 390px
+  ---
+  duration_ms: 9049.477812
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a closed popup during pending selection at 390px
+not ok 14 - Koridor 13: preserve a closed popup during pending selection at 390px
+  ---
+  duration_ms: 5595.75078
+  type: 'test'
+  location: '/workspace/work/webgis/tools/test-a01-toggle.mjs:312:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    toggle must preserve zoom
+    + actual - expected
+    
+    + 11
+    - 11.012836814651273
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 11.012836814651273
+  actual: 11
+  operator: 'strictEqual'
+  stack: |-
+    assertUiPreserved (file:///workspace/work/webgis/tools/test-a01-toggle.mjs:181:10)
+    TestContext.<anonymous> (file:///workspace/work/webgis/tools/test-a01-toggle.mjs:334:5)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: Koridor 13: keep a manually dismissed popup closed at 390px
+ok 15 - Koridor 13: keep a manually dismissed popup closed at 390px
+  ---
+  duration_ms: 8416.783326
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a panned view and open popup at 568px
+ok 16 - Koridor 13: preserve a panned view and open popup at 568px
+  ---
+  duration_ms: 8983.010608
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a closed popup during pending selection at 568px
+ok 17 - Koridor 13: preserve a closed popup during pending selection at 568px
+  ---
+  duration_ms: 5613.210693
+  type: 'test'
+  ...
+# Subtest: Koridor 13: keep a manually dismissed popup closed at 568px
+ok 18 - Koridor 13: keep a manually dismissed popup closed at 568px
+  ---
+  duration_ms: 8623.431563
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 17
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 262869.467282
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

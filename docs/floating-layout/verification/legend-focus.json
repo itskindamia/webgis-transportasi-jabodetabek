@@ -1,0 +1,23 @@
+{
+  "checks": "closing legend returns focus to a visible control, including grouped landscape navigation",
+  "results": [
+    {
+      "width": 320,
+      "height": 568,
+      "focusedControl": "infoButton",
+      "errors": []
+    },
+    {
+      "width": 500,
+      "height": 320,
+      "focusedControl": "infoButton",
+      "errors": []
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "focusedControl": "tlLegendToggle",
+      "errors": []
+    }
+  ]
+}

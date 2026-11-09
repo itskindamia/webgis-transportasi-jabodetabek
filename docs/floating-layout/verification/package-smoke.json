@@ -1,0 +1,23 @@
+{
+  "archive": {
+    "file": "webgis-runtime.zip",
+    "runtimeCommit": "d6c88684e124d03c755239567ae3e5f177d9cd47",
+    "files": 53,
+    "bytes": 1218217,
+    "sha256": "c6b763172a6af06123637ffe9ef829bbf26c279790545ac0c13910c2588851a1",
+    "type": "complete static runtime replacement"
+  },
+  "origin": "http://127.0.0.1:5188/",
+  "browser": "156.0.8078.79",
+  "checks": [
+    "extracted ZIP served by real HTTP",
+    "local runtime files have no HTTP 4xx/5xx",
+    "normal onboarding",
+    "LRT Bekasi line selection",
+    "Cawang popup",
+    "next station navigation"
+  ],
+  "errors": [],
+  "failedLocal": [],
+  "limitations": "CDN Leaflet uses identical installed 1.9.4 bytes; external tiles isolated, real provider screenshots captured separately."
+}

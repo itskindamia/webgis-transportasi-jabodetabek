@@ -1,0 +1,12 @@
+{
+  "baselineBranch": "main",
+  "baselineCommit": "46c3913042934b67712327d566e34c287178845e",
+  "workBranch": "codex/floating-network-layout",
+  "runtimeCommit": "d6c88684e124d03c755239567ae3e5f177d9cd47",
+  "sha256": {
+    "index.html": "39fa86367f56a2b3775cee9cc935b26ccdbf358c49cebd4ed8945ee421197995",
+    "css/layout-floating.css": "140b5ef070dd96aafb5eb17d32408878019171a5e64f189170f0257a5ccc68ea",
+    "js/layout-tabler.js": "fec6b43fe4770b278ef9aa25503b44de4e2218ccc8f29dd1d42ab917952a566f",
+    "js/layout-tabler-ux.js": "36b8c8b201ef9a596d824b015915ebbd2102ec43cf5b52c9cdfd5351ef716249"
+  }
+}

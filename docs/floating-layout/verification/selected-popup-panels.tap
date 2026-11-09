@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: auxiliary panels retain an open station popup and never pan its camera at 768px
+ok 1 - auxiliary panels retain an open station popup and never pan its camera at 768px
+  ---
+  duration_ms: 6594.896303
+  type: 'test'
+  ...
+# Subtest: auxiliary panels retain an open station popup and never pan its camera at 1366px
+ok 2 - auxiliary panels retain an open station popup and never pan its camera at 1366px
+  ---
+  duration_ms: 6166.218072
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13106.087209

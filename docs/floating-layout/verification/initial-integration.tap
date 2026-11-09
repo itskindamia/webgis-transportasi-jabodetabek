@@ -1,0 +1,372 @@
+TAP version 13
+# Subtest: Koridor 13: toggle on/off without a selected stop
+ok 1 - Koridor 13: toggle on/off without a selected stop
+  ---
+  duration_ms: 9799.946956
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 1366px
+ok 2 - Koridor 13: retain an Existing selection across on/off at 1366px
+  ---
+  duration_ms: 10267.072024
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 390px
+ok 3 - Koridor 13: retain an Existing selection across on/off at 390px
+  ---
+  duration_ms: 10373.221883
+  type: 'test'
+  ...
+# Subtest: Koridor 13: retain an Existing selection across on/off at 568px
+ok 4 - Koridor 13: retain an Existing selection across on/off at 568px
+  ---
+  duration_ms: 9881.481962
+  type: 'test'
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 1366px
+ok 5 - Koridor 15–19: non-existing visibility and selected stop removal at 1366px
+  ---
+  duration_ms: 77089.344301
+  type: 'test'
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 390px
+ok 6 - Koridor 15–19: non-existing visibility and selected stop removal at 390px
+  ---
+  duration_ms: 66253.928929
+  type: 'test'
+  ...
+# Subtest: Koridor 15–19: non-existing visibility and selected stop removal at 568px
+ok 7 - Koridor 15–19: non-existing visibility and selected stop removal at 568px
+  ---
+  duration_ms: 53163.081036
+  type: 'test'
+  ...
+# Subtest: BRT_13: disabling clears a selected Conceptual stop
+ok 8 - BRT_13: disabling clears a selected Conceptual stop
+  ---
+  duration_ms: 15304.776588
+  type: 'test'
+  ...
+# Subtest: BRT_11: disabling clears a selected Proposed stop
+ok 9 - BRT_11: disabling clears a selected Proposed stop
+  ---
+  duration_ms: 14071.5527
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a panned view and open popup at 1366px
+ok 10 - Koridor 13: preserve a panned view and open popup at 1366px
+  ---
+  duration_ms: 14746.595283
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a closed popup during pending selection at 1366px
+ok 11 - Koridor 13: preserve a closed popup during pending selection at 1366px
+  ---
+  duration_ms: 10957.95899
+  type: 'test'
+  ...
+# Subtest: Koridor 13: keep a manually dismissed popup closed at 1366px
+ok 12 - Koridor 13: keep a manually dismissed popup closed at 1366px
+  ---
+  duration_ms: 19626.584914
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a panned view and open popup at 390px
+ok 13 - Koridor 13: preserve a panned view and open popup at 390px
+  ---
+  duration_ms: 13508.399616
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a closed popup during pending selection at 390px
+ok 14 - Koridor 13: preserve a closed popup during pending selection at 390px
+  ---
+  duration_ms: 7551.983181
+  type: 'test'
+  ...
+# Subtest: Koridor 13: keep a manually dismissed popup closed at 390px
+ok 15 - Koridor 13: keep a manually dismissed popup closed at 390px
+  ---
+  duration_ms: 10125.994126
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a panned view and open popup at 568px
+ok 16 - Koridor 13: preserve a panned view and open popup at 568px
+  ---
+  duration_ms: 10589.123676
+  type: 'test'
+  ...
+# Subtest: Koridor 13: preserve a closed popup during pending selection at 568px
+ok 17 - Koridor 13: preserve a closed popup during pending selection at 568px
+  ---
+  duration_ms: 6642.172705
+  type: 'test'
+  ...
+# Subtest: Koridor 13: keep a manually dismissed popup closed at 568px
+ok 18 - Koridor 13: keep a manually dismissed popup closed at 568px
+  ---
+  duration_ms: 13833.255212
+  type: 'test'
+  ...
+# Subtest: mobile network and mini sheet use space efficiently at 320x568
+ok 19 - mobile network and mini sheet use space efficiently at 320x568
+  ---
+  duration_ms: 7090.015023
+  type: 'test'
+  ...
+# Subtest: mobile network and mini sheet use space efficiently at 360x800
+ok 20 - mobile network and mini sheet use space efficiently at 360x800
+  ---
+  duration_ms: 7625.658226
+  type: 'test'
+  ...
+# Subtest: mobile network and mini sheet use space efficiently at 390x844
+ok 21 - mobile network and mini sheet use space efficiently at 390x844
+  ---
+  duration_ms: 6706.004654
+  type: 'test'
+  ...
+# Subtest: mobile network and mini sheet use space efficiently at 568x320
+ok 22 - mobile network and mini sheet use space efficiently at 568x320
+  ---
+  duration_ms: 7074.959824
+  type: 'test'
+  ...
+# Subtest: mobile network and mini sheet use space efficiently at 1366x900
+ok 23 - mobile network and mini sheet use space efficiently at 1366x900
+  ---
+  duration_ms: 6219.719485
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 320x568
+ok 24 - mobile-first shell and popup bounds at 320x568
+  ---
+  duration_ms: 16215.776384
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 360x800
+ok 25 - mobile-first shell and popup bounds at 360x800
+  ---
+  duration_ms: 20963.138343
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 390x844
+ok 26 - mobile-first shell and popup bounds at 390x844
+  ---
+  duration_ms: 22027.251646
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 768x1024
+ok 27 - mobile-first shell and popup bounds at 768x1024
+  ---
+  duration_ms: 18831.927013
+  type: 'test'
+  ...
+# Subtest: mobile-first shell and popup bounds at 1366x900
+not ok 28 - mobile-first shell and popup bounds at 1366x900
+  ---
+  duration_ms: 11899.226442
+  type: 'test'
+  location: '/workspace/work/webgis/tools/test-layout-mobile.mjs:11:42'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(network.x + network.width <= map.x + 1 && map.x + map.width <= detail.x + 1)
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis/tools/test-layout-mobile.mjs:19:12)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: mobile-first shell and popup bounds at 1600x1000
+not ok 29 - mobile-first shell and popup bounds at 1600x1000
+  ---
+  duration_ms: 14087.472051
+  type: 'test'
+  location: '/workspace/work/webgis/tools/test-layout-mobile.mjs:11:42'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(network.x + network.width <= map.x + 1 && map.x + map.width <= detail.x + 1)
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis/tools/test-layout-mobile.mjs:19:12)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: three sheet positions and closing/reopening preserve the route and selection
+ok 30 - three sheet positions and closing/reopening preserve the route and selection
+  ---
+  duration_ms: 15612.043008
+  type: 'test'
+  ...
+# Subtest: panel scrolling does not pan/zoom the map or repeatedly invalidate its unchanged size
+ok 31 - panel scrolling does not pan/zoom the map or repeatedly invalidate its unchanged size
+  ---
+  duration_ms: 12404.546252
+  type: 'test'
+  ...
+# Subtest: orientation and keyboard-sized visual viewport remain usable and preserve selection
+ok 32 - orientation and keyboard-sized visual viewport remain usable and preserve selection
+  ---
+  duration_ms: 27440.90759
+  type: 'test'
+  ...
+# Subtest: pan and zoom with all existing network layers retain layer identities
+ok 33 - pan and zoom with all existing network layers retain layer identities
+  ---
+  duration_ms: 3853.635406
+  type: 'test'
+  ...
+# Subtest: guided tour remains readable and closable on a small phone
+ok 34 - guided tour remains readable and closable on a small phone
+  ---
+  duration_ms: 12690.390558
+  type: 'test'
+  ...
+# Subtest: regenerated CSS retains every info-guide component and matches committed output
+ok 35 - regenerated CSS retains every info-guide component and matches committed output
+  ---
+  duration_ms: 3841.830078
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 320x568
+ok 36 - network sizing, full route labels, list density and guide cards at 320x568
+  ---
+  duration_ms: 13809.102124
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 360x800
+ok 37 - network sizing, full route labels, list density and guide cards at 360x800
+  ---
+  duration_ms: 14511.060178
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 390x844
+ok 38 - network sizing, full route labels, list density and guide cards at 390x844
+  ---
+  duration_ms: 14803.433305
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 768x1024
+ok 39 - network sizing, full route labels, list density and guide cards at 768x1024
+  ---
+  duration_ms: 13694.830066
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 1366x900
+ok 40 - network sizing, full route labels, list density and guide cards at 1366x900
+  ---
+  duration_ms: 19335.488385
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 1600x1000
+ok 41 - network sizing, full route labels, list density and guide cards at 1600x1000
+  ---
+  duration_ms: 17007.942452
+  type: 'test'
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 568x320
+not ok 42 - network sizing, full route labels, list density and guide cards at 568x320
+  ---
+  duration_ms: 12497.486094
+  type: 'test'
+  location: '/workspace/work/webgis/tools/test-layout-refinement.mjs:50:3'
+  failureType: 'testCodeFailure'
+  error: 'sheet does not cover Search'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis/tools/test-layout-refinement.mjs:64:14)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: network sizing, full route labels, list density and guide cards at 844x390
+ok 43 - network sizing, full route labels, list density and guide cards at 844x390
+  ---
+  duration_ms: 11868.990937
+  type: 'test'
+  ...
+# Subtest: list identities, sequence and all line/role/status/direction badges match baseline K1 and K3
+ok 44 - list identities, sequence and all line/role/status/direction badges match baseline K1 and K3
+  ---
+  duration_ms: 21684.480694
+  type: 'test'
+  ...
+# Subtest: Mini/half/full and tab changes preserve selected LRT, filters, URL and camera
+ok 45 - Mini/half/full and tab changes preserve selected LRT, filters, URL and camera
+  ---
+  duration_ms: 15404.431632
+  type: 'test'
+  ...
+# Subtest: network content reflows across modes/status and comparison while chrome stays reachable
+ok 46 - network content reflows across modes/status and comparison while chrome stays reachable
+  ---
+  duration_ms: 20701.502985
+  type: 'test'
+  ...
+# Subtest: compact landscape exposes services and all LRT actions at 568x320
+not ok 47 - compact landscape exposes services and all LRT actions at 568x320
+  ---
+  duration_ms: 6549.542608
+  type: 'test'
+  location: '/workspace/work/webgis/tools/test-layout-release.mjs:19:57'
+  failureType: 'testCodeFailure'
+  error: '{"height":60,"visibleService":52.78125,"columns":"127.188px 190.812px"}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/work/webgis/tools/test-layout-release.mjs:30:12)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: compact landscape exposes services and all LRT actions at 844x390
+ok 48 - compact landscape exposes services and all LRT actions at 844x390
+  ---
+  duration_ms: 18346.613895
+  type: 'test'
+  ...
+# Subtest: portrait popup scroll hint and source/navigation remain reachable at 320, 360 and 390
+ok 49 - portrait popup scroll hint and source/navigation remain reachable at 320, 360 and 390
+  ---
+  duration_ms: 21943.161327
+  type: 'test'
+  ...
+# Subtest: direct-link reload restores LRT station, active line and actionable popup
+ok 50 - direct-link reload restores LRT station, active line and actionable popup
+  ---
+  duration_ms: 13455.595257
+  type: 'test'
+  ...
+# Subtest: all four production GeoJSON resources load through the app
+ok 51 - all four production GeoJSON resources load through the app
+  ---
+  duration_ms: 2512.672963
+  type: 'test'
+  ...
+1..51
+# tests 51
+# suites 0
+# pass 47
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 831668.294031

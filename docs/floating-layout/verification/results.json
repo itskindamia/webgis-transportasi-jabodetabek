@@ -1,0 +1,67 @@
+{
+  "baseline": "46c3913042934b67712327d566e34c287178845e",
+  "runtimeCommit": "d6c88684e124d03c755239567ae3e5f177d9cd47",
+  "testCommit": "d6c88684e124d03c755239567ae3e5f177d9cd47",
+  "browser": "156.0.8078.79",
+  "baselineRegression": {
+    "tests": [
+      146,
+      18
+    ],
+    "pass": [
+      146,
+      18
+    ],
+    "fail": [
+      0,
+      0
+    ]
+  },
+  "finalRegression": {
+    "tests": [
+      156,
+      18
+    ],
+    "pass": [
+      156,
+      18
+    ],
+    "fail": [
+      0,
+      0
+    ]
+  },
+  "regressionTotal": 174,
+  "extraHeadingChecks": 6,
+  "extraSmallScreenChecks": 7,
+  "screenshots": {
+    "before": {
+      "images": 12,
+      "source": "46c3913042934b67712327d566e34c287178845e",
+      "realTileResponses": 359,
+      "errors": [],
+      "tileFailures": []
+    },
+    "after": {
+      "images": 12,
+      "source": "d6c88684e124d03c755239567ae3e5f177d9cd47",
+      "realTileResponses": 399,
+      "errors": [],
+      "tileFailures": []
+    }
+  },
+  "package": {
+    "file": "webgis-runtime.zip",
+    "runtimeCommit": "d6c88684e124d03c755239567ae3e5f177d9cd47",
+    "files": 53,
+    "bytes": 1218217,
+    "sha256": "c6b763172a6af06123637ffe9ef829bbf26c279790545ac0c13910c2588851a1",
+    "type": "complete static runtime replacement"
+  },
+  "protectedFilesUnchanged": 8,
+  "limitations": [
+    "No physical device, iOS Safari, screen reader, live GPS or live Nominatim testing",
+    "Existing data audits exit 1 with output identical to baseline",
+    "Runtime retains the existing online Leaflet CDN, tile and geocoding dependencies"
+  ]
+}
