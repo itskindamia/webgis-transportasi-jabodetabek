@@ -22,9 +22,23 @@
   let previousViewportWidth = innerWidth;
   let popupLayoutSignature = "";
 
+  // Only mobile LRT popups receive the taller, wider fit-to-screen envelope.
+  function getPresentationPopupOptions() {
+    const options = getStopPopupOptions();
+    if (!mobile() || !stopPopup?.getElement()?.querySelector(".lrt-popup")) return options;
+    const viewportHeight = Math.round(window.visualViewport?.height || innerHeight);
+    const viewportWidth = Math.round(window.visualViewport?.width || innerWidth);
+    options.maxHeight = Math.min(670, Math.max(240, viewportHeight - 205));
+    options.maxWidth = Math.min(354, Math.max(220, viewportWidth - 24));
+    options.minWidth = Math.min(270, options.maxWidth);
+    options.autoPanPaddingTopLeft = [12, 112];
+    options.autoPanPaddingBottomRight = [12, 88];
+    return options;
+  }
+
   function refreshPopupLayout() {
     if (!ready || !stopPopup?.isOpen() || detailsOverPopup || body.classList.contains("tl-popup-shelved")) return;
-    const { autoPan, keepInView, ...dimensions } = getStopPopupOptions();
+    const { autoPan, keepInView, ...dimensions } = getPresentationPopupOptions();
     const signature = JSON.stringify(dimensions);
     if (signature === popupLayoutSignature) return;
     popupLayoutSignature = signature;
@@ -74,6 +88,10 @@
     const element = stopPopup?.getElement();
     body.classList.toggle("tl-stop-popup-open", open);
     body.classList.toggle("tl-popup-shelved", shelved);
+    // Mobile LRT popup takes precedence over the condensed Detail sheet.
+    // When the user opens Detail, the popup is shelved and the sheet returns.
+    body.classList.toggle("tl-lrt-popup-open",
+      open && Boolean(element?.querySelector(".lrt-popup")));
     if (element) {
       element.inert = shelved;
       element.setAttribute("aria-hidden", String(shelved));
@@ -527,7 +545,7 @@
       if (mobile()) {
         syncAttribution();
       }
-      const { autoPan, keepInView, ...dimensions } = getStopPopupOptions();
+      const { autoPan, keepInView, ...dimensions } = getPresentationPopupOptions();
       // Preserve the engine's navigation-specific autoPan setting.
       popup.getElement()?.style.setProperty("--tl-popup-content-height", `${dimensions.maxHeight}px`);
       Object.assign(popup.options, dimensions);

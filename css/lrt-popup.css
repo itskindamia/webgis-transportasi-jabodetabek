@@ -286,3 +286,288 @@
   .tl-app .lrt-popup .stop-popup-nav-arrow { color: #63758c; }
   .tl-app .lrt-popup-scroll-hint { display: none; }
 }
+
+
+/* Mobile LRT popup v1 — compact, readable, and viewport-aware.
+   This deliberately overrides older @layer prototype rules without
+   changing desktop layout, geodata, or the original transfer actions. */
+@media (max-width: 767px) and (orientation: portrait) {
+  .tl-lrt-popup-open:not(.tl-popup-shelved) .tl-detail-panel {
+    display: none !important;
+  }
+
+  .tl-app .lrt-popup-shell .leaflet-popup-content-wrapper {
+    max-height: min(82dvh, calc(100dvh - 145px));
+    border-radius: 13px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .tl-app .lrt-popup-shell .leaflet-popup-content {
+    width: min(354px, calc(100vw - 32px)) !important;
+    min-width: 0;
+    max-height: none !important;
+    margin: 0;
+    overflow: hidden;
+  }
+  .tl-app .lrt-popup {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    max-height: min(var(--tl-popup-content-height, 540px), calc(100dvh - 174px));
+    padding: 0;
+    font-size: 13px;
+    line-height: 1.35;
+    overflow: hidden;
+  }
+  .tl-app .lrt-popup-body {
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tl-app .lrt-popup-header {
+    display: grid;
+    grid-template-columns: 38px minmax(0,1fr);
+    align-items: center;
+    column-gap: 9px;
+    padding: 12px 44px 10px 11px;
+    margin: 0 0 5px;
+    border-bottom: 1px solid #e5e9ee;
+  }
+  .tl-app .lrt-popup-brand-logo {
+    display: block;
+    width: 38px;
+    height: 38px;
+    grid-column: 1;
+    grid-row: 1 / span 4;
+    padding: 3px;
+    object-fit: contain;
+    border-radius: 7px;
+    background: #f6f8fb;
+  }
+  .tl-app .lrt-popup-header > :not(.lrt-popup-brand-logo) { grid-column: 2; }
+  .tl-app .lrt-popup-header:not(:has(.lrt-popup-brand-logo)) { grid-template-columns: minmax(0,1fr); }
+  .tl-app .lrt-popup-header:not(:has(.lrt-popup-brand-logo)) > * { grid-column: 1; }
+  .tl-app .lrt-popup .stop-popup-eyebrow {
+    margin: 0 0 3px;
+    font-size: 10px;
+    line-height: 1.15;
+    letter-spacing: .2px;
+    color: #6b7480;
+  }
+  .tl-app .lrt-popup .stop-popup-eyebrow::before { height: 12px; }
+  .tl-app .lrt-popup .stop-popup-title {
+    margin: 0;
+    padding: 0;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.18;
+    color: #263445;
+  }
+  .tl-app .lrt-popup .stop-popup-station-code {
+    margin: 3px 0 0;
+    font-size: 11px;
+    line-height: 1.2;
+  }
+  .tl-app .lrt-popup .stop-popup-meta-row { margin-top: 6px; gap: 4px; }
+  .tl-app .lrt-popup .stop-popup-meta-row > * {
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-size: 10px;
+    line-height: 1.3;
+  }
+  .tl-app .lrt-popup .stop-popup-scroll {
+    height: auto;
+    max-height: none;
+    padding: 0 10px 9px;
+    overflow: visible;
+  }
+  /* Prevent a second scrollbar inside the integrations/source list. */
+  .tl-app .lrt-popup .stop-popup-integration-scroll,
+  .tl-app .lrt-popup .stop-source-body {
+    max-height: none;
+    height: auto;
+    overflow: visible;
+  }
+  .tl-app .lrt-popup .stop-popup-section { margin-top: 8px; }
+  .tl-app .lrt-popup .stop-popup-section--service { padding-top: 0; }
+  .tl-app .lrt-popup .stop-popup-section--integration { padding-top: 3px; }
+  .tl-app .lrt-popup .stop-popup-label {
+    display: block;
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0 0 5px;
+    overflow: visible;
+    clip-path: none;
+    color: #304052;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .tl-app .lrt-popup .stop-popup-activity {
+    margin-top: 5px;
+    padding: 6px 7px;
+    border-radius: 6px;
+  }
+  .tl-app .lrt-popup .stop-popup-activity-label { font-size: 10px; }
+  .tl-app .lrt-popup .stop-popup-activity-value { font-size: 11px; }
+  .tl-app .lrt-popup .stop-popup-direct-routes {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 6px;
+  }
+  .tl-app .lrt-popup .lrt-service-button {
+    display: flex;
+    min-width: 0;
+    width: 100%;
+    min-height: 46px;
+    height: auto;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 8px;
+  }
+  .tl-app .lrt-popup .lrt-service-button > .rail-line-badge-wrap,
+  .tl-app .lrt-popup .lrt-service-button > .rail-line-badge-fallback {
+    display: flex;
+    flex: 0 0 32px;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+  }
+  .tl-app .lrt-popup .lrt-service-button .rail-line-badge-image {
+    display: block;
+    width: 31px;
+    height: 31px;
+    object-fit: contain;
+  }
+  .tl-app .lrt-popup .lrt-service-copy {
+    min-width: 0;
+    gap: 0;
+    padding-left: 6px;
+    border-left: 1px solid #dce2e8;
+  }
+  .tl-app .lrt-popup .lrt-service-operator { display: none; }
+  .tl-app .lrt-popup .lrt-service-name {
+    color: #263445;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .tl-app .lrt-popup .stop-popup-route-hint { display: none; }
+  .tl-app .lrt-popup .integration-list { gap: 0; }
+  .tl-app .lrt-popup .integration-group {
+    display: grid;
+    grid-template-columns: 75px minmax(0,1fr);
+    gap: 6px;
+    align-items: center;
+    margin: 0;
+    padding: 5px 0;
+    border: 0;
+    border-bottom: 1px solid #e8edf1;
+    border-radius: 0;
+    background: transparent;
+  }
+  .tl-app .lrt-popup .integration-group:last-child { border-bottom: 0; }
+  .tl-app .lrt-popup .integration-group-header {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 3px;
+    padding: 0;
+  }
+  .tl-app .lrt-popup .integration-symbol { width: auto; min-width: 0; }
+  .tl-app .lrt-popup .integration-logo {
+    display: block;
+    width: auto;
+    max-width: 65px;
+    height: 23px;
+    max-height: 23px;
+    object-fit: contain;
+  }
+  .tl-app .lrt-popup .integration-operator,
+  .tl-app .lrt-popup .integration-operator-name {
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1.18;
+    color: #36475c;
+    overflow-wrap: anywhere;
+  }
+  .tl-app .lrt-popup .integration-place-list {
+    min-width: 0;
+    padding: 0;
+    gap: 1px;
+  }
+  .tl-app .lrt-popup .integration-place-row,
+  .tl-app .lrt-popup .integration-place-row-button {
+    min-height: 40px;
+    padding: 5px 3px;
+    gap: 5px;
+    border-radius: 5px;
+  }
+  .tl-app .lrt-popup .integration-place-name {
+    font-size: 12px;
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+  .tl-app .lrt-popup .integration-line-badges { gap: 3px; }
+  .tl-app .lrt-popup .integration-line-badges .brt-route-badge {
+    width: 21px; height: 21px; flex: 0 0 21px; font-size: 12px;
+  }
+  .tl-app .lrt-popup .integration-line-badges .brt-route-badge.is-double-digit { font-size: 10px; }
+  .tl-app .lrt-popup .integration-line-badges .rail-line-badge-image,
+  .tl-app .lrt-popup .integration-line-badges .rail-line-badge-fallback {
+    width: 21px; height: 21px;
+  }
+  .tl-app .lrt-popup .stop-popup-action-row {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 6px;
+    margin: 7px 0 2px;
+  }
+  .tl-app .lrt-popup .stop-popup-action-cell :is(a,button,summary) {
+    height: auto;
+    min-height: 40px;
+    padding: 6px;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+  .tl-app .lrt-popup .stop-popup-navigation {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 7px 10px;
+    gap: 6px;
+    border-top: 1px solid #e5e9ee;
+    background: #fff;
+  }
+  .tl-app .lrt-popup .stop-popup-nav-button {
+    min-height: 44px;
+    height: auto;
+    padding: 6px 8px;
+    border-radius: 7px;
+  }
+  .tl-app .lrt-popup .stop-popup-nav-label { font-size: 10px; }
+  .tl-app .lrt-popup .stop-popup-nav-name { font-size: 12px; }
+  .tl-app .lrt-popup-scroll-hint { display: none; }
+  .tl-app .lrt-popup-shell a.leaflet-popup-close-button {
+    z-index: 2;
+    top: 3px;
+    right: 3px;
+    width: 44px;
+    height: 44px;
+    color: #64748b;
+  }
+}
+@media (max-width: 359px) and (orientation: portrait) {
+  .tl-app .lrt-popup .stop-popup-title { font-size: 16px; }
+  .tl-app .lrt-popup .stop-popup-direct-routes { grid-template-columns: 1fr; }
+  .tl-app .lrt-popup .integration-group { grid-template-columns: 68px minmax(0,1fr); }
+  .tl-app .lrt-popup .integration-logo { max-width: 57px; }
+}
