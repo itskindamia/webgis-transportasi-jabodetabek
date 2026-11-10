@@ -297,6 +297,7 @@
   }
 
   .tl-app .lrt-popup-shell .leaflet-popup-content-wrapper {
+    max-height: min(82dvh, calc(100dvh - 145px));
     border-radius: 13px;
     overflow: hidden;
     background: #fff;
@@ -304,6 +305,7 @@
   .tl-app .lrt-popup-shell .leaflet-popup-content {
     width: min(354px, calc(100vw - 32px)) !important;
     min-width: 0;
+    max-height: none !important;
     margin: 0;
     overflow: hidden;
   }
@@ -382,6 +384,13 @@
     height: auto;
     max-height: none;
     padding: 0 10px 9px;
+    overflow: visible;
+  }
+  /* Prevent a second scrollbar inside the integrations/source list. */
+  .tl-app .lrt-popup .stop-popup-integration-scroll,
+  .tl-app .lrt-popup .stop-source-body {
+    max-height: none;
+    height: auto;
     overflow: visible;
   }
   .tl-app .lrt-popup .stop-popup-section { margin-top: 8px; }
