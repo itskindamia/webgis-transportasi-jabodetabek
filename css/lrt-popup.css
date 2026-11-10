@@ -140,3 +140,58 @@
   .tl-app .lrt-popup .stop-popup-nav-button { min-height: 48px; padding: 7px 9px; }
   .tl-app .lrt-popup-scroll-hint { display: none; }
 }
+
+
+/* Desktop density pass: favor visible information over vertical whitespace.
+   No mobile styles, data, integration links, or route handlers are changed. */
+@media (min-width: 1024px) {
+  .tl-app .lrt-popup-shell .leaflet-popup-content { width: min(414px, calc(100vw - 48px)) !important; }
+  .tl-app .lrt-popup { height: min(600px, calc(100vh - 150px)); max-height: calc(100vh - 150px); }
+  .tl-app .lrt-popup-header { grid-template-columns: 42px minmax(0,1fr); column-gap: 10px; padding: 10px 44px 9px 12px; margin-bottom: 4px; }
+  .tl-app .lrt-popup-brand-logo { width: 42px; height: 42px; padding: 5px; }
+  .tl-app .lrt-popup-header .stop-popup-eyebrow { font-size: 10px; margin-bottom: 2px; }
+  .tl-app .lrt-popup-header .stop-popup-title { font-size: 18px; line-height: 1.16; }
+  .tl-app .lrt-popup-header .stop-popup-station-code { font-size: 11px; margin: 2px 0; }
+  .tl-app .lrt-popup-header .stop-popup-meta-row { margin-top: 4px; gap: 4px; }
+  .tl-app .lrt-popup-header .stop-popup-meta-row > * { padding: 2px 5px; font-size: 9px; }
+  .tl-app .lrt-popup .stop-popup-scroll { padding: 0 10px 6px; }
+  .tl-app .lrt-popup .stop-popup-section { margin-top: 7px; }
+  .tl-app .lrt-popup .stop-popup-section--service { margin-top: 4px; padding-top: 0; }
+  .tl-app .lrt-popup .stop-popup-section--integration { padding-top: 4px; }
+  .tl-app .lrt-popup .stop-popup-label { font-size: 12px; margin-bottom: 5px; }
+  .tl-app .lrt-popup .stop-popup-direct-routes { gap: 5px; }
+  .tl-app .lrt-popup .lrt-service-button { min-height: 46px; padding: 5px 9px; gap: 9px; border-radius: 8px; }
+  .tl-app .lrt-popup .lrt-service-button > .rail-line-badge-wrap,
+  .tl-app .lrt-popup .lrt-service-button > .rail-line-badge-fallback { flex-basis: 36px; width: 36px; height: 36px; }
+  .tl-app .lrt-popup .lrt-service-button .rail-line-badge-image { width: 35px; height: 35px; }
+  .tl-app .lrt-popup .lrt-service-copy { padding-left: 8px; gap: 0; }
+  .tl-app .lrt-popup .lrt-service-operator { display: none; }
+  .tl-app .lrt-popup .lrt-service-name { font-size: 13px; font-weight: 700; color: var(--tl-ink); }
+  .tl-app .lrt-popup .stop-popup-route-hint { display: none; }
+  .tl-app .lrt-popup .stop-popup-activity { margin-top: 5px; padding: 5px 8px; }
+  .tl-app .lrt-popup .stop-popup-activity-label { font-size: 9px; }
+  .tl-app .lrt-popup .stop-popup-activity-value { font-size: 10px; }
+  /* Side-by-side operator identity and selectable integration locations. */
+  .tl-app .lrt-popup .integration-list { gap: 5px; }
+  .tl-app .lrt-popup .integration-group { display: grid; grid-template-columns: 104px minmax(0,1fr); column-gap: 8px; align-items: center; padding: 6px 7px; margin-bottom: 5px; border-radius: 8px; }
+  .tl-app .lrt-popup .integration-group-header { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 3px; min-width: 0; }
+  .tl-app .lrt-popup .integration-symbol { width: auto; min-width: 0; max-width: 100%; }
+  .tl-app .lrt-popup .integration-logo { width: auto; max-width: 74px; height: 23px; max-height: 23px; object-fit: contain; }
+  .tl-app .lrt-popup .integration-operator,
+  .tl-app .lrt-popup .integration-operator-name { font-size: 10px; line-height: 1.2; font-weight: 700; overflow-wrap: anywhere; }
+  .tl-app .lrt-popup .integration-place-list { min-width: 0; padding-left: 0; gap: 2px; }
+  .tl-app .lrt-popup .integration-place-row,
+  .tl-app .lrt-popup .integration-place-row-button { min-height: 30px; padding: 3px 4px; }
+  .tl-app .lrt-popup .integration-place-name { font-size: 11.5px; line-height: 1.25; }
+  .tl-app .lrt-popup .integration-line-badges { gap: 3px; }
+  .tl-app .lrt-popup .integration-line-badges .brt-route-badge { width: 22px; height: 22px; flex: 0 0 22px; font-size: 12px; }
+  .tl-app .lrt-popup .integration-line-badges .brt-route-badge.is-double-digit { font-size: 10px; }
+  .tl-app .lrt-popup .integration-line-badges .rail-line-badge-image,
+  .tl-app .lrt-popup .integration-line-badges .rail-line-badge-fallback { width: 21px; height: 21px; }
+  .tl-app .lrt-popup .stop-popup-action-row { gap: 6px; margin-top: 6px; }
+  .tl-app .lrt-popup .stop-popup-action-cell :is(a,button,summary) { min-height: 36px; padding-top: 5px; padding-bottom: 5px; font-size: 11px; }
+  .tl-app .lrt-popup .stop-popup-navigation { padding: 6px 10px; gap: 6px; }
+  .tl-app .lrt-popup .stop-popup-nav-button { min-height: 40px; padding: 5px 7px; }
+  .tl-app .lrt-popup .stop-popup-nav-label { font-size: 10px; }
+  .tl-app .lrt-popup .stop-popup-nav-name { font-size: 12px; }
+}
