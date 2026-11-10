@@ -28,11 +28,11 @@
     if (!mobile() || !stopPopup?.getElement()?.querySelector(".lrt-popup")) return options;
     const viewportHeight = Math.round(window.visualViewport?.height || innerHeight);
     const viewportWidth = Math.round(window.visualViewport?.width || innerWidth);
-    options.maxHeight = Math.min(670, Math.max(240, viewportHeight - 205));
+    options.maxHeight = Math.min(730, Math.max(240, viewportHeight - 165));
     options.maxWidth = Math.min(354, Math.max(220, viewportWidth - 24));
     options.minWidth = Math.min(270, options.maxWidth);
     options.autoPanPaddingTopLeft = [12, 112];
-    options.autoPanPaddingBottomRight = [12, 88];
+    options.autoPanPaddingBottomRight = [12, 56];
     return options;
   }
 
