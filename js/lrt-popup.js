@@ -25,6 +25,20 @@
     }
     content.prepend(header);
 
+    // Brand with the real local operator asset, never an approximate icon.
+    const operator = String(root.dataset.lrtOperator || "").toLowerCase();
+    const isJabodebek = operator.includes("jabodebek") || String(routeId).toUpperCase().startsWith("LRT_JB");
+    const isJakarta = operator.includes("jakarta") || String(routeId).toUpperCase().startsWith("LRT_JKT");
+    const logoPath = isJabodebek ? TRANSIT_LOGOS.LRT_JB : (isJakarta ? TRANSIT_LOGOS.LRT_JKT : "");
+    if (logoPath) {
+      const brand = document.createElement("img");
+      brand.className = "lrt-popup-brand-logo";
+      brand.src = logoPath;
+      brand.alt = isJabodebek ? "LRT Jabodebek" : "LRT Jakarta";
+      brand.onerror = () => brand.remove();
+      header.prepend(brand);
+    }
+
     // Reuse each original route button, including its data-route-switch,
     // disabled state and accessibility label. The engine binds it normally.
     for (const button of root.querySelectorAll(".stop-popup-direct-routes .stop-popup-route-button[data-route-switch]")) {
@@ -45,9 +59,12 @@
       copy.className = "lrt-service-copy";
       copy.append(textElement("strong", "lrt-service-operator", card.dataset.operator),
         textElement("span", "lrt-service-name", cleanText(metadata.LINE_NAME) || getRouteTitle(route)));
-      const circle = textElement("span", "lrt-line-symbol", symbol);
-      circle.setAttribute("aria-hidden", "true");
-      button.replaceChildren(circle, copy);
+      // Preserve the existing assets/lines/ image (including its onerror
+      // text fallback) and the original route-switch button.
+      const badge = button.querySelector(".rail-line-badge-wrap, .rail-line-badge-fallback");
+      const visual = badge || textElement("span", "lrt-line-symbol", symbol);
+      if (!badge) visual.setAttribute("aria-hidden", "true");
+      button.replaceChildren(visual, copy);
     }
     root.querySelectorAll(".integration-group").forEach(group => group.classList.add("lrt-integration-card"));
     // One scroll surface keeps long integrations, sources and navigation
@@ -60,8 +77,11 @@
     main.className = "lrt-popup-main";
     body.append(header);
     main.append(...root.childNodes);
+    // Keep previous/next controls outside the only scrolling area.
+    const navigation = main.querySelector(".stop-popup-navigation");
     body.append(main);
     root.append(body);
+    if (navigation) root.append(navigation);
     const hint = textElement("div", "lrt-popup-scroll-hint", "Gulir untuk info lainnya ↓");
     hint.setAttribute("aria-hidden", "true");
     root.append(hint);
