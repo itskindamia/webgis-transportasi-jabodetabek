@@ -97,3 +97,46 @@
 .tl-app .lrt-popup-shell .leaflet-popup-content { overflow: hidden; }
 .tl-app .lrt-popup-shell .stop-popup-maps-link { color: white; }
 .tl-app .lrt-popup-shell a.leaflet-popup-close-button { display: grid; place-items: center; width: 44px; height: 44px; font-size: 24px; }
+
+
+/* Desktop popup refresh: reuse local mode logos and original line badges. */
+@media (min-width: 1024px) {
+  .tl-app .lrt-popup-shell .leaflet-popup-content-wrapper { border-radius: 14px; overflow: hidden; }
+  .tl-app .lrt-popup-shell .leaflet-popup-content { width: min(390px, calc(100vw - 48px)) !important; }
+  .tl-app .lrt-popup { padding: 0; width: 100%; height: min(610px, calc(100vh - 130px)); max-height: calc(100vh - 130px); }
+  .tl-app .lrt-popup-header { display: grid; grid-template-columns: 48px minmax(0,1fr); column-gap: 12px; align-items: center; padding: 16px 48px 14px 14px; margin: 0 0 10px; border-bottom: 0; background: var(--lrt-accent, #bc1859); color: white; }
+  .tl-app .lrt-popup-brand-logo { grid-row: 1 / span 4; grid-column: 1; display: block; width: 48px; height: 48px; padding: 6px; border-radius: 9px; background: white; object-fit: contain; }
+  .tl-app .lrt-popup-header > :not(.lrt-popup-brand-logo) { grid-column: 2; }
+  .tl-app .lrt-popup-header:not(:has(.lrt-popup-brand-logo)) { grid-template-columns: 1fr; }
+  .tl-app .lrt-popup-header:not(:has(.lrt-popup-brand-logo)) > * { grid-column: 1; }
+  .tl-app .lrt-popup-header .stop-popup-eyebrow { color: rgba(255,255,255,.85); font-size: 11px; letter-spacing: .35px; margin: 0 0 4px; }
+  .tl-app .lrt-popup-header .stop-popup-eyebrow::before { background: white; }
+  .tl-app .lrt-popup-header .stop-popup-title { color: white; font-size: 20px; line-height: 1.2; padding: 0; }
+  .tl-app .lrt-popup-header .stop-popup-station-code { color: rgba(255,255,255,.85); margin: 3px 0; }
+  .tl-app .lrt-popup-header .stop-popup-meta-row { margin-top: 7px; gap: 5px; }
+  .tl-app .lrt-popup-header .stop-popup-meta-row > * { padding: 3px 7px; font-size: 10px; background: white; color: #5c2544; }
+  .tl-app .lrt-popup-shell a.leaflet-popup-close-button { z-index: 2; top: 6px; right: 6px; color: white; text-shadow: none; }
+  .tl-app .lrt-popup .stop-popup-scroll { padding: 0 12px 12px; }
+  .tl-app .lrt-popup .stop-popup-section { margin-top: 11px; }
+  .tl-app .lrt-popup .stop-popup-direct-routes { gap: 7px; }
+  .tl-app .lrt-popup .lrt-service-button { min-height: 58px; padding: 8px 11px; gap: 10px; }
+  .tl-app .lrt-popup .lrt-service-button > .rail-line-badge-wrap,
+  .tl-app .lrt-popup .lrt-service-button > .rail-line-badge-fallback { display: flex; justify-content: center; align-items: center; flex: 0 0 44px; width: 44px; height: 44px; }
+  .tl-app .lrt-popup .lrt-service-button .rail-line-badge-image { display: block; width: 42px; height: 42px; max-width: 100%; object-fit: contain; }
+  .tl-app .lrt-popup .lrt-service-button .rail-line-badge-fallback { font-size: 15px; font-weight: 700; }
+  .tl-app .lrt-popup .lrt-service-copy { padding-left: 10px; gap: 2px; }
+  .tl-app .lrt-popup .lrt-service-operator { font-size: 13px; }
+  .tl-app .lrt-popup .lrt-service-name { font-size: 12px; }
+  .tl-app .lrt-popup .integration-group { margin: 0 0 7px; padding: 8px 10px; border-radius: 8px; background: #f7f9fc; }
+  .tl-app .lrt-popup .integration-group-header { gap: 8px; }
+  .tl-app .lrt-popup .integration-symbol { width: 54px; min-width: 54px; }
+  .tl-app .lrt-popup .integration-logo { display: block; max-width: 48px; width: auto; height: 25px; max-height: 25px; object-fit: contain; }
+  .tl-app .lrt-popup .integration-operator { font-size: 13px; }
+  .tl-app .lrt-popup .integration-place-list { padding-left: 0; }
+  .tl-app .lrt-popup .integration-place-row-button { min-height: 36px; padding: 5px 6px; }
+  .tl-app .lrt-popup .integration-place-name { font-size: 12px; }
+  .tl-app .lrt-popup .stop-popup-action-row { margin-top: 10px; }
+  .tl-app .lrt-popup .stop-popup-navigation { flex: 0 0 auto; padding: 8px 12px 10px; gap: 7px; }
+  .tl-app .lrt-popup .stop-popup-nav-button { min-height: 48px; padding: 7px 9px; }
+  .tl-app .lrt-popup-scroll-hint { display: none; }
+}
