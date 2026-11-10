@@ -195,3 +195,52 @@
   .tl-app .lrt-popup .stop-popup-nav-label { font-size: 10px; }
   .tl-app .lrt-popup .stop-popup-nav-name { font-size: 12px; }
 }
+
+
+/* Desktop compact v3: content-sized popup; keep full service and transfer data. */
+@media (min-width: 1024px) {
+  .tl-app .lrt-popup-shell .leaflet-popup-content { width: min(365px, calc(100vw - 48px)) !important; }
+  .tl-app .lrt-popup { height: auto; max-height: min(525px, calc(100vh - 135px)); }
+  .tl-app .lrt-popup-body { flex: 0 1 auto; min-height: 0; overflow-y: auto; }
+  .tl-app .lrt-popup-header { grid-template-columns: 34px minmax(0,1fr); column-gap: 8px; padding: 7px 39px 7px 9px; margin-bottom: 2px; }
+  .tl-app .lrt-popup-brand-logo { width: 34px; height: 34px; padding: 3px; border-radius: 6px; }
+  .tl-app .lrt-popup-header .stop-popup-eyebrow { font-size: 9px; margin-bottom: 1px; }
+  .tl-app .lrt-popup-header .stop-popup-title { font-size: 16px; line-height: 1.13; }
+  .tl-app .lrt-popup-header .stop-popup-station-code { font-size: 10px; margin: 1px 0; }
+  .tl-app .lrt-popup-header .stop-popup-meta-row { margin-top: 3px; gap: 3px; }
+  .tl-app .lrt-popup-header .stop-popup-meta-row > * { padding: 1px 4px; font-size: 8.5px; }
+  .tl-app .lrt-popup .stop-popup-scroll { padding: 0 8px 5px; }
+  .tl-app .lrt-popup .stop-popup-section { margin-top: 5px; }
+  .tl-app .lrt-popup .stop-popup-section--integration { padding-top: 2px; }
+  .tl-app .lrt-popup .stop-popup-label { margin-bottom: 4px; font-size: 11px; }
+  .tl-app .lrt-popup .stop-popup-activity { display: flex; align-items: center; gap: 7px; margin-top: 3px; padding: 3px 6px; }
+  .tl-app .lrt-popup .stop-popup-activity-label { margin: 0; font-size: 9px; }
+  .tl-app .lrt-popup .stop-popup-activity-value { font-size: 10px; }
+  .tl-app .lrt-popup .stop-popup-direct-routes { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 5px; }
+  .tl-app .lrt-popup .lrt-service-button { min-height: 40px; padding: 4px 5px; gap: 5px; border-radius: 7px; }
+  .tl-app .lrt-popup .lrt-service-button > .rail-line-badge-wrap,
+  .tl-app .lrt-popup .lrt-service-button > .rail-line-badge-fallback { flex: 0 0 29px; width: 29px; height: 29px; }
+  .tl-app .lrt-popup .lrt-service-button .rail-line-badge-image { width: 28px; height: 28px; }
+  .tl-app .lrt-popup .lrt-service-copy { min-width: 0; padding-left: 5px; }
+  .tl-app .lrt-popup .lrt-service-name { font-size: 11px; line-height: 1.2; }
+  .tl-app .lrt-popup .integration-list { gap: 3px; }
+  .tl-app .lrt-popup .integration-group { grid-template-columns: 77px minmax(0,1fr); column-gap: 5px; padding: 3px 5px; margin-bottom: 4px; border-radius: 6px; }
+  .tl-app .lrt-popup .integration-group-header { gap: 1px; }
+  .tl-app .lrt-popup .integration-logo { max-width: 65px; height: 19px; max-height: 19px; }
+  .tl-app .lrt-popup .integration-operator,
+  .tl-app .lrt-popup .integration-operator-name { font-size: 9px; line-height: 1.1; }
+  .tl-app .lrt-popup .integration-place-list { gap: 0; }
+  .tl-app .lrt-popup .integration-place-row,
+  .tl-app .lrt-popup .integration-place-row-button { min-height: 27px; padding: 2px 3px; gap: 4px; }
+  .tl-app .lrt-popup .integration-place-name { font-size: 10.5px; line-height: 1.2; }
+  .tl-app .lrt-popup .integration-line-badges .brt-route-badge { width: 20px; height: 20px; flex-basis: 20px; font-size: 11px; }
+  .tl-app .lrt-popup .integration-line-badges .brt-route-badge.is-double-digit { font-size: 9px; }
+  .tl-app .lrt-popup .integration-line-badges .rail-line-badge-image,
+  .tl-app .lrt-popup .integration-line-badges .rail-line-badge-fallback { width: 19px; height: 19px; }
+  .tl-app .lrt-popup .stop-popup-action-row { gap: 5px; margin-top: 4px; }
+  .tl-app .lrt-popup .stop-popup-action-cell :is(a,button,summary) { min-height: 30px; height: auto; padding: 3px 6px; font-size: 10px; }
+  .tl-app .lrt-popup .stop-popup-navigation { padding: 5px 8px; gap: 5px; }
+  .tl-app .lrt-popup .stop-popup-nav-button { min-height: 36px; padding: 4px 6px; }
+  .tl-app .lrt-popup .stop-popup-nav-label { font-size: 9px; }
+  .tl-app .lrt-popup .stop-popup-nav-name { font-size: 11px; }
+}
