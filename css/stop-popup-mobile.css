@@ -1,0 +1,289 @@
+/*
+ * Shared mobile stop/station popup presentation — WebGIS Jabodetabek.
+ *
+ * js/map.js is the single data/markup renderer for all modes.
+ * js/lrt-popup.js adds LRT-specific presentation; all modes share
+ * width, height, scroll contract, spacing and footer here.
+ *
+ * This sheet loads after legacy/LRT files so dimensions and density
+ * have one authoritative definition. No transport state lives in CSS.
+ */
+@media (max-width: 767px) and (orientation: portrait) and (min-height: 560px) {
+  .tl-app {
+    --stop-card-width: 308px;
+    --stop-card-height: 400px;
+    --stop-card-line: #e5eaf0;
+    --stop-card-text: #253447;
+  }
+
+  /* Leaflet's native wrapper must never create a second scroller. */
+  .tl-app .leaflet-popup:has(.stop-popup) .leaflet-popup-content-wrapper {
+    max-height: min(var(--stop-card-height), calc(100dvh - 168px));
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .tl-app .leaflet-popup:has(.stop-popup) .leaflet-popup-content {
+    width: min(var(--stop-card-width), calc(100vw - 52px)) !important;
+    max-height: none !important;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+  .tl-app .leaflet-popup .stop-popup {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    max-height: min(var(--tl-popup-content-height, 400px), var(--stop-card-height), calc(100dvh - 168px));
+    padding: 0 !important;
+    background: #fff;
+    color: var(--stop-card-text);
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  /* Plain BRT/MRT/KRL share one scroller; LRT has its own .lrt-popup-body
+     and intentionally leaves .stop-popup-scroll as an ordinary content div. */
+  .tl-app .stop-popup:not(.lrt-popup) > .stop-popup-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    max-height: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 9px 9px 7px;
+  }
+  .tl-app .lrt-popup > .lrt-popup-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    max-height: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tl-app .lrt-popup .stop-popup-scroll {
+    overflow: visible;
+    padding: 0 8px 6px;
+  }
+
+  /* Common hierarchy. Long station names wrap, but no label is truncated. */
+  .tl-app .stop-popup .stop-popup-eyebrow {
+    margin: 0 0 2px;
+    font-size: 9px;
+    line-height: 1.2;
+    letter-spacing: .1px;
+  }
+  .tl-app .stop-popup .stop-popup-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  .tl-app .stop-popup .stop-popup-station-code {
+    margin: 2px 0 0;
+    font-size: 10px;
+    line-height: 1.2;
+  }
+  .tl-app .stop-popup .stop-popup-meta-row {
+    gap: 3px;
+    margin-top: 4px;
+  }
+  .tl-app .stop-popup .stop-popup-meta-row > * {
+    padding: 2px 4px;
+    border-radius: 5px;
+    font-size: 10px;
+    line-height: 1.2;
+  }
+  .tl-app .stop-popup .stop-popup-section {
+    margin-top: 5px;
+    padding-top: 0;
+  }
+  .tl-app .stop-popup .stop-popup-label {
+    margin: 0 0 4px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  .tl-app .stop-popup .stop-popup-activity {
+    margin-top: 4px;
+    padding: 5px 6px;
+    border-radius: 6px;
+  }
+  .tl-app .stop-popup .stop-popup-activity-label { font-size: 9px; }
+  .tl-app .stop-popup .stop-popup-activity-value { font-size: 10px; }
+  .tl-app .stop-popup .stop-popup-divider { margin: 5px 0; }
+  .tl-app .stop-popup .integration-list { gap: 2px; }
+  .tl-app .stop-popup .integration-group {
+    margin-bottom: 0;
+    border-radius: 5px;
+  }
+  .tl-app .stop-popup .integration-place-name {
+    font-size: 11px;
+    line-height: 1.22;
+    overflow-wrap: break-word;
+  }
+  .tl-app .stop-popup .integration-place-row-button,
+  .tl-app .stop-popup .integration-place-row {
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+  .tl-app .stop-popup .stop-popup-action-row {
+    margin: 5px 0 2px;
+    gap: 5px;
+  }
+  .tl-app .stop-popup .stop-popup-action-cell :is(a, button, summary) {
+    min-height: 40px;
+    padding: 5px;
+    font-size: 11px;
+  }
+  /* Navigation always remains outside the content scroll surface. */
+  .tl-app .stop-popup > .stop-popup-navigation {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex: 0 0 auto;
+    gap: 5px;
+    margin: 0;
+    padding: 5px 8px;
+    border-top: 1px solid var(--stop-card-line);
+    background: #fff;
+  }
+  .tl-app .stop-popup > .stop-popup-navigation.has-next-only,
+  .tl-app .stop-popup > .stop-popup-navigation.has-previous-only {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tl-app .stop-popup > .stop-popup-navigation .stop-popup-nav-button {
+    min-width: 0;
+    min-height: 44px;
+    height: auto;
+    padding: 5px 6px;
+  }
+  .tl-app .stop-popup > .stop-popup-navigation .stop-popup-nav-label {
+    font-size: 9px;
+    line-height: 1.1;
+  }
+  .tl-app .stop-popup > .stop-popup-navigation .stop-popup-nav-name {
+    font-size: 11px;
+    line-height: 1.2;
+    white-space: normal;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+
+  /* The LRT adapter contributes logo and two line cards, not another shell. */
+  .tl-app .lrt-popup .lrt-popup-header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) !important;
+    align-items: center;
+    column-gap: 6px;
+    margin: 0 0 3px;
+    padding: 7px 43px 6px 8px;
+    border-bottom: 1px solid var(--stop-card-line);
+    background: #fff;
+  }
+  .tl-app .lrt-popup .lrt-popup-brand-logo {
+    width: 30px !important;
+    height: 30px !important;
+    padding: 2px;
+  }
+  .tl-app .lrt-popup .stop-popup-activity {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 3px 6px;
+    padding: 4px 5px;
+  }
+  .tl-app .lrt-popup .stop-popup-direct-routes {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 4px;
+  }
+  .tl-app .lrt-popup .lrt-service-button {
+    min-width: 0;
+    min-height: 44px;
+    height: auto;
+    padding: 4px;
+    gap: 4px;
+    border-radius: 7px;
+  }
+  .tl-app .lrt-popup .lrt-service-button > .rail-line-badge-wrap,
+  .tl-app .lrt-popup .lrt-service-button > .rail-line-badge-fallback {
+    flex: 0 0 26px;
+    width: 26px;
+    height: 26px;
+  }
+  .tl-app .lrt-popup .lrt-service-button .rail-line-badge-image {
+    width: 26px;
+    height: 26px;
+  }
+  .tl-app .lrt-popup .lrt-service-copy { padding-left: 4px; }
+  .tl-app .lrt-popup .lrt-service-name {
+    font-size: 11px;
+    line-height: 1.15;
+  }
+  .tl-app .lrt-popup .integration-group {
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr) !important;
+    gap: 4px;
+    margin: 0;
+    padding: 3px 0;
+    border: 0;
+    border-bottom: 1px solid var(--stop-card-line);
+    border-radius: 0;
+    background: transparent;
+  }
+  .tl-app .lrt-popup .integration-group:last-child { border-bottom: 0; }
+  .tl-app .lrt-popup .integration-group-header {
+    align-items: center;
+    gap: 0;
+    padding: 0;
+  }
+  .tl-app .lrt-popup .integration-group-header:has(.integration-logo)
+    :is(.integration-operator, .integration-operator-name) { display: none; }
+  .tl-app .lrt-popup .integration-logo {
+    width: auto;
+    max-width: 48px;
+    max-height: 22px;
+    height: auto;
+    object-fit: contain;
+  }
+  .tl-app .lrt-popup .integration-place-list {
+    min-width: 0;
+    padding: 0;
+    gap: 1px;
+  }
+  .tl-app .lrt-popup .integration-place-row,
+  .tl-app .lrt-popup .integration-place-row-button {
+    min-height: 40px;
+    padding: 2px 1px;
+    gap: 3px;
+  }
+  .tl-app .lrt-popup .integration-line-badges .brt-route-badge {
+    width: 19px;
+    height: 19px;
+    flex-basis: 19px;
+    font-size: 10px;
+  }
+  .tl-app .lrt-popup .integration-line-badges .rail-line-badge-image,
+  .tl-app .lrt-popup .integration-line-badges .rail-line-badge-fallback {
+    width: 19px;
+    height: 19px;
+  }
+}
+
+@media (max-width: 359px) and (orientation: portrait) and (min-height: 560px) {
+  .tl-app .lrt-popup .integration-group {
+    grid-template-columns: 49px minmax(0,1fr) !important;
+  }
+  .tl-app .lrt-popup .integration-logo { max-width: 43px; }
+}
