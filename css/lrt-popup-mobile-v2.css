@@ -282,3 +282,70 @@
   .tl-app .lrt-popup .integration-group { grid-template-columns: 68px minmax(0,1fr); }
   .tl-app .lrt-popup .integration-logo { max-width: 57px; }
 }
+
+
+/* Mobile LRT refinement 2026-11-11: keep the station identity in view and
+   remove repeated vertical operator labels only when a real logo exists. */
+@media (max-width: 767px) and (min-height: 560px) {
+  .tl-app .lrt-popup .lrt-popup-header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: #fff;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    margin-bottom: 3px;
+    box-shadow: 0 1px 0 #e5e9ee;
+  }
+  .tl-app .lrt-popup .stop-popup-activity {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 3px 8px;
+    padding: 5px 8px;
+  }
+  .tl-app .lrt-popup .stop-popup-activity-label,
+  .tl-app .lrt-popup .stop-popup-activity-value { margin: 0; }
+  .tl-app .lrt-popup .stop-popup-section { margin-top: 6px; }
+  .tl-app .lrt-popup .stop-popup-section--integration { padding-top: 1px; }
+  .tl-app .lrt-popup .integration-group {
+    grid-template-columns: 70px minmax(0, 1fr) !important;
+    gap: 5px;
+    padding: 3px 0;
+  }
+  .tl-app .lrt-popup .integration-group-header {
+    align-items: center;
+    gap: 0;
+  }
+  .tl-app .lrt-popup .integration-group-header:has(.integration-logo)
+    :is(.integration-operator, .integration-operator-name) {
+    display: none;
+  }
+  .tl-app .lrt-popup .integration-logo {
+    width: auto;
+    max-width: 62px;
+    max-height: 25px;
+    height: auto;
+  }
+  .tl-app .lrt-popup .integration-place-row,
+  .tl-app .lrt-popup .integration-place-row-button {
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+  .tl-app .lrt-popup .stop-popup-navigation {
+    position: relative;
+    z-index: 2;
+    padding: 5px 9px;
+    box-shadow: 0 -2px 8px #1d34480c;
+  }
+  .tl-app .lrt-popup .stop-popup-nav-button {
+    min-height: 44px;
+  }
+}
+@media (max-width: 359px) and (min-height: 560px) {
+  .tl-app .lrt-popup .integration-group {
+    grid-template-columns: 62px minmax(0, 1fr) !important;
+  }
+  .tl-app .lrt-popup .integration-logo { max-width: 55px; }
+}
