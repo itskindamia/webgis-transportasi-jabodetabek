@@ -42,6 +42,34 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844]]) {
         navCount: root.querySelectorAll(".stop-popup-navigation .stop-popup-nav-button").length
       };
     });
+    const envelope = await page.locator(".lrt-popup").evaluate(root => {
+      const content = root.closest(".leaflet-popup-content");
+      const nav = root.querySelector(".stop-popup-navigation");
+      const services = [...root.querySelectorAll(".lrt-service-button")];
+      const maxHeight = Math.min(380, Math.round(innerHeight * 0.55));
+      return {
+        width: content.getBoundingClientRect().width,
+        height: root.getBoundingClientRect().height,
+        maxHeight,
+        scrollHeight: root.querySelector(".lrt-popup-body").scrollHeight,
+        clientHeight: root.querySelector(".lrt-popup-body").clientHeight,
+        serviceButtons: services.map(btn => ({
+          width: btn.getBoundingClientRect().width,
+          height: btn.getBoundingClientRect().height,
+          textOverflow: btn.scrollWidth > btn.clientWidth + 2
+        })),
+        serviceGridColumns: getComputedStyle(root.querySelector(".stop-popup-direct-routes")).gridTemplateColumns.split(" ").length,
+        navHeight: nav?.getBoundingClientRect().height ?? 0
+      };
+    });
+    assert.ok(envelope.width <= 310 && envelope.width >= width - 53 || envelope.width > 200 && envelope.width <= 310,
+      "popup is narrower than the mobile viewport");
+    assert.ok(envelope.height <= envelope.maxHeight + 3, "popup height is capped to preserve map context");
+    assert.ok(envelope.scrollHeight > envelope.clientHeight, "long integration data uses the single scroll surface");
+    assert.equal(envelope.serviceGridColumns, 2, "both LRT services stay side by side on portrait");
+    assert.ok(envelope.serviceButtons.every(button => button.height >= 44 && !button.textOverflow),
+      "service buttons remain tappable without clipping");
+    assert.ok(envelope.navHeight >= 44, "next/previous navigation remains accessible");
     assert.ok(before.title.length > 5, "station identity remains in markup");
     assert.equal(before.sticky, "sticky", "station header is sticky");
     assert.ok(before.logoGroups > 0, "operator logo assets still appear");
