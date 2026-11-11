@@ -1,0 +1,55 @@
+/* Visual active-route indication, mobile only.
+   Active state comes from the existing route renderer's .is-active class;
+   status, colors, data and route-switch handlers remain unchanged. */
+@media (max-width: 767px) {
+  /* Non-LRT popup badges (BRT, MRT, KRL and any selectable rail modes).
+     Do not alter the individual badge ring: planned, proposed and
+     temporary-service indicators carry separate semantic meaning. */
+  .tl-app .stop-popup:not(.lrt-popup)
+    .stop-popup-direct-routes .stop-popup-route-option:has(> .stop-popup-route-button.is-active) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px;
+    border-radius: 9px;
+    background: #eaf2fb;
+    outline: 2px solid #284765;
+    outline-offset: 1px;
+  }
+  .tl-app .stop-popup:not(.lrt-popup)
+    .stop-popup-direct-routes .stop-popup-route-button.is-active {
+    opacity: 1;
+  }
+
+  /* LRT two-line service cards need stronger differentiation than the
+     subtle per-line tints used by both previously. The route's original
+     line color remains available as --lrt-line-color on its card. */
+  .tl-app .lrt-popup .lrt-service-button {
+    position: relative;
+    transition: border-color 140ms ease, background-color 140ms ease;
+  }
+  .tl-app .lrt-popup .lrt-service-button.is-active {
+    border: 2px solid var(--lrt-line-color, #26445f) !important;
+    background: color-mix(in srgb, var(--lrt-line-color, #26445f) 14%, white) !important;
+    box-shadow: inset 3px 0 0 var(--lrt-line-color, #26445f), 0 1px 4px #23354c1a !important;
+    padding-left: 5px;
+    opacity: 1;
+  }
+  .tl-app .lrt-popup .lrt-service-button:not(.is-active) {
+    border-color: #dce3ea !important;
+    background: #f7f9fb !important;
+    box-shadow: none !important;
+    opacity: 1;
+  }
+  .tl-app .lrt-popup .lrt-service-button.is-active .lrt-service-name {
+    font-weight: 700;
+    color: #162c3d;
+  }
+  .tl-app .lrt-popup .lrt-service-button:focus-visible {
+    outline: 2px solid var(--lrt-line-color, #26445f);
+    outline-offset: 2px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tl-app .lrt-popup .lrt-service-button { transition: none; }
+}
