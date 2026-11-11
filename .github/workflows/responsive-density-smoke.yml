@@ -5,8 +5,10 @@ on:
     paths:
       - 'css/layout-tabler.css'
       - 'css/lrt-popup-mobile-v2.css'
+      - 'css/stop-popup-mobile.css'
+      - 'tools/test-mobile-popup-system.mjs'
       - 'css/mobile-active-route.css'
-      - 'tools/test-mobile-active-route.mjs'
+      - 'tools/test-mobile-active-route.mjs tools/test-mobile-popup-system.mjs'
       - 'tools/test-lrt-popup-compact-mobile.mjs'
       - 'index.html'
       - 'tools/test-layout-density.mjs'
