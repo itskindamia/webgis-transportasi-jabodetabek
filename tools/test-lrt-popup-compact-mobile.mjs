@@ -20,7 +20,7 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844]]) {
     await page.selectOption("#routeSelect", "LRT_JB_BK");
     await page.waitForTimeout(500);
     const key = await page.evaluate(() => {
-      const feature = stopData.features.find(item => item.properties.STN_CODE === "DKA");
+      const feature = stopData.features.find(item => normalizeMode(item.properties.MODE) === "LRT" && item.properties.STN_CODE === "DKA" && getStopRoutes(item).includes("LRT_JB_BK"));
       if (!feature) throw new Error("DKA station missing from source");
       return getStopKey(feature);
     });
