@@ -1,0 +1,89 @@
+/* Mobile route discovery density: CSS-only; preserve engine and data. */
+@media (max-width: 767px) and (min-height: 560px) {
+  .tl-app .tl-network .filter-grid .form-field:not([hidden]),
+  .tl-app .tl-network .route-select-field {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 4px;
+    min-height: 44px;
+    margin-bottom: 6px;
+  }
+  .tl-app .tl-network .filter-grid .form-field > .form-label,
+  .tl-app .tl-network .route-select-field > .form-label {
+    min-width: 0;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.25;
+  }
+  .tl-app .tl-network #statusSelect,
+  .tl-app .tl-network #routeSelect {
+    display: block;
+    justify-self: stretch;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    min-height: 44px;
+    height: 44px;
+    font-size: 16px;
+  }
+  .tl-app .tl-network #tlRouteFullName:not([hidden]) {
+    grid-column: 1 / -1;
+    margin: 0 0 3px;
+    font-size: 11px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+  .tl-app .tl-network .filter-controls-card .route-select-field { margin-bottom: 0; }
+
+  .tl-app .tl-detail-panel .tl-detail-heading {
+    gap: 6px;
+    padding: 3px 12px 5px;
+  }
+  .tl-app .tl-detail-panel .tl-detail-heading h2 {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.24;
+    overflow-wrap: anywhere;
+  }
+  .tl-app .tl-detail-panel .tl-detail-heading p {
+    margin: 2px 0 0;
+    font-size: 11px;
+    line-height: 1.25;
+  }
+  .tl-app .tl-detail-panel .tl-detail-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px;
+    padding: 0 10px;
+  }
+  .tl-app .tl-detail-panel .tl-detail-tabs .nav-link {
+    min-width: 0;
+    min-height: 44px;
+    padding: 5px 2px;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: normal;
+    text-align: center;
+  }
+  .tl-app .tl-detail-panel .tl-route-content { padding: 6px 10px 10px; }
+  .tl-app .tl-route-content .stop-list-item {
+    min-height: 44px;
+    padding: 4px 5px;
+    gap: 3px 5px;
+  }
+  .tl-app .tl-route-content .stop-list-name {
+    font-size: 13px;
+    line-height: 1.25;
+  }
+}
+
+@media (max-width: 359px) and (min-height: 560px) {
+  .tl-app .tl-network .filter-grid .form-field:not([hidden]),
+  .tl-app .tl-network .route-select-field {
+    grid-template-columns: 78px minmax(0, 1fr);
+    column-gap: 6px;
+  }
+  .tl-app .tl-network .route-select-field > .form-label { font-size: 11px; }
+}
