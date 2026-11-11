@@ -22,15 +22,23 @@
   let previousViewportWidth = innerWidth;
   let popupLayoutSignature = "";
 
-  // Only mobile LRT popups receive the taller, wider fit-to-screen envelope.
+  // LRT-only presentation envelope. Portrait keeps the map visible around
+  // a compact card; landscape retains its existing wide layout.
   function getPresentationPopupOptions() {
     const options = getStopPopupOptions();
     if (!mobile() || !stopPopup?.getElement()?.querySelector(".lrt-popup")) return options;
     const viewportHeight = Math.round(window.visualViewport?.height || innerHeight);
     const viewportWidth = Math.round(window.visualViewport?.width || innerWidth);
-    options.maxHeight = Math.min(730, Math.max(240, viewportHeight - 165));
-    options.maxWidth = Math.min(354, Math.max(220, viewportWidth - 24));
-    options.minWidth = Math.min(270, options.maxWidth);
+    const compactPortrait = matchMedia("(orientation: portrait) and (min-height: 560px)").matches;
+    if (compactPortrait) {
+      options.maxHeight = Math.min(380, Math.max(260, Math.round(viewportHeight * 0.55)));
+      options.maxWidth = Math.min(308, Math.max(220, viewportWidth - 52));
+      options.minWidth = Math.min(238, options.maxWidth);
+    } else {
+      options.maxHeight = Math.min(730, Math.max(240, viewportHeight - 165));
+      options.maxWidth = Math.min(354, Math.max(220, viewportWidth - 24));
+      options.minWidth = Math.min(270, options.maxWidth);
+    }
     options.autoPanPaddingTopLeft = [12, 112];
     options.autoPanPaddingBottomRight = [12, 56];
     return options;
