@@ -46,7 +46,7 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844]]) {
       const content = root.closest(".leaflet-popup-content");
       const nav = root.querySelector(".stop-popup-navigation");
       const services = [...root.querySelectorAll(".lrt-service-button")];
-      const maxHeight = Math.min(380, Math.round(innerHeight * 0.55));
+      const maxHeight = Math.min(400, Math.max(240, innerHeight - 160));
       return {
         width: content.getBoundingClientRect().width,
         height: root.getBoundingClientRect().height,

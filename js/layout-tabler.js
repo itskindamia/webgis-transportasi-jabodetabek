@@ -22,19 +22,23 @@
   let previousViewportWidth = innerWidth;
   let popupLayoutSignature = "";
 
-  // LRT-only presentation envelope. Portrait keeps the map visible around
-  // a compact card; landscape retains its existing wide layout.
+  // One mobile envelope for BRT/MRT/LRT/KRL and other stop popups.
+  // Only Leaflet presentation changes; route-specific data stays in the engine.
   function getPresentationPopupOptions() {
     const options = getStopPopupOptions();
-    if (!mobile() || !stopPopup?.getElement()?.querySelector(".lrt-popup")) return options;
+    if (!mobile()) return options;
+    const root = stopPopup?.getElement()?.querySelector(".stop-popup-ui");
+    if (!root) return options;
     const viewportHeight = Math.round(window.visualViewport?.height || innerHeight);
     const viewportWidth = Math.round(window.visualViewport?.width || innerWidth);
     const compactPortrait = matchMedia("(orientation: portrait) and (min-height: 560px)").matches;
     if (compactPortrait) {
-      options.maxHeight = Math.min(380, Math.max(260, Math.round(viewportHeight * 0.55)));
-      options.maxWidth = Math.min(308, Math.max(220, viewportWidth - 52));
+      // The actual map-aware limit is kept when smaller than 400px.
+      options.maxHeight = Math.min(400, options.maxHeight, Math.max(240, viewportHeight - 160));
+      options.maxWidth = Math.min(308, options.maxWidth, Math.max(220, viewportWidth - 52));
       options.minWidth = Math.min(238, options.maxWidth);
-    } else {
+    } else if (root.classList.contains("lrt-popup")) {
+      // Keep the existing short-landscape envelope for the LRT decorator.
       options.maxHeight = Math.min(730, Math.max(240, viewportHeight - 165));
       options.maxWidth = Math.min(354, Math.max(220, viewportWidth - 24));
       options.minWidth = Math.min(270, options.maxWidth);
