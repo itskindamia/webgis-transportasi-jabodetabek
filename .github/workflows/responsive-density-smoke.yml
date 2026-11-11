@@ -8,7 +8,7 @@ on:
       - 'css/stop-popup-mobile.css'
       - 'tools/test-mobile-popup-system.mjs'
       - 'css/mobile-active-route.css'
-      - 'tools/test-mobile-active-route.mjs tools/test-mobile-popup-system.mjs'
+      - 'tools/test-mobile-active-route.mjs'
       - 'tools/test-lrt-popup-compact-mobile.mjs'
       - 'index.html'
       - 'tools/test-layout-density.mjs'
@@ -48,4 +48,4 @@ jobs:
             npx playwright install chromium
           fi
       - name: Test responsive spacing and title
-        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-density.mjs tools/test-layout-brand-title.mjs tools/test-layout-compact-filter.mjs tools/test-layout-tour-compact.mjs tools/test-layout-mobile-sheets.mjs tools/test-layout-inline-badges.mjs tools/test-lrt-popup-compact-mobile.mjs tools/test-mobile-active-route.mjs
+        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-density.mjs tools/test-layout-brand-title.mjs tools/test-layout-compact-filter.mjs tools/test-layout-tour-compact.mjs tools/test-layout-mobile-sheets.mjs tools/test-layout-inline-badges.mjs tools/test-lrt-popup-compact-mobile.mjs tools/test-mobile-active-route.mjs tools/test-mobile-popup-system.mjs
