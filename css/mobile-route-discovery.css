@@ -20,12 +20,12 @@
   .tl-app .tl-network #statusSelect,
   .tl-app .tl-network #routeSelect {
     display: block;
-    justify-self: stretch;
+    justify-self: end;
     width: 100%;
-    max-width: none;
+    max-width: 220px;
     min-width: 0;
-    min-height: 44px;
-    height: 44px;
+    min-height: 40px;
+    height: 40px;
     font-size: 16px;
   }
   .tl-app .tl-network #tlRouteFullName:not([hidden]) {
