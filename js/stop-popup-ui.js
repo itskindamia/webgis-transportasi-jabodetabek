@@ -132,7 +132,11 @@
       const feature = getStopByKey(root.dataset.stopKey);
       enhance(root, feature, currentSelectedRouteId);
       shell.classList.toggle("lrt-popup-shell", root.classList.contains("lrt-popup"));
+      const wasShared = shell.classList.contains("stop-popup-ui-shell");
       shell.classList.toggle("stop-popup-ui-shell", root.classList.contains("stop-popup-ui"));
+      if (!wasShared && root.classList.contains("stop-popup-ui") && !root.classList.contains("lrt-popup")) {
+        popup.update();
+      }
       if (root.classList.contains("lrt-popup")) {
         shell.querySelector(".leaflet-popup-close-button")?.setAttribute("aria-label", "Tutup popup stasiun");
         if (!alreadyEnhanced) popup.update();
