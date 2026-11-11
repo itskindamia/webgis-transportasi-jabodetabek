@@ -6,6 +6,9 @@ on:
       - 'css/layout-tabler.css'
       - 'css/lrt-popup-mobile-v2.css'
       - 'css/mobile-active-route.css'
+      - 'css/stop-popup-mobile.css'
+      - 'js/stop-popup-ui.js'
+      - 'tools/test-shared-stop-popup.mjs'
       - 'tools/test-mobile-active-route.mjs'
       - 'tools/test-lrt-popup-compact-mobile.mjs'
       - 'index.html'
@@ -46,4 +49,4 @@ jobs:
             npx playwright install chromium
           fi
       - name: Test responsive spacing and title
-        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-density.mjs tools/test-layout-brand-title.mjs tools/test-layout-compact-filter.mjs tools/test-layout-tour-compact.mjs tools/test-layout-mobile-sheets.mjs tools/test-layout-inline-badges.mjs tools/test-lrt-popup-compact-mobile.mjs tools/test-mobile-active-route.mjs
+        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-density.mjs tools/test-layout-brand-title.mjs tools/test-layout-compact-filter.mjs tools/test-layout-tour-compact.mjs tools/test-layout-mobile-sheets.mjs tools/test-layout-inline-badges.mjs tools/test-lrt-popup-compact-mobile.mjs tools/test-mobile-active-route.mjs tools/test-shared-stop-popup.mjs
