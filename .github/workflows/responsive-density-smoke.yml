@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'css/layout-tabler.css'
+      - 'css/lrt-popup-mobile-v2.css'
+      - 'tools/test-lrt-popup-compact-mobile.mjs'
       - 'index.html'
       - 'tools/test-layout-density.mjs'
       - 'tools/test-layout-brand-title.mjs'
@@ -42,4 +44,4 @@ jobs:
             npx playwright install chromium
           fi
       - name: Test responsive spacing and title
-        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-density.mjs tools/test-layout-brand-title.mjs tools/test-layout-compact-filter.mjs tools/test-layout-tour-compact.mjs tools/test-layout-mobile-sheets.mjs tools/test-layout-inline-badges.mjs
+        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-density.mjs tools/test-layout-brand-title.mjs tools/test-layout-compact-filter.mjs tools/test-layout-tour-compact.mjs tools/test-layout-mobile-sheets.mjs tools/test-layout-inline-badges.mjs tools/test-lrt-popup-compact-mobile.mjs
