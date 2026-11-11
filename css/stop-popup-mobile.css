@@ -3,7 +3,10 @@
    The transport engine and all delegated handlers remain in js/map.js.
    Desktop popup rules stay in the existing stylesheets. */
 @media (max-width: 767px) {
-  body.tl-stop-popup-open:not(.tl-popup-shelved) .tl-detail-panel {
+  /* Preserve the established Detail strip behavior for non-LRT stops.
+     The LRT decorator continues to take precedence over the Detail sheet. */
+  body.tl-lrt-popup-open:not(.tl-popup-shelved) .tl-detail-panel,
+  body.tl-stop-popup-open:not(.tl-popup-shelved):has(#map .lrt-popup-shell) .tl-detail-panel {
     display: none !important;
   }
 
