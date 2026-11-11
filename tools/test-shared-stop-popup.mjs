@@ -53,7 +53,7 @@ for (const [width,height] of [[320,568],[390,844]]) {
           scroller:!!scroll, scrollOverflow:scroll?getComputedStyle(scroll).overflowY:null,
           scrollHeight:scroll?.scrollHeight, clientHeight:scroll?.clientHeight,
           navigation:!!nav, navInScroll:scroll?.contains(nav),
-          route:window.currentSelectedRouteId,
+          route:currentSelectedRouteId,
           title:header?.querySelector(".stop-popup-title")?.textContent.trim()||"",
           active:el.querySelector(".stop-popup-direct-routes .stop-popup-route-button.is-active")?.dataset.routeSwitch,
           closeSize:el.closest(".leaflet-popup")?.querySelector(".leaflet-popup-close-button")?.getBoundingClientRect().height
