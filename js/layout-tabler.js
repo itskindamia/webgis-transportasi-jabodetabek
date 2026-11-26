@@ -367,10 +367,11 @@
 
     // The native picker owns the filter results, order, and selection.
     const mode = byId("modeSelect").value;
-    const options = [...routePicker.options].filter(option => option.value !== "ALL");
+    // Keep the existing overview option available for a mode with routes.
+    const options = mode !== "ALL" && routePicker.options.length > 1 ? [...routePicker.options] : [];
     const signature = JSON.stringify([mode, ...options.map(option => [
       option.value, option.text, option.parentElement.label,
-      option.disabled || option.parentElement.disabled, getRouteColor(option.value)
+      option.disabled || option.parentElement.disabled, option.value === "ALL" ? "" : getRouteColor(option.value)
     ])]);
     if (signature !== routeListSignature) {
       const focusedRoute = routeList.contains(document.activeElement)
@@ -389,24 +390,26 @@
           }
         }
         const id = option.value;
-        const parts = getRouteHeadingParts(getRouteById(id));
+        const parts = id === "ALL" ? null : getRouteHeadingParts(getRouteById(id));
         const button = document.createElement("button");
         button.type = "button";
-        button.className = "tl-route-choice";
+        button.className = id === "ALL" ? "tl-route-choice tl-route-choice-all" : "tl-route-choice";
         button.dataset.routeId = id;
         button.disabled = option.disabled || group.disabled;
         button.title = option.text;
         button.setAttribute("aria-label", option.text);
-        button.style.setProperty("--route-color", getRouteColor(id));
-
-        const badge = document.createElement("span");
-        badge.className = "tl-route-choice-badge";
-        badge.setAttribute("aria-hidden", "true");
-        badge.innerHTML = parts.badgeHTML;
+        if (parts) {
+          button.style.setProperty("--route-color", getRouteColor(id));
+          const badge = document.createElement("span");
+          badge.className = "tl-route-choice-badge";
+          badge.setAttribute("aria-hidden", "true");
+          badge.innerHTML = parts.badgeHTML;
+          button.append(badge);
+        }
 
         const label = document.createElement("span");
         const name = document.createElement("strong");
-        const hasRelation = parts.relation && option.text === `${parts.lineName} (${parts.relation})`;
+        const hasRelation = parts?.relation && option.text === `${parts.lineName} (${parts.relation})`;
         name.textContent = hasRelation ? parts.lineName : option.text;
         label.append(name);
         if (hasRelation) {
@@ -415,7 +418,7 @@
           relation.textContent = parts.relation;
           label.append(relation);
         }
-        button.append(badge, label);
+        button.append(label);
         rows.append(button);
         if (id === focusedRoute) focusedRow = button;
       }
@@ -428,7 +431,10 @@
         rows.append(empty);
       }
       routeList.replaceChildren(rows);
-      if (focusedRoute) (focusedRow || routePicker).focus({ preventScroll: true });
+      if (focusedRoute) {
+        const nextFocus = focusedRow && !focusedRow.disabled ? focusedRow : byId("statusSelect");
+        nextFocus.focus({ preventScroll: true });
+      }
       routeListSignature = signature;
     }
     for (const button of routeList.querySelectorAll("button")) {

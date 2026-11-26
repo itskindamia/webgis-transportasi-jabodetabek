@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { before, after, test } from "node:test";
 import { chromium } from "playwright";
 import { readFile } from "node:fs/promises";
-import { openLayout } from "./layout-browser.mjs";
+import { openLayout, selectRoute } from "./layout-browser.mjs";
 let browser;
 before(async () => { browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined }); });
 after(async () => { await browser?.close(); });
@@ -12,7 +12,7 @@ for (const [width, height] of [[1366, 900], [390, 844]]) for (const [mode, id] o
     const { page, context, errors } = await openLayout(browser, width, height);
     t.after(() => context.close());
     if (await page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none")) await page.click("#tlNetworkToggle");
-    await page.click(`[data-mode="${mode}"]`); await page.selectOption("#routeSelect", id); await page.waitForTimeout(850);
+    await page.click(`[data-mode="${mode}"]`); await selectRoute(page, id); await page.waitForTimeout(850);
     await page.evaluate(() => { webgisLayout.showPopupDetails(); webgisLayout.setTab("route"); });
     const expected = JSON.parse(await readFile("docs/summary-refinement/verification/baseline-summary.json", "utf8"))[id];
     assert.equal(await page.locator("#routeInfo").evaluate(el => el.textContent.replace(/\s+/g, " ").trim()), expected.text, "all source metadata and statistics unchanged");

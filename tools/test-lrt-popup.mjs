@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { before, after, test } from "node:test";
 import { chromium } from "playwright";
-import { openLayout } from "./layout-browser.mjs";
+import { openLayout, selectRoute } from "./layout-browser.mjs";
 
 let browser;
 before(async () => { browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined }); });
@@ -17,7 +17,7 @@ async function chooseLrt(page, routeId) {
     await page.click("#tlNetworkToggle");
   }
   await page.click('[data-mode="LRT"]');
-  await page.selectOption("#routeSelect", routeId);
+  await selectRoute(page, routeId);
   await page.waitForTimeout(700);
 }
 async function selectStation(page, sourceId) {

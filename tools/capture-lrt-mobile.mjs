@@ -10,6 +10,7 @@ import os from "node:os";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import { chromium } from "playwright";
+import { selectRoute } from "./layout-browser.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const appRoot = process.env.LAYOUT_APP_ROOT || root;
@@ -57,7 +58,7 @@ async function capture(page, filename, description) {
 async function choose(page, mode, routeId, stopId) {
   if (await page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none" || getComputedStyle(el).visibility === "hidden")) await page.click("#tlNetworkToggle");
   await page.click(`[data-mode="${mode}"]`);
-  await page.selectOption("#routeSelect", routeId);
+  await selectRoute(page, routeId);
   await page.waitForTimeout(700);
   if (!stopId) return;
   const key = await page.evaluate(id => getStopKey(stopData.features.find(item => item.properties.STOP_ID === id)), stopId);

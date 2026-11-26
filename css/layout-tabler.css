@@ -514,8 +514,7 @@
     .tl-mode-all-full { display: none; }
     .tl-mode-all-compact { display: inline; }
     .tl-app .tl-network .form-select { height: 36px; min-height: 36px; font-size: 14px; }
-    .tl-network .route-select-field { margin-bottom: 0; }
-    .tl-network .tl-route-full-name { display: none; }
+    .tl-network .route-select-field { display: none; }
     .tl-route-list { margin-top: 8px; }
     .tl-route-list-group { margin: 12px 0 4px; color: #506176; font-size: 12px; line-height: 1.4; }
     .tl-route-list-empty { margin: 0; padding-block: 3px; color: #52647a; font-size: 13px; }
@@ -537,6 +536,11 @@
       overflow-wrap: anywhere;
     }
     .tl-route-choice:hover { background: #f5f8fd; }
+    .tl-route-choice-all {
+      --route-color: var(--tl-blue);
+      grid-template-columns: minmax(0, 1fr) 12px;
+      min-height: 36px;
+    }
     .tl-route-choice[aria-current="true"] {
       border-color: #94b8e3;
       border-radius: 6px;

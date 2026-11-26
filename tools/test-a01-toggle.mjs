@@ -12,6 +12,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import { selectRoute } from "./layout-browser.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
@@ -87,7 +88,7 @@ async function openRoute(t, routeId = "BRT_13", width = 1366) {
   await page.click('[data-mode="BRT"]');
   if (Number(routeId.slice(4)) >= 15) await page.selectOption("#statusSelect", "ALL");
   if (await page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none")) await page.click("#tlNetworkToggle");
-  await page.selectOption("#routeSelect", routeId);
+  await selectRoute(page, routeId);
   // Let the existing adaptive-layout fit finish before selecting a stop.
   await page.waitForTimeout(750);
   await page.waitForFunction(() => document.documentElement.dataset.layoutReady === "true");
@@ -260,7 +261,7 @@ for (const width of [1366, 390, 568]) test(`Koridor 15–19: non-existing visibi
   for (const id of ["BRT_15", "BRT_16", "BRT_17", "BRT_18", "BRT_19"]) {
     if (await app.page.evaluate(() => currentSelectedRouteId) !== id) {
       if (await app.page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none")) await app.page.click("#tlNetworkToggle");
-      await app.page.selectOption("#routeSelect", id); await app.page.waitForTimeout(650);
+      await selectRoute(app.page, id); await app.page.waitForTimeout(650);
     }
     await app.page.evaluate(() => { webgisLayout.showPopupDetails(); webgisLayout.setTab("route"); });
     if ((await view(app.page)).checked) await toggle(app, false);

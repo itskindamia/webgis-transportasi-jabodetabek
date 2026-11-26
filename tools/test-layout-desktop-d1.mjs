@@ -22,6 +22,8 @@ for (const [width, height] of [[1366, 768], [1440, 900], [1920, 1080]]) {
     const expanded = await readMap(page);
     assert.equal(expanded.documentWidth, width);
     assert.deepEqual(expanded.size, [width - sidebar.width, height - header.height]);
+    assert.equal(await page.locator("#routeSelect").count(), 1, "native route picker stays in the DOM");
+    assert.equal(await page.locator(".route-select-field").boundingBox(), null, "picker and label take no desktop space");
 
     const controls = ["#gpsButton", "#homeButton", "#northButton", "#zoomInButton", "#zoomOutButton", "#basemapButton"];
     async function assertControlsReachable() {
@@ -67,17 +69,20 @@ test("desktop route rows mirror filter results, selection, and permalink", async
   t.after(() => context.close());
   await page.click("#infoModalAccept");
   await page.click("#productTourSkip");
-  const rows = page.locator("#tlRouteList .tl-route-choice");
+  const list = page.getByRole("group", { name: "Daftar lin dan koridor" });
+  const rows = list.getByRole("button");
+  assert.equal(await rows.count(), 0, "Semua Layanan still has no route choices");
+  assert.ok(await list.getByText("Pilih jenis layanan untuk melihat daftar.").isVisible());
   await page.click('[data-mode="LRT"]');
   await rows.first().waitFor();
   const matches = () => page.evaluate(() => {
     const picker = document.getElementById("routeSelect");
-    const options = [...picker.options].filter(option => option.value !== "ALL");
+    const options = [...picker.options];
     const choices = [...document.querySelectorAll("#tlRouteList .tl-route-choice")];
     const groups = [...picker.querySelectorAll("optgroup")].map(group => group.label);
     const headings = [...document.querySelectorAll(".tl-route-list-group")].map(heading => heading.textContent);
     return {
-      options: options.map(option => [option.value, option.text, getRouteColor(option.value)]),
+      options: options.map(option => [option.value, option.text, option.value === "ALL" ? "" : getRouteColor(option.value)]),
       rows: choices.map(button => [button.dataset.routeId, button.getAttribute("aria-label"), button.style.getPropertyValue("--route-color")]),
       groups, headings
     };
@@ -86,13 +91,19 @@ test("desktop route rows mirror filter results, selection, and permalink", async
   assert.deepEqual(existing.rows, existing.options);
   assert.deepEqual(existing.headings, existing.groups);
   assert.ok(await rows.locator(".rail-line-badge-image").first().isVisible(), "existing rail badge is reused");
-  const bekasi = rows.filter({ hasText: "Lin Bekasi" });
-  await bekasi.focus();
+  await page.locator("#statusSelect").focus();
+  await page.keyboard.press("Tab");
+  assert.equal(await page.evaluate(() => document.activeElement.dataset.routeId), "ALL", "Tab skips the native picker");
+  await page.keyboard.press("Tab");
+  assert.equal(await page.evaluate(() => document.activeElement.dataset.routeId), "LRT_JB_BK");
   await page.keyboard.press("Enter");
   await page.waitForSelector('#tlRouteList [data-route-id="LRT_JB_BK"][aria-current="true"]');
   assert.equal(await page.locator("#routeSelect").inputValue(), "LRT_JB_BK");
   assert.equal(new URL(page.url()).searchParams.get("route"), "LRT_JB_BK");
   assert.ok(await page.locator("#tlDetailPanel").isVisible());
+  assert.match(await page.locator("#tlDetailTitle").textContent(), /Lin Bekasi/);
+  const mapRoutes = await page.evaluate(() => [...new Set(routeLayer.getLayers().map(layer => getRouteId(layer.feature)))]);
+  assert.deepEqual(mapRoutes, ["LRT_JB_BK"], "map displays only the active line");
   await page.reload();
   await page.click("#productTourSkip");
   await page.waitForSelector('#tlRouteList [data-route-id="LRT_JB_BK"][aria-current="true"]');
@@ -102,9 +113,19 @@ test("desktop route rows mirror filter results, selection, and permalink", async
   await page.waitForFunction(() => new URLSearchParams(location.search).get("compare") === "LRT_JB_CB");
   await page.click("#routeCompareClear");
 
+  const overview = list.getByRole("button", { name: "Semua Lin", exact: true });
+  await overview.press("Space");
+  await page.waitForSelector('#tlRouteList [data-route-id="ALL"][aria-current="true"]');
+  assert.equal(await page.locator("#routeSelect").inputValue(), "ALL");
+  assert.equal(await page.locator("#modeSelect").inputValue(), "LRT");
+  assert.equal(await page.locator("#statusSelect").inputValue(), "Existing");
+  assert.equal(new URL(page.url()).searchParams.has("route"), false);
+  assert.equal(await page.locator("#tlDetailPanel").isVisible(), false);
+  assert.equal(await page.evaluate(() => document.activeElement.dataset.routeId), "ALL");
+
   await page.selectOption("#statusSelect", "ALL");
   await page.waitForFunction(() => {
-    const options = [...document.getElementById("routeSelect").options].slice(1);
+    const options = [...document.getElementById("routeSelect").options];
     const choices = [...document.querySelectorAll("#tlRouteList button")];
     return choices.length === options.length && options.every((option, index) =>
       choices[index].dataset.routeId === option.value && choices[index].getAttribute("aria-label") === option.text);
@@ -113,8 +134,17 @@ test("desktop route rows mirror filter results, selection, and permalink", async
   assert.deepEqual(allStatuses.rows, allStatuses.options);
   assert.notDeepEqual(allStatuses.rows, existing.rows, "the list follows status changes");
 
+  await page.click('[data-mode="ALL"]');
+  await list.getByText("Pilih jenis layanan untuk melihat daftar.").waitFor();
+  assert.equal(await rows.count(), 0);
+  await page.setViewportSize({ width: 1024, height: 768 });
+  assert.equal(await page.locator(".route-select-field").boundingBox(), null);
+
   await page.setViewportSize({ width: 1023, height: 768 });
   await page.locator(".tl-header #globalSearchPanel").waitFor();
+  if (await page.locator("#filterPanel").evaluate(el => el.inert)) await page.click("#tlNetworkToggle");
+  assert.ok(await page.locator('label[for="routeSelect"]').isVisible());
+  assert.ok(await page.locator("#routeSelect").isVisible());
   assert.equal(await page.locator("#tlRouteList").isVisible(), false);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.click("#mobileBottomRouteButton");

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test, before, after } from "node:test";
 import { chromium } from "playwright";
-import { openLayout } from "./layout-browser.mjs";
+import { openLayout, selectRoute } from "./layout-browser.mjs";
 
 // Cross-network visual layout checks. Test data and route semantics remain unchanged.
 // Routes intentionally cover BRT, MRT, both LRT operators and KRL.
@@ -31,7 +31,7 @@ async function chooseNetwork(page, { mode, route, status }) {
   }
   await page.locator(`#tlModeChoices [data-mode="${mode}"]`).click();
   await page.selectOption("#statusSelect", status);
-  await page.selectOption("#routeSelect", route);
+  await selectRoute(page, route);
   await page.waitForFunction(expected => {
     const selected = String(currentSelectedRouteId || "ALL");
     return selected === expected && map.getSize().x > 0 && map.getSize().y > 0;
