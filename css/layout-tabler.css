@@ -465,11 +465,13 @@
     :root {
       --tl-header: 58px;
       --tl-sidebar: 312px;
-      --tl-detail: clamp(304px, 23vw, 352px);
       --tl-inset: 20px;
       --tl-control: 38px;
       --tl-radius: 8px;
       --tl-map-rail: calc(2 * var(--tl-inset) + var(--tl-control));
+    }
+    @media (max-width: 1439px) {
+      :root { --tl-detail: 320px; }
     }
     .tl-header {
       grid-template-columns: minmax(max-content, 1fr) auto;
