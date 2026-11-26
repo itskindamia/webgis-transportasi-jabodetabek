@@ -31,7 +31,7 @@ async function chooseNetwork(page, { mode, route, status }) {
   }
   await page.locator(`#tlModeChoices [data-mode="${mode}"]`).click();
   await page.selectOption("#statusSelect", status);
-  await selectRoute(page, route);
+  if (route !== "ALL") await selectRoute(page, route);
   await page.waitForFunction(expected => {
     const selected = String(currentSelectedRouteId || "ALL");
     return selected === expected && map.getSize().x > 0 && map.getSize().y > 0;
