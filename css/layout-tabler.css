@@ -476,7 +476,7 @@
       gap: var(--tl-inset);
       padding-inline: var(--tl-inset);
     }
-    .left-panel-collapsed .tl-header {
+    .tl-header:has(> .tl-search) {
       grid-template-columns: minmax(max-content, 1fr) minmax(180px, 400px) auto;
     }
     .tl-brand-area { gap: 14px; }

@@ -61,10 +61,10 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844], [568, 320], [
       }
     } else {
       const eyebrow = await page.locator(".tl-network .tl-panel-heading .tl-eyebrow").evaluate(el => getComputedStyle(el).display);
-      assert.notEqual(eyebrow, "none", "desktop network heading unchanged");
+      assert.equal(eyebrow, "none", "desktop omits the redundant network eyebrow");
       const [headingTransform, selectHeight] = await page.evaluate(() => [getComputedStyle(document.querySelector(".tl-network .tl-panel-heading h2")).textTransform, document.querySelector("#statusSelect").getBoundingClientRect().height]);
-      assert.notEqual(headingTransform, "uppercase", "desktop heading casing unaffected");
-      assert.ok(selectHeight >= 44, "desktop select stays at prior height");
+      assert.notEqual(headingTransform, "uppercase", "desktop network heading uses sentence case");
+      assert.ok(selectHeight >= 36 && selectHeight <= 40, "desktop status filter uses compact height");
     }
     assert.deepEqual(errors, [], "no JavaScript runtime errors");
   });

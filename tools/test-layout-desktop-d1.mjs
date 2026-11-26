@@ -94,6 +94,7 @@ test("desktop route rows mirror filter results, selection, and permalink", async
   assert.equal(new URL(page.url()).searchParams.get("route"), "LRT_JB_BK");
   assert.ok(await page.locator("#tlDetailPanel").isVisible());
   await page.reload();
+  await page.click("#productTourSkip");
   await page.waitForSelector('#tlRouteList [data-route-id="LRT_JB_BK"][aria-current="true"]');
 
   await page.click("#routeCompareAdd");
