@@ -58,9 +58,14 @@ for (const [width, height] of [
       assert.ok(result.statusWidth <= 221, "status selector does not span full panel");
       assert.ok(result.statusHeight >= 39 && result.statusHeight <= 41, "mobile status selector renders at compact 40px");
       assert.ok(Math.abs(result.statusCenterY - result.labelCenterY) <= 2, "status label and selector share row");
+    } else if (width < 1024) {
+      assert.equal(result.shortShown, false, "tablet retains full label");
+      assert.equal(result.fullShown, true, "full tablet label shown");
     } else {
-      assert.equal(result.shortShown, false, "desktop retains full label");
-      assert.equal(result.fullShown, true, "full desktop label shown");
+      assert.equal(result.shortShown, true, "compact desktop 'Semua' label shown");
+      assert.equal(result.fullShown, false, "the compact label is the only visible label");
+      assert.ok(result.buttonRects.every(b => Math.abs(b.top - result.buttonRects[0].top) <= 1), "all five desktop modes share one row");
+      assert.ok(result.statusHeight >= 36 && result.statusHeight <= 40, "desktop status selector remains compact");
     }
     await page.locator('#tlModeChoices [data-mode="BRT"]').click();
     assert.equal(await page.locator("#modeSelect").inputValue(), "BRT", "BRT filter still operates");

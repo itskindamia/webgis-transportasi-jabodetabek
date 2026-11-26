@@ -47,6 +47,8 @@ for (const [width, height] of [
           return ["fontFamily", "fontSize", "fontWeight", "lineHeight", "letterSpacing", "color"].every(prop => first[prop] === second[prop]);
         })(),
         brandFits: brand.right <= search.left - 4 || innerWidth < 768,
+        desktopBrandFits: brand.right <= buttons.left - 4,
+        desktopSearchInNetwork: elem("#filterPanel").contains(elem(".tl-search")),
         titleFits: desktop.scrollWidth <= desktop.clientWidth + 1,
         searchFits: search.right <= buttons.left - 4 || innerWidth < 768,
         headerWithinViewport: header.right <= innerWidth + 1,
@@ -65,8 +67,8 @@ for (const [width, height] of [
       assert.equal(result.desktopShown, true, "one-line desktop title visible");
       assert.equal(result.mobileShown, false, "stacked title hidden on desktop");
       assert.equal(result.titleFits, true, "desktop title fits without clipping");
-      assert.equal(result.brandFits, true, "desktop brand and Search do not collide");
-      assert.equal(result.searchFits, true, "Search and header actions do not collide");
+      assert.equal(result.desktopBrandFits, true, "desktop brand and header actions do not collide");
+      assert.equal(result.desktopSearchInNetwork, true, "search is grouped with the expanded desktop network");
     } else {
       assert.equal(result.desktopShown, false, "desktop title hidden on mobile/tablet");
       assert.equal(result.mobileShown, true, "stacked mobile title visible");

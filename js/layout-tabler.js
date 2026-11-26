@@ -4,6 +4,13 @@
   const body = document.body;
   const mobile = () => matchMedia("(max-width: 767px)").matches;
   const tablet = () => matchMedia("(min-width: 768px) and (max-width: 1023px)").matches;
+  const desktopLayout = matchMedia("(min-width: 1024px)");
+  const network = byId("filterPanel");
+  const networkContent = network.querySelector(".filter-panel-content");
+  const search = byId("globalSearchPanel");
+  const headerActions = document.querySelector(".tl-header-actions");
+  const routePicker = byId("routeSelect");
+  const routeList = byId("tlRouteList");
   const detail = byId("tlDetailPanel");
   let ready = false;
   let resizeFrame = 0;
@@ -12,6 +19,7 @@
   let lastStop = "";
   let lastTablet = tablet();
   let modeSignature = "";
+  let routeListSignature = "";
   let stopPopup = null;
   let detailsOverPopup = false;
   let shelvedAutoPan = null;
@@ -200,7 +208,14 @@
     const legendOpen = mobile()
       ? body.classList.contains("mobile-info-open")
       : body.classList.contains("tl-legend-open");
-    byId("filterPanel").inert = !networkOpen;
+    const searchAnchor = desktopLayout.matches && networkOpen ? networkContent : headerActions;
+    let focused;
+    if (search.nextElementSibling !== searchAnchor) {
+      if (search.contains(document.activeElement)) focused = document.activeElement;
+      searchAnchor.before(search);
+    }
+    network.inert = !networkOpen;
+    focused?.focus({ preventScroll: true });
     byId("rightInfoPanel").inert = !legendOpen;
     byId("tlNetworkToggle").setAttribute("aria-expanded", String(networkOpen));
     byId("tlLegendToggle").setAttribute("aria-expanded", String(legendOpen));
@@ -339,23 +354,106 @@
     });
   }
 
+  routeList.addEventListener("click", event => {
+    const button = event.target.closest("button[data-route-id]");
+    if (!button || button.dataset.routeId === routePicker.value) return;
+    routePicker.value = button.dataset.routeId;
+    routePicker.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+
+  function syncRouteList() {
+    routeList.hidden = !desktopLayout.matches;
+    if (routeList.hidden) return;
+
+    // The native picker owns the filter results, order, and selection.
+    const mode = byId("modeSelect").value;
+    const options = [...routePicker.options].filter(option => option.value !== "ALL");
+    const signature = JSON.stringify([mode, ...options.map(option => [
+      option.value, option.text, option.parentElement.label,
+      option.disabled || option.parentElement.disabled, getRouteColor(option.value)
+    ])]);
+    if (signature !== routeListSignature) {
+      const focusedRoute = routeList.contains(document.activeElement)
+        ? document.activeElement.dataset.routeId : null;
+      const rows = document.createDocumentFragment();
+      let focusedRow;
+      let group;
+      for (const option of options) {
+        if (option.parentElement !== group) {
+          group = option.parentElement;
+          if (group.label) {
+            const heading = document.createElement("h3");
+            heading.className = "tl-route-list-group";
+            heading.textContent = group.label;
+            rows.append(heading);
+          }
+        }
+        const id = option.value;
+        const parts = getRouteHeadingParts(getRouteById(id));
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "tl-route-choice";
+        button.dataset.routeId = id;
+        button.disabled = option.disabled || group.disabled;
+        button.title = option.text;
+        button.setAttribute("aria-label", option.text);
+        button.style.setProperty("--route-color", getRouteColor(id));
+
+        const badge = document.createElement("span");
+        badge.className = "tl-route-choice-badge";
+        badge.setAttribute("aria-hidden", "true");
+        badge.innerHTML = parts.badgeHTML;
+
+        const label = document.createElement("span");
+        const name = document.createElement("strong");
+        const hasRelation = parts.relation && option.text === `${parts.lineName} (${parts.relation})`;
+        name.textContent = hasRelation ? parts.lineName : option.text;
+        label.append(name);
+        if (hasRelation) {
+          const relation = document.createElement("span");
+          relation.className = "tl-route-choice-relation";
+          relation.textContent = parts.relation;
+          label.append(relation);
+        }
+        button.append(badge, label);
+        rows.append(button);
+        if (id === focusedRoute) focusedRow = button;
+      }
+      if (!options.length) {
+        const empty = document.createElement("p");
+        empty.className = "tl-route-list-empty";
+        empty.textContent = mode === "ALL"
+          ? "Pilih jenis layanan untuk melihat daftar."
+          : "Tidak ada lin atau koridor pada filter ini.";
+        rows.append(empty);
+      }
+      routeList.replaceChildren(rows);
+      if (focusedRoute) (focusedRow || routePicker).focus({ preventScroll: true });
+      routeListSignature = signature;
+    }
+    for (const button of routeList.querySelectorAll("button")) {
+      button.setAttribute("aria-current", String(button.dataset.routeId === routePicker.value));
+    }
+  }
+
   function syncContent() {
     syncFrame = 0;
     syncModes();
+    syncRouteList();
     const route = String(currentSelectedRouteId || "");
     const stop = String(currentSelectedStopKey || "");
     const routeChanged = route !== lastRoute;
     const stopChanged = stop !== lastStop;
     const selected = !byId("selectedStopInfo").hidden;
     byId("tlTabSelected").disabled = !selected;
-    const option = byId("routeSelect").selectedOptions[0];
+    const option = routePicker.selectedOptions[0];
     const routeLabel = option?.text.trim() || "";
     const fullName = byId("tlRouteFullName");
-    byId("routeSelect").title = routeLabel;
-    const descriptions = new Set((byId("routeSelect").getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
+    routePicker.title = routeLabel;
+    const descriptions = new Set((routePicker.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
     descriptions.add(fullName.id);
-    byId("routeSelect").setAttribute("aria-describedby", [...descriptions].join(" "));
-    for (const item of byId("routeSelect").options) item.title = item.text;
+    routePicker.setAttribute("aria-describedby", [...descriptions].join(" "));
+    for (const item of routePicker.options) item.title = item.text;
     fullName.hidden = !route;
     if (fullName.textContent !== routeLabel) fullName.textContent = routeLabel;
     for (const name of byId("stopList").querySelectorAll(".stop-list-name")) name.title = name.textContent.trim().replace(/\s+/g, " ");
@@ -529,6 +627,7 @@
       contentObserver.observe(byId(id), { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] });
     }
     for (const id of ["modeSelect", "routeSelect", "statusSelect"]) byId(id).addEventListener("change", scheduleSync);
+    desktopLayout.addEventListener("change", scheduleSync);
     const revealStopPopup = event => {
       if (!mobile() || !event.target.closest(".stop-list-item[data-stop-key]")) return;
       if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;

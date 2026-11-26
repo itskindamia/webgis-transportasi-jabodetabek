@@ -12,7 +12,7 @@
     <link rel="preload" href="assets/fonts/pt-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="stylesheet" href="css/tabler-components.css?v=mobile-ux-20261107-1">
     <link rel="stylesheet" href="css/legacy-components.css?v=mobile-ux-20261107-1">
-    <link rel="stylesheet" href="css/layout-tabler.css?v=inline-stop-badges-20261107-8">
+    <link rel="stylesheet" href="css/layout-tabler.css?v=desktop-d1-1">
     <link rel="stylesheet" href="css/lrt-popup.css?v=mobile-lrt-compact-20261110-5">
     <link rel="stylesheet" href="css/font-pt-sans.css?v=mobile-ux-20261107-1">
     <link rel="stylesheet" href="css/mobile-route-discovery.css?v=mobile-20261111-1">
@@ -22,7 +22,7 @@
     <div class="tl-shell" id="tlShell">
       <header class="tl-header">
         <div class="tl-brand-area">
-          <button id="tlNetworkToggle" class="btn btn-icon" type="button" aria-label="Buka atau tutup jaringan" title="Buka atau tutup jaringan">
+          <button id="tlNetworkToggle" class="btn btn-icon" type="button" aria-label="Buka atau tutup jaringan" aria-controls="filterPanel" title="Buka atau tutup jaringan">
             <svg class="icon" aria-hidden="true">
               <use href="assets/icons/tabler.svg#menu-2"></use>
             </svg>
@@ -170,6 +170,7 @@
                   </div>
                 </div>
               </div>
+              <div id="tlRouteList" class="tl-route-list" role="group" aria-labelledby="routeSelectLabel" hidden></div>
             </section>
           </div>
           <footer class="tl-network-footer">
@@ -974,7 +975,7 @@
         </div>
       </div>
     </div>
-    <script src="js/layout-tabler.js?v=shared-mobile-popup-20261111-1"></script>
+    <script src="js/layout-tabler.js?v=desktop-d1-1"></script>
     <script src="js/layout-tabler-ux.js?v=compact-tour-20261107-5"></script>
     <script src="js/stop-popup-ui.js?v=shared-20261111-1"></script>
     <script crossorigin="anonymous" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
