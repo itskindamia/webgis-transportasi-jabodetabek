@@ -1,5 +1,5 @@
-/* Unified popup presentation adapter. One shared mobile shell for BRT, MRT,
-   LRT, KRL and rail stops. The original engine owns all data and handlers. */
+/* Shared popup presentation for BRT, MRT, LRT and rail stops.
+   The original engine owns all data and handlers. */
 (() => {
   function textElement(tag, className, text) {
     const element = document.createElement(tag);
@@ -32,6 +32,8 @@
 
   function enhance(root, feature, routeId) {
     if (!root) return root;
+    const activeColor = getRouteColor(routeId);
+    if (CSS.supports("color", activeColor)) root.style.setProperty("--tl-popup-accent", activeColor);
     if (normalizeMode(feature?.properties?.MODE) !== "LRT") {
       return enhanceShared(root);
     }
@@ -40,7 +42,6 @@
     root.classList.add("lrt-popup", "stop-popup-ui");
     const activeRoute = getRouteById(routeId);
     root.dataset.lrtOperator = cleanText(feature.properties.OPERATOR) || cleanText(activeRoute?.properties?.OPERATOR);
-    const activeColor = getRouteColor(routeId);
     if (CSS.supports("color", activeColor)) root.style.setProperty("--lrt-accent", activeColor);
     const content = root.querySelector(".stop-popup-scroll");
     if (!content) return root;

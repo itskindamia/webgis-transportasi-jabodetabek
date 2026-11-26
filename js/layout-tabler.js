@@ -494,7 +494,8 @@
       }
     } else if (stopChanged && selected) {
       if (!mobile()) setTab("selected");
-      setDetail(true);
+      // Desktop Detail is independent of the popup once the route is active.
+      if (!desktopLayout.matches) setDetail(true);
     } else if (!selected && detail.dataset.tab === "selected") setTab("stops");
     lastRoute = route;
     lastStop = stop;
@@ -542,7 +543,32 @@
     getStopPopupOptions = () => {
       const size = map.getSize();
       const padding = mapPadding();
-      const mapRect = byId("map").getBoundingClientRect();
+      const mapElement = byId("map");
+      const mapRect = mapElement.getBoundingClientRect();
+      if (desktopLayout.matches) {
+        // The map's grid cell already excludes the network and Detail panels.
+        // Use its current bounds, which can change before Leaflet resizes.
+        const caption = document.querySelector(".tl-map-caption").getBoundingClientRect();
+        const rail = document.querySelector(".tl-map-actions").getBoundingClientRect();
+        const dock = byId("bottomToolbar").getBoundingClientRect();
+        const credits = map.attributionControl?.getContainer().getBoundingClientRect();
+        const left = 12;
+        const top = Math.max(12, Math.ceil(caption.bottom - mapRect.top) + 8);
+        const right = Math.max(12, Math.ceil(mapRect.right - rail.left) + 8);
+        const bottom = Math.ceil(Math.max(mapRect.bottom - dock.top, credits?.height || 0)) + 8;
+        // Leaflet adds a pixel to the content width. Reserve that pixel
+        // and the two wrapper borders in the available width.
+        const width = Math.min(308, Math.max(160, mapElement.clientWidth - left - right - 3));
+        return {
+          minWidth: width,
+          maxWidth: width,
+          maxHeight: Math.min(440, Math.max(64, mapElement.clientHeight - top - bottom - 30)),
+          autoPan: true,
+          keepInView: true,
+          autoPanPaddingTopLeft: [left, top],
+          autoPanPaddingBottomRight: [right, bottom]
+        };
+      }
       const compactLandscape = body.classList.contains("tl-short-landscape");
       if (compactLandscape) {
         padding.paddingTopLeft[1] = 10;
@@ -680,6 +706,13 @@
       shelvedAutoPan = null;
       syncPopupPresentation();
     });
+    map.getContainer().addEventListener("toggle", ({ target }) => {
+      if (!desktopLayout.matches || !target.open || !target.matches(".stop-source-card")) return;
+      if (!stopPopup?.isOpen() || !stopPopup.getElement().contains(target)) return;
+      // A source disclosure can grow an open popup. Reapply Leaflet's pan
+      // at the same anchor without rebuilding the disclosure or moving focus.
+      stopPopup.setLatLng(stopPopup.getLatLng());
+    }, true);
     window.addEventListener("resize", () => {
       if (tablet() !== lastTablet) {
         lastTablet = tablet();
