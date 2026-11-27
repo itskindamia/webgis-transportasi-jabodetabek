@@ -1,17 +1,14 @@
-## V9 — Bagian 1 Final: Onboarding & Tutorial
-
-- Tip 3 sekarang memprioritaskan halte yang sama dengan demo peta (Monumen Nasional) dan otomatis menggulir daftar hingga target terlihat. Bila rute aktif tidak melayani Monumen Nasional, tutorial mengikuti baris nyata pada rute tersebut sehingga tidak memberi contoh halte palsu.
-- Visual mini Tip 3 mengikuti nama, sequence, dan badge baris yang benar-benar disorot.
-- State sebelum tutorial dipulihkan lebih lengkap: center/zoom, filter/rute/arah, popup, panel/flyout, query Search, posisi scroll daftar/panel, dan URL direct-link.
-- Tip 5 tetap memakai alur ikon Cari Lokasi → panel Search asli.
-
 # Jaringan Transportasi Umum Jabodetabek
 
 ## Antarmuka Tabler + Leaflet
 
-Jalankan `npm run dev` (Node 20+), lalu buka `http://localhost:5173/`.
-Aplikasi memakai PT Sans 400/700 lokal, popup LRT berbasis metadata dan layout
-responsif dengan bottom sheet mobile. CSS hasil build sudah disertakan.
+Jalankan `npm ci` dan `npm run dev` (Node 22), lalu buka `http://localhost:5173/`.
+Aplikasi memakai PT Sans 400/700 yang disimpan di repositori. CSS hasil build sudah disertakan.
+
+- Desktop menyediakan **Popup di peta** untuk ringkasan dan **Panel kanan** untuk detail lengkap. Gunakan **Tampilkan di panel** atau **Popup** untuk berpindah dengan pilihan halte tetap aktif. Preferensi mode tersedia di **Peta Dasar**.
+- Tujuan integrasi yang terpetakan dapat dipilih pada peta. **Lihat semua** menyesuaikan tampilan peta agar tujuan terlihat. Garis menandai relasi antarmoda, tanpa memberikan petunjuk berjalan kaki.
+- **Bandingkan rute** menampilkan dua trase jaringan. Slider **Kejelasan peta dasar** mengatur lapisan peta dasar dengan nilai 0–100% yang tersimpan di permalink.
+- Di ponsel, tab **Detail** memakai bottom sheet. **Cara Menggunakan** mendemonstrasikan alur aplikasi dan mengembalikan tampilan setelah tutorial selesai. Cari Lokasi menampilkan hasil jaringan setempat. Tombol **Cari** meminta hasil tempat dari Nominatim.
 
 [Validasi rilis dan rollback](docs/RELEASE_20261106.md) ·
 [Laporan popup/font/mobile](docs/LRT_POPUP_PT_SANS_MOBILE.md) ·
@@ -20,7 +17,7 @@ responsif dengan bottom sheet mobile. CSS hasil build sudah disertakan.
 
 WebGIS statis untuk eksplorasi jaringan transportasi umum Jabodetabek, termasuk BRT dan jaringan rel, halte/stasiun, status jaringan, serta integrasi antarmoda.
 
-**Baseline saat ini: v0.16 — 14 September 2026.**
+**Baseline data dan skema v0.16.** Bagian berikut mendokumentasikan audit 14 September 2026. Repositori mencatat perubahan terakhir pada berkas GeoJSON pada 23 September 2026 ([riwayat Git](https://github.com/itskindamia/webgis-transportasi-jabodetabek/commit/3835e534f4aa0ee8889b77924cf58ccaab20f4db)). Tanggal pembaruan setiap sumber tercantum hanya jika tersedia pada metadata masing-masing.
 
 ## Perubahan v0.16
 
@@ -62,6 +59,7 @@ Lihat `docs/RAIL_SCHEMA_V2.md` untuk pedoman field KA Bandara dan KA Antarkota.
 
 ## Nomenklatur UI v0.16
 - Antarmuka publik memakai **Jenis Layanan** dan **Semua Layanan**.
+- Label publik **Skenario** digunakan pada filter, legenda, popup dan keterangan status. Nilai internal `Conceptual` dan alias data lama `Konseptual` tetap didukung untuk menjaga kompatibilitas.
 - Field internal tetap `MODE`; migrasi data pada build 14 September difokuskan pada integritas identitas dan navigasi, bukan perubahan taxonomy layanan.
 - Istilah `moda` tetap dipakai pada konteks umum seperti integrasi antarmoda.
 

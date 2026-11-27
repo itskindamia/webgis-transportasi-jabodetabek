@@ -23240,9 +23240,7 @@ function buildIntegrationGroup(group) {
           alt="${escapeHTML(
             group.operator
           )}"
-          onerror="
-            this.style.display='none'
-          "
+          data-optional-logo
         >
       `
       :
@@ -23426,15 +23424,11 @@ function buildLineBadge(id) {
           class="rail-line-badge-image"
           src="${escapeHTML(image)}"
           alt="${escapeHTML(text)}"
-          onerror="
-            this.style.display='none';
-            this.nextElementSibling.style.display='inline-flex';
-          "
         />
 
         <span
           class="rail-line-badge-fallback"
-          style="display:none"
+          hidden
         >
           ${escapeHTML(text)}
         </span>

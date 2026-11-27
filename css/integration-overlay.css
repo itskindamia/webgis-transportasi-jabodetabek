@@ -115,7 +115,7 @@
     pointer-events: auto;
   }
   .tl-app .tl-integration-target-line .rail-line-badge-wrap,
-  .tl-app .tl-integration-target-line .rail-line-badge-fallback,
+  .tl-app .tl-integration-target-line .rail-line-badge-fallback:not([hidden]),
   .tl-app .tl-integration-target-line .brt-route-badge {
     display: inline-flex;
     width: 25px;

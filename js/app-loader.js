@@ -2,7 +2,7 @@
   "use strict";
 
   const MAP_SCRIPT =
-    "js/map.js?v=d5-2";
+    "js/map.js?v=d5-3";
 
   const FALLBACK_LEAFLET_JS =
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js";
@@ -17,6 +17,21 @@
     "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
 
   let mapLoaded = false;
+
+  // Image errors do not bubble. Capture errors from logos and badges even
+  // when new popup, panel or marker markup is inserted after startup.
+  document.addEventListener("error", ({ target: image }) => {
+    if (!(image instanceof HTMLImageElement)) return;
+    if (image.matches(".rail-line-badge-image")) {
+      const fallback = image.nextElementSibling;
+      if (fallback?.matches(".rail-line-badge-fallback")) {
+        fallback.hidden = false;
+        image.remove();
+      }
+    } else if (image.hasAttribute("data-optional-logo")) {
+      image.remove();
+    }
+  }, true);
 
   function showStartupFailure() {
     const map =
@@ -58,10 +73,10 @@
 
     script.src = MAP_SCRIPT;
     script.async = false;
-    script.onerror = showStartupFailure;
-    script.onload = () => {
+    script.addEventListener("error", showStartupFailure, { once: true });
+    script.addEventListener("load", () => {
       window.dispatchEvent(new Event("webgis:map-ready"));
-    };
+    }, { once: true });
 
     document.body.appendChild(script);
   }
@@ -116,17 +131,15 @@
   fallback.integrity =
     LEAFLET_JS_INTEGRITY;
 
-  fallback.onload = () => {
+  fallback.addEventListener("load", () => {
     if (window.L?.map) {
       loadMapScript();
       return;
     }
 
     showStartupFailure();
-  };
-
-  fallback.onerror =
-    showStartupFailure;
+  }, { once: true });
+  fallback.addEventListener("error", showStartupFailure, { once: true });
 
   document.body.appendChild(fallback);
 })();
