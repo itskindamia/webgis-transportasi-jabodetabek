@@ -818,3 +818,29 @@
 .tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] > .tl-show-stop-in-panel:hover {
   background: #eef4fa;
 }
+
+/* The complete action strip is now a direct popup child and stays visible
+   even while a hub's single content body scrolls. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] > .stop-popup-action-row {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 8px var(--popup-padding);
+  border-top: 1px solid #edf0f4;
+  background: #fafbfd;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] > .stop-popup-action-row > .tl-show-stop-in-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0 0 0 auto;
+  padding: 8px 0;
+  text-align: right;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-integration-count {
+  font-size: 10px;
+  font-weight: 400;
+  color: #8291a3;
+}
