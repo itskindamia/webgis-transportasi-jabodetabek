@@ -30,6 +30,18 @@
         row.prepend(logo);
       }
     }
+    // Keep long hubs approachable without deleting any relationships. All
+    // rows stay in the markup (D4 still resolves them); the Panel displays
+    // every one. The quick-glance popup shows up to three destinations.
+    const allDestinations = [...root.querySelectorAll(".integration-place-row")];
+    if (allDestinations.length > 3) {
+      allDestinations.slice(3).forEach(row => row.classList.add("is-popup-extra-destination"));
+      const hint = document.createElement("p");
+      hint.className = "stop-popup-more-destinations";
+      hint.textContent = `+${allDestinations.length - 3} tujuan lainnya di Panel kanan`;
+      root.querySelector(".stop-popup-section--integration .integration-list")?.after(hint);
+    }
+
     const maps = root.querySelector(".stop-popup-maps-link");
     if (maps) {
       maps.setAttribute("aria-label", "Buka lokasi di Google Maps");
