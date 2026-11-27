@@ -45,7 +45,7 @@ for (const [width, height] of [[1366, 768], [1440, 900], [1920, 1080]]) {
     assert.equal(await page.locator("#rightInfoPanel").isVisible(), false);
     await assertControlsReachable();
     await page.click("#basemapClose");
-    await page.click("#tlAbout");
+    await page.click("#tlDockAbout");
     assert.ok(await page.locator("#infoModal").isVisible());
     await page.click("#infoModalClose");
 
