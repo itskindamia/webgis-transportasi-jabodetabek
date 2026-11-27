@@ -114,3 +114,83 @@ test("D4 overlays follow Cawang selection and disappear on filter/selection clea
   assert.equal(await page.locator(".tl-integration-target-marker").count(), 0);
   assert.deepEqual(errors, []);
 });
+
+test("D4 only draws verified INT_STOP or uniquely named physical destinations", async t => {
+  const { page, errors } = await setup(t);
+  await selectStation(page, dukuh);
+  await page.waitForFunction(() => window.webgisSpatialIntegrations?.count === 4);
+  const result = await page.evaluate(() => ({
+    targets: webgisSpatialIntegrations.targets,
+    markers: document.querySelectorAll(".tl-integration-target-marker").length,
+    links: webgisSpatialIntegrations.linkCount
+  }));
+  assert.equal(result.markers, 4);
+  assert.equal(result.links, result.markers);
+  assert.deepEqual(result.targets.map(x => x.basis).every(x => ["int_stop", "name"].includes(x)), true);
+  assert.ok(result.targets.some(x => x.key === "MRT012_01" && x.basis === "int_stop"));
+  assert.deepEqual(errors, []);
+});
+
+test("D4 Cawang preserves its exact-name BRT stop and offsets the selectable near-origin icon", async t => {
+  const { page, errors } = await setup(t);
+  await selectStation(page, cawang);
+  await page.waitForFunction(() => window.webgisSpatialIntegrations?.count === 1);
+  const targets = await page.evaluate(() => webgisSpatialIntegrations.targets);
+  assert.deepEqual(targets.map(x => x.key), ["BRT129_REG"]);
+  assert.equal(targets[0].basis, "name");
+  const marker = page.locator(".tl-integration-target-marker.is-near-origin");
+  await marker.waitFor();
+  assert.equal(await marker.evaluate(el => {
+    const rect = el.getBoundingClientRect();
+    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    return el.contains(hit);
+  }), true, "offset Cawang target marker must be topmost at its clickable center");
+  await marker.click();
+  await page.waitForFunction(() => currentSelectedStopKey === "BRT129_REG");
+  assert.deepEqual(errors, []);
+});
+
+test("D4 Popup Lihat semua temporarily clears popup obstruction and restores the detail camera", async t => {
+  const { page, errors } = await setup(t);
+  await selectStation(page, dukuh);
+  await page.waitForFunction(() => window.webgisSpatialIntegrations?.count === 4);
+  await page.waitForFunction(() => map.getZoom() === STOP_ZOOM && !map._animatingZoom);
+  const before = await page.evaluate(() => ({
+    stop: currentSelectedStopKey, route: currentSelectedRouteId,
+    center: map.getCenter(), zoom: map.getZoom(), url: location.href
+  }));
+  await page.locator("#map .tl-integration-fit").click();
+  await page.waitForFunction(() => webgisSpatialIntegrations.overviewActive && map.getZoom() <= 16
+    && !map._panAnim?._inProgress && !map._animatingZoom);
+  assert.equal(await page.locator(".leaflet-popup").isVisible(), false);
+  const markers = page.locator(".tl-integration-target-marker");
+  assert.equal(await markers.count(), 4);
+  const accessible = await markers.evaluateAll(nodes => {
+    const bounds = document.getElementById("map").getBoundingClientRect();
+    return nodes.map(el => {
+      const rect = el.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return {
+        within: rect.left >= bounds.left && rect.right <= bounds.right
+          && rect.top >= bounds.top && rect.bottom <= bounds.bottom,
+        clickable: el.contains(hit)
+      };
+    });
+  });
+  assert.ok(accessible.every(item => item.within && item.clickable),
+    "every destination must be visible and not covered in the overview: " + JSON.stringify(accessible));
+  await page.locator("#map .tl-integration-fit").click();
+  await page.waitForFunction(() => !webgisSpatialIntegrations.overviewActive
+    && map.getZoom() === STOP_ZOOM && !map._animatingZoom);
+  assert.equal(await page.locator(".leaflet-popup").isVisible(), true);
+  const after = await page.evaluate(() => ({
+    stop: currentSelectedStopKey, route: currentSelectedRouteId,
+    center: map.getCenter(), zoom: map.getZoom(), url: location.href
+  }));
+  assert.equal(after.stop, before.stop);
+  assert.equal(after.route, before.route);
+  assert.equal(after.url, before.url);
+  assert.equal(after.zoom, before.zoom);
+  assert.ok(mapDistance(after.center, before.center) < 0.00001);
+  assert.deepEqual(errors, []);
+});
