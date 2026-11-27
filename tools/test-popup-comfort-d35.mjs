@@ -128,6 +128,8 @@ test("D3.5 bidirectional route text is presentation-only and mobile popup remain
   assert.equal(await popup.locator(".tl-maps-external-indicator").isVisible(), true);
   assert.equal(await page.locator("#tlDockGuide").isVisible(), false);
   assert.equal(await page.locator("#tlDockAbout").isVisible(), false);
+  assert.equal(await popup.locator(".tl-show-stop-in-panel").isVisible(), false,
+    "the desktop-only panel shortcut remains hidden on mobile");
 });
 
 for (const [width, height] of [[1440, 900], [1280, 720]]) {
@@ -138,7 +140,7 @@ for (const [width, height] of [[1440, 900], [1280, 720]]) {
     await page.locator('#stopList [data-stop-key="LRTJB001_01"]').click();
     const popup = page.locator(".leaflet-popup .stop-popup-ui");
     await popup.waitFor();
-    const panelButton = popup.locator(":scope > .tl-show-stop-in-panel");
+    const panelButton = popup.locator(".stop-popup-action-row > .tl-show-stop-in-panel");
     await panelButton.waitFor({ state: "visible" });
     const popupRows = await popup.locator(".integration-place-row").evaluateAll(rows => ({
       total: rows.length,
@@ -168,11 +170,27 @@ for (const [width, height] of [[1440, 900], [1280, 720]]) {
     });
     assert.equal(state.within, true, "panel action in visible popup area");
     assert.equal(state.clickable, true, "panel action is not covered by navigation");
+    const inline = await popup.evaluate(root => {
+      const bar = root.querySelector(".stop-popup-action-row");
+      const maps = bar?.querySelector(".stop-popup-maps-link")?.getBoundingClientRect();
+      const source = bar?.querySelector(".stop-source-summary")?.getBoundingClientRect();
+      const panel = bar?.querySelector(".tl-show-stop-in-panel")?.getBoundingClientRect();
+      const sameRow = (a, b) => Boolean(a && b && Math.abs(a.top - b.top) < 2);
+      return {
+        allPresent: Boolean(maps && source && panel),
+        sameRow: sameRow(maps, source) && sameRow(source, panel),
+        order: Boolean(maps && source && panel && maps.right < source.left && source.right < panel.left),
+        compact: Boolean(panel && panel.height >= 30 && panel.height <= 38),
+        sourceCardStillAvailable: Boolean(bar?.querySelector(".stop-source-card"))
+      };
+    });
+    assert.deepEqual(inline, { allPresent: true, sameRow: true, order: true, compact: true, sourceCardStillAvailable: true },
+      "Maps, Source and Panel must be compact controls in one horizontal row");
     const bodyFit = await popup.evaluate(root => {
       const body = root.querySelector(".lrt-popup-body");
       const bounds = body.getBoundingClientRect();
       const rows = [...root.querySelectorAll(".integration-place-row")].filter(row => row.getClientRects().length);
-      const controls = [...root.querySelectorAll(".stop-popup-maps-link, .stop-source-summary")];
+      const controls = [...root.querySelectorAll(".stop-popup-maps-link, .stop-source-summary, .tl-show-stop-in-panel")];
       const footer = root.querySelector(".stop-popup-navigation").getBoundingClientRect();
       const toggle = root.querySelector(".tl-show-stop-in-panel").getBoundingClientRect();
       return {
