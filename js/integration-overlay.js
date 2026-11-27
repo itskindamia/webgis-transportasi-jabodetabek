@@ -279,10 +279,20 @@
       if (!currentLocations.length) return;
       if (overviewActive) {
         const previous = cameraBeforeOverview;
-        setOverview(false);
+        // Leaflet may re-pan an open popup during flyTo/moveend even if the
+        // popup element was only visually hidden. Restore the camera while
+        // auto-pan is disabled, then reveal the existing popup. This avoids
+        // moving the map a second time when the user selects "Kembali".
+        const activePopup = map._popup;
+        const originalAutoPan = activePopup?.options.autoPan;
+        if (activePopup) activePopup.options.autoPan = false;
         if (previous) {
-          map.flyTo(previous.center, previous.zoom, { animate: true, duration: 0.4 });
+          map.setView(previous.center, previous.zoom, { animate: false });
         }
+        setOverview(false);
+        requestAnimationFrame(() => {
+          if (activePopup) activePopup.options.autoPan = originalAutoPan;
+        });
         return;
       }
       if (!window.webgisLayout?.usesStopInfoPanel?.()) {
