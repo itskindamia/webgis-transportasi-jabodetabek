@@ -39,6 +39,8 @@ test("D3.3 Cawang popup is visually quiet but retains operator logos and usable 
       badgesHidden: badges && getComputedStyle(badges).display === "none",
       groupTitleHidden: groupTitle && getComputedStyle(groupTitle).display === "none",
       logo: !!operatorLogo && !!operatorLogo.getBoundingClientRect().width,
+      logoRightOfName: operatorLogo.getBoundingClientRect().left >
+        root.querySelector(".integration-place-name").getBoundingClientRect().left,
       metaWeight: getComputedStyle(metadata).fontWeight,
       routes: [...root.querySelectorAll(".stop-popup-route-button")].length,
       destinations: [...root.querySelectorAll(".integration-place-row")].map(el => el.querySelector(".integration-place-name")?.textContent.trim())
@@ -47,6 +49,7 @@ test("D3.3 Cawang popup is visually quiet but retains operator logos and usable 
   assert.equal(styles.badgesHidden, true);
   assert.equal(styles.groupTitleHidden, true);
   assert.equal(styles.logo, true);
+  assert.equal(styles.logoRightOfName, true, "logo is right-aligned after the destination name");
   assert.equal(styles.metaWeight, "400");
   assert.ok(styles.routes >= 2);
   assert.ok(styles.destinations.some(x => /Cawang/i.test(x)));
