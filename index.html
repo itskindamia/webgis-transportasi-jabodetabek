@@ -452,11 +452,21 @@
               <p id="tlDetailSubtitle">Pilih koridor atau lin untuk melihat detail.</p>
             </div>
             <button id="tlDetailResume" class="btn btn-primary" type="button" aria-label="Buka detail tanpa menutup seleksi halte">Detail</button>
-            <button id="tlDetailClose" class="btn btn-icon" type="button" aria-label="Tutup panel detail" title="Tutup panel detail">
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons/tabler.svg#x"></use>
-              </svg>
-            </button>
+            <div class="tl-detail-heading-actions">
+              <button id="tlReturnToPopup" class="btn tl-return-to-popup" type="button"
+                title="Tampilkan halte atau stasiun terpilih di popup peta"
+                aria-label="Kembali ke popup halte atau stasiun pada peta" hidden>
+                <svg class="icon" aria-hidden="true">
+                  <use href="assets/icons/tabler.svg#map-pin"></use>
+                </svg>
+                <span>Popup</span>
+              </button>
+              <button id="tlDetailClose" class="btn btn-icon" type="button" aria-label="Tutup panel detail" title="Tutup panel detail">
+                <svg class="icon" aria-hidden="true">
+                  <use href="assets/icons/tabler.svg#x"></use>
+                </svg>
+              </button>
+            </div>
           </header>
           <div class="tl-detail-tabs nav" role="tablist" aria-label="Bagian detail">
             <button id="tlTabRoute" class="nav-link" role="tab" type="button" data-tab="route" aria-controls="routeInfo">Ringkasan</button>
@@ -991,7 +1001,7 @@
         </div>
       </div>
     </div>
-    <script src="js/layout-tabler.js?v=desktop-d3-2"></script>
+    <script src="js/layout-tabler.js?v=panel-return-popup-1"></script>
     <script src="js/layout-tabler-ux.js?v=compact-tour-20261107-5"></script>
     <script src="js/stop-popup-ui.js?v=desktop-d3-2"></script>
     <script crossorigin="anonymous" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
