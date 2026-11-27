@@ -191,9 +191,14 @@
         // All three actions belong to one persistent toolbar rather than
         // the scrolling content, so icons cannot get clipped behind the
         // fixed navigation on compact or heavily integrated stations.
-        const navigation = root.querySelector(".stop-popup-navigation");
-        if (navigation) navigation.before(actions);
-        else root.append(actions);
+        if (matchMedia("(min-width: 1024px)").matches) {
+          // Desktop-only pinned action rail. On mobile/tablet the original
+          // scroll hierarchy must remain unchanged and retain its tested
+          // sticky header / 400px portrait envelope.
+          const navigation = root.querySelector(".stop-popup-navigation");
+          if (navigation) navigation.before(actions);
+          else root.append(actions);
+        }
       }
       return template.innerHTML;
     };
