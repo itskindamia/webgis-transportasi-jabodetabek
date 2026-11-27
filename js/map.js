@@ -22652,6 +22652,7 @@ function resolveIntegrationPlaceTarget(placeGroup) {
     .filter(Boolean);
 
   let targetFeature = null;
+  let basis = "";
 
   /* INT_STOP selalu menjadi resolver utama. */
   for (const targetStopId of targetStopIds) {
@@ -22663,6 +22664,7 @@ function resolveIntegrationPlaceTarget(placeGroup) {
       );
 
     if (targetFeature) {
+      basis = "int_stop";
       break;
     }
   }
@@ -22693,13 +22695,18 @@ function resolveIntegrationPlaceTarget(placeGroup) {
     }
   }
 
+  if (targetFeature && !basis) {
+    basis = "name";
+  }
+
   if (!targetFeature) {
     return {
       targetFeature: null,
       targetStopKey: "",
       targetRouteId: "",
       routeIds,
-      expectedModes
+      expectedModes,
+      basis: ""
     };
   }
 
@@ -22725,7 +22732,8 @@ function resolveIntegrationPlaceTarget(placeGroup) {
     targetStopKey,
     targetRouteId,
     routeIds,
-    expectedModes
+    expectedModes,
+    basis
   };
 }
 
@@ -23033,6 +23041,7 @@ function buildIntegrationPlaceRow(placeGroup) {
         "
         data-integration-stop-key="${escapeHTML(resolved.targetStopKey)}"
         data-integration-route-id="${escapeHTML(resolved.targetRouteId)}"
+        data-integration-basis="${escapeHTML(resolved.basis || "")}"
         title="Buka ${escapeHTML(placeLabel)}"
         aria-label="Buka ${escapeHTML(placeLabel)} pada peta"
       >
@@ -31253,6 +31262,7 @@ restoreRouteDetailCollapseState();
           const candidate = findStopFeatureByExplicitRef(ref, operatorKey);
           if (candidate) {
             resolved = candidate;
+            row.dataset.integrationBasis = "int_stop";
             resolvedCode = code;
             break;
           }
@@ -31267,6 +31277,7 @@ restoreRouteDetailCollapseState();
         const byName = findStopFeatureByNameWithinOperator(rowName, operatorKey);
         if (byName) {
           resolved = byName;
+          row.dataset.integrationBasis = "name";
           resolvedCode = codes[0] || "";
         }
       }
