@@ -48,8 +48,9 @@ async function assertPlacement(page) {
     const card = popup.querySelector(".leaflet-popup-content-wrapper").getBoundingClientRect();
     const bounds = document.querySelector("#map").getBoundingClientRect();
     const footer = popup.querySelector(".stop-popup-navigation")?.getBoundingClientRect();
-    const overlays = [".tl-map-caption", ".tl-map-actions", ".tl-map-navigation",
-      ".tl-dock", "#filterPanel", "#tlDetailPanel"].map(selector => document.querySelector(selector).getBoundingClientRect());
+    const overlays = [...document.querySelectorAll(".tl-map-caption, .tl-map-actions, .tl-map-navigation, " +
+      ".tl-dock, #filterPanel, #tlDetailPanel, .tl-integration-map-summary:not([hidden])")]
+      .map(element => element.getBoundingClientRect());
     const overlaps = overlays.some(rect => card.left < rect.right - 1 && card.right > rect.left + 1 &&
       card.top < rect.bottom - 1 && card.bottom > rect.top + 1);
     return !overlaps && card.width >= 300 && card.width <= 320 &&

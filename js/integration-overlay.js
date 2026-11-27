@@ -42,6 +42,7 @@
     L.DomEvent.disableScrollPropagation(summary);
 
     let refreshFrame = 0;
+    let summaryFrame = 0;
     let signature = "";
     let currentLocations = [];
     let visibleCount = 0;
@@ -269,6 +270,26 @@
       } else {
         countLabel.removeAttribute("title");
       }
+      scheduleSummaryPlacement();
+    }
+
+    function scheduleSummaryPlacement() {
+      if (summaryFrame || summary.hidden) return;
+      summaryFrame = requestAnimationFrame(() => {
+        summaryFrame = 0;
+        const popup = map._popup;
+        const card = !overviewActive && popup?.isOpen()
+          ? popup.getElement()?.querySelector(".leaflet-popup-content-wrapper")?.getBoundingClientRect()
+          : null;
+        const mapBounds = map.getContainer().getBoundingClientRect();
+        // Compare against the summary's default upper-left box, even when
+        // the previous frame placed it at the bottom. This avoids oscillation.
+        const left = mapBounds.left + 12;
+        const top = mapBounds.top + 59;
+        const overlaps = card && card.left < left + summary.offsetWidth && card.right > left &&
+          card.top < top + summary.offsetHeight && card.bottom > top;
+        summary.classList.toggle("is-below-popup", Boolean(overlaps));
+      });
     }
 
     function schedule() {
@@ -329,6 +350,8 @@
     if (popupPane) observer.observe(popupPane, observerOptions);
 
     map.on("popupopen popupclose", schedule);
+    map.on("move zoomend resize popupopen popupclose", scheduleSummaryPlacement);
+    map.getContainer().addEventListener("toggle", scheduleSummaryPlacement, true);
     desktop.addEventListener?.("change", () => { signature = ""; schedule(); });
 
     // A selected stop may be restored from a permalink after data arrives.

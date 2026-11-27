@@ -4,9 +4,8 @@
 .tl-app .tl-quick-action-svg { display: none; }
 
 @media (min-width: 1024px) {
-  /* Relocate D4 summary while a popup is open, avoiding the header
-     collision seen at Dukuh Atas. Keep it above the bottom-left dock. */
-  .tl-app #map:has(.leaflet-popup .stop-popup-ui) > .tl-integration-map-summary {
+  /* Move the D4 count only when the Popup occupies its upper position. */
+  .tl-app #map > .tl-integration-map-summary.is-below-popup {
     top: auto;
     bottom: 80px;
   }
