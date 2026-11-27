@@ -13,7 +13,7 @@ const sizes = production ? [[1440, 900], [390, 844]] :
   [[1280, 720], [1440, 900], [1536, 864], [1600, 900], [360, 800], [390, 844]];
 
 async function capture(page, report, fixture, kind, width, height, details = {}) {
-  await waitForCamera(page, { realTiles: true });
+  await waitForCamera(page, { realTiles: true, zoomAtStop: kind !== "lihat-semua" });
   await page.evaluate(() => document.fonts.ready);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width);
   const file = `${width}x${height}-${fixture.name}-${kind}.png`;
@@ -74,7 +74,7 @@ try {
         assert.deepEqual(await popup.locator("img:visible").evaluateAll(images =>
           images.filter(image => image.complete && !image.naturalWidth).map(image => image.src)), []);
         if (desktop && !baseline) {
-          assert.equal(coverage.insideMap, true, `${fixture.name} fits ${width}×${height}: ${JSON.stringify(coverage.bounds)}`);
+          assert.equal(coverage.insideMap, true, `${fixture.name} fits ${width}×${height} on ${coverage.placement}: ${JSON.stringify(coverage.bounds)}`);
           assert.equal(coverage.controlsCovered, 0, `${fixture.name} keeps map controls reachable`);
           assert.equal(coverage.covered, 0, "every visible transfer badge is clear of the popup");
         }

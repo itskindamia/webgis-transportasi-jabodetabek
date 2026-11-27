@@ -23,7 +23,7 @@ async function openStation(page, fixture) {
   await waitForStation(page, fixture);
 }
 
-for (const [index, width, height] of [[0, 1280, 720], [0, 1440, 900], [1, 1440, 900], [2, 1440, 900], [3, 1440, 900]]) {
+for (const [index, width, height] of [[0, 1280, 720], [0, 1440, 900], [1, 1440, 900], [2, 1440, 900], [3, 1440, 900], [6, 1280, 720]]) {
   const fixture = fixtures[index];
   test(`D5 desktop collision: ${fixture.name} at ${width}x${height}`, async t => {
     const { page, errors } = await app(t, width, height);

@@ -16,6 +16,7 @@
     let y = 0;
     let side = "";
     let tip = 0;
+    let nativePosition = "";
 
     function setPlacement(nextX, nextY, nextSide, nextTip) {
       if (!element || (x === nextX && y === nextY && side === nextSide && tip === nextTip)) return;
@@ -81,11 +82,15 @@
       // either side of the default position are tried before changing sides.
       const minLeft = Math.max(bounds.left, anchorX - width + 20);
       const maxLeft = Math.min(bounds.right - width, anchorX - 20);
-      const verticalTop = clamp(anchorY - height / 2, bounds.top, bounds.bottom - height);
+      const minTop = Math.max(bounds.top, anchorY - height + 20);
+      const maxTop = Math.min(bounds.bottom - height, anchorY - 20);
+      const verticalTop = clamp(anchorY - height / 2, minTop, maxTop);
       const above = best.fits ? top : anchorY - height - 12;
       const candidates = [
         [clamp(left, minLeft, maxLeft), above, "above"], [minLeft, above, "above"], [maxLeft, above, "above"],
         [anchorX - width - 12, verticalTop, "left"], [anchorX + 12, verticalTop, "right"],
+        [anchorX - width - 12, minTop, "left"], [anchorX + 12, minTop, "right"],
+        [anchorX - width - 12, maxTop, "left"], [anchorX + 12, maxTop, "right"],
         [clamp(left, minLeft, maxLeft), anchorY + 12, "below"],
         [minLeft, anchorY + 12, "below"], [maxLeft, anchorY + 12, "below"]
       ];
@@ -107,15 +112,27 @@
     }
 
     const sizeObserver = new ResizeObserver(schedule);
+    const positionObserver = new MutationObserver(() => {
+      // Leaflet also updates its position when rebuilding the popup after a
+      // zoom or content change. Ignore this module's translate and tip styles.
+      const { left, bottom, transform } = element.style;
+      const position = `${left} ${bottom} ${transform}`;
+      if (position === nativePosition) return;
+      nativePosition = position;
+      schedule();
+    });
     map.on("popupopen", ({ popup }) => {
       const root = popup.getElement();
       if (!root?.querySelector(".stop-popup-ui")) return;
       element = root;
+      nativePosition = "";
+      positionObserver.observe(root, { attributes: true, attributeFilter: ["style"] });
       sizeObserver.observe(root.querySelector(".leaflet-popup-content-wrapper"));
       schedule();
     });
     map.on("popupclose", ({ popup }) => {
       if (element !== popup.getElement()) return;
+      positionObserver.disconnect();
       sizeObserver.unobserve(element.querySelector(".leaflet-popup-content-wrapper"));
       setPlacement(0, 0, "", 0);
       element = null;

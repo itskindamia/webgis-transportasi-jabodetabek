@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { before, after, test } from "node:test";
 import { chromium } from "playwright";
+import { waitForCamera } from "./d5-browser.mjs";
 import { openLayout, selectRoute } from "./layout-browser.mjs";
 
 let browser;
@@ -142,6 +143,7 @@ for (const [width, height] of [[1440, 900], [1280, 720]]) {
     await popup.waitFor();
     const panelButton = popup.locator(".stop-popup-action-row > .tl-show-stop-in-panel");
     await panelButton.waitFor({ state: "visible" });
+    await waitForCamera(page, { zoomAtStop: true });
     const popupRows = await popup.locator(".integration-place-row").evaluateAll(rows => ({
       total: rows.length,
       visible: rows.filter(el => getComputedStyle(el).display !== "none").length
