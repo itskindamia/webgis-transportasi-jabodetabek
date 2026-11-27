@@ -28,6 +28,16 @@ try {
         await page.waitForFunction(key => currentSelectedStopKey === key &&
           map.getZoom() === STOP_ZOOM && !map._animatingZoom, scenario.stop);
         await page.locator(".leaflet-popup .stop-popup-ui").waitFor();
+        // Screenshot only after Leaflet flyTo AND popup auto-pan have finished.
+        // Do not mistake an in-flight popup for a static layout overflow.
+        await page.waitForFunction(() => {
+          const center = map.getCenter();
+          const key = [center.lat, center.lng, map.getZoom()].join(",");
+          window.__d33Stable = window.__d33Key === key ? (window.__d33Stable || 0) + 1 : 0;
+          window.__d33Key = key;
+          return window.__d33Stable >= 4 &&
+            !map._panAnim?._inProgress && !map._animatingZoom;
+        }, null, { polling: 140 });
         await page.addStyleTag({ content: `
           #map.leaflet-container { background: #edf1f3 !important; }
           #map .leaflet-tile-pane { opacity: 0 !important; }
@@ -49,8 +59,19 @@ try {
             };
           });
           const nav = popup.querySelector(".stop-popup-navigation");
+          const title = popup.querySelector(".stop-popup-title");
+          const titleRect = rect(title);
+          const titleHit = titleRect && document.elementFromPoint(
+            titleRect.left + titleRect.width / 2,
+            titleRect.top + titleRect.height / 2
+          );
+          const popupRect = rect(popup);
+          const mapRect = rect(document.getElementById("map"));
           return {
             isDesktop: innerWidth >= 1024,
+            titleUnobstructed: Boolean(title?.contains(titleHit)),
+            popupInsideViewport: popupRect.top >= mapRect.top - 1
+              && popupRect.bottom <= mapRect.bottom + 1,
             cssLoaded: Boolean([...document.styleSheets].some(x => x.href?.includes("desktop-popup-comfort.css"))),
             actions: boxes.map(box => box ? {
               width: box.width, height: box.height, top: box.top, left: box.left
@@ -70,6 +91,8 @@ try {
         assert.ok(result.integrationCount >= 1);
         assert.ok(result.integrationBadgesRight, "all corridor/line badges remain at row end");
         assert.ok(result.footerVisible);
+        assert.equal(result.titleUnobstructed, true, "selected stop title must not hide beneath floating map controls");
+        assert.equal(result.popupInsideViewport, true, "popup must stay inside the map viewport");
         assert.equal(result.horizontalOverflow, false);
         assert.deepEqual(view.errors, []);
         const file = `${width}x${height}-${scenario.name}-compact-actions.png`;
