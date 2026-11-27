@@ -144,6 +144,21 @@
         row.insertBefore(icon, row.querySelector(".integration-place-link-arrow"));
       }
     }
+    // Popup = glance; Panel = complete list. Keep every row in the DOM so
+    // integration navigation/resolvers still have the same source data.
+    const integrationRows = [...root.querySelectorAll(".integration-place-row")];
+    const compactLimit = 3;
+    if (integrationRows.length > compactLimit) {
+      integrationRows.slice(compactLimit).forEach(row => {
+        row.dataset.quickGlanceOverflow = "true";
+      });
+      const integration = root.querySelector(".stop-popup-section--integration");
+      if (integration) {
+        const note = textElement("span", "tl-integration-more-note",
+          `+${integrationRows.length - compactLimit} integrasi lainnya tersedia di Panel`);
+        integration.append(note);
+      }
+    }
     const maps = root.querySelector(".stop-popup-maps-link");
     const source = root.querySelector(".stop-source-summary");
     if (maps) {
