@@ -511,3 +511,233 @@
   white-space: normal;
   overflow-wrap: anywhere;
 }
+
+
+/* D3.3 Visual Comfort: the map popup is a quick glance. The selected-stop
+   detail Panel intentionally retains badges, source labels and full metadata.
+   This stylesheet applies only at desktop widths (>= 1024px). */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] {
+  --popup-padding: 16px;
+  --popup-secondary: #69788a;
+  line-height: 1.46;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-scroll {
+  padding: 15px var(--popup-padding) 17px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .lrt-popup-header {
+  padding: 15px var(--popup-padding) 0;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .lrt-popup-main .stop-popup-scroll {
+  padding-top: 3px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-eyebrow {
+  margin-bottom: 6px;
+  font-size: 10px;
+  letter-spacing: .035em;
+  font-weight: 500;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-title {
+  font-size: 21px;
+  line-height: 1.18;
+  letter-spacing: -.025em;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-station-code {
+  margin-top: 5px;
+  font-size: 11px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-meta-row {
+  gap: 5px 9px;
+  margin-top: 11px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-meta-row > * {
+  padding: 1px 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #69788a;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-section {
+  margin-top: 16px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-section--integration {
+  margin-top: 17px;
+  padding-top: 15px;
+  border-color: #e9edf2;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-label {
+  margin-bottom: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #536275;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-direct-routes {
+  gap: 8px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-direct-routes .stop-popup-route-button {
+  min-height: 34px;
+  padding: 5px 7px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .lrt-service-name {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Each interchange in a popup uses only the operator logo and destination.
+   Line/corridor symbols still exist and remain visible in the Detail Panel. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-group + .integration-group {
+  margin-top: 6px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-group-header,
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-line-badges,
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-relationship-meta,
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-status {
+  display: none;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-list {
+  gap: 2px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 35px;
+  margin: 0;
+  padding: 6px 2px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-row-button:hover {
+  background: #f3f7fa;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-row-operator-logo {
+  display: block;
+  flex: 0 0 29px;
+  width: 29px;
+  height: 22px;
+  max-width: 29px;
+  max-height: 22px;
+  object-fit: contain;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-name-wrap {
+  flex: 1 1 auto;
+  order: 0;
+  min-width: 0;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-name {
+  font-size: 12px;
+  line-height: 1.42;
+  font-weight: 400;
+  color: #31445c;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-link-arrow {
+  margin-left: auto;
+  font-size: 15px;
+  color: #94a3b5;
+}
+
+/* Icon-only secondary actions; preserve full accessible names and the
+   underlying source disclosure, including its complete provenance links. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #edf0f4;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-cell {
+  flex: 0 0 38px;
+  min-width: 0;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-cell :is(.stop-popup-maps-link, .stop-source-summary) {
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 7px;
+  border: 1px solid #e2e9ef;
+  background: #f7f9fc;
+  border-radius: 8px;
+  color: #50657c;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-maps-link > span:last-child,
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-source-summary-copy,
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-source-chevron {
+  display: none;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] :is(.stop-popup-external-link-icon, .stop-source-summary-icon) {
+  display: grid;
+  place-items: center;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] :is(.stop-popup-external-link-icon, .stop-source-summary-icon) .icon {
+  width: 18px;
+  height: 18px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .tl-show-stop-in-panel {
+  flex: 1 1 auto;
+  width: auto;
+  min-height: 38px;
+  margin-left: auto;
+  padding: 8px 10px;
+  background: transparent;
+  font-size: 11px;
+  text-align: right;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-cell:has(.stop-source-card[open]) {
+  flex: 1 1 100%;
+  order: 4;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-cell:has(.stop-source-card[open]) .stop-source-card {
+  width: 100%;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-cell:has(.stop-source-card[open]) .stop-source-body {
+  width: 100%;
+  padding: 10px 2px 2px;
+}
+/* Navigation remains fixed; larger whitespace comes from grouping, not
+   increasing scrolling nests or squeezing the text. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-navigation {
+  border-color: #e6ebf1;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-nav-button {
+  min-height: 53px;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-nav-label {
+  font-size: 10px;
+  font-weight: 400;
+}
+
+/* Detailed panel: retain full source names, route/corridor symbols, operator
+   headers and all status metadata. Do not repeat the compact popup-only logo. */
+.tl-app #selectedStopInfo > .stop-popup-ui .integration-row-operator-logo {
+  display: none;
+}
+.tl-app #selectedStopInfo > .stop-popup-ui .integration-group {
+  margin-bottom: 12px;
+}
+.tl-app #selectedStopInfo > .stop-popup-ui .integration-operator {
+  font-weight: 600;
+}
+.tl-app #selectedStopInfo > .stop-popup-ui .integration-line-badges {
+  display: flex;
+}
+.tl-app #selectedStopInfo > .stop-popup-ui .stop-popup-action-row {
+  margin-top: 16px;
+}
