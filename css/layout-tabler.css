@@ -903,3 +903,50 @@
     .tl-app .tl-detail-panel { transition: none; }
   }
 }
+
+
+/* D3.3: map utility shortcuts live beside Peta Dasar. These reuse the same
+   guide/info dialogs; mobile and tablet retain their familiar controls. */
+@media (max-width: 1023px) {
+  .tl-app .tl-dock #tlDockGuide, .tl-app .tl-dock #tlDockAbout {
+    display: none !important;
+  }
+}
+@media (min-width: 1024px) {
+  .tl-app #tlAbout { display: none; }
+  .tl-app .tl-legend .right-info-help { display: none; }
+  .tl-app .tl-dock #tlDockGuide, .tl-app .tl-dock #tlDockAbout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    padding: 7px;
+    border: 0;
+    border-left: 1px solid #e7edf3;
+    border-radius: 4px;
+    background: transparent;
+    color: #56697e;
+  }
+  .tl-app .tl-dock #tlDockGuide:hover, .tl-app .tl-dock #tlDockAbout:hover {
+    background: #edf4fa;
+    color: #206bc4;
+  }
+  .tl-app .tl-dock #tlDockGuide:focus-visible, .tl-app .tl-dock #tlDockAbout:focus-visible {
+    outline: 2px solid #2666a1;
+    outline-offset: -2px;
+  }
+  .tl-app .tl-dock .tl-dock-utility-glyph {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .tl-app .tl-dock #tlDockAbout .icon {
+    width: 17px;
+    height: 17px;
+    flex-basis: 17px;
+  }
+}
