@@ -1,0 +1,44 @@
+name: D4 Spatial Integration Screenshots
+
+on:
+  pull_request:
+    paths:
+      - 'js/integration-overlay.js'
+      - 'css/integration-overlay.css'
+      - 'tools/capture-d4-integration.mjs'
+      - '.github/workflows/d4-integration-screenshots.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture-d4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Locate Chromium
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install chromium
+          fi
+      - name: Capture three scenarios across three desktop viewports
+        run: node tools/capture-d4-integration.mjs
+      - name: Upload screenshot artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d4-integration-screenshots
+          path: artifacts/d4-integration/
+          if-no-files-found: warn
