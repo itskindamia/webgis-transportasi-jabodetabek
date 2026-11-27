@@ -7,6 +7,7 @@ import { openLayout, selectRoute } from "./layout-browser.mjs";
 const targets = [
   { name: "cawang", mode: "LRT", route: "LRT_JB_BK", stop: "LRTJB008_01", display: "popup" },
   { name: "dukuh-atas", mode: "LRT", route: "LRT_JB_BK", stop: "LRTJB001_01", display: "panel" },
+  { name: "dukuh-atas", mode: "LRT", route: "LRT_JB_BK", stop: "LRTJB001_01", display: "popup" },
   { name: "asean", mode: "BRT", route: "BRT_01", stop: "BRT002_REG_A", display: "popup" }
 ];
 const screens = [[1366,768],[1440,900],[1920,1080]];
@@ -76,15 +77,29 @@ try {
             const markers = [...document.querySelectorAll(".tl-integration-target-marker")];
             return {
               zoom: map.getZoom(), count: markers.length,
+              overviewActive: webgisSpatialIntegrations.overviewActive,
+              popupHidden: document.querySelector(".leaflet-popup")
+                ? getComputedStyle(document.querySelector(".leaflet-popup")).visibility === "hidden"
+                : null,
               inside: markers.every(el => {
                 const box = el.getBoundingClientRect();
                 return box.left >= region.left - 1 && box.right <= region.right + 1
                   && box.top >= region.top - 1 && box.bottom <= region.bottom + 1;
+              }),
+              clickable: markers.every(el => {
+                const box = el.getBoundingClientRect();
+                const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+                return el.contains(hit);
               })
             };
           });
           assert.equal(overview.count, state.mapped, "all targets retained after explicit overview");
           assert.equal(overview.inside, true, "all mapped targets fit the map viewport");
+          assert.equal(overview.clickable, true, "no target marker is obstructed in the overview");
+          if (sample.display === "popup") {
+            assert.equal(overview.overviewActive, true);
+            assert.equal(overview.popupHidden, true, "popup card is temporarily hidden");
+          }
           const overviewFile = `${width}x${height}-${sample.name}-${sample.display}-lihat-semua.png`;
           await page.screenshot({ path: path.join(folder,overviewFile), fullPage: false });
           report.push({ viewport: `${width}x${height}`, scenario: sample.name + "-overview",
