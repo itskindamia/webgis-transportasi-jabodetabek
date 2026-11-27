@@ -343,7 +343,7 @@
   background: transparent;
 }
 
-.tl-app .leaflet-container .stop-popup-ui .stop-popup-action-cell :is(.stop-popup-maps-link, .stop-source-summary) {
+.tl-app .stop-popup-ui .stop-popup-action-cell :is(.stop-popup-maps-link, .stop-source-summary) {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -363,7 +363,7 @@
   white-space: normal;
 }
 
-.tl-app .leaflet-container .stop-popup-ui .stop-popup-action-cell :is(.stop-popup-maps-link, .stop-source-summary):hover {
+.tl-app .stop-popup-ui .stop-popup-action-cell :is(.stop-popup-maps-link, .stop-source-summary):hover {
   background: #eaf0f6;
   border-color: #b8c6d4;
 }
@@ -389,6 +389,53 @@
 
 .tl-app .stop-popup-ui .stop-source-chevron {
   margin-inline-start: auto;
+}
+
+.tl-app .leaflet-popup .tl-show-stop-in-panel {
+  display: block;
+  grid-column: 1 / -1;
+  min-height: 30px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--tl-surface);
+  color: #285381;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tl-app .leaflet-popup .tl-show-stop-in-panel:hover {
+  background: var(--tl-canvas);
+}
+
+.tl-app .leaflet-popup .tl-show-stop-in-panel:focus-visible {
+  outline-offset: -2px;
+}
+
+/* The Detail panel owns scrolling when it hosts the same station content. */
+.tl-app #selectedStopInfo:has(> .stop-popup-ui) {
+  padding: 0;
+  border: 0;
+  overflow: visible;
+}
+
+.tl-app #selectedStopInfo:has(> .stop-popup-ui) > :not(.stop-popup-ui) {
+  display: none;
+}
+
+.tl-app #selectedStopInfo > .stop-popup-ui {
+  max-height: none;
+  border-top: 0;
+  overflow: visible;
+}
+
+.tl-app #selectedStopInfo .stop-popup-ui > :is(.stop-popup-scroll, .lrt-popup-body) {
+  overflow: visible;
+}
+
+.tl-app #selectedStopInfo .stop-popup-ui .stop-popup-navigation {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
 }
 
 .tl-app .stop-popup-ui .stop-popup-navigation {

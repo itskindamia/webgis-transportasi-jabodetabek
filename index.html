@@ -12,12 +12,13 @@
     <link rel="preload" href="assets/fonts/pt-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="stylesheet" href="css/tabler-components.css?v=mobile-ux-20261107-1">
     <link rel="stylesheet" href="css/legacy-components.css?v=mobile-ux-20261107-1">
-    <link rel="stylesheet" href="css/layout-tabler.css?v=desktop-d1-2">
+    <link rel="stylesheet" href="css/layout-tabler.css?v=desktop-d3-2">
     <link rel="stylesheet" href="css/lrt-popup.css?v=desktop-d3-1">
     <link rel="stylesheet" href="css/font-pt-sans.css?v=mobile-ux-20261107-1">
     <link rel="stylesheet" href="css/mobile-route-discovery.css?v=mobile-20261111-1">
     <link rel="stylesheet" href="css/stop-popup-mobile.css?v=shared-20261111-1">
-    <link rel="stylesheet" href="css/stop-popup-desktop.css?v=desktop-d3-2" media="(min-width: 1024px)">
+    <link rel="stylesheet" href="css/stop-popup-desktop.css?v=desktop-d3-3" media="(min-width: 1024px)">
+    <link rel="stylesheet" href="css/integration-overlay.css?v=d4-1" media="(min-width: 1024px)">
   </head>
   <body class="tl-app">
     <div class="tl-shell" id="tlShell">
@@ -422,6 +423,20 @@
                 <button class="active" data-opacity="100" type="button">100%</button>
               </div>
             </div>
+            <div class="tl-stop-info-setting">
+              <label for="tlStopInfoMode">Tampilan informasi</label>
+              <select id="tlStopInfoMode" class="form-select">
+                <option value="popup">Popup di peta</option>
+                <option value="panel">Panel kanan</option>
+              </select>
+            </div>
+            <label class="tl-integration-map-setting" for="tlShowIntegrationOverlay">
+              <input type="checkbox" id="tlShowIntegrationOverlay" checked>
+              <span>
+                <strong>Tampilkan integrasi di peta</strong>
+                <small>Sorot semua tujuan terpetakan dari stasiun terpilih. Garis bukan jalur pejalan kaki.</small>
+              </span>
+            </label>
           </section>
         </section>
         <aside class="tl-detail-panel card" id="tlDetailPanel" aria-label="Detail rute dan halte" data-tab="stops" inert>
@@ -976,10 +991,11 @@
         </div>
       </div>
     </div>
-    <script src="js/layout-tabler.js?v=desktop-d3-1"></script>
+    <script src="js/layout-tabler.js?v=desktop-d3-2"></script>
     <script src="js/layout-tabler-ux.js?v=compact-tour-20261107-5"></script>
-    <script src="js/stop-popup-ui.js?v=desktop-d3-1"></script>
+    <script src="js/stop-popup-ui.js?v=desktop-d3-2"></script>
     <script crossorigin="anonymous" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/app-loader.js?v=a01-20261107-1"></script>
+    <script src="js/integration-overlay.js?v=d4-1"></script>
+    <script src="js/app-loader.js?v=desktop-d3-2"></script>
   </body>
 </html>

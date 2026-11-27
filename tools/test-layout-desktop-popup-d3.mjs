@@ -69,7 +69,8 @@ for (const [width, height] of [[1024, 650], [1366, 768], [1440, 900], [1920, 108
     assert.equal(await page.locator(popup).count(), 1);
     assert.equal((await page.locator(`${popup} .stop-popup-title`).innerText()).trim(), "Cawang");
     assert.equal(await page.locator(`${popup} .stop-popup-title`).evaluate(el => getComputedStyle(el).fontSize), "22px");
-    assert.equal(await page.locator("#selectedStopInfo .selected-stop-title").innerText(), "Cawang");
+    assert.equal((await page.locator("#selectedStopInfo .selected-stop-title").textContent()).trim(), "Cawang");
+    assert.equal(await page.locator("#tlDetailPanel").getAttribute("data-tab"), "stops");
     assert.equal(await page.locator(`#stopList [aria-current="true"]`).getAttribute("data-stop-key"), cawang);
     assert.equal(new URL(page.url()).searchParams.get("stop"), "LRTJB008");
     assert.equal(await page.locator(`${popup} .lrt-popup-body`).evaluate(el => el.scrollHeight > el.clientHeight + 1), false);
@@ -150,7 +151,7 @@ test("D3 Leaflet auto-pan clears the map edges, controls and Detail after a mark
   await page.mouse.click(click.x, click.y);
   await waitForStation(page, cawang);
   await assertPlacement(page);
-  assert.equal(await page.locator("#selectedStopInfo .selected-stop-title").innerText(), "Cawang");
+  assert.equal((await page.locator("#selectedStopInfo .selected-stop-title").textContent()).trim(), "Cawang");
   await page.evaluate(() => {
     window.d3AutoPanCount = 0;
     map.on("autopanstart", () => { window.d3AutoPanCount += 1; });

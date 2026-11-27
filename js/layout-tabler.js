@@ -12,11 +12,22 @@
   const routePicker = byId("routeSelect");
   const routeList = byId("tlRouteList");
   const detail = byId("tlDetailPanel");
+  const selectedStopInfo = byId("selectedStopInfo");
+  const stopInfoMode = byId("tlStopInfoMode");
+  const stopInfoPreference = "webgis.stopInfoMode";
+  try {
+    if (localStorage.getItem(stopInfoPreference) === "panel") stopInfoMode.value = "panel";
+  } catch {
+    // The native default also works when browser storage is unavailable.
+  }
+  const usesStopInfoPanel = () => desktopLayout.matches && stopInfoMode.value === "panel";
   let ready = false;
   let resizeFrame = 0;
   let syncFrame = 0;
   let lastRoute = "";
   let lastStop = "";
+  let lastSelectedHeading = null;
+  let detailBeforePanel = null;
   let lastTablet = tablet();
   let modeSignature = "";
   let routeListSignature = "";
@@ -200,6 +211,78 @@
     resizeMap();
     syncPopupPresentation();
   }
+
+  function showSelectedStopInPanel() {
+    if (!currentSelectedStopKey || selectedStopInfo.hidden) return;
+    const selectedTab = byId("tlTabSelected");
+    const focusWasInList = byId("stopList").contains(document.activeElement);
+    selectedTab.disabled = false;
+    detailBeforePanel ??= { open: !detail.inert, tab: detail.dataset.tab };
+    // The bound popup already contains the engine's current station markup,
+    // including the resolved transfers, original badges and route sequence.
+    if (!selectedStopInfo.querySelector(".stop-popup-ui")) {
+      const marker = stopMarkerByKey.get(currentSelectedStopKey);
+      const content = marker?.getPopup()?.getContent();
+      if (typeof content === "string") {
+        const template = document.createElement("template");
+        template.innerHTML = content;
+        template.content.querySelector(".tl-show-stop-in-panel")?.remove();
+        const scrollBody = template.content.querySelector(".lrt-popup-body");
+        scrollBody?.removeAttribute("tabindex");
+        scrollBody?.removeAttribute("aria-label");
+        selectedStopInfo.append(template.content);
+      }
+    }
+    setTab("selected");
+    setDetail(true);
+    if (focusWasInList) selectedTab.focus({ preventScroll: true });
+  }
+
+  function applyStopInfoMode() {
+    if (!ready) return;
+    if (usesStopInfoPanel()) {
+      const previousPopup = stopPopup;
+      previousPopup?.close();
+      // Leaflet normally keeps a fading popup in the DOM briefly. Detach
+      // it during a presentation switch, before the panel takes focus.
+      previousPopup?.getElement()?.remove();
+      showSelectedStopInPanel();
+    } else if (detailBeforePanel) {
+      const previous = detailBeforePanel;
+      detailBeforePanel = null;
+      selectedStopInfo.querySelector(".stop-popup-ui")?.remove();
+      const marker = stopMarkerByKey.get(currentSelectedStopKey);
+      if (!marker) return;
+      if (desktopLayout.matches && detail.dataset.tab === "selected") {
+        setTab(previous.tab);
+        setDetail(previous.open && !detail.inert);
+      }
+      if (marker.isPopupOpen()) return;
+      if (!desktopLayout.matches) {
+        marker.openPopup();
+        return;
+      }
+      // Fit Leaflet to the new grid cell before opening the same popup.
+      // Switching presentation should preserve the current camera.
+      map.invalidateSize({ animate: false, pan: true });
+      const popup = marker.getPopup();
+      const autoPan = popup.options.autoPan;
+      Object.assign(popup.options, getStopPopupOptions(), { autoPan: false });
+      marker.openPopup();
+      requestAnimationFrame(() => { popup.options.autoPan = autoPan; });
+    }
+  }
+
+  function saveStopInfoMode() {
+    try {
+      localStorage.setItem(stopInfoPreference, stopInfoMode.value);
+    } catch {
+      // The choice still applies for this page.
+    }
+    applyStopInfoMode();
+  }
+
+  stopInfoMode.addEventListener("change", saveStopInfoMode);
 
   function syncPanelControls() {
     const networkOpen = mobile()
@@ -478,7 +561,9 @@
     byId("tlDetailSubtitle").textContent = route
       ? (selected && selectedHeading ? selectedHeading.textContent.trim() : "Rute, daftar halte, dan integrasi")
       : "Pilih lin atau koridor untuk melihat detail.";
-    if (routeChanged) {
+    if (usesStopInfoPanel() && selected && (routeChanged || stopChanged || lastSelectedHeading !== selectedHeading)) {
+      showSelectedStopInPanel();
+    } else if (routeChanged && (!desktopLayout.matches || !selected)) {
       if (route) {
         setTab(selected ? "selected" : "stops");
         setDetail(true);
@@ -492,13 +577,13 @@
         setTab("route");
         setDetail(false);
       }
-    } else if (stopChanged && selected) {
+    } else if (stopChanged && selected && !desktopLayout.matches) {
       if (!mobile()) setTab("selected");
-      // Desktop Detail is independent of the popup once the route is active.
-      if (!desktopLayout.matches) setDetail(true);
+      setDetail(true);
     } else if (!selected && detail.dataset.tab === "selected") setTab("stops");
     lastRoute = route;
     lastStop = stop;
+    lastSelectedHeading = selectedHeading;
     syncPanelControls();
   }
 
@@ -659,7 +744,10 @@
       contentObserver.observe(byId(id), { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] });
     }
     for (const id of ["modeSelect", "routeSelect", "statusSelect"]) byId(id).addEventListener("change", scheduleSync);
-    desktopLayout.addEventListener("change", scheduleSync);
+    desktopLayout.addEventListener("change", () => {
+      applyStopInfoMode();
+      scheduleSync();
+    });
     const revealStopPopup = event => {
       if (!mobile() || !event.target.closest(".stop-list-item[data-stop-key]")) return;
       if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
@@ -706,6 +794,15 @@
       shelvedAutoPan = null;
       syncPopupPresentation();
     });
+    map.getContainer().addEventListener("click", event => {
+      const button = event.target.closest(".tl-show-stop-in-panel");
+      if (!desktopLayout.matches || !currentSelectedStopKey ||
+          button?.closest(".stop-popup-ui")?.dataset.stopKey !== currentSelectedStopKey) return;
+      event.stopPropagation();
+      stopInfoMode.value = "panel";
+      saveStopInfoMode();
+      byId("tlTabSelected").focus({ preventScroll: true });
+    }, true);
     map.getContainer().addEventListener("toggle", ({ target }) => {
       if (!desktopLayout.matches || !target.open || !target.matches(".stop-source-card")) return;
       if (!stopPopup?.isOpen() || !stopPopup.getElement().contains(target)) return;
@@ -739,6 +836,7 @@
     // UI-only bridge for the tour; no transport state setters are exposed.
     window.webgisLayout = Object.freeze({
       setDetail, setTab, setDetailExpanded, setSheetPosition, revealPopup, showPopupDetails,
+      usesStopInfoPanel,
       capture() {
         return {
           leftCollapsed: body.classList.contains("left-panel-collapsed"),

@@ -153,16 +153,20 @@ test("startup disclaimer continues to the adapted tour through the normal button
 
 test("primary mobile controls and detail actions offer at least 44px touch targets", async t => {
   const app = await routeApp(t); const { page } = app;
+  // Chrome sometimes reports CSS 44px as 43.999969482... via floating
+  // point getBoundingClientRect. Ignore at most 0.001 CSS px of numeric
+  // error, not a materially smaller touch target.
+  const touchSizeAtLeast44 = rect => rect.width >= 44 - 0.001 && rect.height >= 44 - 0.001;
   for (const id of ["tlNetworkToggle", "tlLegendToggle", "tlAbout", "globalSearchSubmit", "gpsButton", "homeButton", "zoomInButton", "zoomOutButton", "tlDetailExpand", "tlDetailClose", "tlTabStops", "tlMobileDetails"]) {
     const rect = await page.locator("#" + id).boundingBox();
-    assert.ok(rect.width >= 44 && rect.height >= 44, `${id}: ${rect.width}x${rect.height}`);
+    assert.ok(touchSizeAtLeast44(rect), `${id}: ${rect.width}x${rect.height}`);
   }
   await selectAsean(page);
   for (const selector of ["#tlDetailResume", ".leaflet-popup-close-button", ".leaflet-popup .integration-place-row-button", ".leaflet-popup .stop-popup-nav-button"]) {
     const elements = page.locator(selector);
     for (const element of await elements.all()) {
       const rect = await element.boundingBox();
-      assert.ok(rect.width >= 44 && rect.height >= 44, selector);
+      assert.ok(touchSizeAtLeast44(rect), `${selector}: ${rect.width}×${rect.height}`);
     }
   }
   assert.deepEqual(app.errors, []);
