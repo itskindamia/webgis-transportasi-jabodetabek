@@ -224,3 +224,49 @@ test("D3.2 Panel follows the explicit Dukuh Atas MRT link, restores the permalin
   assert.equal(await page.locator(popup).count(), 0);
   await selected(page, "MRT012_01", "MRT_NS");
 });
+
+test("D3.2 selected Detail has a direct Popup return without losing map state", async t => {
+  const { page } = await app(t);
+  const returnButton = page.locator("#tlReturnToPopup");
+  assert.equal(await returnButton.isVisible(), false, "Popup action hidden in initial default layout");
+  await changeMode(page, "panel");
+  assert.equal(await returnButton.isVisible(), false, "No selected stop, no return action");
+  await chooseBekasi(page);
+  await chooseFromList(page, cawang);
+  await page.locator(panelCard).waitFor();
+  await returnButton.waitFor({ state: "visible" });
+  await waitForCamera(page);
+  const before = await page.evaluate(() => ({
+    center: map.getCenter(), zoom: map.getZoom(), url: location.href,
+    stop: currentSelectedStopKey, route: currentSelectedRouteId,
+    mapped: webgisSpatialIntegrations?.count
+  }));
+  assert.equal(before.stop, cawang);
+  assert.equal(before.route, bekasi);
+  assert.ok(before.mapped >= 1, "D4 integration overlay already visible");
+  await returnButton.click();
+  await page.locator(popup).waitFor();
+  await page.waitForFunction(() => !webgisLayout.usesStopInfoPanel() && map.getZoom() === STOP_ZOOM);
+  assert.equal(await page.locator(picker).inputValue(), "popup");
+  assert.equal(await page.evaluate(key => localStorage.getItem(key), preference), "popup");
+  assert.equal(await page.locator(panelCard).count(), 0);
+  assert.equal(await returnButton.isVisible(), false);
+  const after = await page.evaluate(() => ({
+    center: map.getCenter(), zoom: map.getZoom(), url: location.href,
+    stop: currentSelectedStopKey, route: currentSelectedRouteId,
+    mapped: webgisSpatialIntegrations?.count
+  }));
+  assert.deepEqual([after.stop, after.route, after.url, after.zoom, after.mapped],
+    [before.stop, before.route, before.url, before.zoom, before.mapped]);
+  const distance = await page.evaluate(center => map.project(center).distanceTo(map.project(map.getCenter())), before.center);
+  assert.ok(distance <= 1, `Panel to Popup preserves map center within 1px (${distance}px)`);
+
+  // The existing reverse action must work in the same session.
+  await page.locator(`${popup} .tl-show-stop-in-panel`).click();
+  await page.locator(panelCard).waitFor();
+  await returnButton.waitFor({ state: "visible" });
+  assert.equal(await page.evaluate(key => localStorage.getItem(key), preference), "panel");
+  await page.setViewportSize({ width: 1000, height: 900 });
+  await page.locator(popup).waitFor();
+  assert.equal(await returnButton.isVisible(), false, "Tablet never shows desktop-only return action");
+});
