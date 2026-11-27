@@ -82,12 +82,17 @@ test("D3.3 Dukuh Atas popup shows a concise three-destination summary, preservin
   assert.equal(result.total, 5);
   assert.equal(result.visible, 2);
   assert.match(result.hint || "", /3 tujuan lainnya/);
-  const cta = page.locator(`${popup} > .tl-show-stop-in-panel`);
+  const cta = page.locator(`${popup} > .stop-popup-action-row > .tl-show-stop-in-panel`);
   assert.equal(await cta.isVisible(), true);
   const box = await cta.boundingBox();
   const nav = await page.locator(`${popup} > .stop-popup-navigation`).boundingBox();
   assert.ok(box && nav && box.y + box.height <= nav.y + 1,
     "full Detail action stays above the navigation without scrolling");
+  const actions = page.locator(`${popup} > .stop-popup-action-row`);
+  const mapAction = await actions.locator(".stop-popup-maps-link").boundingBox();
+  const sourceAction = await actions.locator(".stop-source-summary").boundingBox();
+  assert.ok(mapAction && sourceAction && mapAction.y >= 0 && sourceAction.y >= 0,
+    "Maps and Source icons share the non-scrolling action strip");
   assert.equal(result.mapped, 4, "D4 retains all four georeferenced destinations");
   assert.equal(result.passengerHidden, true);
 });
