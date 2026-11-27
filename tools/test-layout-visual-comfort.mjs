@@ -61,6 +61,15 @@ test("D3.3 Cawang popup is visually quiet but retains operator logos and usable 
   assert.ok(await source.locator("svg.icon").isVisible());
   const sourceTextHidden = await source.locator(".stop-source-summary-copy").evaluate(el => getComputedStyle(el).display === "none");
   assert.equal(sourceTextHidden, true);
+  await source.click();
+  assert.equal(await page.locator(`${popup} .stop-source-card`).evaluate(el => el.open), true,
+    "Source Data icon opens the original full provenance disclosure");
+  const sourceBounds = await page.locator(`${popup} .stop-source-body`).evaluate(el => {
+    const rect = el.getBoundingClientRect(), nav = el.closest(".stop-popup-ui").querySelector(".stop-popup-navigation").getBoundingClientRect();
+    return { height: rect.height, overflow: getComputedStyle(el).overflowY, clippedByNavigation: rect.bottom > nav.top + 1 };
+  });
+  assert.ok(sourceBounds.height > 0 && !sourceBounds.clippedByNavigation,
+    "source disclosure remains above pinned navigation: " + JSON.stringify(sourceBounds));
   const before = await page.evaluate(() => currentSelectedStopKey);
   await page.locator(`${popup} .integration-place-row-button`).first().click();
   await page.waitForFunction(key => currentSelectedStopKey !== key, before);
