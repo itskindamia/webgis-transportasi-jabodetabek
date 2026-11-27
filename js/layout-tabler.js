@@ -178,6 +178,21 @@
     });
   }
 
+  function restoreCamera({ center, zoom }) {
+    const popup = map._popup;
+    const autoPan = popup?.options.autoPan;
+    if (popup) popup.options.autoPan = false;
+    try {
+      // setView emits moveend itself. An older resize notification can pan
+      // the popup after the exact camera has already been restored.
+      clearTimeout(map._sizeTimer);
+      map.invalidateSize({ animate: false, pan: false });
+      map.setView(center, zoom, { animate: false, reset: true });
+    } finally {
+      if (popup) popup.options.autoPan = autoPan;
+    }
+  }
+
   function setTab(name) {
     if (name === "selected" && byId("selectedStopInfo").hidden) name = "stops";
     detail.dataset.tab = name;
@@ -253,6 +268,9 @@
 
   function applyStopInfoMode() {
     if (!ready) return;
+    const zoom = map.getZoom();
+    const camera = desktopLayout.matches && currentSelectedStopKey &&
+      Number.isInteger(zoom) && !map._animatingZoom ? { center: map.getCenter(), zoom } : null;
     if (usesStopInfoPanel()) {
       const previousPopup = stopPopup;
       previousPopup?.close();
@@ -260,6 +278,7 @@
       // it during a presentation switch, before the panel takes focus.
       previousPopup?.getElement()?.remove();
       showSelectedStopInPanel();
+      if (camera) restoreCamera(camera);
     } else if (detailBeforePanel) {
       const previous = detailBeforePanel;
       detailBeforePanel = null;
@@ -277,7 +296,8 @@
       }
       // Fit Leaflet to the new grid cell before opening the same popup.
       // Switching presentation should preserve the current camera.
-      map.invalidateSize({ animate: false, pan: true });
+      if (camera) restoreCamera(camera);
+      else map.invalidateSize({ animate: false, pan: true });
       const popup = marker.getPopup();
       const autoPan = popup.options.autoPan;
       Object.assign(popup.options, getStopPopupOptions(), { autoPan: false });
@@ -886,7 +906,7 @@
     // UI-only bridge for the tour; no transport state setters are exposed.
     window.webgisLayout = Object.freeze({
       setDetail, setTab, setDetailExpanded, setSheetPosition, revealPopup, showPopupDetails,
-      usesStopInfoPanel,
+      usesStopInfoPanel, restoreCamera,
       capture() {
         return {
           leftCollapsed: body.classList.contains("left-panel-collapsed"),

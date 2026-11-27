@@ -117,8 +117,10 @@ async function validateNavigation(page, stop) {
   const nextKey = await next.getAttribute("data-stop-key");
   assert.ok(nextKey && nextKey !== stop);
   await next.click();
-  await page.locator(`${popupCard}[data-stop-key="${nextKey}"]`).waitFor();
-  await page.locator(`${popupCard} [data-stop-nav="previous"]`).click();
+  const active = page.locator(`${popupCard}[data-stop-key="${nextKey}"]`);
+  await active.waitFor();
+  await page.locator(`${popupCard}[data-stop-key="${stop}"]`).waitFor({ state: "detached" });
+  await active.locator(`[data-stop-nav="previous"][data-stop-key="${stop}"]`).click();
   await page.locator(`${popupCard}[data-stop-key="${stop}"]`).waitFor();
 }
 
