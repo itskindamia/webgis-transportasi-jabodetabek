@@ -117,6 +117,19 @@ test("D3.5 long Dukuh Atas popup keeps Panel action visible above navigation", a
   });
   assert.equal(state.within, true, "panel action in visible popup area");
   assert.equal(state.clickable, true, "panel action is not covered by navigation");
+  const collision = await page.evaluate(() => {
+    const popup = document.querySelector(".leaflet-popup .stop-popup-ui")?.getBoundingClientRect();
+    const summary = document.querySelector("#map > .tl-integration-map-summary")?.getBoundingClientRect();
+    if (!popup || !summary) return { evaluated: false, overlaps: false };
+    return {
+      evaluated: true,
+      overlaps: popup.left < summary.right && popup.right > summary.left &&
+        popup.top < summary.bottom && popup.bottom > summary.top
+    };
+  });
+  assert.equal(collision.evaluated, true, "D4 integration summary exists");
+  assert.equal(collision.overlaps, false,
+    "integration summary must not cover the selected popup");
   assert.equal(state.sourceStop, "LRTJB001_01");
   await panelButton.click();
   await page.locator("#selectedStopInfo > .stop-popup-ui").waitFor();
