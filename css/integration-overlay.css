@@ -88,6 +88,36 @@
     font: 700 10px/1 'PT Sans',sans-serif;
     transition: transform .14s ease;
   }
+  /* The point geometry stays unchanged. Only its icon is schematically
+     displaced when transfer stops almost coincide (e.g. Cawang LRT/TJ).
+     A short dashed leader points back to the real georeferenced location. */
+  .tl-app .tl-integration-target-marker.is-near-origin::before {
+    content: "";
+    position: absolute;
+    left: -35px;
+    top: -25px;
+    width: 64px;
+    border-top: 1.5px dashed #435367;
+    transform: rotate(38.66deg);
+    transform-origin: 0 50%;
+    pointer-events: none;
+    filter: drop-shadow(0 1px 0 white);
+  }
+  .tl-app .tl-integration-target-marker.is-near-origin .tl-integration-target-symbol {
+    position: relative;
+    z-index: 1;
+  }
+  /* In Popup mode, Lihat semua temporarily hides the anchored info card.
+     Its DOM is retained so source relationships and the selected stop remain
+     unchanged; the same button restores the popup and prior camera. */
+  .tl-app #map.tl-d4-integration-overview .leaflet-popup-pane .leaflet-popup {
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .tl-app #map .tl-integration-fit[aria-pressed="true"] {
+    background: #e8f1f8;
+    border-color: #abc7dc;
+  }
   .tl-app .tl-integration-target-marker:hover .tl-integration-target-symbol,
   .tl-app .tl-integration-target-marker:focus-visible .tl-integration-target-symbol {
     transform: scale(1.13);
