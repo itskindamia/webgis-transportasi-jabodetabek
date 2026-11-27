@@ -1,0 +1,44 @@
+name: Export Leaflet 1.9.4 for offline Claude testing
+
+on:
+  push:
+    branches:
+      - chore/claude-leaflet-194
+
+permissions:
+  contents: read
+
+jobs:
+  bundle-leaflet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install exact locked dependencies
+        run: npm ci
+      - name: Verify version and stage Leaflet dist
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "const p=require('./node_modules/leaflet/package.json');if(p.version!=='1.9.4')throw Error(p.version)"
+          mkdir -p offline/node_modules/leaflet
+          cp -a node_modules/leaflet/dist offline/node_modules/leaflet/dist
+          cp node_modules/leaflet/LICENSE offline/node_modules/leaflet/LICENSE
+          printf '%s\n' 'Leaflet 1.9.4 (upstream npm package dist).' \
+            'Extract this archive into the repository root.' \
+            'Expected: node_modules/leaflet/dist/leaflet.js, leaflet.css, images/.' \
+            'This is only the Leaflet dependency; other Node dependencies are not included.' \
+            > offline/README.txt
+          test -s offline/node_modules/leaflet/dist/leaflet.js
+          test -s offline/node_modules/leaflet/dist/leaflet.css
+          test -s offline/node_modules/leaflet/dist/images/marker-icon.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: leaflet-1.9.4-dist-offline
+          path: offline/
+          if-no-files-found: error
+          retention-days: 7
