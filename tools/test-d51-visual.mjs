@@ -47,7 +47,10 @@ test("D5.23 selected-stop passenger card has breathing room below status badges"
   await selectRoute(page, "BRT_06");
   await page.locator('#stopList [data-stop-key="BRT078_REG"]').click();
   await page.waitForFunction(() => currentSelectedStopKey === "BRT078_REG");
-  await page.locator("#tlTabSelected").click();
+  // The detailed service card is copied into Panel via the actual
+  // Popup-to-Panel action; simply selecting the tab leaves its quick summary.
+  await page.locator(".leaflet-popup .tl-show-stop-in-panel").click();
+  await page.locator("#selectedStopInfo .stop-popup-activity").waitFor();
   const layout = await page.evaluate(() => {
     const scope = document.getElementById("selectedStopInfo");
     const badges = scope?.querySelector(".stop-popup-meta-row, .selected-stop-meta");
