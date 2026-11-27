@@ -232,6 +232,11 @@
     color: #627488;
     border-left: 1px solid #edf0f4;
   }
+  .tl-app .tl-dock .tl-dock-utility .icon {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+  }
   .tl-app .tl-dock .tl-dock-utility:hover,
   .tl-app .tl-dock .tl-dock-utility:focus-visible {
     color: #206bc4;
