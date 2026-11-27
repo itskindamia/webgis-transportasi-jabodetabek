@@ -769,3 +769,32 @@
   font-weight: 400;
   color: #64758a;
 }
+
+/* Long hubs disclose the rest of their integrations in the full Panel.
+   Hidden rows remain in DOM for spatial D4 target resolution. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-row.is-popup-extra-destination {
+  display: none;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-more-destinations {
+  margin: 6px 0 0 39px;
+  padding: 0;
+  color: #728399;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.tl-app #selectedStopInfo > .stop-popup-ui .stop-popup-more-destinations { display: none; }
+/* Passenger facility descriptions remain available in the full Panel. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-activity {
+  display: none;
+}
+/* Compact the D4 info card when it would overlap the map popup at hubs.
+   The verified destination count and explicit Lihat semua action remain. */
+@media (min-width: 1200px) {
+  .tl-app #map:has(.leaflet-popup .stop-popup-ui) .tl-integration-map-summary {
+    max-width: 202px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tl-app #map:has(.leaflet-popup .stop-popup-ui) .tl-integration-map-summary .tl-integration-fit {
+    justify-self: start;
+  }
+}
