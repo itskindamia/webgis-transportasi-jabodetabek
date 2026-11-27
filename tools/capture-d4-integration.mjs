@@ -64,6 +64,33 @@ try {
         await page.screenshot({ path: path.join(folder,file), fullPage: false });
         report.push({ viewport: `${width}x${height}`, scenario: sample.name, file, ...state });
         console.log(JSON.stringify(report.at(-1)));
+        if (sample.name === "dukuh-atas") {
+          // This is the explicit zoom-to-all user action, not an automatic
+          // camera move when opening the popup or switching presentation.
+          await page.locator("#map .tl-integration-fit").click();
+          await page.waitForFunction(() => map.getZoom() <= 16
+            && !map._panAnim?._inProgress && !map._animatingZoom);
+          await page.waitForTimeout(220);
+          const overview = await page.evaluate(() => {
+            const region = document.getElementById("map").getBoundingClientRect();
+            const markers = [...document.querySelectorAll(".tl-integration-target-marker")];
+            return {
+              zoom: map.getZoom(), count: markers.length,
+              inside: markers.every(el => {
+                const box = el.getBoundingClientRect();
+                return box.left >= region.left - 1 && box.right <= region.right + 1
+                  && box.top >= region.top - 1 && box.bottom <= region.bottom + 1;
+              })
+            };
+          });
+          assert.equal(overview.count, state.mapped, "all targets retained after explicit overview");
+          assert.equal(overview.inside, true, "all mapped targets fit the map viewport");
+          const overviewFile = `${width}x${height}-${sample.name}-${sample.display}-lihat-semua.png`;
+          await page.screenshot({ path: path.join(folder,overviewFile), fullPage: false });
+          report.push({ viewport: `${width}x${height}`, scenario: sample.name + "-overview",
+            file: overviewFile, ...overview });
+          console.log(JSON.stringify(report.at(-1)));
+        }
       } finally {
         await view.context.close();
       }
