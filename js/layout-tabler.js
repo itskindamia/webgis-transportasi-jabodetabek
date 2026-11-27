@@ -1,6 +1,8 @@
 /* Layout adapter only. The network engine and source data remain unchanged. */
 (() => {
   const byId = id => document.getElementById(id);
+  // Presentation-only notation; never rewrite canonical GeoJSON attributes.
+  const routeTerminiLabel = value => String(value ?? "").replace(/\s+[-–]\s+/g, " ↔ ");
   const body = document.body;
   const mobile = () => matchMedia("(max-width: 767px)").matches;
   const tablet = () => matchMedia("(min-width: 768px) and (max-width: 1023px)").matches;
@@ -522,12 +524,12 @@
         const label = document.createElement("span");
         const name = document.createElement("strong");
         const hasRelation = parts?.relation && option.text === `${parts.lineName} (${parts.relation})`;
-        name.textContent = hasRelation ? parts.lineName : option.text;
+        name.textContent = routeTerminiLabel(hasRelation ? parts.lineName : option.text);
         label.append(name);
         if (hasRelation) {
           const relation = document.createElement("span");
           relation.className = "tl-route-choice-relation";
-          relation.textContent = parts.relation;
+          relation.textContent = routeTerminiLabel(parts.relation);
           label.append(relation);
         }
         button.append(label);
@@ -573,7 +575,7 @@
     routePicker.setAttribute("aria-describedby", [...descriptions].join(" "));
     for (const item of routePicker.options) item.title = item.text;
     fullName.hidden = !route;
-    if (fullName.textContent !== routeLabel) fullName.textContent = routeLabel;
+    if (fullName.textContent !== routeTerminiLabel(routeLabel)) fullName.textContent = routeTerminiLabel(routeLabel);
     for (const name of byId("stopList").querySelectorAll(".stop-list-name")) name.title = name.textContent.trim().replace(/\s+/g, " ");
     const heading = byId("routeInfo").querySelector(".route-title, h2");
     const selectedHeading = byId("selectedStopInfo").querySelector(".selected-stop-title, .selected-stop-name, .stop-name, h3, h2");
@@ -581,7 +583,7 @@
     const status = byId("statusSelect").selectedOptions[0]?.text || "";
     const mode = byId("modeSelect").selectedOptions[0]?.text || "Semua layanan";
     byId("tlVisibleCount").textContent = `${count} lin / koridor pada filter aktif`;
-    byId("tlMapContext").textContent = route ? (option?.text || heading?.textContent || route) : mode;
+    byId("tlMapContext").textContent = routeTerminiLabel(route ? (option?.text || heading?.textContent || route) : mode);
     byId("tlMapContext").title = byId("tlMapContext").textContent;
     byId("tlMapStatus").textContent = status;
     byId("tlTabStops").textContent = ["ALL", "BRT"].includes(byId("modeSelect").value) ? "Daftar halte" : "Daftar stasiun";
