@@ -130,90 +130,92 @@ test("D3.5 bidirectional route text is presentation-only and mobile popup remain
   assert.equal(await page.locator("#tlDockAbout").isVisible(), false);
 });
 
-test("D3.5 long Dukuh Atas popup keeps Panel action visible above navigation", async t => {
-  const page = await app(t);
-  await page.click('[data-mode="LRT"]');
-  await selectRoute(page, "LRT_JB_BK");
-  await page.locator('#stopList [data-stop-key="LRTJB001_01"]').click();
-  const popup = page.locator(".leaflet-popup .stop-popup-ui");
-  await popup.waitFor();
-  const panelButton = popup.locator(":scope > .tl-show-stop-in-panel");
-  await panelButton.waitFor({ state: "visible" });
-  const popupRows = await popup.locator(".integration-place-row").evaluateAll(rows => ({
-    total: rows.length,
-    visible: rows.filter(el => getComputedStyle(el).display !== "none").length
-  }));
-  assert.equal(popupRows.visible, Math.min(3, popupRows.total));
-  assert.ok(popupRows.total > 3);
-  const remainder = popup.locator(".tl-integration-more-note");
-  assert.match(await remainder.innerText(), new RegExp(String(popupRows.total - 3) + " integrasi lainnya"));
-  const groups = await popup.locator(".integration-group:visible").evaluateAll(elements => elements.map(group => ({
-    operator: group.querySelector(".integration-operator").textContent.trim(),
-    rows: [...group.querySelectorAll(".integration-place-row")].filter(row => row.getClientRects().length).length
-  })));
-  assert.deepEqual(groups.map(group => group.rows), [2, 1], "limit counts destinations and leaves no empty headings");
-  assert.match(groups[0].operator, /TransJakarta/i);
-  assert.match(groups[1].operator, /KRL/i);
-  const state = await panelButton.evaluate(button => {
-    const rect = button.getBoundingClientRect();
-    const root = button.closest(".stop-popup-ui").getBoundingClientRect();
-    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
-    return {
-      within: rect.top >= root.top && rect.bottom <= root.bottom,
-      clickable: button.contains(hit),
-      sourceStop: currentSelectedStopKey,
-      activeRoute: currentSelectedRouteId
-    };
+for (const [width, height] of [[1440, 900], [1280, 720]]) {
+  test(`D3.5 Dukuh Atas keeps the Panel action and navigation reachable at ${width}×${height}`, async t => {
+    const page = await app(t, width, height);
+    await page.click('[data-mode="LRT"]');
+    await selectRoute(page, "LRT_JB_BK");
+    await page.locator('#stopList [data-stop-key="LRTJB001_01"]').click();
+    const popup = page.locator(".leaflet-popup .stop-popup-ui");
+    await popup.waitFor();
+    const panelButton = popup.locator(":scope > .tl-show-stop-in-panel");
+    await panelButton.waitFor({ state: "visible" });
+    const popupRows = await popup.locator(".integration-place-row").evaluateAll(rows => ({
+      total: rows.length,
+      visible: rows.filter(el => getComputedStyle(el).display !== "none").length
+    }));
+    assert.equal(popupRows.visible, Math.min(3, popupRows.total));
+    assert.ok(popupRows.total > 3);
+    const remainder = popup.locator(".tl-integration-more-note");
+    assert.match(await remainder.innerText(), new RegExp(String(popupRows.total - 3) + " integrasi lainnya"));
+    const groups = await popup.locator(".integration-group:visible").evaluateAll(elements => elements.map(group => ({
+      operator: group.querySelector(".integration-operator").textContent.trim(),
+      rows: [...group.querySelectorAll(".integration-place-row")].filter(row => row.getClientRects().length).length
+    })));
+    assert.deepEqual(groups.map(group => group.rows), [2, 1], "limit counts destinations and leaves no empty headings");
+    assert.match(groups[0].operator, /TransJakarta/i);
+    assert.match(groups[1].operator, /KRL/i);
+    const state = await panelButton.evaluate(button => {
+      const rect = button.getBoundingClientRect();
+      const root = button.closest(".stop-popup-ui").getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return {
+        within: rect.top >= root.top && rect.bottom <= root.bottom,
+        clickable: button.contains(hit),
+        sourceStop: currentSelectedStopKey,
+        activeRoute: currentSelectedRouteId
+      };
+    });
+    assert.equal(state.within, true, "panel action in visible popup area");
+    assert.equal(state.clickable, true, "panel action is not covered by navigation");
+    const bodyFit = await popup.evaluate(root => {
+      const body = root.querySelector(".lrt-popup-body");
+      const bounds = body.getBoundingClientRect();
+      const rows = [...root.querySelectorAll(".integration-place-row")].filter(row => row.getClientRects().length);
+      const controls = [...root.querySelectorAll(".stop-popup-maps-link, .stop-source-summary")];
+      const footer = root.querySelector(".stop-popup-navigation").getBoundingClientRect();
+      const toggle = root.querySelector(".tl-show-stop-in-panel").getBoundingClientRect();
+      return {
+        clipped: [...rows, ...controls].filter(el => el.getBoundingClientRect().bottom > bounds.bottom + 1).length,
+        toggleAboveNav: toggle.bottom <= footer.top + 1
+      };
+    });
+    assert.deepEqual(bodyFit, { clipped: 0, toggleAboveNav: true }, "initial quick glance exposes all three destinations and both utility actions");
+    const collision = await page.evaluate(() => {
+      const popup = document.querySelector(".leaflet-popup .stop-popup-ui")?.getBoundingClientRect();
+      const summary = document.querySelector("#map > .tl-integration-map-summary")?.getBoundingClientRect();
+      if (!popup || !summary) return { evaluated: false, overlaps: false };
+      return {
+        evaluated: true,
+        overlaps: popup.left < summary.right && popup.right > summary.left &&
+          popup.top < summary.bottom && popup.bottom > summary.top
+      };
+    });
+    assert.equal(collision.evaluated, true, "D4 integration summary exists");
+    assert.equal(collision.overlaps, false,
+      "integration summary must not cover the selected popup");
+    assert.equal(state.sourceStop, "LRTJB001_01");
+    const view = () => page.evaluate(() => ({ center: map.getCenter(), zoom: map.getZoom(), url: location.href }));
+    await page.waitForFunction(() => map.getZoom() === STOP_ZOOM && !map._panAnim?._inProgress && !map._animatingZoom);
+    const before = await view();
+    await remainder.press("Enter");
+    await page.locator("#selectedStopInfo > .stop-popup-ui").waitFor();
+    const fullCount = await page.locator("#selectedStopInfo .integration-place-row:visible").count();
+    assert.equal(fullCount, popupRows.total, "Panel shows every destination");
+    assert.equal(await page.evaluate(() => currentSelectedStopKey), state.sourceStop);
+    assert.equal(await page.evaluate(() => currentSelectedRouteId), state.activeRoute);
+    await page.locator("#selectedStopInfo .stop-popup-nav-button").first().click({ trial: true });
+    await page.locator("#tlReturnToPopup").click();
+    await popup.waitFor();
+    await page.waitForFunction(() => !map._panAnim?._inProgress && map.getSize().x === map.getContainer().clientWidth);
+    const after = await view();
+    assert.equal(after.zoom, before.zoom);
+    assert.equal(after.url, before.url);
+    const pixels = await page.evaluate(({ a, b }) => map.project(a).distanceTo(map.project(b)), { a: before.center, b: after.center });
+    assert.ok(pixels <= 1, `camera preserved when returning to Popup: ${pixels}px`);
+    await popup.locator(".stop-popup-nav-button").first().click({ trial: true });
   });
-  assert.equal(state.within, true, "panel action in visible popup area");
-  assert.equal(state.clickable, true, "panel action is not covered by navigation");
-  const bodyFit = await popup.evaluate(root => {
-    const body = root.querySelector(".lrt-popup-body");
-    const bounds = body.getBoundingClientRect();
-    const rows = [...root.querySelectorAll(".integration-place-row")].filter(row => row.getClientRects().length);
-    const controls = [...root.querySelectorAll(".stop-popup-maps-link, .stop-source-summary")];
-    const footer = root.querySelector(".stop-popup-navigation").getBoundingClientRect();
-    const toggle = root.querySelector(".tl-show-stop-in-panel").getBoundingClientRect();
-    return {
-      clipped: [...rows, ...controls].filter(el => el.getBoundingClientRect().bottom > bounds.bottom + 1).length,
-      toggleAboveNav: toggle.bottom <= footer.top + 1
-    };
-  });
-  assert.deepEqual(bodyFit, { clipped: 0, toggleAboveNav: true }, "initial quick glance exposes all three destinations and both utility actions");
-  const collision = await page.evaluate(() => {
-    const popup = document.querySelector(".leaflet-popup .stop-popup-ui")?.getBoundingClientRect();
-    const summary = document.querySelector("#map > .tl-integration-map-summary")?.getBoundingClientRect();
-    if (!popup || !summary) return { evaluated: false, overlaps: false };
-    return {
-      evaluated: true,
-      overlaps: popup.left < summary.right && popup.right > summary.left &&
-        popup.top < summary.bottom && popup.bottom > summary.top
-    };
-  });
-  assert.equal(collision.evaluated, true, "D4 integration summary exists");
-  assert.equal(collision.overlaps, false,
-    "integration summary must not cover the selected popup");
-  assert.equal(state.sourceStop, "LRTJB001_01");
-  const view = () => page.evaluate(() => ({ center: map.getCenter(), zoom: map.getZoom(), url: location.href }));
-  await page.waitForFunction(() => map.getZoom() === STOP_ZOOM && !map._panAnim?._inProgress && !map._animatingZoom);
-  const before = await view();
-  await remainder.press("Enter");
-  await page.locator("#selectedStopInfo > .stop-popup-ui").waitFor();
-  const fullCount = await page.locator("#selectedStopInfo .integration-place-row:visible").count();
-  assert.equal(fullCount, popupRows.total, "Panel shows every destination");
-  assert.equal(await page.evaluate(() => currentSelectedStopKey), state.sourceStop);
-  assert.equal(await page.evaluate(() => currentSelectedRouteId), state.activeRoute);
-  await page.locator("#selectedStopInfo .stop-popup-nav-button").first().click({ trial: true });
-  await page.locator("#tlReturnToPopup").click();
-  await popup.waitFor();
-  await page.waitForFunction(() => !map._panAnim?._inProgress && map.getSize().x === map.getContainer().clientWidth);
-  const after = await view();
-  assert.equal(after.zoom, before.zoom);
-  assert.equal(after.url, before.url);
-  const pixels = await page.evaluate(({ a, b }) => map.project(a).distanceTo(map.project(b)), { a: before.center, b: after.center });
-  assert.ok(pixels <= 1, `camera preserved when returning to Popup: ${pixels}px`);
-  await popup.locator(".stop-popup-nav-button").first().click({ trial: true });
-});
+}
 
 test("D3.5 a station permalink finishes its camera movement when the welcome tour is skipped", async t => {
   const page = await app(t);

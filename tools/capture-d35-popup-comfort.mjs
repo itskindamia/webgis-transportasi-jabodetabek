@@ -20,20 +20,18 @@ const scenarios = [
 
 async function waitForMap(page) {
   await page.waitForFunction(async () => {
-    const viewport = () => JSON.stringify([map.getZoom(), map.getCenter(), map.getSize()]);
-    const start = viewport();
-    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    return start === viewport() && !map._panAnim?._inProgress && !map._animatingZoom &&
-      map.getContainer().clientWidth === map.getSize().x;
-  });
-  await page.waitForFunction(() => {
     const bounds = map.getContainer().getBoundingClientRect();
     const tiles = [...map.getContainer().querySelectorAll("img.leaflet-tile")].filter(tile => {
       const rect = tile.getBoundingClientRect();
       return rect.width && rect.height && rect.left < bounds.right && rect.right > bounds.left &&
         rect.top < bounds.bottom && rect.bottom > bounds.top;
     });
-    return tiles.length > 0 && tiles.every(tile => tile.complete && tile.naturalWidth > 1);
+    if (!tiles.length || tiles.some(tile => !tile.complete || tile.naturalWidth <= 1)) return false;
+    const viewport = () => JSON.stringify([map.getZoom(), map.getCenter(), map.getSize()]);
+    const start = viewport();
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    return start === viewport() && !map._panAnim?._inProgress && !map._animatingZoom &&
+      map.getContainer().clientWidth === map.getSize().x;
   }, null, { timeout: 45000 });
 }
 
@@ -159,7 +157,20 @@ async function assertSelectionUnchanged(page, before, after) {
   assert.equal(after.overlays, before.overlays);
   const pixels = await page.evaluate(({ a, b }) => map.project(a).distanceTo(map.project(b)),
     { a: before.center, b: after.center });
-  assert.ok(pixels <= 1, `switch preserves the center within Leaflet rounding: ${pixels}px`);
+  assert.ok(pixels <= 1, `switch preserves the center within Leaflet rounding: ${pixels}px; ${JSON.stringify({ before: before.center, after: after.center })}`);
+}
+
+async function switchPresentation(page, control) {
+  // Sample at activation before the layout handler. Waiting for a screenshot
+  // or a browser click can span an independent Leaflet animation frame.
+  await page.evaluate(() => document.addEventListener("click", () => {
+    window.cameraBeforePresentationSwitch = {
+      stop: currentSelectedStopKey, route: currentSelectedRouteId, permalink: location.search,
+      center: map.getCenter(), zoom: map.getZoom(), overlays: window.webgisSpatialIntegrations?.count ?? 0
+    };
+  }, { capture: true, once: true }));
+  await page.locator(control).click();
+  return page.evaluate(() => window.cameraBeforePresentationSwitch);
 }
 
 await mkdir(output, { recursive: true });
@@ -180,15 +191,15 @@ try {
         const initial = await capture(page, popupCard, scenario, size, "popup");
         const screenshots = [initial];
         if (isDesktop && scenario.panel) {
-          await page.locator(`${popupCard} .tl-show-stop-in-panel`).click();
+          const beforePanel = await switchPresentation(page, `${popupCard} .tl-show-stop-in-panel`);
           await page.locator(panelCard).waitFor();
           const details = await capture(page, panelCard, scenario, size, "panel");
           assert.equal(details.totalRows, initial.totalRows);
-          await assertSelectionUnchanged(page, initial, details);
-          await page.locator("#tlReturnToPopup").click();
+          await assertSelectionUnchanged(page, beforePanel, details);
+          const beforePopup = await switchPresentation(page, "#tlReturnToPopup");
           await page.locator(popupCard).waitFor();
           await waitForMap(page);
-          await assertSelectionUnchanged(page, details, await readCard(page, popupCard));
+          await assertSelectionUnchanged(page, beforePopup, await readCard(page, popupCard));
           screenshots.push(details);
         }
         if (!compareBaseline) {

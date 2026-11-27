@@ -321,6 +321,26 @@
   .tl-app .right-info-help { display: none; }
   .tl-app #tlAbout { display: none; }
 }
+@media (min-width: 1024px) and (max-height: 760px) {
+  .tl-app .leaflet-popup .stop-popup-ui .lrt-popup-body { padding-bottom: 3px; }
+  .tl-app .leaflet-popup .stop-popup-ui .lrt-popup-header { padding-top: 6px; }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-eyebrow {
+    min-height: 18px;
+    line-height: 18px;
+    margin-bottom: 2px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-station-code { margin-top: 3px; }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-meta-row { margin-top: 5px; }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-section { margin-top: 6px; }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-label { margin-bottom: 4px; }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-section--integration { padding-top: 5px; }
+  .tl-app .leaflet-popup .stop-popup-ui .integration-list { gap: 3px; }
+  .tl-app .leaflet-popup .stop-popup-ui .integration-place-row {
+    min-height: 24px;
+    padding-block: 1px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-row { margin-top: 5px; }
+}
 @media (max-width: 1023px) {
   .tl-app .tl-dock .tl-dock-utility { display: none !important; }
 }
