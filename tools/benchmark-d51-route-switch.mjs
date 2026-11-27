@@ -18,16 +18,37 @@ try {
     const original = window.showSingleRoute;
     if (typeof original !== "function") throw new Error("showSingleRoute unavailable for profiling");
     window.__d51Timing = [];
+    const measuredFunctions = [
+      "drawSelectedRouteGeometry", "drawRoutes", "renderRouteInfo",
+      "renderStopList", "drawStops", "fitRouteToScreen",
+      "clearSelectedStop", "updateRouteDetailCardState", "removeStops"
+    ];
+    for (const name of measuredFunctions) {
+      const fn = window[name];
+      if (typeof fn !== "function") continue;
+      window[name] = function (...args) {
+        const start = performance.now();
+        try { return fn.apply(this, args); }
+        finally {
+          const entry = window.__d51Active;
+          if (entry) entry.phases[name] = (entry.phases[name] || 0) + performance.now() - start;
+        }
+      };
+    }
     window.showSingleRoute = function (...args) {
       const start = performance.now();
-      let cameraStartMs = null;
-      const onMove = () => { if (cameraStartMs === null) cameraStartMs = performance.now() - start; };
+      const entry = { route: String(args[0]), cameraStartMs: null, phases: {} };
+      window.__d51Active = entry;
+      const onMove = () => {
+        if (entry.cameraStartMs === null) entry.cameraStartMs = performance.now() - start;
+      };
       map.on("movestart", onMove);
       try {
         return original.apply(this, args);
       } finally {
         map.off("movestart", onMove);
-        const entry = { route: String(args[0]), handlerMs: performance.now() - start, cameraStartMs };
+        entry.handlerMs = performance.now() - start;
+        window.__d51Active = null;
         window.__d51Timing.push(entry);
         requestAnimationFrame(() => {
           entry.nextFrameMs = performance.now() - start;
@@ -79,6 +100,13 @@ for (const mode of ["BRT", "KRL", "LRT", "MRT", "ALL"]) {
   for (const key of ["handlerMs", "cameraStartMs", "nextFrameMs"]) {
     const values = group.map(s => s[key]).filter(x => typeof x === "number" && Number.isFinite(x));
     metrics[key] = { count: values.length, median: percentile(values, 0.5), p95: percentile(values, 0.95) };
+  }
+  const phaseNames = ["drawSelectedRouteGeometry", "drawRoutes", "renderRouteInfo",
+    "renderStopList", "drawStops", "fitRouteToScreen", "clearSelectedStop",
+    "updateRouteDetailCardState", "removeStops"];
+  for (const phase of phaseNames) {
+    const values = group.map(s => s.phases?.[phase] || 0);
+    metrics[phase] = { median: percentile(values, 0.5), p95: percentile(values, 0.95) };
   }
   summary[mode] = metrics;
 }
