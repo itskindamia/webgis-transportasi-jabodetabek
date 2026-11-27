@@ -236,11 +236,12 @@
           icon: L.divIcon({
             className: "tl-integration-target-marker" + (near ? " is-near-origin" : ""),
             html: icon.outerHTML,
-            iconSize: [176, 34],
-            // Badge center remains on the real coordinate; the station label
-            // extends right. Nearby transfers preserve the existing offset.
-            iconAnchor: near ? [-35, -25] : [17, 17],
-            tooltipAnchor: near ? [60, 36] : [55, -2]
+            // Keep the interactive footprint at the actual point. The
+            // station-name label visually overflows right but must not cover
+            // another marker's clickable badge in dense interchanges.
+            iconSize: [30, 30],
+            iconAnchor: near ? [-35, -25] : [15, 15],
+            tooltipAnchor: near ? [50, 40] : [0, 0]
           }),
           keyboard: true,
           bubblingMouseEvents: false,
