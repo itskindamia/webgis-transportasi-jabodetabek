@@ -212,6 +212,7 @@
   .tl-app .leaflet-popup-content { font-family: var(--tblr-font-sans-serif); }
   .tl-app .leaflet-container { font-family: var(--tblr-font-sans-serif); }
   .tl-compat { display: none; }
+  .tl-stop-info-setting, .tl-show-stop-in-panel { display: none; }
 
   @media (min-width: 768px) {
     .tl-app .info-modal { width: min(760px, calc(100vw - 32px)); max-width: calc(100vw - 32px); }
@@ -462,6 +463,18 @@
   }
   /* Desktop shell. The shared and smaller-screen rules above own tablet/mobile. */
   @media (min-width: 1024px) {
+    .tl-stop-info-setting {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 138px;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--tl-border);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .tl-app .tl-stop-info-setting .form-select { min-height: 34px; }
     :root {
       --tl-header: 58px;
       --tl-sidebar: 312px;

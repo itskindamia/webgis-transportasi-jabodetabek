@@ -96,7 +96,8 @@ test("stop selection, popup navigation, integration links, tabs and URL remain c
   await chooseRoute(page);
   await page.locator('#stopList [data-stop-key="BRT002_REG_A"]').click();
   await page.waitForTimeout(900);
-  assert.equal(await page.locator("#tlDetailPanel").getAttribute("data-tab"), "selected");
+  assert.equal(await page.locator("#tlDetailPanel").getAttribute("data-tab"), "stops");
+  await page.click("#tlTabSelected");
   assert.equal(await page.locator("#selectedStopInfo").isVisible(), true);
   assert.equal(await page.locator('#stopList [aria-current="true"]').count(), 1);
   assert.equal(await page.locator(".leaflet-popup .stop-popup").isVisible(), true);
@@ -116,6 +117,8 @@ test("stop selection, popup navigation, integration links, tabs and URL remain c
   await integration.click();
   await page.waitForTimeout(1000);
   assert.equal(await page.evaluate(() => currentSelectedRouteId), target);
+  assert.equal(await page.locator("#tlDetailPanel").getAttribute("data-tab"), "stops");
+  await page.click("#tlTabSelected");
   assert.equal(await page.locator("#selectedStopInfo").isVisible(), true);
   assert.deepEqual(app.errors, []);
 });
@@ -128,6 +131,9 @@ test("global transport search, online place search, basemaps, legend and about r
   await page.waitForSelector("#globalSearchResults .global-search-result");
   await page.locator('#globalSearchResults [data-global-type="transport"]').first().click();
   await page.waitForTimeout(900);
+  assert.equal(await page.locator("#tlDetailPanel").isVisible(), false);
+  await page.click("#tlDetailsToggle");
+  await page.click("#tlTabSelected");
   assert.equal(await page.locator("#selectedStopInfo").isVisible(), true);
   await page.fill("#globalSearchInput", "Tempat uji");
   await page.click("#globalSearchSubmit");

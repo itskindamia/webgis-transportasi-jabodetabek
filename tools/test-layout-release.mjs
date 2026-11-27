@@ -16,6 +16,23 @@ async function station(page, route, key) {
   await page.waitForTimeout(900);
   await page.waitForFunction(() => !map._panAnim?._inProgress && !map._animatingZoom);
 }
+// The current popup deliberately hides the legacy scroll-hint element.
+// Exercise its actual scrolling surface and independently accessible footer.
+async function assertReachablePopupBody(page) {
+  const body = page.locator(".lrt-popup-body");
+  const layout = await body.evaluate(el => ({
+    overflowY: getComputedStyle(el).overflowY,
+    canScroll: el.scrollHeight > el.clientHeight + 1
+  }));
+  assert.ok(["auto", "scroll"].includes(layout.overflowY), "popup body owns the scrolling surface");
+  if (layout.canScroll) {
+    await body.evaluate(el => { el.scrollTop = el.scrollHeight; });
+    await page.waitForFunction(() => document.querySelector(".lrt-popup-body").scrollTop > 0);
+  }
+  assert.ok(await page.locator(".lrt-popup .stop-popup-navigation").count() > 0,
+    "navigation remains separate from the scroll body");
+}
+
 for (const [width, height] of [[568, 320], [844, 390]]) test(`compact landscape exposes services and all LRT actions at ${width}x${height}`, async t => {
   const app = await openLayout(browser, width, height); t.after(() => app.context.close()); const { page } = app;
   for (const [route, key] of [["LRT_JKT_S", "LRTJ006_01"], ["LRT_JB_BK", "LRTJB009_01"], ["LRT_JB_BK", "LRTJB008_01"]]) {
@@ -29,7 +46,7 @@ for (const [width, height] of [[568, 320], [844, 390]]) test(`compact landscape 
     });
     assert.ok(initial.height >= 90, JSON.stringify(initial));
     assert.ok(initial.visibleService >= 40, "first view includes service information, not only the header");
-    assert.equal(await page.locator(".lrt-popup-scroll-hint").isVisible(), true);
+    await assertReachablePopupBody(page);
     for (const selector of [".lrt-service-button:not(:disabled)", ".integration-place-row-button", ".stop-popup-maps-link", ".stop-source-summary", ".stop-popup-nav-button"]) {
       const controls = page.locator(".lrt-popup " + selector);
       for (const control of await controls.all()) await control.click({ trial: true });
@@ -58,7 +75,7 @@ test("portrait popup scroll hint and source/navigation remain reachable at 320, 
   for (const [width, height] of [[320, 568], [360, 800], [390, 844]]) {
     const app = await openLayout(browser, width, height); t.after(() => app.context.close()); const { page } = app;
     await station(page, "LRT_JB_BK", "LRTJB008_01");
-    assert.equal(await page.locator(".lrt-popup-scroll-hint").isVisible(), true);
+    await assertReachablePopupBody(page);
     const before = await readMap(page);
     for (const selector of [".stop-popup-maps-link", ".stop-source-summary", ".stop-popup-nav-button"]) {
       for (const el of await page.locator(".lrt-popup " + selector).all()) await el.click({ trial: true });

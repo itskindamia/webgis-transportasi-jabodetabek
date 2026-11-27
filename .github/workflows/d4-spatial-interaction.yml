@@ -1,0 +1,38 @@
+name: D4 Spatial Interaction QA
+
+on:
+  pull_request:
+    paths:
+      - 'js/map.js'
+      - 'js/integration-overlay.js'
+      - 'css/integration-overlay.css'
+      - 'tools/test-layout-integration-overlay-d4.mjs'
+      - '.github/workflows/d4-spatial-interaction.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  spatial-interaction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Locate Chromium
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install chromium
+          fi
+      - name: Validate verified targets, direct links, camera and visible markers
+        run: node --test --test-reporter=tap tools/test-layout-integration-overlay-d4.mjs
