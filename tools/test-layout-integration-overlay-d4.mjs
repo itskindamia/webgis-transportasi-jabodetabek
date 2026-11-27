@@ -30,6 +30,13 @@ async function selectStation(page, key) {
   await page.waitForFunction(k => currentSelectedStopKey === k, key);
 }
 
+async function waitForCamera(page) {
+  await page.waitForFunction(() =>
+    !map._panAnim?._inProgress && !map._animatingZoom
+    && map.getSize().x === map.getContainer().clientWidth
+  );
+}
+
 async function setPanelMode(page, mode) {
   await page.click("#basemapButton");
   await page.locator("#tlStopInfoMode").selectOption(mode);
@@ -60,6 +67,9 @@ test("D4 Panel mode uses identical selected-stop integrations and toggling keeps
   const { page, errors } = await setup(t);
   await selectStation(page, dukuh);
   await page.waitForFunction(() => window.webgisSpatialIntegrations?.count > 0);
+  // Wait for the station flyTo to finish before comparing a camera snapshot.
+  // Capturing during zoom animation can produce fractional in-flight zoom.
+  await waitForCamera(page);
   const before = await page.evaluate(() => ({
     count: webgisSpatialIntegrations.count, stop: currentSelectedStopKey,
     route: currentSelectedRouteId, zoom: map.getZoom(), center: map.getCenter(), url: location.href
@@ -76,6 +86,7 @@ test("D4 Panel mode uses identical selected-stop integrations and toggling keeps
   await checkbox.check();
   await page.click("#basemapClose");
   await page.waitForFunction(c => webgisSpatialIntegrations.count === c, before.count);
+  await waitForCamera(page);
   const after = await page.evaluate(() => ({
     stop: currentSelectedStopKey, route: currentSelectedRouteId,
     zoom: map.getZoom(), center: map.getCenter(), url: location.href
