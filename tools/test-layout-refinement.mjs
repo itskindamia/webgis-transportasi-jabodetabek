@@ -71,10 +71,13 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844], [768, 1024], 
       await page.locator("#mobileFilterClose").click({ trial: true });
     }
     const label = await page.locator("#routeSelect").evaluate(el => el.selectedOptions[0].text);
-    assert.equal(await page.locator("#routeSelect").getAttribute("title"), label);
-    assert.equal(await page.locator("#tlRouteFullName").textContent(), label);
+    const displayLabel = label.replace(/\s+[-–]\s+/g, " ↔ ");
+    assert.equal(await page.locator("#routeSelect").getAttribute("title"), label,
+      "native route picker preserves canonical source label");
+    assert.equal(await page.locator("#tlRouteFullName").textContent(), displayLabel,
+      "visible full label uses bidirectional route notation");
     assert.ok((await page.locator("#routeSelect").getAttribute("aria-describedby")).split(/\s+/).includes("tlRouteFullName"));
-    assert.equal(await page.locator("#tlMapContext").getAttribute("title"), label);
+    assert.equal(await page.locator("#tlMapContext").getAttribute("title"), displayLabel);
     assert.equal(await page.locator("#tlRouteFullName").evaluate(el => el.scrollWidth > el.clientWidth + 1), false);
     if (width < 768) await page.click("#mobileFilterClose");
     else await page.click("#tlNetworkCollapse");
@@ -87,7 +90,7 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844], [768, 1024], 
     await cameraClose(page, camera);
     assert.equal(await page.evaluate(() => routeLayer === uxPinnedRouteLayer && uxPinnedMarkers.every(([key, marker]) => stopMarkerByKey.get(key) === marker)), true, "panels do not rebuild layers");
     if (width < 1024) assert.equal(await page.evaluate(() => uxInvalidations), 0, "overlay-only panels do not invalidate Leaflet");
-    await page.click("#tlAbout");
+    await page.click(width >= 1024 ? "#tlDockAbout" : "#tlAbout");
     const grid = await page.locator(".info-guide-grid").evaluate(el => ({ display: getComputedStyle(el).display, columns: getComputedStyle(el).gridTemplateColumns.split(" ").length, family: getComputedStyle(el).fontFamily }));
     assert.equal(grid.display, "grid");
     assert.equal(grid.columns, width < 768 ? 1 : 2);
