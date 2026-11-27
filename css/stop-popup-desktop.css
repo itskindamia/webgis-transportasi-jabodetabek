@@ -856,3 +856,10 @@
   font-weight: 400;
   color: #8291a3;
 }
+
+/* Longer station names need slightly more vertical room to show the short
+   interchange preview and its fixed action rail together. This is a maximum,
+   not a forced height; short popups stay compact. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"]:has(.stop-popup-more-destinations) {
+  max-height: min(500px, calc(100dvh - 174px));
+}
