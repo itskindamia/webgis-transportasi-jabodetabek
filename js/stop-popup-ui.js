@@ -8,6 +8,45 @@
     return element;
   }
 
+  // Desktop quick-glance presentation. The underlying route buttons, links,
+  // integration targets and full source disclosures remain intact so the
+  // selected-stop Panel can show the complete information.
+  function decorateDesktop(root) {
+    if (!root || !matchMedia("(min-width: 1024px)").matches || root.dataset.visualComfort) return root;
+    root.dataset.visualComfort = "true";
+
+    // One operator logo per destination instead of a repeated, dense set of
+    // line and corridor badges. The detailed badges remain in the DOM for
+    // the full information panel and for D4's relationship resolver.
+    for (const group of root.querySelectorAll(".integration-group")) {
+      const asset = group.querySelector(".integration-group-header .integration-logo");
+      if (!asset) continue;
+      for (const row of group.querySelectorAll(".integration-place-row")) {
+        if (row.querySelector(".integration-row-operator-logo")) continue;
+        const logo = asset.cloneNode(true);
+        logo.classList.add("integration-row-operator-logo");
+        logo.setAttribute("aria-hidden", "true");
+        logo.alt = "";
+        row.prepend(logo);
+      }
+    }
+    const maps = root.querySelector(".stop-popup-maps-link");
+    if (maps) {
+      maps.setAttribute("aria-label", "Buka lokasi di Google Maps");
+      maps.title = "Google Maps";
+      const icon = maps.querySelector(".stop-popup-external-link-icon");
+      if (icon) icon.innerHTML = '<svg class="icon" aria-hidden="true"><use href="assets/icons/tabler.svg#map-pin"></use></svg>';
+    }
+    const source = root.querySelector(".stop-source-summary");
+    if (source) {
+      source.setAttribute("aria-label", "Tampilkan sumber data halte atau stasiun");
+      source.title = "Sumber Data";
+      const icon = source.querySelector(".stop-source-summary-icon");
+      if (icon) icon.innerHTML = '<svg class="icon" aria-hidden="true"><use href="assets/icons/tabler.svg#info-circle"></use></svg>';
+    }
+    return root;
+  }
+
   // Shared mobile shell for every mode. The engine remains the source
   // of data, badges, integration links, navigation and click handlers.
   function enhanceShared(root) {
@@ -35,7 +74,7 @@
     const activeColor = getRouteColor(routeId);
     if (CSS.supports("color", activeColor)) root.style.setProperty("--tl-popup-accent", activeColor);
     if (normalizeMode(feature?.properties?.MODE) !== "LRT") {
-      return enhanceShared(root);
+      return decorateDesktop(enhanceShared(root));
     }
     if (root.dataset.lrtEnhanced) return enhanceShared(root);
     root.dataset.lrtEnhanced = "true";
@@ -113,7 +152,7 @@
     const hint = textElement("div", "lrt-popup-scroll-hint", "Gulir untuk info lainnya ↓");
     hint.setAttribute("aria-hidden", "true");
     root.append(hint);
-    return root;
+    return decorateDesktop(root);
   }
 
   window.addEventListener("webgis:map-ready", () => {
