@@ -178,11 +178,24 @@
       byId("globalSearchInput").setAttribute("aria-expanded", saved.searchExpanded || "false");
       if (completed) saveProductTourCompleted();
       requestAnimationFrame(() => {
-        ui.restoreCamera(saved);
-        const popup = map._popup;
-        // A permalink can open a station during the automatic welcome tour.
-        // Let Leaflet fit that popup after the tour releases the viewport.
-        if (!saved.manual && popup?.isOpen()) popup.setLatLng(popup.getLatLng());
+        if (!saved.manual && currentSelectedStopKey) {
+          // Opening a permalink starts the station flyTo while the welcome
+          // tour can still be dismissed. Do not cancel it with an older view.
+          const popup = map._popup;
+          if (popup?.isOpen()) {
+            const fitPopup = () => {
+              if (!popup.isOpen()) return;
+              if (!Number.isInteger(map.getZoom()) || map._animatingZoom || map._panAnim?._inProgress) {
+                map.once("moveend", fitPopup);
+                return;
+              }
+              popup.setLatLng(popup.getLatLng());
+            };
+            fitPopup();
+          }
+        } else {
+          ui.restoreCamera(saved);
+        }
         const focus = saved.focus?.isConnected && !saved.focus.closest("[inert]") && visibleRect(saved.focus) ? saved.focus : byId("tlNetworkToggle");
         focus.focus({ preventScroll: true });
         scheduleLabels();

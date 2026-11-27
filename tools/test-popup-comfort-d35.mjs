@@ -215,6 +215,23 @@ test("D3.5 long Dukuh Atas popup keeps Panel action visible above navigation", a
   await popup.locator(".stop-popup-nav-button").first().click({ trial: true });
 });
 
+test("D3.5 a station permalink finishes its camera movement when the welcome tour is skipped", async t => {
+  const page = await app(t);
+  await page.goto(new URL("?mode=LRT&route=LRT_JB_BK&stop=LRTJB001", page.url()).href);
+  await page.locator("#infoModalAccept").click();
+  await page.locator("#productTourSkip").click();
+  await page.waitForFunction(() => {
+    const card = document.querySelector('.leaflet-popup .stop-popup-ui[data-stop-key="LRTJB001_01"]');
+    if (!card || map.getZoom() !== STOP_ZOOM || map._panAnim?._inProgress) return false;
+    const box = card.getBoundingClientRect();
+    const available = map.getContainer().getBoundingClientRect();
+    return box.top >= available.top && box.bottom <= available.bottom &&
+      box.left >= available.left && box.right <= available.right;
+  });
+  assert.equal(new URL(page.url()).searchParams.get("stop"), "LRTJB001");
+  await page.locator(".leaflet-popup .stop-popup-nav-button").click({ trial: true });
+});
+
 for (const [width, height] of [[1440, 900], [390, 844]]) {
   test(`D3.5 Transjakarta badge geometry and contrast at ${width}×${height}`, async t => {
     const page = await app(t, width, height);
