@@ -67,3 +67,29 @@ test("D5.23 selected-stop passenger card has breathing room below status badges"
   assert.ok(layout.gap >= 8, "passenger service is separated by at least 8px; got " + layout.gap);
   assert.deepEqual(errors, []);
 });
+
+test("D5.24 reused route layers preserve correct geometry, stops, and click targets", async t => {
+  const browser = await launch();
+  t.after(() => browser.close());
+  const { page, context, errors } = await openLayout(browser, 1440, 900);
+  t.after(() => context.close());
+  await page.locator('[data-mode="BRT"]').click();
+  await selectRoute(page, "BRT_01");
+  await page.evaluate(() => { window.__d51FirstRouteLayer = routeLayer; });
+  await selectRoute(page, "BRT_06");
+  await selectRoute(page, "BRT_01");
+  const result = await page.evaluate(() => ({
+    reused: routeLayer === window.__d51FirstRouteLayer,
+    active: currentSelectedRouteId,
+    geometryIds: [...new Set(routeLayer.getLayers().map(layer => getRouteId(layer.feature)))],
+    stopCount: stopLayer.getLayers().length,
+    clickableStopCount: stopHitLayer.getLayers().length,
+    popupsBound: routeLayer.getLayers().every(layer => Boolean(layer.getPopup()))
+  }));
+  assert.equal(result.reused, true, "revisited single-route Leaflet groups are reused");
+  assert.equal(result.active, "BRT_01");
+  assert.deepEqual(result.geometryIds, ["BRT_01"]);
+  assert.ok(result.stopCount > 0 && result.clickableStopCount >= result.stopCount);
+  assert.equal(result.popupsBound, true, "route click/popups stay bound");
+  assert.deepEqual(errors, []);
+});
