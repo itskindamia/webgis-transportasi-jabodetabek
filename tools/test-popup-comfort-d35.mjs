@@ -81,7 +81,17 @@ test("D3.5 bidirectional route text is presentation-only and mobile popup remain
   assert.match(await relation.innerText(), /↔/, "route termini rendered with bidirectional arrow");
   const data = await page.evaluate(() => getRouteById("LRT_JB_BK").properties);
   assert.ok(data && Object.keys(data).length, "original route GeoJSON is unchanged");
+  await selectRoute(page, "LRT_JB_BK");
+  await page.locator('#stopList [data-stop-key="LRTJB001_01"]').click();
+  await page.locator(".leaflet-popup .stop-popup-ui").waitFor();
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForFunction(() => innerWidth === 390);
+  const more = page.locator(".leaflet-popup .tl-integration-more-note");
+  if (await more.count()) assert.equal(await more.isVisible(), false,
+    "the desktop-only integration remainder must never appear on mobile");
+  const mobileRows = await page.locator(".leaflet-popup .integration-place-row").evaluateAll(rows =>
+    rows.every(row => getComputedStyle(row).display !== "none"));
+  assert.equal(mobileRows, true, "mobile retains the full integration list");
   assert.equal(await page.locator("#tlDockGuide").isVisible(), false);
   assert.equal(await page.locator("#tlDockAbout").isVisible(), false);
 });
