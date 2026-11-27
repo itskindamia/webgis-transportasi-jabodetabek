@@ -130,9 +130,9 @@ test("Mini/half/full and tab changes preserve selected LRT, filters, URL and cam
   const { page, errors } = await app(t, 390, 844);
   await openNetwork(page); await page.click('[data-mode="LRT"]'); await page.selectOption("#routeSelect", "LRT_JKT_S"); await page.waitForTimeout(650);
   await details(page, "expanded"); await page.locator('#stopList [data-stop-key="LRTJ006_01"]').click(); await page.waitForTimeout(1000);
-  // Resume the active mobile Detail control; the legacy resume button
-  // lives in a hidden overlay in the current layout.
-  await page.click("#tlDetailClose");
+  // Selecting an LRT stop shelves Detail behind the mobile popup.
+  // Reopen it using the visible mobile action; the legacy resume button
+  // and the Detail close control are both hidden at this point.
   await page.locator(".leaflet-popup").waitFor({ state: "visible" });
   await page.click("#tlMobileDetails");
   await page.locator("#tlDetailPanel").waitFor({ state: "visible" });
