@@ -92,7 +92,7 @@ for (const width of [390, 768, 1366]) test(`Tabler guided tour has visible ancho
   await selectAsean(page);
   await page.click("#tlLegendToggle");
   const before = await engineState(page); const panels = await panelState(page); const view = await readMap(page);
-  await page.click("#rightInfoGuideButton");
+  await page.click(width >= 1024 ? "#tlDockGuide" : "#rightInfoGuideButton");
   for (let index = 0; index < 5; index++) {
     await page.waitForTimeout(120);
     const geometry = await page.evaluate(() => ({ card: document.getElementById("productTourCard").getBoundingClientRect().toJSON(),
