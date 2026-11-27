@@ -125,6 +125,15 @@
     padding-top: 10px;
     border-top: 1px solid #eff2f5;
   }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-popup-section--location,
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-source-card {
+    margin: 0;
+  }
+  .tl-app #selectedStopInfo :is(.stop-popup-status, .stop-popup-role, .stop-popup-structure-pill, .stop-popup-direction-pill) {
+    font-size: 10px;
+    font-weight: 400 !important;
+    line-height: 1.4;
+  }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell {
     width: 36px;
     flex: 0 0 36px;
