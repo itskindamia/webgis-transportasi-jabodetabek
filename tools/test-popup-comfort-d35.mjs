@@ -54,7 +54,7 @@ test("D3.5 desktop popup preserves operator groups and route badges with accessi
   assert.equal(location.origin, "https://www.google.com");
   assert.equal(location.searchParams.get("query"), expectedCoordinates);
   assert.equal(await maps.getAttribute("target"), "_blank");
-  assert.equal(await source.getAttribute("aria-label"), "Tampilkan sumber data");
+  assert.equal(await source.getAttribute("aria-label"), "Sumber Data");
   assert.equal(await maps.locator(".tl-quick-action-svg").isVisible(), true);
   assert.equal(await maps.locator(".tl-maps-external-indicator").isVisible(), false);
   await page.context().route(location.href, request => request.fulfill({ body: "Google Maps" }));
@@ -216,7 +216,8 @@ for (const [width, height] of [[1440, 900], [1280, 720]]) {
     const view = () => page.evaluate(() => ({ center: map.getCenter(), zoom: map.getZoom(), url: location.href }));
     await page.waitForFunction(() => map.getZoom() === STOP_ZOOM && !map._panAnim?._inProgress && !map._animatingZoom);
     const before = await view();
-    await remainder.press("Enter");
+    assert.equal(await remainder.evaluate(el => el.tabIndex), -1, "overflow count is explanatory text");
+    await panelButton.press("Enter");
     await page.locator("#selectedStopInfo > .stop-popup-ui").waitFor();
     const fullCount = await page.locator("#selectedStopInfo .integration-place-row:visible").count();
     assert.equal(fullCount, popupRows.total, "Panel shows every destination");

@@ -142,9 +142,8 @@
       });
       const integration = root.querySelector(".stop-popup-section--integration");
       if (integration) {
-        const note = textElement("button", "tl-integration-more-note",
+        const note = textElement("span", "tl-integration-more-note",
           `+${integrationRows.length - compactLimit} integrasi lainnya di panel`);
-        note.type = "button";
         integration.append(note);
       }
     }
@@ -167,8 +166,9 @@
       }
     }
     if (source) {
-      source.setAttribute("aria-label", "Tampilkan sumber data");
+      source.setAttribute("aria-label", "Sumber Data");
       source.setAttribute("title", "Sumber Data");
+      source.setAttribute("aria-expanded", String(source.parentElement.open));
     }
   }
 

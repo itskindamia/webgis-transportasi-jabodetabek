@@ -146,8 +146,11 @@ test("global transport search, online place search, basemaps, legend and about r
     await page.click(`[data-basemap="${key}"]`);
     assert.ok(await page.locator(`[data-basemap="${key}"]`).evaluate(el => el.classList.contains("active")));
   }
-  await page.click('[data-opacity="50"]');
-  assert.ok(await page.locator('[data-opacity="50"]').evaluate(el => el.classList.contains("active")));
+  const opacity = page.getByRole("slider", { name: "Kejelasan peta dasar" });
+  await opacity.fill("50");
+  assert.equal(await page.locator("#basemapOpacityValue").innerText(), "50%");
+  assert.equal(await page.evaluate(() => currentBasemap.options.opacity), 0.5);
+  assert.equal(new URL(page.url()).searchParams.get("opacity"), "50");
   await page.click("#basemapClose");
   await page.click("#tlLegendToggle");
   assert.equal(await page.locator("#rightInfoPanel .legend-section").count() >= 4, true);

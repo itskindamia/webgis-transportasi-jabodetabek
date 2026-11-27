@@ -772,7 +772,8 @@ const basemapPanel = document.getElementById("basemapPanel");
 const basemapClose = document.getElementById("basemapClose");
 const currentBasemapThumb = document.getElementById("currentBasemapThumb");
 const basemapOptions = document.querySelectorAll(".basemap-option");
-const opacityButtons = document.querySelectorAll(".opacity-grid button");
+const basemapOpacityInput = document.getElementById("basemapOpacity");
+const basemapOpacityValue = document.getElementById("basemapOpacityValue");
 const basemapCarousel = document.getElementById("basemapCarousel");
 
 const legendPanel = document.getElementById("legendPanel");
@@ -14780,10 +14781,7 @@ function applyUrlStateAfterDataLoad() {
     const basemap =
       params.get("basemap");
 
-    const opacity =
-      Number(
-        params.get("opacity")
-      );
+    const opacity = params.get("opacity");
 
     const mode =
       params.get("mode");
@@ -14828,15 +14826,7 @@ function applyUrlStateAfterDataLoad() {
       );
     }
 
-    if (
-      Number.isFinite(opacity) &&
-      [25, 50, 75, 100]
-        .includes(opacity)
-    ) {
-      setBasemapOpacity(
-        opacity
-      );
-    }
+    setBasemapOpacity(opacity);
 
     if (
       routeId &&
@@ -29927,39 +29917,18 @@ basemapCarousel.addEventListener(
 );
 
 function setBasemapOpacity(percent) {
-  basemapOpacity =
-    Number(percent) / 100;
-
-  currentBasemap.setOpacity(
-    basemapOpacity
-  );
-
-  opacityButtons.forEach(
-    button => {
-      button.classList.toggle(
-        "active",
-        Number(
-          button.dataset.opacity
-        ) === Number(percent)
-      );
-    }
-  );
-
-  syncUrlState();
+  const parsed = /^\d{1,3}$/.test(percent) ? Number(percent) : 100;
+  const value = parsed <= 100 ? parsed : 100;
+  basemapOpacity = value / 100;
+  currentBasemap.setOpacity(basemapOpacity);
+  basemapOpacityInput.value = String(value);
+  basemapOpacityValue.value = `${value}%`;
+  basemapOpacityInput.setAttribute("aria-valuetext", basemapOpacityValue.value);
 }
 
-opacityButtons.forEach(
-  button => {
-    button.addEventListener(
-      "click",
-      () => {
-        setBasemapOpacity(
-          button.dataset.opacity
-        );
-      }
-    );
-  }
-);
+basemapOpacityInput.addEventListener("input", () => setBasemapOpacity(basemapOpacityInput.value));
+// Write the permalink on commit, while pointer drags update only the tiles.
+basemapOpacityInput.addEventListener("change", syncUrlState);
 
 /* =========================================================
    CUSTOM ZOOM
@@ -30008,129 +29977,26 @@ updateZoomButtons();
    NORTH ORIENTATION
    ========================================================= */
 
-/*
-  Leaflet standar selalu north-up dan tidak memiliki bearing.
-  Bila kemudian WebGIS memakai plugin rotasi, fungsi ini sudah
-  mendukung beberapa API bearing/rotation yang umum.
-*/
-function getMapBearing() {
-
-  if (
-    typeof map.getBearing ===
-    "function"
-  ) {
-    return Number(
-      map.getBearing()
-    ) || 0;
-  }
-
-  if (
-    typeof map.getRotationAngle ===
-    "function"
-  ) {
-    return Number(
-      map.getRotationAngle()
-    ) || 0;
-  }
-
-  return 0;
-}
-
-
-function updateNorthArrow() {
-  if (!northArrowGlyph) {
-    return;
-  }
-
-  const bearing =
-    getMapBearing();
-
-  northArrowGlyph.style.transform =
-    `rotate(${-bearing}deg)`;
-}
-
-
-function resetNorthOrientation() {
-  let rotationHandled = false;
-
-  if (
-    typeof map.setBearing ===
-    "function"
-  ) {
-    map.setBearing(0);
-    rotationHandled = true;
-  }
-  else if (
-    typeof map.setRotationAngle ===
-    "function"
-  ) {
-    map.setRotationAngle(0);
-    rotationHandled = true;
-  }
-
-  /*
-    Pada Leaflet standar tidak ada rotasi untuk di-reset.
-    Beri feedback visual agar tombol tetap terasa responsif.
-  */
-  northButton
-    ?.classList
-    .remove(
-      "is-resetting"
-    );
-
-  requestAnimationFrame(
-    () => {
-      northButton
-        ?.classList
-        .add(
-          "is-resetting"
-        );
-
-      setTimeout(
-        () => {
-          northButton
-            ?.classList
-            .remove(
-              "is-resetting"
-            );
-        },
-        320
-      );
-    }
-  );
-
+// Leaflet's standard north-up map has no orientation to reset. Expose
+// the control only when a rotation implementation is active on this map.
+const bearingControl = map.options.rotate === true &&
+  typeof map.getBearing === "function" && typeof map.setBearing === "function";
+const angleControl = typeof map.getRotationAngle === "function" && typeof map.setRotationAngle === "function";
+if (northButton && northArrowGlyph && (bearingControl || angleControl)) {
+  const updateNorthArrow = () => {
+    const bearing = bearingControl ? map.getBearing() : map.getRotationAngle();
+    northArrowGlyph.style.transform = `rotate(${-(Number(bearing) || 0)}deg)`;
+  };
+  northButton.hidden = false;
+  northButton.addEventListener("click", event => {
+    event.stopPropagation();
+    if (bearingControl) map.setBearing(0);
+    else map.setRotationAngle(0);
+    updateNorthArrow();
+  });
+  map.on("moveend zoomend rotate", updateNorthArrow);
   updateNorthArrow();
-
-  /*
-    Invalidate hanya diperlukan sebagai refresh ringan pada
-    Leaflet standar; tidak mengubah center maupun zoom.
-  */
-  if (!rotationHandled) {
-    map.invalidateSize({
-      pan: false
-    });
-  }
 }
-
-
-northButton
-  ?.addEventListener(
-    "click",
-    event => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      resetNorthOrientation();
-    }
-  );
-
-
-map.on(
-  "moveend zoomend rotate",
-  updateNorthArrow
-);
-
-updateNorthArrow();
 
 
 /* =========================================================
@@ -30580,14 +30446,6 @@ document
     "floatingZoom"
   )
   .addEventListener(
-    "click",
-    event => {
-      event.stopPropagation();
-    }
-  );
-
-northButton
-  ?.addEventListener(
     "click",
     event => {
       event.stopPropagation();

@@ -12,14 +12,14 @@
     <link rel="preload" href="assets/fonts/pt-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="stylesheet" href="css/tabler-components.css?v=mobile-ux-20261107-1">
     <link rel="stylesheet" href="css/legacy-components.css?v=mobile-ux-20261107-1">
-    <link rel="stylesheet" href="css/layout-tabler.css?v=d5-1">
+    <link rel="stylesheet" href="css/layout-tabler.css?v=d5-2">
     <link rel="stylesheet" href="css/lrt-popup.css?v=desktop-d3-1">
     <link rel="stylesheet" href="css/font-pt-sans.css?v=mobile-ux-20261107-1">
     <link rel="stylesheet" href="css/mobile-route-discovery.css?v=mobile-20261111-1">
     <link rel="stylesheet" href="css/stop-popup-mobile.css?v=shared-20261111-1">
     <link rel="stylesheet" href="css/stop-popup-desktop.css?v=d5-1" media="(min-width: 1024px)">
     <link rel="stylesheet" href="css/integration-overlay.css?v=d4-multibadge-1" media="(min-width: 1024px)">
-    <link rel="stylesheet" href="css/popup-comfort.css?v=d35-inline-panel-1">
+    <link rel="stylesheet" href="css/popup-comfort.css?v=d5-2">
     <link rel="stylesheet" href="css/tj-route-badge.css?v=1">
   </head>
   <body class="tl-app">
@@ -165,13 +165,14 @@
           </label>
                   <div class="route-compare-picker-row">
                     <span aria-hidden="true" class="route-compare-inline-swatch" hidden="" id="routeCompareInlineSwatch"></span>
-                    <select id="comparisonRouteSelect" class="form-select">
+                    <select id="comparisonRouteSelect" class="form-select" aria-describedby="routeCompareHint">
                       <option value="">Pilih rute…</option>
                     </select>
                     <button aria-label="Hapus rute pembanding" class="route-compare-clear" hidden="" id="routeCompareClear" title="Hapus rute pembanding" type="button">
               ×
             </button>
                   </div>
+                  <p id="routeCompareHint" class="route-compare-hint">Tampilkan trase dua rute di peta.</p>
                 </div>
               </div>
               <div id="tlRouteList" class="tl-route-list" role="group" aria-label="Daftar lin dan koridor" hidden></div>
@@ -214,7 +215,7 @@
             </button>
           </div>
           <div aria-label="Kontrol orientasi dan zoom" class="lower-right-nav-stack tl-map-navigation" id="lowerRightNavStack">
-            <button aria-label="Kembalikan orientasi utara ke atas" class="floating-north btn btn-icon" id="northButton" title="Kembalikan orientasi utara ke atas" type="button">
+            <button aria-label="Kembalikan orientasi utara ke atas" class="floating-north btn btn-icon" id="northButton" title="Kembalikan orientasi utara ke atas" type="button" hidden>
               <span class="floating-north-n">N</span>
               <span class="floating-north-arrow" id="northArrowGlyph">▲</span>
             </button>
@@ -417,13 +418,12 @@
               </button>
             </div>
             <div class="basemap-opacity-row">
-              <span>Kejelasan peta dasar</span>
-              <div class="opacity-grid">
-                <button data-opacity="25" type="button">25%</button>
-                <button data-opacity="50" type="button">50%</button>
-                <button data-opacity="75" type="button">75%</button>
-                <button class="active" data-opacity="100" type="button">100%</button>
+              <div class="basemap-opacity-label">
+                <label for="basemapOpacity">Kejelasan peta dasar</label>
+                <output id="basemapOpacityValue" for="basemapOpacity" aria-hidden="true">100%</output>
               </div>
+              <input id="basemapOpacity" type="range" min="0" max="100" step="1" value="100" aria-valuetext="100%">
+              <div class="basemap-opacity-limits" aria-hidden="true"><span>0%</span><span>100%</span></div>
             </div>
             <div class="tl-stop-info-setting">
               <label for="tlStopInfoMode">Tampilan informasi</label>
@@ -1005,12 +1005,12 @@
         </div>
       </div>
     </div>
-    <script src="js/layout-tabler.js?v=d35-popup-comfort-4"></script>
+    <script src="js/layout-tabler.js?v=d5-2"></script>
     <script src="js/layout-tabler-ux.js?v=compact-tour-20261127-9"></script>
-    <script src="js/stop-popup-ui.js?v=d35-inline-panel-1"></script>
+    <script src="js/stop-popup-ui.js?v=d5-2"></script>
     <script crossorigin="anonymous" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/integration-overlay.js?v=d5-1"></script>
     <script src="js/popup-placement.js?v=d5-1"></script>
-    <script src="js/app-loader.js?v=tj-route-badge-1"></script>
+    <script src="js/app-loader.js?v=d5-2"></script>
   </body>
 </html>
