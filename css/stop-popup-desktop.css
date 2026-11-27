@@ -752,3 +752,20 @@
 .tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-cell:has(.stop-source-card[open]) .stop-source-summary {
   width: 38px;
 }
+
+/* Quiet metadata is shared by both presentations; the Panel remains more
+   complete in content, not louder in its status labels. */
+.tl-app #selectedStopInfo > .stop-popup-ui .stop-popup-meta-row {
+  gap: 6px 10px;
+  margin-top: 9px;
+}
+.tl-app #selectedStopInfo > .stop-popup-ui .stop-popup-meta-row > * {
+  padding: 1px 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  font-size: 11px;
+  line-height: 1.45;
+  font-weight: 400;
+  color: #64758a;
+}
