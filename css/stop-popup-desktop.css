@@ -863,3 +863,18 @@
 .tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"]:has(.stop-popup-more-destinations) {
   max-height: min(500px, calc(100dvh - 174px));
 }
+
+/* Consistent with the agreed reading order: destination name at left,
+   the operator identity at the far right of each transfer row. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-row .integration-place-name-wrap {
+  order: 0;
+  flex: 1 1 auto;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-row .integration-row-operator-logo {
+  order: 2;
+  margin-left: auto;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-row .integration-place-link-arrow {
+  order: 3;
+  margin-left: 0;
+}
