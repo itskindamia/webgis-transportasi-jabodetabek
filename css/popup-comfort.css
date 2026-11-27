@@ -1,0 +1,195 @@
+/* D3.5 — desktop quick-glance vs detailed panel.
+   Scoped to Leaflet popups: the Detail panel retains full operator,
+   badge, source and extended information. Mobile remains unchanged. */
+@media (min-width: 1024px) {
+  .tl-app .leaflet-popup .stop-popup-ui {
+    --popup-comfort-ink: #233449;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-scroll,
+  .tl-app .leaflet-popup .stop-popup-ui .lrt-popup-body {
+    padding-top: 14px;
+    padding-bottom: 10px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-eyebrow {
+    margin-bottom: 5px;
+    font-size: 10px;
+    font-weight: 500;
+    color: #627386;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-title {
+    font-size: 20px;
+    line-height: 1.22;
+    font-weight: 700;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-station-code {
+    font-size: 10px;
+    color: #748294;
+    margin-top: 5px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-meta-row {
+    gap: 5px;
+    margin-top: 9px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-meta-row > *,
+  .tl-app .leaflet-popup .stop-popup-ui :is(.stop-popup-status, .stop-popup-role, .stop-popup-structure-pill, .stop-popup-direction-pill) {
+    font-size: 10px;
+    line-height: 1.4;
+    font-weight: 400 !important;
+    padding: 2px 5px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-section {
+    margin-top: 15px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-label {
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 9px;
+    color: #506277;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-direct-routes {
+    gap: 7px;
+    margin-bottom: 2px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-section--integration {
+    margin-top: 17px;
+    padding-top: 14px;
+    border-top: 1px solid #eef1f5;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .integration-list {
+    display: grid;
+    gap: 10px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .integration-group-header {
+    display: none;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .integration-place-list {
+    display: grid;
+    gap: 9px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .integration-place-row {
+    display: flex;
+    min-height: 36px;
+    gap: 9px;
+    padding: 3px 2px;
+    align-items: center;
+    border: 0;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .tl-integration-quick-logo {
+    display: grid;
+    place-items: center;
+    flex: 0 0 29px;
+    width: 29px;
+    height: 27px;
+    border-radius: 6px;
+    background: #f5f7fa;
+    color: #506177;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .tl-integration-quick-logo img {
+    max-width: 26px;
+    max-height: 21px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .integration-place-name-wrap {
+    order: 0;
+    flex: 1;
+    min-width: 0;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .integration-place-name {
+    font-size: 12px;
+    line-height: 1.45;
+    font-weight: 500;
+    color: var(--popup-comfort-ink);
+  }
+  /* Full corridor badges remain available in Panel kanan; quick glance
+     only presents the destination and operator mark. */
+  .tl-app .leaflet-popup .stop-popup-ui .integration-line-badges,
+  .tl-app .leaflet-popup .stop-popup-ui .integration-relationship-meta,
+  .tl-app .leaflet-popup .stop-popup-ui .integration-place-status {
+    display: none !important;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .integration-place-link-arrow {
+    font-size: 13px;
+    color: #8c9aab;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+    margin-top: 17px;
+    padding-top: 10px;
+    border-top: 1px solid #eff2f5;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell {
+    width: 36px;
+    flex: 0 0 36px;
+    min-width: 36px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell :is(.stop-popup-maps-link, .stop-source-summary) {
+    width: 36px;
+    min-width: 36px;
+    min-height: 34px;
+    padding: 6px;
+    justify-content: center;
+    border: 1px solid #e1e8f0;
+    border-radius: 7px;
+    background: #f8fafc;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-popup-maps-link > span:not(.stop-popup-external-link-icon),
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-source-summary-copy,
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-source-chevron,
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-popup-section--location > .stop-popup-label {
+    display: none !important;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-popup-external-link-icon,
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-source-summary-icon {
+    color: #4c6783;
+    font-size: 15px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .tl-show-stop-in-panel {
+    order: 3;
+    flex: 0 0 100%;
+    min-height: 30px;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    background: transparent;
+    color: #2a628f;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-navigation {
+    margin-top: 9px;
+    background: #f8fafc;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-nav-button {
+    min-height: 44px;
+  }
+  /* The two utilities live next to Peta dasar, not inside the legend. */
+  .tl-app .tl-dock .tl-dock-utility {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    min-width: 32px;
+    padding: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #627488;
+    border-left: 1px solid #edf0f4;
+  }
+  .tl-app .tl-dock .tl-dock-utility:hover,
+  .tl-app .tl-dock .tl-dock-utility:focus-visible {
+    color: #206bc4;
+    background: #eff5fc;
+  }
+  .tl-app .right-info-help { display: none; }
+  .tl-app #tlAbout { display: none; }
+}
+@media (max-width: 1023px) {
+  .tl-app .tl-dock .tl-dock-utility { display: none !important; }
+  .tl-app .tl-integration-quick-logo { display: none !important; }
+}
