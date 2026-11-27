@@ -35,22 +35,33 @@ try {
       }
     };
   });
-  for (const [mode, routes] of scenarios) {
-    await page.locator('[data-mode="' + mode + '"]').click();
-    for (let loop = 0; loop < 5; loop++) {
-      for (const route of routes) {
-        await page.locator('#tlRouteList button[data-route-id="' + route + '"]').click();
-        await page.waitForFunction(id => currentSelectedRouteId === id, route);
-        await page.waitForTimeout(35);
-        if (loop > 0) {
-          const records = await page.evaluate(() => window.__d51Timing);
-          const last = records.at(-1);
-          if (!last || last.route !== route) throw new Error("Missing route timing for " + route);
-          samples.push({ mode, ...last });
+  // Dispatch the real route picker change event in-page. This removes
+  // Playwright hit-testing delays from the measurement and captures only
+  // application main-thread work; click-to-handler is assessed separately.
+  const records = await page.evaluate(async fixture => {
+    const measured = [];
+    for (const [mode, routes] of fixture) {
+      const modePicker = document.getElementById("modeSelect");
+      modePicker.value = mode;
+      modePicker.dispatchEvent(new Event("change", { bubbles: true }));
+      for (let loop = 0; loop < 5; loop++) {
+        for (const route of routes) {
+          const picker = document.getElementById("routeSelect");
+          if (![...picker.options].some(x => x.value === route)) {
+            throw new Error("Route unavailable in picker: " + mode + "/" + route);
+          }
+          picker.value = route;
+          picker.dispatchEvent(new Event("change", { bubbles: true }));
+          await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const last = window.__d51Timing.at(-1);
+          if (!last || last.route !== route) throw new Error("Missing timing: " + route);
+          if (loop > 0) measured.push({ mode, ...last });
         }
       }
     }
-  }
+    return measured;
+  }, scenarios);
+  samples.push(...records);
   if (errors.length) throw new Error("Browser errors: " + errors.join("; "));
   await context.close();
 } finally {
