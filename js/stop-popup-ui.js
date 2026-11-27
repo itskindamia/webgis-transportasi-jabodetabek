@@ -116,6 +116,44 @@
     return root;
   }
 
+  // One compact "glance" view for the anchored popup. The right-side
+  // Detail panel receives the same original engine content, with the
+  // extra operator/source context retained in its own styling.
+  function decorateQuickGlance(root) {
+    if (!root || root.dataset.quickGlanceReady) return;
+    root.dataset.quickGlanceReady = "true";
+    for (const group of root.querySelectorAll(".integration-group")) {
+      const operator = group.querySelector(".integration-operator")?.textContent.trim() || "Integrasi";
+      const image = group.querySelector(".integration-logo");
+      for (const row of group.querySelectorAll(".integration-place-row")) {
+        const label = row.querySelector(".integration-place-name-wrap");
+        if (!label || row.querySelector(".tl-integration-quick-logo")) continue;
+        const icon = document.createElement("span");
+        icon.className = "tl-integration-quick-logo";
+        icon.setAttribute("aria-hidden", "true");
+        if (image) {
+          const clone = image.cloneNode(true);
+          clone.alt = "";
+          icon.append(clone);
+        } else {
+          icon.textContent = operator.slice(0, 2).toUpperCase();
+          icon.title = operator;
+        }
+        row.insertBefore(icon, label);
+      }
+    }
+    const maps = root.querySelector(".stop-popup-maps-link");
+    const source = root.querySelector(".stop-source-summary");
+    if (maps) {
+      maps.setAttribute("aria-label", "Buka lokasi di Google Maps");
+      maps.setAttribute("title", "Google Maps");
+    }
+    if (source) {
+      source.setAttribute("aria-label", "Tampilkan sumber data");
+      source.setAttribute("title", "Sumber Data");
+    }
+  }
+
   window.addEventListener("webgis:map-ready", () => {
     const engineRenderer = buildStopPopup;
     buildStopPopup = (feature, routeId) => {
@@ -123,6 +161,7 @@
       const template = document.createElement("template");
       template.innerHTML = html;
       const root = enhance(template.content.querySelector(".stop-popup"), feature, routeId);
+      decorateQuickGlance(root);
       const actions = root?.querySelector(".stop-popup-action-row");
       if (actions) {
         const button = textElement("button", "tl-show-stop-in-panel", "Tampilkan di panel");
