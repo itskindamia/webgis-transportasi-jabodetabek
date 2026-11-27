@@ -64,6 +64,28 @@ test("D3.3 Cawang popup is visually quiet but retains operator logos and usable 
   assert.notEqual(await page.evaluate(() => currentSelectedStopKey), before);
 });
 
+test("D3.3 Dukuh Atas popup shows a concise three-destination summary, preserving every D4 link", async t => {
+  const page = await app(t);
+  await chooseStop(page, "LRT_JB_BK", "LRTJB001_01", "LRT");
+  await page.locator(popup).waitFor();
+  const result = await page.evaluate(() => {
+    const root = document.querySelector(".leaflet-popup .stop-popup-ui");
+    const rows = [...root.querySelectorAll(".integration-place-row")];
+    return {
+      total: rows.length,
+      visible: rows.filter(el => getComputedStyle(el).display !== "none").length,
+      hint: root.querySelector(".stop-popup-more-destinations")?.textContent,
+      mapped: webgisSpatialIntegrations?.count,
+      passengerHidden: (() => { const el = root.querySelector(".stop-popup-activity"); return !el || getComputedStyle(el).display === "none"; })()
+    };
+  });
+  assert.equal(result.total, 5);
+  assert.equal(result.visible, 3);
+  assert.match(result.hint || "", /2 tujuan lainnya/);
+  assert.equal(result.mapped, 4, "D4 retains all four georeferenced destinations");
+  assert.equal(result.passengerHidden, true);
+});
+
 test("D3.3 selected-stop Panel keeps full operator, badges, and source labels", async t => {
   const page = await app(t);
   await page.click("#basemapButton");
