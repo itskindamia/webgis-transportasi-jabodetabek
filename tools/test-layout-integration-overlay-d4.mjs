@@ -204,11 +204,17 @@ test("D4 shows all actual Transjakarta corridors at an integration destination w
   assert.equal(visuals.length, 2);
   assert.deepEqual(visuals[0], visuals[1],
     "route 4 numeral, dimensions and padding match route 6");
+  // In ordinary Popup mode a long popup may legitimately cover a marker.
+  // Clickability must be enforced in the explicit "Lihat semua" overview,
+  // where the Popup is hidden and every integration marker is exposed.
+  await page.locator("#map .tl-integration-fit").click();
+  await page.waitForFunction(() => webgisSpatialIntegrations.overviewActive &&
+    map.getZoom() <= 16 && !map._panAnim?._inProgress && !map._animatingZoom);
   assert.equal(await marker.evaluate(node => {
     const rect = node.getBoundingClientRect();
     const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
     return node.contains(hit);
-  }), true, "the first badge retains an accessible marker hit area");
+  }), true, "Galunggung badge must be clickable in integration overview");
   assert.deepEqual(errors, []);
 });
 
