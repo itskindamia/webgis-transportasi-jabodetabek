@@ -6,6 +6,7 @@ import { promisify } from "node:util";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { chromium } from "playwright";
+import { selectRoute } from "./layout-browser.mjs";
 import path from "node:path";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
@@ -27,7 +28,7 @@ async function resource(url) {
 }
 async function station(page, route, key) {
   if (await page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none")) await page.click("#tlNetworkToggle");
-  await page.click('[data-mode="LRT"]'); await page.selectOption("#routeSelect", route);
+  await page.click('[data-mode="LRT"]'); await selectRoute(page, route);
   await page.waitForTimeout(700);
   await page.evaluate(() => { webgisLayout.showPopupDetails(); webgisLayout.setTab("stops"); webgisLayout.setDetailExpanded(true); });
   await page.locator(`#stopList [data-stop-key="${key}"]`).click();
@@ -106,7 +107,7 @@ try {
     await page.waitForTimeout(450);
     if (await page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none")) await page.click("#tlNetworkToggle");
     await page.click('[data-mode="BRT"]');
-    await page.selectOption("#routeSelect", "BRT_03");
+    await selectRoute(page, "BRT_03");
     await page.waitForTimeout(900);
     const fullName = await page.locator("#routeSelect").evaluate(el => el.selectedOptions[0].text);
     assert.equal(await page.locator("#routeSelect").getAttribute("title"), fullName);

@@ -7,12 +7,12 @@ import { createRequire } from "node:module";
 
 const root = process.env.LAYOUT_APP_ROOT || fileURLToPath(new URL("../", import.meta.url));
 const require = createRequire(import.meta.url);
-const leaflet = path.dirname(require.resolve("leaflet/dist/leaflet.js"));
 const origin = "http://127.0.0.1:5173";
 const tile = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64");
 const mime = { ".html": "text/html", ".js": "application/javascript", ".css": "text/css", ".geojson": "application/geo+json", ".svg": "image/svg+xml", ".png": "image/png" };
 
 export async function openLayout(browser, width = 1366, height = 900, { dismissOnboarding = true } = {}) {
+  const leaflet = path.dirname(require.resolve("leaflet/dist/leaflet.js"));
   const context = await browser.newContext({ viewport: { width, height } });
   const page = await context.newPage();
   const errors = [];
@@ -57,12 +57,21 @@ export async function openLayout(browser, width = 1366, height = 900, { dismissO
   return { page, context, errors, geocodingRequests };
 }
 
+export async function selectRoute(page, route) {
+  const picker = page.locator("#routeSelect");
+  if (await picker.isVisible()) {
+    await picker.selectOption(route);
+  } else {
+    await page.locator(`#tlRouteList button[data-route-id=${JSON.stringify(route)}]`).click();
+  }
+}
+
 export async function chooseRoute(page, route = "BRT_01") {
   if (await page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none")) {
     await page.click("#tlNetworkToggle");
   }
   await page.click('[data-mode="BRT"]');
-  await page.selectOption("#routeSelect", route);
+  await selectRoute(page, route);
   await page.waitForTimeout(850);
 }
 

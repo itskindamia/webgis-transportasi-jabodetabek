@@ -72,6 +72,8 @@
   .tl-mode-button[aria-pressed="true"] { color: var(--tl-blue); background: #edf4ff; border-color: #8eb5e7; box-shadow: 0 0 0 1px #206bc40a; }
   .tl-mode-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 8px; background: var(--mode-color, #206bc4); }
   .tl-mode-button:first-child .tl-mode-dot { background: conic-gradient(#d63939 0 25%, #206bc4 25% 50%, #2fb344 50% 75%, #f59f00 75%); }
+  .tl-mode-label { min-width: 0; }
+  .tl-mode-all-compact { display: none; }
   .tl-app .form-select { min-height: 40px; border: 1px solid #dfe5ec; color: var(--tl-ink); font-size: 13px; border-radius: 8px; padding-left: 12px; background-color: white; box-shadow: none; }
   .tl-app .form-select:focus { border-color: #8ab6eb; box-shadow: 0 0 0 3px #206bc414; }
   .filter-controls-card .form-field { margin-bottom: 22px; min-width: 0; }
@@ -210,19 +212,10 @@
   .tl-app .leaflet-popup-content { font-family: var(--tblr-font-sans-serif); }
   .tl-app .leaflet-container { font-family: var(--tblr-font-sans-serif); }
   .tl-compat { display: none; }
+  .tl-stop-info-setting, .tl-show-stop-in-panel { display: none; }
 
   @media (min-width: 768px) {
     .tl-app .info-modal { width: min(760px, calc(100vw - 32px)); max-width: calc(100vw - 32px); }
-  }
-  @media (min-width: 1024px) {
-    .tl-app .tl-route-content .stop-list-item { min-height: 40px; }
-  }
-  @media (min-width: 1024px) and (max-width: 1439px) {
-    :root { --tl-sidebar: 260px; --tl-detail: 320px; }
-    .tl-header { gap: 20px; }
-    .tl-panel-heading, .filter-panel-content { padding-left: 20px; padding-right: 16px; }
-    .tl-panel-heading h2 { font-size: 15px; }
-    .tl-panel-heading .btn-icon { width: 28px; min-width: 28px; padding: 4px; }
   }
   @media (max-width: 1023px) {
     .tl-brand .tl-brand-title-desktop { display: none; }
@@ -324,12 +317,14 @@
   }
 
   /* Refinement: keep the current layout, enlarge interactive targets. */
-  .tl-app .btn-icon, .tl-header-action, .tl-app .form-select,
   .tl-app .stop-list-item, .route-geometry-view-button, .route-direction-button,
   .tl-basemap .opacity-grid button, .basemap-close { min-height: 44px; }
-  .tl-app .btn-icon, .tl-map-actions .btn, .tl-map-navigation .btn { min-width: 44px; width: 44px; height: 44px; }
+  @media (max-width: 1023px) {
+    .tl-app .btn-icon, .tl-header-action, .tl-app .form-select { min-height: 44px; }
+    .tl-app .btn-icon, .tl-map-actions .btn, .tl-map-navigation .btn { min-width: 44px; width: 44px; height: 44px; }
+    .tl-search .global-search-submit { height: 34px; min-height: 34px; }
+  }
   .tl-header-action, .tl-detail-tabs .nav-link { min-width: 44px; }
-  .tl-search .global-search-submit { height: 34px; min-height: 34px; }
   .tl-detail-tabs .nav-link { min-height: 44px; font-size: 13px; }
   .tl-route-content .stop-list-name { font-size: 13px; }
   .tl-detail-heading { align-items: center; }
@@ -466,56 +461,173 @@
     .tl-mode-choices { gap: 5px; }
     .tl-mode-button { padding: 8px 5px; gap: 5px; }
   }
-  /*
-   * Desktop precision pass: the Search field and map context share one
-   * horizontal guide, while both detail headers, tabs and list contents
-   * use the same 20px inset. Do not affect tablet/mobile overlays.
-   */
+  /* Desktop shell. The shared and smaller-screen rules above own tablet/mobile. */
   @media (min-width: 1024px) {
+    .tl-stop-info-setting {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 138px;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--tl-border);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .tl-app .tl-stop-info-setting .form-select { min-height: 34px; }
+    :root {
+      --tl-header: 58px;
+      --tl-sidebar: 312px;
+      --tl-inset: 20px;
+      --tl-control: 38px;
+      --tl-radius: 8px;
+      --tl-map-rail: calc(2 * var(--tl-inset) + var(--tl-control));
+    }
+    @media (max-width: 1439px) {
+      :root { --tl-detail: 320px; }
+    }
     .tl-header {
-      grid-template-columns: 400px minmax(180px, 520px) minmax(max-content, 1fr);
-      gap: 20px;
+      grid-template-columns: minmax(max-content, 1fr) auto;
+      gap: var(--tl-inset);
+      padding-inline: var(--tl-inset);
     }
-    .tl-panel-heading, .tl-detail-heading { min-height: 90px; }
-    .tl-detail-tabs { padding-left: 20px; padding-right: 20px; }
-    .tl-route-content { padding-left: 20px; padding-right: 20px; }
-    .tl-route-content .stop-list-item { padding-left: 0; padding-right: 0; }
-    .tl-map-caption {
-      height: 44px;
-      max-width: calc(100% - 104px);
+    .tl-header:has(> .tl-search) {
+      grid-template-columns: minmax(max-content, 1fr) minmax(180px, 400px) auto;
     }
-  }
-  @media (min-width: 1024px) and (max-width: 1199px) {
-    .tl-header-action span { display: none; }
-    .tl-header-action { width: 44px; padding: 8px; }
-  }
-  /*
-   * Responsive density pass (2026-11-07).
-   * Desktop saves vertical space in fixed chrome and side panels.
-   * Mobile preserves >=44px touch targets while returning more area to the map.
-   */
-  @media (min-width: 1024px) {
-    :root { --tl-header: 56px; }
-    .tl-panel-heading, .tl-detail-heading { min-height: 68px; }
-    .tl-panel-heading { padding-top: 12px; padding-bottom: 12px; }
-    .tl-detail-heading { padding-top: 12px; padding-bottom: 10px; }
-    .tl-panel-heading h2, .tl-detail-heading h2 { margin-top: 3px; }
+    .tl-brand-area { gap: 14px; }
+    .tl-brand-mark { width: 32px; height: 32px; border-radius: var(--tl-radius); color: white; background: #1c3c61; }
+    .tl-brand .tl-brand-title-desktop { font-size: 16px; letter-spacing: .15px; }
+    .tl-app #tlNetworkToggle { border-color: var(--tl-border); }
+    .tl-header-action { height: 36px; padding: 0 10px; font-size: 14px; }
+    .tl-header-actions .icon { width: 18px; height: 18px; flex-basis: 18px; }
+
+    .tl-network .tl-panel-heading { min-height: 60px; padding: 10px var(--tl-inset); border-bottom: 0; }
+    .tl-network .tl-eyebrow { display: none; }
+    .tl-network .tl-panel-heading h2 { margin: 0; font-size: 18px; }
+    .tl-panel-heading #tlNetworkCollapse { margin-right: -4px; }
+    .tl-network > .tl-search { z-index: 2; flex: 0 0 auto; width: auto; margin: 0 var(--tl-inset); }
+    .tl-search .form-control { height: 38px; padding: 8px 54px 8px 34px; font-size: 13px; }
+    .tl-search .global-search-icon { left: 10px; }
+    .tl-search .global-search-submit {
+      padding-inline: 8px;
+      border-color: var(--tl-border);
+      background: white;
+      color: var(--tl-blue);
+    }
+    .tl-search .global-search-submit:hover { border-color: #8eb5e7; background: #edf4ff; }
+    .tl-search .global-search-clear { right: 46px; width: 24px; }
+    .tl-search:has(.global-search-clear:not([hidden])) .form-control { padding-right: 74px; }
+    .tl-network .global-search-results { max-height: min(420px, calc(100dvh - var(--tl-header) - 175px)); }
+    .tl-network .filter-panel-content { padding: 16px var(--tl-inset); }
+    .tl-network .tl-section-label, .tl-network .form-label { margin-bottom: 6px; color: var(--tl-ink); font-size: 14px; }
+    .tl-network .tl-mode-section, .tl-network .filter-grid .form-field { margin-bottom: 16px; }
+    .tl-mode-choices { display: flex; flex-wrap: wrap; gap: 4px; }
+    .tl-mode-button { min-height: 32px; gap: 4px; padding: 5px; font-size: 13px; white-space: nowrap; }
+    .tl-mode-dot { width: 7px; height: 7px; flex-basis: 7px; }
+    .tl-mode-all-full { display: none; }
+    .tl-mode-all-compact { display: inline; }
+    .tl-app .tl-network .form-select { height: 36px; min-height: 36px; font-size: 14px; }
+    .tl-network .route-select-field { display: none; }
+    .tl-route-list { margin-top: 8px; }
+    .tl-route-list-group { margin: 12px 0 4px; color: #506176; font-size: 12px; line-height: 1.4; }
+    .tl-route-list-empty { margin: 0; padding-block: 3px; color: #52647a; font-size: 13px; }
+    .tl-route-choice {
+      display: grid;
+      grid-template-columns: 26px minmax(0, 1fr) 12px;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      min-height: 42px;
+      padding: 5px 8px;
+      border: 1px solid transparent;
+      border-bottom-color: var(--tl-border);
+      background: transparent;
+      color: var(--tl-ink);
+      text-align: left;
+      font-size: 14px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+    .tl-route-choice:hover { background: #f5f8fd; }
+    .tl-route-choice-all {
+      --route-color: var(--tl-blue);
+      grid-template-columns: minmax(0, 1fr) 12px;
+      min-height: 36px;
+    }
+    .tl-route-choice[aria-current="true"] {
+      border-color: #94b8e3;
+      border-radius: 6px;
+      background: #edf4ff;
+      box-shadow: inset 3px 0 var(--route-color);
+    }
+    .tl-route-choice[aria-current="true"]::after {
+      content: "";
+      width: 10px;
+      height: 6px;
+      border: solid var(--tl-blue);
+      border-width: 0 0 2px 2px;
+      transform: rotate(-45deg);
+    }
+    .tl-route-choice:focus-visible { outline-offset: -2px; }
+    .tl-route-choice:disabled { opacity: .55; }
+    .tl-route-choice-badge { display: grid; place-items: center; }
+    .tl-route-choice-badge .brt-route-badge { width: 24px; height: 24px; font-size: 12px; }
+    .tl-route-choice-badge .rail-line-badge-image { width: 24px; height: 24px; object-fit: contain; }
+    .tl-route-choice-badge .rail-line-badge-fallback {
+      min-width: 22px;
+      min-height: 22px;
+      padding: 2px;
+      background: var(--route-color);
+      font-size: 10px;
+    }
+    .tl-route-choice-relation { display: block; margin-top: 2px; color: #52647a; font-size: 13px; }
+    .tl-network .route-compare-control { margin-top: 8px; padding-top: 0; border-top: 0; }
+    .tl-network-footer { padding: 10px var(--tl-inset) 12px; }
+    .tl-live-count { font-size: 12px; }
+    .tl-note-link { padding-top: 4px; color: #52647a; font-size: 12px; }
+
+    .tl-detail-heading { min-height: 68px; padding: 12px var(--tl-inset) 10px; }
+    .tl-detail-heading h2 { margin-top: 3px; }
     .tl-detail-heading p { margin-top: 3px; }
-    .filter-panel-content { padding-top: 16px; padding-bottom: 16px; }
-    .tl-mode-section { margin-bottom: 16px; }
-    .tl-section-label, .tl-app .form-label { margin-bottom: 6px; }
-    .filter-controls-card .form-field { margin-bottom: 14px; }
-    .filter-controls-card .route-select-field { margin-bottom: 8px; }
-    .tl-network-footer { padding-top: 10px; padding-bottom: 12px; }
-    .tl-note-link { padding-top: 6px; }
+    .tl-detail-tabs { padding-inline: var(--tl-inset); }
     .tl-detail-tabs .nav-link { min-height: 44px; padding-top: 7px; padding-bottom: 7px; }
-    .tl-route-content { padding-top: 8px; padding-bottom: 8px; }
-    .tl-map-caption { top: 14px; height: 34px; }
-    .tl-map-actions { top: 14px; }
-    .tl-legend { top: 56px; }
+    .tl-route-content { padding: 8px var(--tl-inset); }
+    .tl-app .tl-route-content .stop-list-item { min-height: 40px; padding-inline: 0; }
+
+    .tl-map-caption {
+      top: var(--tl-inset);
+      left: var(--tl-inset);
+      height: var(--tl-control);
+      max-width: calc(100% - var(--tl-map-rail) - var(--tl-inset));
+      border-radius: var(--tl-radius);
+      font-size: 13px;
+    }
+    .tl-map-actions { top: var(--tl-inset); right: var(--tl-inset); }
+    .tl-map-navigation { right: var(--tl-inset); bottom: 32px; gap: 8px; }
+    .tl-map-actions .btn, .tl-map-navigation .btn {
+      width: var(--tl-control);
+      height: var(--tl-control);
+      min-height: var(--tl-control);
+    }
+    .tl-map-navigation .btn:focus-visible { outline-offset: -3px; }
+    .tl-dock { bottom: var(--tl-inset); }
+    .tl-dock .btn { font-size: 13px; }
+    .toolbar-scale { font-size: 12px; }
+    .tl-legend {
+      top: calc(var(--tl-inset) + var(--tl-control) + 8px);
+      right: var(--tl-map-rail);
+      max-width: calc(100% - var(--tl-map-rail) - var(--tl-inset));
+      max-height: calc(100% - var(--tl-control) - 110px);
+    }
     .right-info-header { padding-top: 10px; padding-bottom: 10px; }
     .right-info-body { padding-top: 14px; padding-bottom: 14px; }
-    .tl-basemap { padding: 14px; }
+    .tl-basemap {
+      bottom: 72px;
+      max-width: calc(100% - var(--tl-map-rail) - var(--tl-inset));
+      max-height: calc(100% - 92px);
+      padding: 14px;
+      overflow: auto;
+    }
   }
   @media (min-width: 768px) and (max-width: 1023px) {
     :root { --tl-header: 58px; }
@@ -575,15 +687,11 @@
     .tl-short-landscape .tl-map-navigation { bottom: 12px; }
   }
 
-  /* Compact mode-control label: retain full accessible name in JavaScript. */
-  .tl-mode-label { min-width: 0; }
-  .tl-mode-all-compact { display: none; }
-
   /*
    * Small filter controls are laid out separately on desktop and mobile.
    * Mobile: one-row five-mode selector + inline status selector.
    */
-  @media (min-width: 768px) {
+  @media (min-width: 768px) and (max-width: 1023px) {
     .tl-mode-button { padding-top: 7px; padding-bottom: 7px; }
     .tl-app #statusSelect { height: 40px; }
   }

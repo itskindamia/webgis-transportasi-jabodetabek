@@ -42,8 +42,8 @@ for (const [width, height] of [
     });
     assert.ok(state.scrollWidth <= state.viewportWidth + 1, "no horizontal page overflow");
     if (width >= 1024) {
-      assert.ok(state.headerHeight <= 58, "compact desktop header");
-      assert.equal(state.headingMinHeight, "68px", "desktop panel heading density");
+      assert.ok(state.headerHeight >= 56 && state.headerHeight <= 60, "compact desktop header");
+      assert.ok(Number.parseFloat(state.headingMinHeight) <= 64, "desktop panel heading density");
     } else if (width >= 768) {
       assert.ok(state.headerHeight <= 60, "compact tablet header");
       assert.equal(state.headingMinHeight, "68px", "tablet panel heading density");

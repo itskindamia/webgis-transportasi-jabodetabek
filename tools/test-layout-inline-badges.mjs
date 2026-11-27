@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { before, after, test } from "node:test";
 import { chromium } from "playwright";
-import { openLayout } from "./layout-browser.mjs";
+import { openLayout, selectRoute } from "./layout-browser.mjs";
 
 let browser;
 before(async () => {
@@ -18,7 +18,7 @@ for (const [width, height] of [[320, 568], [390, 844], [568, 320], [1366, 900]])
     if (width < 768) await page.click("#mobileBottomRouteButton");
     await page.selectOption("#statusSelect", "ALL");
     await page.click('#tlModeChoices [data-mode="MRT"]');
-    await page.selectOption("#routeSelect", "MRT_NS");
+    await selectRoute(page, "MRT_NS");
     await page.waitForTimeout(750);
     const result = await page.evaluate(() => {
       const rows = [...document.querySelectorAll("#stopList .stop-list-item.is-complex-row")];

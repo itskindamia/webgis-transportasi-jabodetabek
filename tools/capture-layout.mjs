@@ -10,6 +10,7 @@ import os from "node:os";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import { chromium } from "playwright";
+import { selectRoute } from "./layout-browser.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const require = createRequire(import.meta.url);
@@ -124,7 +125,7 @@ try {
       });
       if (width < 1100) await page.click("#tlNetworkToggle");
       await page.click('[data-mode="BRT"]');
-      await page.selectOption("#routeSelect", "BRT_01");
+      await selectRoute(page, "BRT_01");
       await page.waitForTimeout(900);
       await capture(page, `layout-${width}.png`, "Koridor 1 dengan tab daftar halte");
       if (width === 1366) {

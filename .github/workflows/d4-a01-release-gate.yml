@@ -1,0 +1,41 @@
+name: D4 A01 Release Gate
+
+on:
+  pull_request:
+    paths:
+      - 'js/map.js'
+      - 'js/integration-overlay.js'
+      - 'css/integration-overlay.css'
+      - 'index.html'
+      - 'tools/test-a01-toggle.mjs'
+      - '.github/workflows/d4-a01-release-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  a01-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Locate Chromium
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install chromium
+          fi
+      - name: Build UI and ensure generated styles are current
+        run: npm run build:ui && git diff --exit-code -- css/tabler-components.css css/legacy-components.css
+      - name: Full A01 non-existing network regression
+        run: npm run test:a01

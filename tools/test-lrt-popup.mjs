@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { before, after, test } from "node:test";
 import { chromium } from "playwright";
-import { openLayout } from "./layout-browser.mjs";
+import { openLayout, selectRoute } from "./layout-browser.mjs";
 
 let browser;
 before(async () => { browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined }); });
@@ -17,7 +17,7 @@ async function chooseLrt(page, routeId) {
     await page.click("#tlNetworkToggle");
   }
   await page.click('[data-mode="LRT"]');
-  await page.selectOption("#routeSelect", routeId);
+  await selectRoute(page, routeId);
   await page.waitForTimeout(700);
 }
 async function selectStation(page, sourceId) {
@@ -40,22 +40,48 @@ async function selectStation(page, sourceId) {
 async function assertServices(page, fixture) {
   const actual = await page.locator(".lrt-popup .lrt-service-button").evaluateAll(buttons => buttons.map(button => {
     const card = button.closest(".lrt-service-card");
-    const symbol = button.querySelector(".lrt-line-symbol");
-    return { id: button.dataset.routeSwitch, operator: button.querySelector(".lrt-service-operator")?.textContent,
-      name: button.querySelector(".lrt-service-name")?.textContent, color: getComputedStyle(card).getPropertyValue("--lrt-line-color").trim(),
-      circle: getComputedStyle(symbol).borderRadius, symbol: symbol.textContent.trim(), disabled: button.disabled };
+    const image = button.querySelector("img.rail-line-badge-image");
+    const fallback = button.querySelector(".rail-line-badge-fallback");
+    const badge = button.querySelector(".rail-line-badge-wrap, .rail-line-badge-fallback, .lrt-line-symbol");
+    const box = badge?.getBoundingClientRect();
+    return {
+      id: button.dataset.routeSwitch,
+      operator: button.querySelector(".lrt-service-operator")?.textContent.trim(),
+      name: button.querySelector(".lrt-service-name")?.textContent.trim(),
+      color: getComputedStyle(card).getPropertyValue("--lrt-line-color").trim(),
+      symbol: image?.alt.trim() || fallback?.textContent.trim() || button.querySelector(".lrt-line-symbol")?.textContent.trim(),
+      imagePath: image?.getAttribute("src") || "",
+      imageLoaded: image ? image.complete && image.naturalWidth > 0 &&
+        getComputedStyle(image).display !== "none" : false,
+      fallbackVisible: fallback ? getComputedStyle(fallback).display !== "none" : false,
+      visualSize: box ? { width: box.width, height: box.height } : null,
+      disabled: button.disabled
+    };
   }));
   assert.deepEqual(actual.map(item => item.id).sort(), [...fixture.lines].sort());
-  const expected = await page.evaluate(ids => ids.map(id => { const route = getRouteById(id); return {
-    id, operator: route.properties.OPERATOR, name: route.properties.LINE_NAME, color: getRouteColor(id), symbol: LINE_BADGE_TEXT[id]
-  }; }), fixture.lines);
+  const expected = await page.evaluate(ids => ids.map(id => {
+    const route = getRouteById(id);
+    return {
+      id, operator: route.properties.OPERATOR, name: route.properties.LINE_NAME,
+      color: getRouteColor(id), symbol: LINE_BADGE_TEXT[id],
+      imagePath: LINE_BADGE_IMAGES[id] || ""
+    };
+  }), fixture.lines);
   for (const item of actual) {
     const source = expected.find(source => source.id === item.id);
+    assert.ok(source, `unrecognized service ${item.id}`);
     assert.equal(item.operator, source.operator);
     assert.equal(item.name, source.name);
     assert.equal(item.color.toLowerCase(), source.color.toLowerCase());
-    assert.equal(item.symbol, source.symbol);
-    assert.equal(item.circle, "50%");
+    assert.equal(item.symbol, source.symbol, "badge maintains the accessible line code");
+    assert.ok(item.visualSize?.width > 0 && item.visualSize?.height > 0,
+      `visible badge for ${item.id}: ${JSON.stringify(item.visualSize)}`);
+    if (source.imagePath) {
+      assert.equal(item.imagePath, source.imagePath);
+      assert.equal(item.imageLoaded, true, `real badge asset loaded for ${item.id}`);
+    } else {
+      assert.equal(item.fallbackVisible, true, `text fallback visible for ${item.id}`);
+    }
   }
   assert.equal(await page.locator(".lrt-popup").getAttribute("data-lrt-operator"), fixture.operator);
 }
@@ -103,8 +129,10 @@ test("single-line Jabodebek popup uses its own operator and source line color", 
   const fixture = await selectStation(page, "LRTJB009");
   assert.equal(fixture.lines.length, 1);
   await assertServices(page, fixture);
-  assert.equal(await page.locator(".lrt-popup .lrt-service-operator").innerText(), fixture.operator);
-  assert.ok(!(await page.locator(".lrt-popup .lrt-service-operator").innerText()).includes("LRT Jakarta"));
+  // The operator is present in the accessibility markup but intentionally
+  // visually hidden by the compact desktop stylesheet.
+  assert.equal((await page.locator(".lrt-popup .lrt-service-operator").textContent()).trim(), fixture.operator);
+  assert.ok(!(await page.locator(".lrt-popup .lrt-service-operator").textContent()).includes("LRT Jakarta"));
   assert.deepEqual(errors, []);
 });
 
@@ -155,8 +183,10 @@ test("LRT integration buttons still navigate to the related source feature", asy
 });
 
 test("mobile station search, status filters and guided tour preserve LRT selection and popup scroll", async t => {
-  const { page, errors } = await app(t, 390, 844);
-  await chooseLrt(page, "LRT_JKT_S");
+  const { page, errors } = await app(t, 390, 568);
+  // Dukuh Atas has a genuinely long integration list; Velodrome fits the
+  // viewport and cannot demonstrate scroll restoration.
+  await chooseLrt(page, "LRT_JB_BK");
   for (const status of ["ALL", "Existing"]) {
     if (await page.locator("#filterPanel").evaluate(el => el.inert || getComputedStyle(el).display === "none")) await page.click("#tlNetworkToggle");
     await page.selectOption("#statusSelect", status);
@@ -166,7 +196,7 @@ test("mobile station search, status filters and guided tour preserve LRT selecti
     assert.ok((await page.locator("#routeInfo").textContent()).includes(status === "ALL" ? "Semua Status" : "Eksisting"));
   }
   const source = await page.evaluate(() => {
-    const feature = stopData.features.find(item => item.properties.STOP_ID === "LRTJ006");
+    const feature = stopData.features.find(item => item.properties.STOP_ID === "LRTJB001");
     return { key: getStopKey(feature), name: getStopDisplayName(feature) };
   });
   if (await page.locator("#mobileFilterClose").isVisible()) await page.click("#mobileFilterClose");
@@ -174,7 +204,11 @@ test("mobile station search, status filters and guided tour preserve LRT selecti
   await page.locator(`#globalSearchResults [data-global-type="transport"][data-stop-key="${source.key}"]`).click();
   await page.waitForSelector(".leaflet-popup .lrt-popup");
   await page.waitForTimeout(900);
-  await page.locator(".lrt-popup .stop-popup-navigation").scrollIntoViewIfNeeded();
+  const popupBody = page.locator(".lrt-popup-body");
+  const overflow = await popupBody.evaluate(el => el.scrollHeight - el.clientHeight);
+  assert.ok(overflow > 1, `Dukuh Atas must genuinely overflow: ${overflow}px`);
+  await popupBody.evaluate(el => { el.scrollTop = Math.min(95, el.scrollHeight - el.clientHeight); });
+  await page.waitForFunction(() => document.querySelector(".lrt-popup-body").scrollTop > 0);
   const before = await page.evaluate(() => ({ key: currentSelectedStopKey, route: currentSelectedRouteId, url: location.href,
     tab: document.getElementById("tlDetailPanel").dataset.tab, scroll: document.querySelector(".lrt-popup-body").scrollTop }));
   assert.equal(before.key, source.key);
@@ -251,7 +285,12 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844], [768, 1024], 
       for (const label of [".stop-popup-maps-link > span:last-child", ".stop-source-type"]) {
         assert.equal(await page.locator(`.lrt-popup ${label}`).evaluate(el => el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1), false, "action labels remain readable without ellipsis or clipping");
       }
-      assert.equal(await page.locator(".lrt-popup .stop-popup-maps-link").evaluate(el => getComputedStyle(el).color), "rgb(255, 255, 255)");
+      const mapsColor = await page.locator(".lrt-popup .stop-popup-maps-link").evaluate(el => getComputedStyle(el).color);
+      if (width >= 1024) {
+        assert.notEqual(mapsColor, "rgb(255, 255, 255)", "desktop Maps action uses the neutral D3.1 style");
+      } else {
+        assert.equal(mapsColor, "rgb(255, 255, 255)", "mobile/tablet retains the existing action style");
+      }
       await page.locator(".lrt-popup .stop-source-summary").click();
       assert.equal(await page.locator(".lrt-popup .stop-source-card").evaluate(el => el.open), true);
     }

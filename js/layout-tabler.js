@@ -4,14 +4,33 @@
   const body = document.body;
   const mobile = () => matchMedia("(max-width: 767px)").matches;
   const tablet = () => matchMedia("(min-width: 768px) and (max-width: 1023px)").matches;
+  const desktopLayout = matchMedia("(min-width: 1024px)");
+  const network = byId("filterPanel");
+  const networkContent = network.querySelector(".filter-panel-content");
+  const search = byId("globalSearchPanel");
+  const headerActions = document.querySelector(".tl-header-actions");
+  const routePicker = byId("routeSelect");
+  const routeList = byId("tlRouteList");
   const detail = byId("tlDetailPanel");
+  const selectedStopInfo = byId("selectedStopInfo");
+  const stopInfoMode = byId("tlStopInfoMode");
+  const stopInfoPreference = "webgis.stopInfoMode";
+  try {
+    if (localStorage.getItem(stopInfoPreference) === "panel") stopInfoMode.value = "panel";
+  } catch {
+    // The native default also works when browser storage is unavailable.
+  }
+  const usesStopInfoPanel = () => desktopLayout.matches && stopInfoMode.value === "panel";
   let ready = false;
   let resizeFrame = 0;
   let syncFrame = 0;
   let lastRoute = "";
   let lastStop = "";
+  let lastSelectedHeading = null;
+  let detailBeforePanel = null;
   let lastTablet = tablet();
   let modeSignature = "";
+  let routeListSignature = "";
   let stopPopup = null;
   let detailsOverPopup = false;
   let shelvedAutoPan = null;
@@ -193,6 +212,78 @@
     syncPopupPresentation();
   }
 
+  function showSelectedStopInPanel() {
+    if (!currentSelectedStopKey || selectedStopInfo.hidden) return;
+    const selectedTab = byId("tlTabSelected");
+    const focusWasInList = byId("stopList").contains(document.activeElement);
+    selectedTab.disabled = false;
+    detailBeforePanel ??= { open: !detail.inert, tab: detail.dataset.tab };
+    // The bound popup already contains the engine's current station markup,
+    // including the resolved transfers, original badges and route sequence.
+    if (!selectedStopInfo.querySelector(".stop-popup-ui")) {
+      const marker = stopMarkerByKey.get(currentSelectedStopKey);
+      const content = marker?.getPopup()?.getContent();
+      if (typeof content === "string") {
+        const template = document.createElement("template");
+        template.innerHTML = content;
+        template.content.querySelector(".tl-show-stop-in-panel")?.remove();
+        const scrollBody = template.content.querySelector(".lrt-popup-body");
+        scrollBody?.removeAttribute("tabindex");
+        scrollBody?.removeAttribute("aria-label");
+        selectedStopInfo.append(template.content);
+      }
+    }
+    setTab("selected");
+    setDetail(true);
+    if (focusWasInList) selectedTab.focus({ preventScroll: true });
+  }
+
+  function applyStopInfoMode() {
+    if (!ready) return;
+    if (usesStopInfoPanel()) {
+      const previousPopup = stopPopup;
+      previousPopup?.close();
+      // Leaflet normally keeps a fading popup in the DOM briefly. Detach
+      // it during a presentation switch, before the panel takes focus.
+      previousPopup?.getElement()?.remove();
+      showSelectedStopInPanel();
+    } else if (detailBeforePanel) {
+      const previous = detailBeforePanel;
+      detailBeforePanel = null;
+      selectedStopInfo.querySelector(".stop-popup-ui")?.remove();
+      const marker = stopMarkerByKey.get(currentSelectedStopKey);
+      if (!marker) return;
+      if (desktopLayout.matches && detail.dataset.tab === "selected") {
+        setTab(previous.tab);
+        setDetail(previous.open && !detail.inert);
+      }
+      if (marker.isPopupOpen()) return;
+      if (!desktopLayout.matches) {
+        marker.openPopup();
+        return;
+      }
+      // Fit Leaflet to the new grid cell before opening the same popup.
+      // Switching presentation should preserve the current camera.
+      map.invalidateSize({ animate: false, pan: true });
+      const popup = marker.getPopup();
+      const autoPan = popup.options.autoPan;
+      Object.assign(popup.options, getStopPopupOptions(), { autoPan: false });
+      marker.openPopup();
+      requestAnimationFrame(() => { popup.options.autoPan = autoPan; });
+    }
+  }
+
+  function saveStopInfoMode() {
+    try {
+      localStorage.setItem(stopInfoPreference, stopInfoMode.value);
+    } catch {
+      // The choice still applies for this page.
+    }
+    applyStopInfoMode();
+  }
+
+  stopInfoMode.addEventListener("change", saveStopInfoMode);
+
   function syncPanelControls() {
     const networkOpen = mobile()
       ? body.classList.contains("mobile-filter-open")
@@ -200,7 +291,14 @@
     const legendOpen = mobile()
       ? body.classList.contains("mobile-info-open")
       : body.classList.contains("tl-legend-open");
-    byId("filterPanel").inert = !networkOpen;
+    const searchAnchor = desktopLayout.matches && networkOpen ? networkContent : headerActions;
+    let focused;
+    if (search.nextElementSibling !== searchAnchor) {
+      if (search.contains(document.activeElement)) focused = document.activeElement;
+      searchAnchor.before(search);
+    }
+    network.inert = !networkOpen;
+    focused?.focus({ preventScroll: true });
     byId("rightInfoPanel").inert = !legendOpen;
     byId("tlNetworkToggle").setAttribute("aria-expanded", String(networkOpen));
     byId("tlLegendToggle").setAttribute("aria-expanded", String(legendOpen));
@@ -339,23 +437,112 @@
     });
   }
 
+  routeList.addEventListener("click", event => {
+    const button = event.target.closest("button[data-route-id]");
+    if (!button || button.dataset.routeId === routePicker.value) return;
+    routePicker.value = button.dataset.routeId;
+    routePicker.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+
+  function syncRouteList() {
+    routeList.hidden = !desktopLayout.matches;
+    if (routeList.hidden) return;
+
+    // The native picker owns the filter results, order, and selection.
+    const mode = byId("modeSelect").value;
+    // Keep the existing overview option available for a mode with routes.
+    const options = mode !== "ALL" && routePicker.options.length > 1 ? [...routePicker.options] : [];
+    const signature = JSON.stringify([mode, ...options.map(option => [
+      option.value, option.text, option.parentElement.label,
+      option.disabled || option.parentElement.disabled, option.value === "ALL" ? "" : getRouteColor(option.value)
+    ])]);
+    if (signature !== routeListSignature) {
+      const focusedRoute = routeList.contains(document.activeElement)
+        ? document.activeElement.dataset.routeId : null;
+      const rows = document.createDocumentFragment();
+      let focusedRow;
+      let group;
+      for (const option of options) {
+        if (option.parentElement !== group) {
+          group = option.parentElement;
+          if (group.label) {
+            const heading = document.createElement("h3");
+            heading.className = "tl-route-list-group";
+            heading.textContent = group.label;
+            rows.append(heading);
+          }
+        }
+        const id = option.value;
+        const parts = id === "ALL" ? null : getRouteHeadingParts(getRouteById(id));
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = id === "ALL" ? "tl-route-choice tl-route-choice-all" : "tl-route-choice";
+        button.dataset.routeId = id;
+        button.disabled = option.disabled || group.disabled;
+        button.title = option.text;
+        button.setAttribute("aria-label", option.text);
+        if (parts) {
+          button.style.setProperty("--route-color", getRouteColor(id));
+          const badge = document.createElement("span");
+          badge.className = "tl-route-choice-badge";
+          badge.setAttribute("aria-hidden", "true");
+          badge.innerHTML = parts.badgeHTML;
+          button.append(badge);
+        }
+
+        const label = document.createElement("span");
+        const name = document.createElement("strong");
+        const hasRelation = parts?.relation && option.text === `${parts.lineName} (${parts.relation})`;
+        name.textContent = hasRelation ? parts.lineName : option.text;
+        label.append(name);
+        if (hasRelation) {
+          const relation = document.createElement("span");
+          relation.className = "tl-route-choice-relation";
+          relation.textContent = parts.relation;
+          label.append(relation);
+        }
+        button.append(label);
+        rows.append(button);
+        if (id === focusedRoute) focusedRow = button;
+      }
+      if (!options.length) {
+        const empty = document.createElement("p");
+        empty.className = "tl-route-list-empty";
+        empty.textContent = mode === "ALL"
+          ? "Pilih jenis layanan untuk melihat daftar."
+          : "Tidak ada lin atau koridor pada filter ini.";
+        rows.append(empty);
+      }
+      routeList.replaceChildren(rows);
+      if (focusedRoute) {
+        const nextFocus = focusedRow && !focusedRow.disabled ? focusedRow : byId("statusSelect");
+        nextFocus.focus({ preventScroll: true });
+      }
+      routeListSignature = signature;
+    }
+    for (const button of routeList.querySelectorAll("button")) {
+      button.setAttribute("aria-current", String(button.dataset.routeId === routePicker.value));
+    }
+  }
+
   function syncContent() {
     syncFrame = 0;
     syncModes();
+    syncRouteList();
     const route = String(currentSelectedRouteId || "");
     const stop = String(currentSelectedStopKey || "");
     const routeChanged = route !== lastRoute;
     const stopChanged = stop !== lastStop;
     const selected = !byId("selectedStopInfo").hidden;
     byId("tlTabSelected").disabled = !selected;
-    const option = byId("routeSelect").selectedOptions[0];
+    const option = routePicker.selectedOptions[0];
     const routeLabel = option?.text.trim() || "";
     const fullName = byId("tlRouteFullName");
-    byId("routeSelect").title = routeLabel;
-    const descriptions = new Set((byId("routeSelect").getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
+    routePicker.title = routeLabel;
+    const descriptions = new Set((routePicker.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
     descriptions.add(fullName.id);
-    byId("routeSelect").setAttribute("aria-describedby", [...descriptions].join(" "));
-    for (const item of byId("routeSelect").options) item.title = item.text;
+    routePicker.setAttribute("aria-describedby", [...descriptions].join(" "));
+    for (const item of routePicker.options) item.title = item.text;
     fullName.hidden = !route;
     if (fullName.textContent !== routeLabel) fullName.textContent = routeLabel;
     for (const name of byId("stopList").querySelectorAll(".stop-list-name")) name.title = name.textContent.trim().replace(/\s+/g, " ");
@@ -374,7 +561,9 @@
     byId("tlDetailSubtitle").textContent = route
       ? (selected && selectedHeading ? selectedHeading.textContent.trim() : "Rute, daftar halte, dan integrasi")
       : "Pilih lin atau koridor untuk melihat detail.";
-    if (routeChanged) {
+    if (usesStopInfoPanel() && selected && (routeChanged || stopChanged || lastSelectedHeading !== selectedHeading)) {
+      showSelectedStopInPanel();
+    } else if (routeChanged && (!desktopLayout.matches || !selected)) {
       if (route) {
         setTab(selected ? "selected" : "stops");
         setDetail(true);
@@ -388,12 +577,13 @@
         setTab("route");
         setDetail(false);
       }
-    } else if (stopChanged && selected) {
+    } else if (stopChanged && selected && !desktopLayout.matches) {
       if (!mobile()) setTab("selected");
       setDetail(true);
     } else if (!selected && detail.dataset.tab === "selected") setTab("stops");
     lastRoute = route;
     lastStop = stop;
+    lastSelectedHeading = selectedHeading;
     syncPanelControls();
   }
 
@@ -438,7 +628,32 @@
     getStopPopupOptions = () => {
       const size = map.getSize();
       const padding = mapPadding();
-      const mapRect = byId("map").getBoundingClientRect();
+      const mapElement = byId("map");
+      const mapRect = mapElement.getBoundingClientRect();
+      if (desktopLayout.matches) {
+        // The map's grid cell already excludes the network and Detail panels.
+        // Use its current bounds, which can change before Leaflet resizes.
+        const caption = document.querySelector(".tl-map-caption").getBoundingClientRect();
+        const rail = document.querySelector(".tl-map-actions").getBoundingClientRect();
+        const dock = byId("bottomToolbar").getBoundingClientRect();
+        const credits = map.attributionControl?.getContainer().getBoundingClientRect();
+        const left = 12;
+        const top = Math.max(12, Math.ceil(caption.bottom - mapRect.top) + 8);
+        const right = Math.max(12, Math.ceil(mapRect.right - rail.left) + 8);
+        const bottom = Math.ceil(Math.max(mapRect.bottom - dock.top, credits?.height || 0)) + 8;
+        // Leaflet adds a pixel to the content width. Reserve that pixel
+        // and the two wrapper borders in the available width.
+        const width = Math.min(308, Math.max(160, mapElement.clientWidth - left - right - 3));
+        return {
+          minWidth: width,
+          maxWidth: width,
+          maxHeight: Math.min(440, Math.max(64, mapElement.clientHeight - top - bottom - 30)),
+          autoPan: true,
+          keepInView: true,
+          autoPanPaddingTopLeft: [left, top],
+          autoPanPaddingBottomRight: [right, bottom]
+        };
+      }
       const compactLandscape = body.classList.contains("tl-short-landscape");
       if (compactLandscape) {
         padding.paddingTopLeft[1] = 10;
@@ -529,6 +744,10 @@
       contentObserver.observe(byId(id), { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] });
     }
     for (const id of ["modeSelect", "routeSelect", "statusSelect"]) byId(id).addEventListener("change", scheduleSync);
+    desktopLayout.addEventListener("change", () => {
+      applyStopInfoMode();
+      scheduleSync();
+    });
     const revealStopPopup = event => {
       if (!mobile() || !event.target.closest(".stop-list-item[data-stop-key]")) return;
       if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
@@ -575,6 +794,22 @@
       shelvedAutoPan = null;
       syncPopupPresentation();
     });
+    map.getContainer().addEventListener("click", event => {
+      const button = event.target.closest(".tl-show-stop-in-panel");
+      if (!desktopLayout.matches || !currentSelectedStopKey ||
+          button?.closest(".stop-popup-ui")?.dataset.stopKey !== currentSelectedStopKey) return;
+      event.stopPropagation();
+      stopInfoMode.value = "panel";
+      saveStopInfoMode();
+      byId("tlTabSelected").focus({ preventScroll: true });
+    }, true);
+    map.getContainer().addEventListener("toggle", ({ target }) => {
+      if (!desktopLayout.matches || !target.open || !target.matches(".stop-source-card")) return;
+      if (!stopPopup?.isOpen() || !stopPopup.getElement().contains(target)) return;
+      // A source disclosure can grow an open popup. Reapply Leaflet's pan
+      // at the same anchor without rebuilding the disclosure or moving focus.
+      stopPopup.setLatLng(stopPopup.getLatLng());
+    }, true);
     window.addEventListener("resize", () => {
       if (tablet() !== lastTablet) {
         lastTablet = tablet();
@@ -601,6 +836,7 @@
     // UI-only bridge for the tour; no transport state setters are exposed.
     window.webgisLayout = Object.freeze({
       setDetail, setTab, setDetailExpanded, setSheetPosition, revealPopup, showPopupDetails,
+      usesStopInfoPanel,
       capture() {
         return {
           leftCollapsed: body.classList.contains("left-panel-collapsed"),
