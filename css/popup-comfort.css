@@ -77,6 +77,8 @@
   .tl-app .leaflet-popup .stop-popup-ui .tl-integration-quick-logo {
     display: grid;
     place-items: center;
+    order: 2;
+    margin-left: auto;
     flex: 0 0 29px;
     width: 29px;
     height: 27px;
@@ -130,6 +132,7 @@
     stroke-linejoin: round;
   }
   .tl-app .leaflet-popup .stop-popup-ui .integration-place-link-arrow {
+    order: 3;
     font-size: 13px;
     color: #8c9aab;
   }
