@@ -578,6 +578,10 @@
     if (fullName.textContent !== routeTerminiLabel(routeLabel)) fullName.textContent = routeTerminiLabel(routeLabel);
     for (const name of byId("stopList").querySelectorAll(".stop-list-name")) name.title = name.textContent.trim().replace(/\s+/g, " ");
     const heading = byId("routeInfo").querySelector(".route-title, h2");
+    const relation = byId("routeInfo").querySelector(".route-heading-relation");
+    if (relation && relation.textContent !== routeTerminiLabel(relation.textContent)) {
+      relation.textContent = routeTerminiLabel(relation.textContent);
+    }
     const selectedHeading = byId("selectedStopInfo").querySelector(".selected-stop-title, .selected-stop-name, .stop-name, h3, h2");
     const count = new Set(getFilteredRoutes().map(getRouteId)).size;
     const status = byId("statusSelect").selectedOptions[0]?.text || "";
