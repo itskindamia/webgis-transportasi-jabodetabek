@@ -27,6 +27,20 @@ try {
         }
         await row.click();
         await page.locator(".leaflet-popup .stop-popup-ui").waitFor();
+        // Leaflet adds the popup with near-zero opacity while fading it in.
+        // Wait for a fully visible card rather than capturing the first frame.
+        await page.waitForFunction(() => {
+          const popup = document.querySelector(".leaflet-popup");
+          return popup && Number(getComputedStyle(popup).opacity) > 0.99
+            && !map._animatingZoom && !map._panAnim?._inProgress;
+        });
+        await page.waitForTimeout(150);
+        // Browser tests deliberately substitute black 1-pixel map tiles.
+        // Render them as a neutral review background, never as a real basemap.
+        await page.addStyleTag({content: `
+          #map.leaflet-container { background:#edf1f3!important; }
+          #map .leaflet-tile-pane { opacity:0!important; }
+        `});
         const popupFile=`${width}x${height}-${scenario.name}-popup.png`;
         await page.screenshot({path:path.join(out,popupFile)});
         const open=page.locator(".leaflet-popup .tl-show-stop-in-panel");
