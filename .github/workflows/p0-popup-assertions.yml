@@ -5,6 +5,7 @@ on:
     paths:
       - 'tools/test-layout-release.mjs'
       - 'tools/test-lrt-popup.mjs'
+      - 'tools/test-layout-ux.mjs'
       - '.github/workflows/p0-popup-assertions.yml'
   workflow_dispatch:
 
@@ -33,4 +34,4 @@ jobs:
             npx playwright install chromium
           fi
       - name: Test LRT popup semantics and real scroll/action reachability
-        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-release.mjs tools/test-lrt-popup.mjs
+        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-release.mjs tools/test-lrt-popup.mjs tools/test-layout-ux.mjs
