@@ -179,7 +179,15 @@
       if (actions) {
         const button = textElement("button", "tl-show-stop-in-panel", "Tampilkan di panel");
         button.type = "button";
-        actions.append(button);
+        // Keep this essential presentation switch outside the scrolling body,
+        // immediately above the previous/next navigation controls.
+        // No popup content or engine actions are removed.
+        const navigation = root.querySelector(".stop-popup-navigation");
+        if (navigation?.parentElement === root) {
+          root.insertBefore(button, navigation);
+        } else {
+          actions.append(button);
+        }
       }
       return template.innerHTML;
     };
