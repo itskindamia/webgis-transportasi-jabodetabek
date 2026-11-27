@@ -673,7 +673,7 @@
         return {
           minWidth: width,
           maxWidth: width,
-          maxHeight: Math.min(440, Math.max(64, mapElement.clientHeight - top - bottom - 30)),
+          maxHeight: Math.min(500, Math.max(64, mapElement.clientHeight - top - bottom - 30)),
           autoPan: true,
           keepInView: true,
           autoPanPaddingTopLeft: [left, top],
