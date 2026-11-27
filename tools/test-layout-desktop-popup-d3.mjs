@@ -68,7 +68,7 @@ for (const [width, height] of [[1024, 650], [1366, 768], [1440, 900], [1920, 108
     await assertPlacement(page);
     assert.equal(await page.locator(popup).count(), 1);
     assert.equal((await page.locator(`${popup} .stop-popup-title`).innerText()).trim(), "Cawang");
-    assert.equal(await page.locator(`${popup} .stop-popup-title`).evaluate(el => getComputedStyle(el).fontSize), "22px");
+    assert.equal(await page.locator(`${popup} .stop-popup-title`).evaluate(el => getComputedStyle(el).fontSize), "20px");
     assert.equal((await page.locator("#selectedStopInfo .selected-stop-title").textContent()).trim(), "Cawang");
     assert.equal(await page.locator("#tlDetailPanel").getAttribute("data-tab"), "stops");
     assert.equal(await page.locator(`#stopList [aria-current="true"]`).getAttribute("data-stop-key"), cawang);
