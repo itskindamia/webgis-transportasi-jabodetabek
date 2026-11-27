@@ -32,16 +32,27 @@ try {
         } else {
           await page.locator('.leaflet-popup .stop-popup-ui').waitFor();
         }
-        await page.waitForFunction(() => webgisSpatialIntegrations?.count > 0 &&
-          !map._panAnim?._inProgress && !map._animatingZoom);
+        // Selection uses an animated flyTo. Do not snapshot the starting
+        // zoom between the selection event and the animation's first frame.
+        await page.waitForFunction(() => webgisSpatialIntegrations?.count > 0
+          && map.getZoom() === STOP_ZOOM
+          && !map._panAnim?._inProgress && !map._animatingZoom);
         await page.waitForTimeout(180);
+        // The deterministic browser fixture replaces Esri/OSM tiles with a
+        // single test pixel. Hide only that synthetic tile when capturing
+        // the UI so visual review is not distorted by its black color.
+        await page.addStyleTag({ content: `
+          #map.leaflet-container { background: #edf1f3 !important; }
+          #map .leaflet-tile-pane { opacity: 0 !important; }
+        ` });
         const state = await page.evaluate(() => ({
           stop: currentSelectedStopKey, route: currentSelectedRouteId,
           mapped: webgisSpatialIntegrations.count,
           markerCount: document.querySelectorAll(".tl-integration-target-marker").length,
           popup: Boolean(document.querySelector(".leaflet-popup .stop-popup-ui")),
           panel: Boolean(document.querySelector("#selectedStopInfo > .stop-popup-ui")),
-          mapWidth: document.getElementById("map").getBoundingClientRect().width
+          mapWidth: document.getElementById("map").getBoundingClientRect().width,
+          zoom: map.getZoom(), captureTileMode: "neutral test stub, not real Esri tiles"
         }));
         assert.equal(state.stop, sample.stop);
         assert.ok(state.mapped > 0, `${sample.name}: no resolved destination`);
