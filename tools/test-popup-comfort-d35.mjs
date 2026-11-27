@@ -30,14 +30,28 @@ test("D3.5 desktop popup uses compact destination logos and accessible icon-only
   await destination.waitFor();
   assert.equal(await destination.locator(".tl-integration-quick-logo img").count(), 1,
     "uses real operator logo in destination row");
+  await page.waitForFunction(() => {
+    const logo = document.querySelector(".leaflet-popup .tl-integration-quick-logo img");
+    return logo?.complete && logo.naturalWidth > 0;
+  });
   assert.equal(await destination.locator(".integration-place-name").isVisible(), true);
   assert.equal(await popup.locator(".integration-group-header").first().isVisible(), false);
   assert.equal(await popup.locator(".integration-line-badges").first().isVisible(), false);
   const maps = popup.locator(".stop-popup-maps-link");
   const source = popup.locator(".stop-source-summary");
   assert.equal(await maps.getAttribute("aria-label"), "Buka lokasi di Google Maps");
+  const location = new URL(await maps.getAttribute("href"));
+  const expectedCoordinates = await page.evaluate(() => getStopByKey(currentSelectedStopKey).geometry.coordinates.toReversed().join(","));
+  assert.equal(location.origin, "https://www.google.com");
+  assert.equal(location.searchParams.get("query"), expectedCoordinates);
+  assert.equal(await maps.getAttribute("target"), "_blank");
   assert.equal(await source.getAttribute("aria-label"), "Tampilkan sumber data");
-  assert.equal(await maps.locator(".stop-popup-external-link-icon").isVisible(), true);
+  assert.equal(await maps.locator(".tl-quick-action-svg").isVisible(), true);
+  assert.equal(await maps.locator(".tl-maps-external-indicator").isVisible(), false);
+  await page.context().route(location.href, request => request.fulfill({ body: "Google Maps" }));
+  const [external] = await Promise.all([page.context().waitForEvent("page"), maps.click()]);
+  await external.waitForURL(location.href);
+  await external.close();
   assert.equal(await source.locator(".stop-source-summary-icon").isVisible(), true);
   assert.equal(await popup.locator(".stop-popup-action-cell .stop-source-summary-copy").isVisible(), false);
   await source.click();
@@ -53,6 +67,7 @@ test("D3.5 desktop popup uses compact destination logos and accessible icon-only
     "full route badge detail remains in Panel");
   assert.equal(await panel.locator(".stop-source-summary-copy").isVisible(), true,
     "full source details remain readable in Panel");
+  assert.equal(await panel.locator(".tl-maps-external-indicator").isVisible(), true);
 });
 
 test("D3.5 desktop map utilities launch existing guide and information handlers", async t => {
@@ -66,32 +81,42 @@ test("D3.5 desktop map utilities launch existing guide and information handlers"
       [...dock.children].findIndex(el => el.id === id)));
   assert.ok(order.every(i => i >= 0), "buttons belong to dock");
   assert.deepEqual([...order].sort((a,b)=>a-b), order);
-  await about.click();
+  await about.press("Enter");
   await page.locator("#infoModal").waitFor({ state: "visible" });
   await page.locator("#infoModalAccept").click();
-  await guide.click();
+  assert.ok(await about.evaluate(el => document.activeElement === el));
+  await guide.press("Enter");
   await page.locator("#productTour").waitFor({ state: "visible" });
   await page.locator("#productTourSkip").click();
+  await page.waitForFunction(() => document.activeElement?.id === "tlDockGuide");
 });
 
 test("D3.5 bidirectional route text is presentation-only and mobile popup remains detailed", async t => {
   const page = await app(t);
+  await page.click('[data-mode="MRT"]');
+  const mrt = page.locator('.tl-route-choice[data-route-id="MRT_NS"]');
+  const line = await page.evaluate(() => getRouteHeadingParts(getRouteById("MRT_NS")).lineName);
+  assert.equal(await mrt.locator("strong").innerText(), line, "the line name keeps its original spelling");
+  assert.match(await mrt.locator(".tl-route-choice-relation").innerText(), /↔/);
   await page.click('[data-mode="LRT"]');
   const relation = page.locator('.tl-route-choice[data-route-id="LRT_JB_BK"] .tl-route-choice-relation');
-  assert.match(await relation.innerText(), /↔/, "route termini rendered with bidirectional arrow");
-  const data = await page.evaluate(() => getRouteById("LRT_JB_BK").properties);
-  assert.ok(data && Object.keys(data).length, "original route GeoJSON is unchanged");
+  const canonical = await page.evaluate(() => getRouteHeadingParts(getRouteById("LRT_JB_BK")).relation);
+  assert.match(canonical, /\s[-–]\s/, "the original route termini keep their separator");
+  assert.equal(await relation.innerText(), canonical.replace(/\s+[-–]\s+/g, " ↔ "));
   await selectRoute(page, "LRT_JB_BK");
   await page.locator('#stopList [data-stop-key="LRTJB001_01"]').click();
   await page.locator(".leaflet-popup .stop-popup-ui").waitFor();
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.waitForFunction(() => innerWidth === 390);
-  const more = page.locator(".leaflet-popup .tl-integration-more-note");
-  if (await more.count()) assert.equal(await more.isVisible(), false,
-    "the desktop-only integration remainder must never appear on mobile");
-  const mobileRows = await page.locator(".leaflet-popup .integration-place-row").evaluateAll(rows =>
-    rows.every(row => getComputedStyle(row).display !== "none"));
-  assert.equal(mobileRows, true, "mobile retains the full integration list");
+  await page.waitForFunction(() => document.getElementById("tlMapContext").textContent === routeSelect.selectedOptions[0].text);
+  const popup = page.locator(".leaflet-popup .stop-popup-ui");
+  assert.equal(await popup.locator(".tl-integration-more-note").isVisible(), false,
+    "the desktop-only integration remainder stays hidden on mobile");
+  const rows = popup.locator(".integration-place-row");
+  assert.ok(await rows.count() > 3);
+  assert.equal(await popup.locator(".integration-place-row:visible").count(), await rows.count(),
+    "mobile retains the full integration list");
+  assert.equal(await popup.locator(".tl-quick-action-svg").isVisible(), false);
+  assert.equal(await popup.locator(".tl-maps-external-indicator").isVisible(), true);
   assert.equal(await page.locator("#tlDockGuide").isVisible(), false);
   assert.equal(await page.locator("#tlDockAbout").isVisible(), false);
 });
@@ -127,6 +152,19 @@ test("D3.5 long Dukuh Atas popup keeps Panel action visible above navigation", a
   });
   assert.equal(state.within, true, "panel action in visible popup area");
   assert.equal(state.clickable, true, "panel action is not covered by navigation");
+  const bodyFit = await popup.evaluate(root => {
+    const body = root.querySelector(".lrt-popup-body");
+    const bounds = body.getBoundingClientRect();
+    const rows = [...root.querySelectorAll(".integration-place-row")].filter(row => row.getClientRects().length);
+    const controls = [...root.querySelectorAll(".stop-popup-maps-link, .stop-source-summary")];
+    const footer = root.querySelector(".stop-popup-navigation").getBoundingClientRect();
+    const toggle = root.querySelector(".tl-show-stop-in-panel").getBoundingClientRect();
+    return {
+      clipped: [...rows, ...controls].filter(el => el.getBoundingClientRect().bottom > bounds.bottom + 1).length,
+      toggleAboveNav: toggle.bottom <= footer.top + 1
+    };
+  });
+  assert.deepEqual(bodyFit, { clipped: 0, toggleAboveNav: true }, "initial quick glance exposes all three destinations and both utility actions");
   const collision = await page.evaluate(() => {
     const popup = document.querySelector(".leaflet-popup .stop-popup-ui")?.getBoundingClientRect();
     const summary = document.querySelector("#map > .tl-integration-map-summary")?.getBoundingClientRect();
@@ -141,10 +179,23 @@ test("D3.5 long Dukuh Atas popup keeps Panel action visible above navigation", a
   assert.equal(collision.overlaps, false,
     "integration summary must not cover the selected popup");
   assert.equal(state.sourceStop, "LRTJB001_01");
+  const view = () => page.evaluate(() => ({ center: map.getCenter(), zoom: map.getZoom(), url: location.href }));
+  await page.waitForFunction(() => map.getZoom() === STOP_ZOOM && !map._panAnim?._inProgress && !map._animatingZoom);
+  const before = await view();
   await panelButton.click();
   await page.locator("#selectedStopInfo > .stop-popup-ui").waitFor();
   const fullCount = await page.locator("#selectedStopInfo .integration-place-row:visible").count();
   assert.equal(fullCount, popupRows.total, "Panel shows every destination");
   assert.equal(await page.evaluate(() => currentSelectedStopKey), state.sourceStop);
   assert.equal(await page.evaluate(() => currentSelectedRouteId), state.activeRoute);
+  await page.locator("#selectedStopInfo .stop-popup-nav-button").first().click({ trial: true });
+  await page.locator("#tlReturnToPopup").click();
+  await popup.waitFor();
+  await page.waitForFunction(() => !map._panAnim?._inProgress && map.getSize().x === map.getContainer().clientWidth);
+  const after = await view();
+  assert.equal(after.zoom, before.zoom);
+  assert.equal(after.url, before.url);
+  const pixels = await page.evaluate(({ a, b }) => map.project(a).distanceTo(map.project(b)), { a: before.center, b: after.center });
+  assert.ok(pixels <= 1, `camera preserved when returning to Popup: ${pixels}px`);
+  await popup.locator(".stop-popup-nav-button").first().click({ trial: true });
 });

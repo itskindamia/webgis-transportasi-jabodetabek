@@ -1,64 +1,202 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import assert from "node:assert/strict";
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { chromium } from "playwright";
-import { openLayout, selectRoute } from "./layout-browser.mjs";
 
-const out = "artifacts/d35-comfort";
-await mkdir(out, {recursive:true});
-const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined });
+const url = process.env.D35_CAPTURE_URL || "http://127.0.0.1:5173/";
+const output = process.env.D35_CAPTURE_OUTPUT || "artifacts/d35-comfort";
+const compareBaseline = process.env.D35_CAPTURE_BASELINE === "1";
+const popupCard = ".leaflet-popup .stop-popup-ui";
+const panelCard = "#selectedStopInfo > .stop-popup-ui";
+const desktop = { width: 1440, height: 900 };
+const mobile = { width: 390, height: 844 };
 const scenarios = [
-  {name:"cawang-lrt",mode:"LRT",route:"LRT_JB_BK",stop:"LRTJB008_01"},
-  {name:"dukuh-atas-lrt",mode:"LRT",route:"LRT_JB_BK",stop:"LRTJB001_01"},
-  {name:"jembatan-merah-brt",mode:"BRT",route:"BRT_05",stop:"BRT082_REG"}
+  { name: "dukuh-atas-lrt", mode: "LRT", route: "LRT_JB_BK", stop: "LRTJB001", key: "LRTJB001_01", panel: true },
+  { name: "cawang-lrt", mode: "LRT", route: "LRT_JB_BK", stop: "LRTJB008", key: "LRTJB008_01", panel: true },
+  { name: "sudirman-krl", mode: "KRL", route: "KRL_CK", stop: "KRL059", key: "KRL059_01" },
+  { name: "asean-brt", mode: "BRT", route: "BRT_01", stop: "BRT002", key: "BRT002_REG_A" },
+  { name: "asean-mrt", mode: "MRT", route: "MRT_NS", stop: "MRT007", key: "MRT007_01" }
 ];
-const report=[];
+
+async function waitForMap(page) {
+  await page.waitForFunction(async () => {
+    const viewport = () => JSON.stringify([map.getZoom(), map.getCenter(), map.getSize()]);
+    const start = viewport();
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    return start === viewport() && !map._panAnim?._inProgress && !map._animatingZoom &&
+      map.getContainer().clientWidth === map.getSize().x;
+  });
+  await page.waitForFunction(() => {
+    const bounds = map.getContainer().getBoundingClientRect();
+    const tiles = [...map.getContainer().querySelectorAll("img.leaflet-tile")].filter(tile => {
+      const rect = tile.getBoundingClientRect();
+      return rect.width && rect.height && rect.left < bounds.right && rect.right > bounds.left &&
+        rect.top < bounds.bottom && rect.bottom > bounds.top;
+    });
+    return tiles.length > 0 && tiles.every(tile => tile.complete && tile.naturalWidth > 1);
+  }, null, { timeout: 45000 });
+}
+
+async function openStop(page, scenario) {
+  const permalink = new URL(url);
+  permalink.search = new URLSearchParams({ mode: scenario.mode, route: scenario.route, stop: scenario.stop });
+  const response = await page.goto(permalink.href, { waitUntil: "domcontentloaded" });
+  assert.ok(response?.ok(), `HTTP ${response?.status()} at ${permalink.href}`);
+  await page.waitForFunction(() => document.documentElement.dataset.layoutReady === "true" && stopData?.features?.length);
+  await page.click("#infoModalAccept");
+  await page.locator("#productTourSkip").click();
+  await page.locator(`${popupCard}[data-stop-key="${scenario.key}"]`).waitFor();
+  await page.waitForFunction(() => Number(getComputedStyle(document.querySelector(".leaflet-popup")).opacity) > 0.99);
+  await page.evaluate(() => document.fonts.ready);
+  if (!compareBaseline) {
+    const comfort = page.locator('link[href^="css/popup-comfort.css"]');
+    assert.ok(await comfort.evaluate(link => link.sheet), "D3.5 stylesheet loaded");
+  }
+  assert.equal(new URL(page.url()).searchParams.get("stop"), scenario.stop);
+}
+
+async function readCard(page, selector) {
+  return page.locator(selector).evaluate(root => {
+    const rect = root.getBoundingClientRect();
+    const visible = el => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden";
+    const hit = el => {
+      const { x, y, width, height } = el.getBoundingClientRect();
+      return el.contains(document.elementFromPoint(x + width / 2, y + height / 2));
+    };
+    const rows = [...root.querySelectorAll(".integration-place-row")];
+    const navigation = [...root.querySelectorAll(".stop-popup-nav-button:not(:disabled)")];
+    return {
+      title: root.querySelector(".stop-popup-title").textContent.trim(),
+      stop: currentSelectedStopKey, route: currentSelectedRouteId, permalink: location.search,
+      center: map.getCenter(), zoom: map.getZoom(), width: document.documentElement.scrollWidth,
+      bounds: rect.toJSON(), visibleRows: rows.filter(visible).length, totalRows: rows.length,
+      brokenLogos: [...root.querySelectorAll("img")].filter(img => visible(img) &&
+        (!img.complete || !img.naturalWidth)).map(img => img.getAttribute("src")),
+      navigation: navigation.map(button => ({ direction: button.dataset.stopNav, visible: visible(button), hit: hit(button) })),
+      visibleTiles: map.getContainer().querySelectorAll("img.leaflet-tile-loaded").length,
+      overlays: window.webgisSpatialIntegrations?.count ?? 0
+    };
+  });
+}
+
+async function validateActions(page, selector) {
+  const card = page.locator(selector);
+  const maps = card.locator(".stop-popup-maps-link");
+  const link = new URL(await maps.getAttribute("href"));
+  const coords = await page.evaluate(() => {
+    const [lng, lat] = getStopByKey(currentSelectedStopKey).geometry.coordinates;
+    return `${lat},${lng}`;
+  });
+  assert.equal(link.origin, "https://www.google.com");
+  assert.equal(link.searchParams.get("query"), coords);
+  assert.equal(await maps.getAttribute("target"), "_blank");
+  await maps.click({ trial: true });
+  const source = card.locator(".stop-source-summary");
+  await source.press("Enter");
+  assert.equal(await card.locator(".stop-source-card").evaluate(el => el.open), true);
+  assert.match(await card.locator(".stop-source-body").innerText(), /\S/);
+  await source.press("Enter");
+  assert.equal(await card.locator(".stop-source-card").evaluate(el => el.open), false);
+}
+
+async function validateUtilities(page) {
+  await page.locator("#tlDockAbout").press("Enter");
+  await page.locator("#infoModal").waitFor({ state: "visible" });
+  await page.locator("#infoModalAccept").click();
+  await page.locator("#tlDockGuide").press("Enter");
+  await page.locator("#productTour").waitFor({ state: "visible" });
+  await page.locator("#productTourSkip").click();
+  await page.waitForFunction(() => document.activeElement?.id === "tlDockGuide");
+}
+
+async function validateNavigation(page, stop) {
+  const next = page.locator(`${popupCard} [data-stop-nav="next"]`);
+  const nextKey = await next.getAttribute("data-stop-key");
+  assert.ok(nextKey && nextKey !== stop);
+  await next.click();
+  await page.locator(`${popupCard}[data-stop-key="${nextKey}"]`).waitFor();
+  await page.locator(`${popupCard} [data-stop-nav="previous"]`).click();
+  await page.locator(`${popupCard}[data-stop-key="${stop}"]`).waitFor();
+}
+
+async function capture(page, selector, scenario, size, presentation) {
+  await waitForMap(page);
+  const measure = await readCard(page, selector);
+  const isDesktop = size.width === desktop.width;
+  assert.equal(measure.route, scenario.route);
+  assert.equal(measure.stop, scenario.key);
+  assert.equal(measure.width, size.width);
+  assert.deepEqual(measure.brokenLogos, []);
+  assert.ok(measure.navigation.length && measure.navigation.every(button => button.visible && button.hit),
+    `${scenario.name} ${presentation} navigation is visible and operable: ${JSON.stringify(measure.navigation)}`);
+  if (presentation === "popup") {
+    assert.ok(measure.bounds.left >= 0 && measure.bounds.right <= size.width &&
+      measure.bounds.top >= 0 && measure.bounds.bottom <= size.height, `${scenario.name} popup fits the viewport`);
+  }
+  if (!compareBaseline) {
+    const maxRows = isDesktop && presentation === "popup" ? 3 : Infinity;
+    assert.equal(measure.visibleRows, Math.min(maxRows, measure.totalRows));
+    assert.equal(await page.locator("#tlDockGuide").isVisible(), isDesktop);
+    assert.equal(await page.locator("#tlDockAbout").isVisible(), isDesktop);
+  }
+  const file = `${size.width}x${size.height}-${scenario.name}-${presentation}.png`;
+  await page.screenshot({ path: join(output, file), animations: "disabled", caret: "hide" });
+  return { file, ...measure };
+}
+
+async function assertSelectionUnchanged(page, before, after) {
+  assert.equal(after.stop, before.stop);
+  assert.equal(after.route, before.route);
+  assert.equal(after.permalink, before.permalink);
+  assert.equal(after.zoom, before.zoom);
+  assert.equal(after.overlays, before.overlays);
+  const pixels = await page.evaluate(({ a, b }) => map.project(a).distanceTo(map.project(b)),
+    { a: before.center, b: after.center });
+  assert.ok(pixels <= 1, `switch preserves the center within Leaflet rounding: ${pixels}px`);
+}
+
+await mkdir(output, { recursive: true });
+const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH });
+const report = { url, workflowCommit: process.env.GITHUB_SHA || null, screenshots: [] };
 try {
-  for(const [width,height] of [[1366,768],[1440,900],[1920,1080]]) {
+  for (const size of [desktop, mobile]) {
     for (const scenario of scenarios) {
-      const { page, context, errors } = await openLayout(browser,width,height);
+      const context = await browser.newContext({ viewport: size, hasTouch: size === mobile });
       try {
-        await page.click(`[data-mode="${scenario.mode}"]`);
-        await selectRoute(page,scenario.route);
-        const row=page.locator(`#stopList [data-stop-key="${scenario.stop}"]`);
-        if(!await row.count()) {
-          report.push({scenario:scenario.name,viewport:width+"x"+height,skipped:"stop key absent"});
-          continue;
+        const page = await context.newPage();
+        const pageErrors = [];
+        const consoleErrors = new Set();
+        page.on("pageerror", error => pageErrors.push(error.message));
+        page.on("console", message => { if (message.type() === "error") consoleErrors.add(message.text()); });
+        await openStop(page, scenario);
+        const initial = await capture(page, popupCard, scenario, size, "popup");
+        const screenshots = [initial];
+        if (size === desktop && scenario.panel) {
+          await page.locator(`${popupCard} .tl-show-stop-in-panel`).click();
+          await page.locator(panelCard).waitFor();
+          const details = await capture(page, panelCard, scenario, size, "panel");
+          assert.equal(details.totalRows, initial.totalRows);
+          await assertSelectionUnchanged(page, initial, details);
+          await page.locator("#tlReturnToPopup").click();
+          await page.locator(popupCard).waitFor();
+          await waitForMap(page);
+          await assertSelectionUnchanged(page, details, await readCard(page, popupCard));
+          screenshots.push(details);
         }
-        await row.click();
-        await page.locator(".leaflet-popup .stop-popup-ui").waitFor();
-        // Leaflet adds the popup with near-zero opacity while fading it in.
-        // Wait for a fully visible card rather than capturing the first frame.
-        await page.waitForFunction(() => {
-          const popup = document.querySelector(".leaflet-popup");
-          return popup && Number(getComputedStyle(popup).opacity) > 0.99
-            && !map._animatingZoom && !map._panAnim?._inProgress;
-        });
-        await page.waitForTimeout(150);
-        // Browser tests deliberately substitute black 1-pixel map tiles.
-        // Render them as a neutral review background, never as a real basemap.
-        await page.addStyleTag({content: `
-          #map.leaflet-container { background:#edf1f3!important; }
-          #map .leaflet-tile-pane { opacity:0!important; }
-        `});
-        const popupFile=`${width}x${height}-${scenario.name}-popup.png`;
-        await page.screenshot({path:path.join(out,popupFile)});
-        const open=page.locator(".leaflet-popup .tl-show-stop-in-panel");
-        if(await open.isVisible()) {
-          await open.click();
-          await page.locator("#selectedStopInfo > .stop-popup-ui").waitFor();
-          const panelFile=`${width}x${height}-${scenario.name}-panel.png`;
-          await page.screenshot({path:path.join(out,panelFile)});
-          report.push({scenario:scenario.name,viewport:width+"x"+height,popupFile,panelFile});
+        if (!compareBaseline) {
+          await validateActions(page, popupCard);
+          if (size === desktop && scenario === scenarios[0]) await validateUtilities(page);
+          if (size === desktop && scenario.name === "cawang-lrt") await validateNavigation(page, scenario.key);
         }
-        assert.deepEqual(errors,[],"no runtime error");
+        assert.deepEqual(pageErrors, []);
+        report.screenshots.push(...screenshots.map(shot => ({ ...shot, consoleErrors: [...consoleErrors] })));
+        console.log(`${size.width}x${size.height} ${scenario.name}: ${screenshots.map(shot => shot.file).join(", ")}`);
       } finally {
         await context.close();
       }
     }
   }
-  await writeFile(path.join(out,"report.json"),JSON.stringify(report,null,2));
-  console.log(JSON.stringify(report));
+  await writeFile(join(output, "report.json"), JSON.stringify(report, null, 2) + "\n");
 } finally {
   await browser.close();
 }

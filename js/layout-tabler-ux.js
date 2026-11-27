@@ -178,8 +178,17 @@
       byId("globalSearchInput").setAttribute("aria-expanded", saved.searchExpanded || "false");
       if (completed) saveProductTourCompleted();
       requestAnimationFrame(() => {
-        map.invalidateSize({ animate: false });
-        map.setView(saved.center, saved.zoom, { animate: false });
+        // Restore the saved camera without Leaflet's rounded relative pan or
+        // the popup's keep-in-view pan during the intermediate resize.
+        const popup = map._popup;
+        const autoPan = popup?.options.autoPan;
+        if (popup) popup.options.autoPan = false;
+        try {
+          map.invalidateSize({ animate: false });
+          map.setView(saved.center, saved.zoom, { animate: false, reset: true });
+        } finally {
+          if (popup) popup.options.autoPan = autoPan;
+        }
         const focus = saved.focus?.isConnected && !saved.focus.closest("[inert]") && visibleRect(saved.focus) ? saved.focus : byId("tlNetworkToggle");
         focus.focus({ preventScroll: true });
         scheduleLabels();

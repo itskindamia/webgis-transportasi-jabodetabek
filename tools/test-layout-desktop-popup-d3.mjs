@@ -136,7 +136,10 @@ test("D3 shows the repository's explicit transfer, branding and reachable footer
   await fullTransfer.waitFor({ state: "visible" });
   await fullTransfer.click();
   await page.waitForFunction(() => currentSelectedStopKey === "MRT012_01" && currentSelectedRouteId === "MRT_NS");
-  await page.locator('#selectedStopInfo[data-stop-key="MRT012_01"]').waitFor();
+  const selectedMrt = page.locator('#selectedStopInfo > .stop-popup-ui[data-stop-key="MRT012_01"]');
+  await selectedMrt.waitFor();
+  assert.equal(await page.locator("#tlDetailPanel").getAttribute("data-tab"), "selected");
+  assert.match(await selectedMrt.locator(".stop-popup-title").innerText(), /Dukuh Atas BNI/);
   assert.equal(await page.evaluate(() => currentSelectedRouteId), "MRT_NS");
   assert.equal(await page.locator(`#stopList [aria-current="true"]`).getAttribute("data-stop-key"), "MRT012_01");
   assert.deepEqual(errors, []);

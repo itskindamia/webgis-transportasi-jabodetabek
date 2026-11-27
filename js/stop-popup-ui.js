@@ -174,7 +174,8 @@
         const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
         use.setAttribute("href", "assets/icons/tabler.svg#map-pin");
         svg.append(use);
-        visual.replaceChildren(svg);
+        const externalGlyph = textElement("span", "tl-maps-external-indicator", visual.textContent.trim());
+        visual.replaceChildren(externalGlyph, svg);
       }
     }
     if (source) {

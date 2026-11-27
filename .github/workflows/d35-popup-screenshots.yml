@@ -8,6 +8,11 @@ on:
       - 'tools/capture-d35-popup-comfort.mjs'
       - '.github/workflows/d35-popup-screenshots.yml'
   workflow_dispatch:
+    inputs:
+      production:
+        description: Capture and smoke-test the published GitHub Pages site
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -33,12 +38,23 @@ jobs:
           else
             npx playwright install chromium
           fi
-      - name: Capture and compare popup versus panel
-        run: node tools/capture-d35-popup-comfort.mjs
+      - name: Capture live basemap, popup and panel on desktop and mobile
+        env:
+          D35_CAPTURE_URL: ${{ inputs.production && 'https://itskindamia.github.io/webgis-transportasi-jabodetabek/' || 'http://127.0.0.1:5173/' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$D35_CAPTURE_URL" == 'http://127.0.0.1:5173/' ]]; then
+            node tools/serve-layout.mjs &
+            capture_server_pid=$!
+            trap 'kill "$capture_server_pid"' EXIT
+            curl --retry 10 --retry-connrefused --retry-delay 1 --fail --silent --show-error --output /dev/null "$D35_CAPTURE_URL"
+          fi
+          node tools/capture-d35-popup-comfort.mjs
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: d35-popup-comfort-visual-review
+          name: ${{ inputs.production && 'd35-popup-production' || 'd35-popup-comfort-visual-review' }}
           path: artifacts/d35-comfort/
-          if-no-files-found: warn
+          if-no-files-found: error

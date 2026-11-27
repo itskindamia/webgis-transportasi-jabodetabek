@@ -3,6 +3,14 @@
   const byId = id => document.getElementById(id);
   // Presentation-only notation; never rewrite canonical GeoJSON attributes.
   const routeTerminiLabel = value => String(value ?? "").replace(/\s+[-–]\s+/g, " ↔ ");
+  function routeLabelWithTermini(label, relation) {
+    if (!relation) return label;
+    if (label === relation) return routeTerminiLabel(relation);
+    const suffix = `(${relation})`;
+    return label.endsWith(suffix)
+      ? `${label.slice(0, -suffix.length)}(${routeTerminiLabel(relation)})`
+      : label;
+  }
   const body = document.body;
   const mobile = () => matchMedia("(max-width: 767px)").matches;
   const tablet = () => matchMedia("(min-width: 768px) and (max-width: 1023px)").matches;
@@ -524,7 +532,7 @@
         const label = document.createElement("span");
         const name = document.createElement("strong");
         const hasRelation = parts?.relation && option.text === `${parts.lineName} (${parts.relation})`;
-        name.textContent = routeTerminiLabel(hasRelation ? parts.lineName : option.text);
+        name.textContent = hasRelation ? parts.lineName : routeLabelWithTermini(option.text, parts?.relation);
         label.append(name);
         if (hasRelation) {
           const relation = document.createElement("span");
@@ -568,6 +576,8 @@
     byId("tlTabSelected").disabled = !selected;
     const option = routePicker.selectedOptions[0];
     const routeLabel = option?.text.trim() || "";
+    const canonicalRelation = route ? getRouteHeadingParts(getRouteById(route)).relation : "";
+    const fullLabel = desktopLayout.matches ? routeLabelWithTermini(routeLabel, canonicalRelation) : routeLabel;
     const fullName = byId("tlRouteFullName");
     routePicker.title = routeLabel;
     const descriptions = new Set((routePicker.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
@@ -575,19 +585,20 @@
     routePicker.setAttribute("aria-describedby", [...descriptions].join(" "));
     for (const item of routePicker.options) item.title = item.text;
     fullName.hidden = !route;
-    if (fullName.textContent !== routeTerminiLabel(routeLabel)) fullName.textContent = routeTerminiLabel(routeLabel);
+    if (fullName.textContent !== fullLabel) fullName.textContent = fullLabel;
     for (const name of byId("stopList").querySelectorAll(".stop-list-name")) name.title = name.textContent.trim().replace(/\s+/g, " ");
     const heading = byId("routeInfo").querySelector(".route-title, h2");
     const relation = byId("routeInfo").querySelector(".route-heading-relation");
-    if (relation && relation.textContent !== routeTerminiLabel(relation.textContent)) {
-      relation.textContent = routeTerminiLabel(relation.textContent);
+    if (relation && canonicalRelation) {
+      const label = desktopLayout.matches ? routeTerminiLabel(canonicalRelation) : canonicalRelation;
+      if (relation.textContent.trim() !== label) relation.textContent = label;
     }
     const selectedHeading = byId("selectedStopInfo").querySelector(".selected-stop-title, .selected-stop-name, .stop-name, h3, h2");
     const count = new Set(getFilteredRoutes().map(getRouteId)).size;
     const status = byId("statusSelect").selectedOptions[0]?.text || "";
     const mode = byId("modeSelect").selectedOptions[0]?.text || "Semua layanan";
     byId("tlVisibleCount").textContent = `${count} lin / koridor pada filter aktif`;
-    byId("tlMapContext").textContent = routeTerminiLabel(route ? (option?.text || heading?.textContent || route) : mode);
+    byId("tlMapContext").textContent = route ? (fullLabel || heading?.textContent || route) : mode;
     byId("tlMapContext").title = byId("tlMapContext").textContent;
     byId("tlMapStatus").textContent = status;
     byId("tlTabStops").textContent = ["ALL", "BRT"].includes(byId("modeSelect").value) ? "Daftar halte" : "Daftar stasiun";
@@ -683,7 +694,9 @@
         return {
           minWidth: width,
           maxWidth: width,
-          maxHeight: Math.min(440, Math.max(64, mapElement.clientHeight - top - bottom - 30)),
+          // The richer three-destination glance can use more room on tall
+          // desktops, while smaller map cells still cap the scrolling body.
+          maxHeight: Math.min(512, Math.max(64, mapElement.clientHeight - top - bottom - 30)),
           autoPan: true,
           keepInView: true,
           autoPanPaddingTopLeft: [left, top],

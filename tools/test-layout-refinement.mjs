@@ -71,11 +71,11 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844], [768, 1024], 
       await page.locator("#mobileFilterClose").click({ trial: true });
     }
     const label = await page.locator("#routeSelect").evaluate(el => el.selectedOptions[0].text);
-    const displayLabel = label.replace(/\s+[-–]\s+/g, " ↔ ");
+    const displayLabel = width >= 1024 ? label.replace(/\s+[-–]\s+/g, " ↔ ") : label;
     assert.equal(await page.locator("#routeSelect").getAttribute("title"), label,
       "native route picker preserves canonical source label");
     assert.equal(await page.locator("#tlRouteFullName").textContent(), displayLabel,
-      "visible full label uses bidirectional route notation");
+      "full label uses bidirectional desktop notation and preserves the mobile/tablet baseline");
     assert.ok((await page.locator("#routeSelect").getAttribute("aria-describedby")).split(/\s+/).includes("tlRouteFullName"));
     assert.equal(await page.locator("#tlMapContext").getAttribute("title"), displayLabel);
     assert.equal(await page.locator("#tlRouteFullName").evaluate(el => el.scrollWidth > el.clientWidth + 1), false);

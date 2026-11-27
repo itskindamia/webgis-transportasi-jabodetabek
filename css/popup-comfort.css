@@ -1,6 +1,8 @@
 /* D3.5 — desktop quick-glance vs detailed panel.
    Scoped to Leaflet popups: the Detail panel retains full operator,
    badge, source and extended information. Mobile remains unchanged. */
+.tl-app .tl-quick-action-svg { display: none; }
+
 @media (min-width: 1024px) {
   /* Relocate D4 summary while a popup is open, avoiding the header
      collision seen at Dukuh Atas. Keep it above the bottom-left dock. */
@@ -20,10 +22,14 @@
   .tl-app .leaflet-popup .stop-popup-ui {
     --popup-comfort-ink: #233449;
   }
-  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-scroll,
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-scroll {
+    padding-block: 10px 8px;
+  }
   .tl-app .leaflet-popup .stop-popup-ui .lrt-popup-body {
-    padding-top: 14px;
-    padding-bottom: 10px;
+    padding-block: 0 8px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .lrt-popup-main .stop-popup-scroll {
+    padding-block: 0;
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-eyebrow {
     margin-bottom: 5px;
@@ -53,12 +59,12 @@
     padding: 2px 5px;
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-section {
-    margin-top: 15px;
+    margin-top: 10px;
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-label {
     font-size: 11px;
     font-weight: 600;
-    margin-bottom: 9px;
+    margin-bottom: 6px;
     color: #506277;
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-direct-routes {
@@ -66,24 +72,24 @@
     margin-bottom: 2px;
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-section--integration {
-    margin-top: 17px;
-    padding-top: 14px;
+    margin-top: 10px;
+    padding-top: 8px;
     border-top: 1px solid #eef1f5;
   }
   .tl-app .leaflet-popup .stop-popup-ui .integration-list {
     display: grid;
-    gap: 10px;
+    gap: 4px;
   }
   .tl-app .leaflet-popup .stop-popup-ui .integration-group-header {
     display: none;
   }
   .tl-app .leaflet-popup .stop-popup-ui .integration-place-list {
     display: grid;
-    gap: 9px;
+    gap: 4px;
   }
   .tl-app .leaflet-popup .stop-popup-ui .integration-place-row {
     display: flex;
-    min-height: 36px;
+    min-height: 32px;
     gap: 9px;
     padding: 3px 2px;
     align-items: center;
@@ -118,7 +124,7 @@
   }
   .tl-app .leaflet-popup .stop-popup-ui .tl-integration-more-note {
     display: block;
-    margin-top: 10px;
+    margin-top: 6px;
     color: #718195;
     font-size: 10px;
     line-height: 1.4;
@@ -160,6 +166,7 @@
     stroke-linecap: round;
     stroke-linejoin: round;
   }
+  .tl-app .leaflet-popup .stop-popup-ui .tl-maps-external-indicator { display: none; }
   .tl-app .leaflet-popup .stop-popup-ui .integration-place-link-arrow {
     order: 3;
     font-size: 13px;
@@ -171,8 +178,8 @@
     justify-content: flex-end;
     align-items: center;
     gap: 6px;
-    margin-top: 17px;
-    padding-top: 10px;
+    margin-top: 9px;
+    padding-top: 6px;
     border-top: 1px solid #eff2f5;
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-popup-section--location,
@@ -231,7 +238,7 @@
   .tl-app #selectedStopInfo .tl-integration-quick-logo {
     display: none !important;
   }
-  .tl-app .leaflet-popup .stop-popup-ui .tl-show-stop-in-panel {
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-row > .tl-show-stop-in-panel {
     order: 3;
     flex: 0 0 100%;
     min-height: 30px;
@@ -268,7 +275,6 @@
     font-weight: 600;
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-navigation {
-    margin-top: 9px;
     background: #f8fafc;
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-nav-button {
