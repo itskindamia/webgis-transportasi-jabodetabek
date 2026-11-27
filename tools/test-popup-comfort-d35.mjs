@@ -280,7 +280,7 @@ for (const [width, height] of [[1440, 900], [390, 844]]) {
           label: code.textContent, expected, size: width, circle: width === height && css.borderRadius === "50%",
           fits: rect.left - x >= 2 && x + width - rect.right >= 2 && rect.top - y >= 2 && y + height - rect.bottom >= 2,
           font: parseFloat(ink.fontSize), background: css.backgroundColor,
-          expectedBackground: getComputedStyle(color).color, ink: ink.color
+          expectedBackground: getComputedStyle(color).color, ink: ink.color, textShadow: ink.textShadow
         };
         badge.remove();
         color.remove();
@@ -314,7 +314,9 @@ for (const [width, height] of [[1440, 900], [390, 844]]) {
     const at24px = Object.fromEntries(samples.filter(data => data.size === 24).map(data => [data.label, data]));
     for (const code of ["1", "2", "6", "13", "14", "1A", "3F", "10H"]) assert.ok(at24px[code]);
     assert.equal(at24px["1"].font, at24px["14"].font, "single digits do not use oversized typography");
-    assert.equal(at24px["14"].ink, "rgb(0, 0, 0)", "light route colors retain legible ink");
-    assert.equal(at24px["1"].ink, "rgb(255, 255, 255)", "dark route colors retain legible ink");
+    for (const sample of samples) {
+      assert.equal(sample.ink, "rgb(255, 255, 255)", "all Transjakarta codes use white ink");
+      assert.notEqual(sample.textShadow, "none", "text contrast assist is present on light corridors");
+    }
   });
 }
