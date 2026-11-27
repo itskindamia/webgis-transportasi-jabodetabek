@@ -80,8 +80,14 @@ test("D3.3 Dukuh Atas popup shows a concise three-destination summary, preservin
     };
   });
   assert.equal(result.total, 5);
-  assert.equal(result.visible, 3);
-  assert.match(result.hint || "", /2 tujuan lainnya/);
+  assert.equal(result.visible, 2);
+  assert.match(result.hint || "", /3 tujuan lainnya/);
+  const cta = page.locator(`${popup} > .tl-show-stop-in-panel`);
+  assert.equal(await cta.isVisible(), true);
+  const box = await cta.boundingBox();
+  const nav = await page.locator(`${popup} > .stop-popup-navigation`).boundingBox();
+  assert.ok(box && nav && box.y + box.height <= nav.y + 1,
+    "full Detail action stays above the navigation without scrolling");
   assert.equal(result.mapped, 4, "D4 retains all four georeferenced destinations");
   assert.equal(result.passengerHidden, true);
 });
