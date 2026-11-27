@@ -95,6 +95,15 @@ test("D3.5 long Dukuh Atas popup keeps Panel action visible above navigation", a
   await popup.waitFor();
   const panelButton = popup.locator(":scope > .tl-show-stop-in-panel");
   await panelButton.waitFor({ state: "visible" });
+  const popupRows = await popup.locator(".integration-place-row").evaluateAll(rows => ({
+    total: rows.length,
+    visible: rows.filter(el => getComputedStyle(el).display !== "none").length
+  }));
+  assert.equal(popupRows.visible, Math.min(3, popupRows.total));
+  if (popupRows.total > 3) {
+    assert.match(await popup.locator(".tl-integration-more-note").innerText(),
+      new RegExp(String(popupRows.total - 3) + " integrasi lainnya"));
+  }
   const state = await panelButton.evaluate(button => {
     const rect = button.getBoundingClientRect();
     const root = button.closest(".stop-popup-ui").getBoundingClientRect();
@@ -111,6 +120,8 @@ test("D3.5 long Dukuh Atas popup keeps Panel action visible above navigation", a
   assert.equal(state.sourceStop, "LRTJB001_01");
   await panelButton.click();
   await page.locator("#selectedStopInfo > .stop-popup-ui").waitFor();
+  const fullCount = await page.locator("#selectedStopInfo .integration-place-row:visible").count();
+  assert.equal(fullCount, popupRows.total, "Panel shows every destination");
   assert.equal(await page.evaluate(() => currentSelectedStopKey), state.sourceStop);
   assert.equal(await page.evaluate(() => currentSelectedRouteId), state.activeRoute);
 });
