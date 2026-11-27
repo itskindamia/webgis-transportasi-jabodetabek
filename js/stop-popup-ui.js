@@ -133,6 +133,7 @@
         icon.setAttribute("aria-hidden", "true");
         if (image) {
           const clone = image.cloneNode(true);
+          clone.className = "tl-quick-integration-image";
           clone.alt = "";
           icon.append(clone);
         } else {
