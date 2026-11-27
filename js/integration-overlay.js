@@ -277,6 +277,7 @@
       if (summaryFrame || summary.hidden) return;
       summaryFrame = requestAnimationFrame(() => {
         summaryFrame = 0;
+        if (summary.hidden) return;
         const popup = map._popup;
         const card = !overviewActive && popup?.isOpen()
           ? popup.getElement()?.querySelector(".leaflet-popup-content-wrapper")?.getBoundingClientRect()
@@ -286,9 +287,23 @@
         // the previous frame placed it at the bottom. This avoids oscillation.
         const left = mapBounds.left + 12;
         const top = mapBounds.top + 59;
+        summary.classList.remove("is-compact");
         const overlaps = card && card.left < left + summary.offsetWidth && card.right > left &&
           card.top < top + summary.offsetHeight && card.bottom > top;
         summary.classList.toggle("is-below-popup", Boolean(overlaps));
+        if (!overlaps) {
+          summary.removeAttribute("title");
+          return;
+        }
+        const dock = document.getElementById("bottomToolbar").getBoundingClientRect();
+        const bottom = Math.ceil(mapBounds.bottom - dock.top + 3);
+        summary.style.setProperty("--tl-summary-bottom", `${bottom}px`);
+        // Compact the lower card on short desktops so the popup footer and
+        // the dock both remain reachable. The note is retained for AT.
+        const compact = card.bottom > mapBounds.bottom - bottom - summary.offsetHeight;
+        summary.classList.toggle("is-compact", compact);
+        if (compact) summary.title = summary.querySelector(".tl-integration-map-note").textContent;
+        else summary.removeAttribute("title");
       });
     }
 

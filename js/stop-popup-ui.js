@@ -116,37 +116,24 @@
     return root;
   }
 
-  // One compact "glance" view for the anchored popup. The right-side
-  // Detail panel receives the same original engine content, with the
-  // extra operator/source context retained in its own styling.
-  function decorateQuickGlance(root) {
-    if (!root || root.dataset.quickGlanceReady) return;
-    root.dataset.quickGlanceReady = "true";
-    for (const group of root.querySelectorAll(".integration-group")) {
-      const operator = group.querySelector(".integration-operator")?.textContent.trim() || "Integrasi";
-      const image = group.querySelector(".integration-logo");
-      for (const row of group.querySelectorAll(".integration-place-row")) {
-        const label = row.querySelector(".integration-place-name-wrap");
-        if (!label || row.querySelector(".tl-integration-quick-logo")) continue;
-        const icon = document.createElement("span");
-        icon.className = "tl-integration-quick-logo";
-        icon.setAttribute("aria-hidden", "true");
-        if (image) {
-          const clone = image.cloneNode(true);
-          clone.className = "tl-quick-integration-image";
-          clone.alt = "";
-          icon.append(clone);
-        } else {
-          icon.textContent = operator.slice(0, 2).toUpperCase();
-          icon.title = operator;
-        }
-        // The destination is read first; the actual operator mark sits
-        // on its right, before any navigation chevron.
-        row.insertBefore(icon, row.querySelector(".integration-place-link-arrow"));
-      }
+  function decorateQuickGlance(root, feature) {
+    if (!root) return;
+    const operatorLogo = {
+      BRT: TRANSIT_LOGOS.TJ,
+      MRT: TRANSIT_LOGOS.MRT,
+      KRL: TRANSIT_LOGOS.KRL,
+      KA_BANDARA: TRANSIT_LOGOS.KAI_BANDARA
+    }[normalizeMode(feature?.properties?.MODE)];
+    const eyebrow = root.querySelector(".stop-popup-eyebrow");
+    if (operatorLogo && eyebrow) {
+      const logo = document.createElement("img");
+      logo.className = "tl-stop-operator-logo";
+      logo.src = operatorLogo;
+      logo.alt = "";
+      eyebrow.prepend(logo);
     }
-    // Popup = glance; Panel = complete list. Keep every row in the DOM so
-    // integration navigation/resolvers still have the same source data.
+    // Keep the original operator groups and every destination in the DOM.
+    // Only the desktop popup limits which rows are visible.
     const integrationRows = [...root.querySelectorAll(".integration-place-row")];
     const compactLimit = 3;
     if (integrationRows.length > compactLimit) {
@@ -155,8 +142,9 @@
       });
       const integration = root.querySelector(".stop-popup-section--integration");
       if (integration) {
-        const note = textElement("span", "tl-integration-more-note",
-          `+${integrationRows.length - compactLimit} integrasi lainnya tersedia di Panel`);
+        const note = textElement("button", "tl-integration-more-note",
+          `+${integrationRows.length - compactLimit} integrasi lainnya di panel`);
+        note.type = "button";
         integration.append(note);
       }
     }
@@ -191,7 +179,7 @@
       const template = document.createElement("template");
       template.innerHTML = html;
       const root = enhance(template.content.querySelector(".stop-popup"), feature, routeId);
-      decorateQuickGlance(root);
+      decorateQuickGlance(root, feature);
       const actions = root?.querySelector(".stop-popup-action-row");
       if (actions) {
         const button = textElement("button", "tl-show-stop-in-panel", "Tampilkan di panel");

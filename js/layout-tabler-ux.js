@@ -178,17 +178,21 @@
       byId("globalSearchInput").setAttribute("aria-expanded", saved.searchExpanded || "false");
       if (completed) saveProductTourCompleted();
       requestAnimationFrame(() => {
-        // Restore the saved camera without Leaflet's rounded relative pan or
-        // the popup's keep-in-view pan during the intermediate resize.
+        // The explicit view reset emits its own moveend. Drop the older
+        // queued resize notification so it cannot pan the popup again.
         const popup = map._popup;
         const autoPan = popup?.options.autoPan;
         if (popup) popup.options.autoPan = false;
         try {
-          map.invalidateSize({ animate: false });
+          clearTimeout(map._sizeTimer);
+          map.invalidateSize({ animate: false, pan: false });
           map.setView(saved.center, saved.zoom, { animate: false, reset: true });
         } finally {
           if (popup) popup.options.autoPan = autoPan;
         }
+        // A permalink can open a station during the automatic welcome tour.
+        // Let Leaflet fit that popup after the tour releases the viewport.
+        if (!saved.manual && popup?.isOpen()) popup.setLatLng(popup.getLatLng());
         const focus = saved.focus?.isConnected && !saved.focus.closest("[inert]") && visibleRect(saved.focus) ? saved.focus : byId("tlNetworkToggle");
         focus.focus({ preventScroll: true });
         scheduleLabels();

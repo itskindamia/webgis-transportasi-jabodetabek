@@ -17,6 +17,12 @@ async function selectAsean(page) {
   await page.locator('#stopList [data-stop-key="BRT002_REG_A"]').click();
   await page.locator('.leaflet-popup .stop-popup-ui[data-stop-key="BRT002_REG_A"]').waitFor();
   await waitForIdleCamera(page);
+  await page.waitForFunction(() => {
+    const marker = stopMarkerByKey.get(currentSelectedStopKey);
+    const feature = getStopByKey(currentSelectedStopKey);
+    const style = selectedStopStyle(currentSelectedRouteId, feature);
+    return marker?.options.radius === style.radius && marker.options.weight === style.weight;
+  });
 }
 async function waitForIdleCamera(page) {
   await page.waitForFunction(async () => {
@@ -104,9 +110,16 @@ for (const width of [390, 768, 1366]) test(`Tabler guided tour has visible ancho
   // The legend can change the available popup area on tablet. Record the
   // user's settled camera rather than a frame in the middle of Leaflet pan.
   await waitForIdleCamera(page);
-  const before = await engineState(page); const panels = await panelState(page); const view = await readMap(page);
   const guide = width >= 1024 ? "tlDockGuide" : "rightInfoGuideButton";
+  const before = await engineState(page); const panels = await panelState(page);
+  // Sample on the same input event as startProductTour so an independent
+  // movement between Playwright commands cannot skew the expected camera.
+  await page.evaluate(() => document.addEventListener("click", () => {
+    const { lat, lng } = map.getCenter();
+    window.tourCameraOnClick = { center: [lat, lng], zoom: map.getZoom() };
+  }, { capture: true, once: true }));
   await page.click(`#${guide}`);
+  const view = await page.evaluate(() => window.tourCameraOnClick);
   for (let index = 0; index < 5; index++) {
     await page.waitForTimeout(120);
     const geometry = await page.evaluate(() => ({ card: document.getElementById("productTourCard").getBoundingClientRect().toJSON(),

@@ -238,7 +238,8 @@
       if (typeof content === "string") {
         const template = document.createElement("template");
         template.innerHTML = content;
-        template.content.querySelector(".tl-show-stop-in-panel")?.remove();
+        template.content.querySelectorAll(".tl-show-stop-in-panel, .tl-integration-more-note")
+          .forEach(button => button.remove());
         const scrollBody = template.content.querySelector(".lrt-popup-body");
         scrollBody?.removeAttribute("tabindex");
         scrollBody?.removeAttribute("aria-label");
@@ -696,7 +697,7 @@
           maxWidth: width,
           // The richer three-destination glance can use more room on tall
           // desktops, while smaller map cells still cap the scrolling body.
-          maxHeight: Math.min(512, Math.max(64, mapElement.clientHeight - top - bottom - 30)),
+          maxHeight: Math.min(536, Math.max(64, mapElement.clientHeight - top - bottom - 30)),
           autoPan: true,
           keepInView: true,
           autoPanPaddingTopLeft: [left, top],
@@ -844,7 +845,7 @@
       syncPopupPresentation();
     });
     map.getContainer().addEventListener("click", event => {
-      const button = event.target.closest(".tl-show-stop-in-panel");
+      const button = event.target.closest(".tl-show-stop-in-panel, .tl-integration-more-note");
       if (!desktopLayout.matches || !currentSelectedStopKey ||
           button?.closest(".stop-popup-ui")?.dataset.stopKey !== currentSelectedStopKey) return;
       event.stopPropagation();

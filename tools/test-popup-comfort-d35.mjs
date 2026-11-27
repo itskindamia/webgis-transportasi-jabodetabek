@@ -22,21 +22,30 @@ async function cawang(page) {
   await page.locator(".leaflet-popup .stop-popup-ui").waitFor();
 }
 
-test("D3.5 desktop popup uses compact destination logos and accessible icon-only source/map actions", async t => {
+test("D3.5 desktop popup preserves operator groups and route badges with accessible icon-only actions", async t => {
   const page = await app(t);
   await cawang(page);
   const popup = page.locator(".leaflet-popup .stop-popup-ui");
   const destination = popup.locator(".integration-place-row").first();
   await destination.waitFor();
-  assert.equal(await destination.locator(".tl-integration-quick-logo img").count(), 1,
-    "uses real operator logo in destination row");
+  const group = popup.locator(".integration-group").first();
+  const heading = group.locator(".integration-group-header");
+  assert.match(await heading.locator(".integration-operator").innerText(), /TransJakarta/i);
+  assert.equal(await heading.locator(".integration-logo").getAttribute("src"), "assets/logos/transjakarta.svg");
   await page.waitForFunction(() => {
-    const logo = document.querySelector(".leaflet-popup .tl-integration-quick-logo img");
+    const logo = document.querySelector(".leaflet-popup .integration-group-header .integration-logo");
     return logo?.complete && logo.naturalWidth > 0;
   });
   assert.equal(await destination.locator(".integration-place-name").isVisible(), true);
-  assert.equal(await popup.locator(".integration-group-header").first().isVisible(), false);
-  assert.equal(await popup.locator(".integration-line-badges").first().isVisible(), false);
+  assert.equal(await heading.isVisible(), true);
+  assert.deepEqual(await destination.locator(".tj-route-code").allTextContents(), ["7", "9"]);
+  const positions = await destination.evaluate(row => {
+    const rect = selector => row.querySelector(selector).getBoundingClientRect();
+    return rect(".integration-place-name").right <= rect(".integration-line-badges").left &&
+      rect(".integration-line-badges").right <= rect(".integration-place-link-arrow").left;
+  });
+  assert.equal(positions, true, "the name, corridor badges and navigation arrow keep their order");
+  await destination.click({ trial: true });
   const maps = popup.locator(".stop-popup-maps-link");
   const source = popup.locator(".stop-source-summary");
   assert.equal(await maps.getAttribute("aria-label"), "Buka lokasi di Google Maps");
@@ -135,10 +144,16 @@ test("D3.5 long Dukuh Atas popup keeps Panel action visible above navigation", a
     visible: rows.filter(el => getComputedStyle(el).display !== "none").length
   }));
   assert.equal(popupRows.visible, Math.min(3, popupRows.total));
-  if (popupRows.total > 3) {
-    assert.match(await popup.locator(".tl-integration-more-note").innerText(),
-      new RegExp(String(popupRows.total - 3) + " integrasi lainnya"));
-  }
+  assert.ok(popupRows.total > 3);
+  const remainder = popup.locator(".tl-integration-more-note");
+  assert.match(await remainder.innerText(), new RegExp(String(popupRows.total - 3) + " integrasi lainnya"));
+  const groups = await popup.locator(".integration-group:visible").evaluateAll(elements => elements.map(group => ({
+    operator: group.querySelector(".integration-operator").textContent.trim(),
+    rows: [...group.querySelectorAll(".integration-place-row")].filter(row => row.getClientRects().length).length
+  })));
+  assert.deepEqual(groups.map(group => group.rows), [2, 1], "limit counts destinations and leaves no empty headings");
+  assert.match(groups[0].operator, /TransJakarta/i);
+  assert.match(groups[1].operator, /KRL/i);
   const state = await panelButton.evaluate(button => {
     const rect = button.getBoundingClientRect();
     const root = button.closest(".stop-popup-ui").getBoundingClientRect();
@@ -182,7 +197,7 @@ test("D3.5 long Dukuh Atas popup keeps Panel action visible above navigation", a
   const view = () => page.evaluate(() => ({ center: map.getCenter(), zoom: map.getZoom(), url: location.href }));
   await page.waitForFunction(() => map.getZoom() === STOP_ZOOM && !map._panAnim?._inProgress && !map._animatingZoom);
   const before = await view();
-  await panelButton.click();
+  await remainder.press("Enter");
   await page.locator("#selectedStopInfo > .stop-popup-ui").waitFor();
   const fullCount = await page.locator("#selectedStopInfo .integration-place-row:visible").count();
   assert.equal(fullCount, popupRows.total, "Panel shows every destination");
@@ -199,3 +214,67 @@ test("D3.5 long Dukuh Atas popup keeps Panel action visible above navigation", a
   assert.ok(pixels <= 1, `camera preserved when returning to Popup: ${pixels}px`);
   await popup.locator(".stop-popup-nav-button").first().click({ trial: true });
 });
+
+for (const [width, height] of [[1440, 900], [390, 844]]) {
+  test(`D3.5 Transjakarta badge geometry and contrast at ${width}×${height}`, async t => {
+    const page = await app(t, width, height);
+    const samples = await page.evaluate(() => {
+      const corridors = [...new Set(routeData.features.filter(route => getRouteMode(route) === "BRT").map(getRouteId))];
+      const fixtures = [
+        ["1A", "#93C3A4"], // Angkutan Pengumpan
+        ["3F", "#B39233"], ["10H", "#9C050A"] // Rute BRT tambahan
+      ];
+      const host = document.createElement("div");
+      document.body.append(host);
+      const measure = (badge, expected, background, size) => {
+        if (size) Object.assign(badge.style, { width: `${size}px`, height: `${size}px` });
+        host.append(badge);
+        const code = badge.querySelector(".tj-route-code");
+        const { x, y, width, height } = badge.getBoundingClientRect();
+        const rect = code.getBoundingClientRect();
+        const css = getComputedStyle(badge), ink = getComputedStyle(code);
+        const color = document.createElement("span");
+        color.style.color = background;
+        host.append(color);
+        const result = {
+          label: code.textContent, expected, size: width, circle: width === height && css.borderRadius === "50%",
+          fits: rect.left - x >= 2 && x + width - rect.right >= 2 && rect.top - y >= 2 && y + height - rect.bottom >= 2,
+          font: parseFloat(ink.fontSize), background: css.backgroundColor,
+          expectedBackground: getComputedStyle(color).color, ink: ink.color
+        };
+        badge.remove();
+        color.remove();
+        return result;
+      };
+      const html = markup => {
+        const template = document.createElement("template");
+        template.innerHTML = markup;
+        return template.content.firstElementChild;
+      };
+      const result = corridors.flatMap(id => [
+        measure(html(buildBrtBadge(id)), routeNumberFromId(id), getRouteColor(id), 24),
+        measure(html(buildSmallRouteBadge(id)), routeNumberFromId(id), getRouteColor(id))
+      ]);
+      for (const [label, color] of fixtures) {
+        const badge = html(buildBrtBadge(`BRT_${label}`));
+        badge.style.setProperty("--route-color", color);
+        badge.innerHTML = buildBrtBadgeLabel(label, color);
+        result.push(measure(badge, label, color, 24));
+      }
+      host.remove();
+      return result;
+    });
+    assert.equal(samples.length, 19 * 2 + 3, "every mapped corridor and all three fixture-only codes are rendered");
+    for (const sample of samples) {
+      assert.equal(sample.label, sample.expected);
+      assert.equal(sample.circle && sample.fits, true, JSON.stringify(sample));
+      assert.equal(sample.background, sample.expectedBackground);
+      assert.ok(sample.font <= sample.size * 0.5, "the code stays proportional to the circle");
+    }
+    const at24px = Object.fromEntries(samples.filter(data => data.size === 24).map(data => [data.label, data]));
+    for (const code of ["1", "2", "6", "13", "14", "1A", "3F", "10H"]) assert.ok(at24px[code]);
+    assert.equal(at24px["1"].font, at24px["14"].font, "single digits do not use oversized typography");
+    assert.equal(at24px["14"].ink, "rgb(0, 0, 0)", "light route colors retain legible ink");
+    assert.equal(at24px["1"].ink, "rgb(255, 255, 255)", "dark route colors retain legible ink");
+  });
+}

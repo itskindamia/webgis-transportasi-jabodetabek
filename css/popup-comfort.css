@@ -1,13 +1,30 @@
 /* D3.5 — desktop quick-glance vs detailed panel.
    Scoped to Leaflet popups: the Detail panel retains full operator,
    badge, source and extended information. Mobile remains unchanged. */
-.tl-app .tl-quick-action-svg { display: none; }
+.tl-app :is(.tl-quick-action-svg, .tl-stop-operator-logo, .tl-integration-more-note) { display: none; }
 
 @media (min-width: 1024px) {
   /* Move the D4 count only when the Popup occupies its upper position. */
   .tl-app #map > .tl-integration-map-summary.is-below-popup {
     top: auto;
-    bottom: 80px;
+    bottom: var(--tl-summary-bottom, 80px);
+  }
+  .tl-app #map > .tl-integration-map-summary.is-compact {
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+  .tl-app .tl-integration-map-summary.is-compact .tl-integration-map-count {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tl-app .tl-integration-map-summary.is-compact .tl-integration-fit { min-height: 24px; }
+  .tl-app .tl-integration-map-summary.is-compact .tl-integration-map-note {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    clip-path: inset(50%);
+    overflow: hidden;
   }
   .tl-app #tlMapStatus {
     font-size: 10px;
@@ -25,16 +42,28 @@
     padding-block: 10px 8px;
   }
   .tl-app .leaflet-popup .stop-popup-ui .lrt-popup-body {
-    padding-block: 0 8px;
+    padding-block: 0 6px;
   }
   .tl-app .leaflet-popup .stop-popup-ui .lrt-popup-main .stop-popup-scroll {
     padding-block: 0;
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-eyebrow {
-    margin-bottom: 5px;
+    margin-bottom: 3px;
     font-size: 10px;
     font-weight: 500;
     color: #627386;
+  }
+  .tl-app .stop-popup-ui .stop-popup-eyebrow:has(.tl-stop-operator-logo) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tl-app .stop-popup-ui .tl-stop-operator-logo {
+    display: block;
+    width: auto;
+    height: 17px;
+    max-width: 50px;
+    object-fit: contain;
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-title {
     font-size: 20px;
@@ -48,7 +77,7 @@
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-meta-row {
     gap: 5px;
-    margin-top: 9px;
+    margin-top: 7px;
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-meta-row > *,
   .tl-app .leaflet-popup .stop-popup-ui :is(.stop-popup-status, .stop-popup-role, .stop-popup-structure-pill, .stop-popup-direction-pill) {
@@ -80,40 +109,27 @@
     gap: 4px;
   }
   .tl-app .leaflet-popup .stop-popup-ui .integration-group-header {
-    display: none;
+    min-height: 20px;
+    padding-inline: 2px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .integration-logo {
+    height: 16px;
+    max-width: 26px;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .integration-operator {
+    font-size: 12px;
   }
   .tl-app .leaflet-popup .stop-popup-ui .integration-place-list {
     display: grid;
-    gap: 4px;
+    gap: 1px;
   }
   .tl-app .leaflet-popup .stop-popup-ui .integration-place-row {
     display: flex;
-    min-height: 32px;
-    gap: 9px;
-    padding: 3px 2px;
+    min-height: 26px;
+    gap: 7px;
+    padding: 2px;
     align-items: center;
     border: 0;
-  }
-  .tl-app .leaflet-popup .stop-popup-ui .tl-integration-quick-logo {
-    display: grid;
-    place-items: center;
-    order: 2;
-    margin-left: auto;
-    flex: 0 0 29px;
-    width: 29px;
-    height: 27px;
-    border-radius: 6px;
-    background: #f5f7fa;
-    color: #506177;
-    font-size: 10px;
-    font-weight: 600;
-  }
-  .tl-app .leaflet-popup .stop-popup-ui .tl-integration-quick-logo img {
-    max-width: 26px;
-    max-height: 21px;
-    width: auto;
-    height: auto;
-    object-fit: contain;
   }
   .tl-app .leaflet-popup .stop-popup-ui .integration-place-row[data-quick-glance-overflow="true"] {
     display: none !important;
@@ -123,14 +139,23 @@
   }
   .tl-app .leaflet-popup .stop-popup-ui .tl-integration-more-note {
     display: block;
-    margin-top: 6px;
-    color: #718195;
-    font-size: 10px;
+    min-height: 22px;
+    margin-top: 2px;
+    padding: 0 2px;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    color: #285381;
+    font-size: 11px;
     line-height: 1.4;
   }
-  .tl-app #selectedStopInfo .tl-integration-more-note { display: none !important; }
+  .tl-app .leaflet-popup .stop-popup-ui .tl-integration-more-note:hover { text-decoration: underline; }
+  .tl-app .leaflet-popup .stop-popup-ui .tl-integration-more-note:focus-visible {
+    outline: 2px solid var(--tl-blue);
+    outline-offset: 1px;
+  }
   .tl-app .leaflet-popup .stop-popup-ui .integration-place-name-wrap {
-    order: 0;
+    order: -1;
     flex: 1;
     min-width: 0;
   }
@@ -139,12 +164,6 @@
     line-height: 1.45;
     font-weight: 500;
     color: var(--popup-comfort-ink);
-  }
-  /* Full corridor badges remain available in Panel kanan; quick glance
-     only presents the destination and operator mark. */
-  .tl-app .leaflet-popup .stop-popup-ui .integration-line-badges,
-  .tl-app .leaflet-popup .stop-popup-ui .integration-relationship-meta {
-    display: none !important;
   }
   /* Non-existing integration status remains legible: never make plans
      or conceptual routes appear identical to existing connections. */
@@ -178,7 +197,7 @@
     align-items: center;
     gap: 6px;
     margin-top: 9px;
-    padding-top: 6px;
+    padding-top: 4px;
     border-top: 1px solid #eff2f5;
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-popup-section--location,
@@ -233,9 +252,6 @@
     padding: 9px 4px;
     min-width: 0;
     overflow-wrap: anywhere;
-  }
-  .tl-app #selectedStopInfo .tl-integration-quick-logo {
-    display: none !important;
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-row > .tl-show-stop-in-panel {
     order: 3;
@@ -307,6 +323,4 @@
 }
 @media (max-width: 1023px) {
   .tl-app .tl-dock .tl-dock-utility { display: none !important; }
-  .tl-app .tl-integration-quick-logo,
-  .tl-app .tl-integration-more-note { display: none !important; }
 }

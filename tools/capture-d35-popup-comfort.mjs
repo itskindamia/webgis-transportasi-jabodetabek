@@ -8,13 +8,13 @@ const output = process.env.D35_CAPTURE_OUTPUT || "artifacts/d35-comfort";
 const compareBaseline = process.env.D35_CAPTURE_BASELINE === "1";
 const popupCard = ".leaflet-popup .stop-popup-ui";
 const panelCard = "#selectedStopInfo > .stop-popup-ui";
-const desktop = { width: 1440, height: 900 };
-const mobile = { width: 390, height: 844 };
+const viewports = [{ width: 1440, height: 900 }, { width: 1280, height: 720 },
+  { width: 390, height: 844 }, { width: 360, height: 800 }];
 const scenarios = [
   { name: "dukuh-atas-lrt", mode: "LRT", route: "LRT_JB_BK", stop: "LRTJB001", key: "LRTJB001_01", panel: true },
   { name: "cawang-lrt", mode: "LRT", route: "LRT_JB_BK", stop: "LRTJB008", key: "LRTJB008_01", panel: true },
   { name: "sudirman-krl", mode: "KRL", route: "KRL_CK", stop: "KRL059", key: "KRL059_01" },
-  { name: "asean-brt", mode: "BRT", route: "BRT_01", stop: "BRT002", key: "BRT002_REG_A" },
+  { name: "dukuh-atas-brt", mode: "BRT", route: "BRT_01", stop: "BRT010", key: "BRT010_REG" },
   { name: "asean-mrt", mode: "MRT", route: "MRT_NS", stop: "MRT007", key: "MRT007_01" }
 ];
 
@@ -65,11 +65,14 @@ async function readCard(page, selector) {
     };
     const rows = [...root.querySelectorAll(".integration-place-row")];
     const navigation = [...root.querySelectorAll(".stop-popup-nav-button:not(:disabled)")];
+    const summary = document.querySelector("#map > .tl-integration-map-summary:not([hidden])")?.getBoundingClientRect();
     return {
       title: root.querySelector(".stop-popup-title").textContent.trim(),
       stop: currentSelectedStopKey, route: currentSelectedRouteId, permalink: location.search,
       center: map.getCenter(), zoom: map.getZoom(), width: document.documentElement.scrollWidth,
       bounds: rect.toJSON(), visibleRows: rows.filter(visible).length, totalRows: rows.length,
+      summaryOverlap: Boolean(summary && rect.left < summary.right && rect.right > summary.left &&
+        rect.top < summary.bottom && rect.bottom > summary.top),
       brokenLogos: [...root.querySelectorAll("img")].filter(img => visible(img) &&
         (!img.complete || !img.naturalWidth)).map(img => img.getAttribute("src")),
       navigation: navigation.map(button => ({ direction: button.dataset.stopNav, visible: visible(button), hit: hit(button) })),
@@ -122,7 +125,7 @@ async function validateNavigation(page, stop) {
 async function capture(page, selector, scenario, size, presentation) {
   await waitForMap(page);
   const measure = await readCard(page, selector);
-  const isDesktop = size.width === desktop.width;
+  const isDesktop = size.width >= 1024;
   assert.equal(measure.route, scenario.route);
   assert.equal(measure.stop, scenario.key);
   assert.equal(measure.width, size.width);
@@ -131,7 +134,9 @@ async function capture(page, selector, scenario, size, presentation) {
     `${scenario.name} ${presentation} navigation is visible and operable: ${JSON.stringify(measure.navigation)}`);
   if (presentation === "popup") {
     assert.ok(measure.bounds.left >= 0 && measure.bounds.right <= size.width &&
-      measure.bounds.top >= 0 && measure.bounds.bottom <= size.height, `${scenario.name} popup fits the viewport`);
+      measure.bounds.top >= 0 && measure.bounds.bottom <= size.height,
+    `${size.width}×${size.height} ${scenario.name} popup fits the viewport: ${JSON.stringify(measure.bounds)}`);
+    if (!compareBaseline) assert.equal(measure.summaryOverlap, false, "D4 summary stays clear of the popup");
   }
   if (!compareBaseline) {
     const maxRows = isDesktop && presentation === "popup" ? 3 : Infinity;
@@ -159,9 +164,10 @@ await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH });
 const report = { url, workflowCommit: process.env.GITHUB_SHA || null, screenshots: [] };
 try {
-  for (const size of [desktop, mobile]) {
+  for (const size of viewports) {
+    const isDesktop = size.width >= 1024;
     for (const scenario of scenarios) {
-      const context = await browser.newContext({ viewport: size, hasTouch: size === mobile });
+      const context = await browser.newContext({ viewport: size, hasTouch: !isDesktop });
       try {
         const page = await context.newPage();
         const pageErrors = [];
@@ -171,7 +177,7 @@ try {
         await openStop(page, scenario);
         const initial = await capture(page, popupCard, scenario, size, "popup");
         const screenshots = [initial];
-        if (size === desktop && scenario.panel) {
+        if (isDesktop && scenario.panel) {
           await page.locator(`${popupCard} .tl-show-stop-in-panel`).click();
           await page.locator(panelCard).waitFor();
           const details = await capture(page, panelCard, scenario, size, "panel");
@@ -185,8 +191,8 @@ try {
         }
         if (!compareBaseline) {
           await validateActions(page, popupCard);
-          if (size === desktop && scenario === scenarios[0]) await validateUtilities(page);
-          if (size === desktop && scenario.name === "cawang-lrt") await validateNavigation(page, scenario.key);
+          if (isDesktop && scenario === scenarios[0]) await validateUtilities(page);
+          if (isDesktop && scenario.name === "cawang-lrt") await validateNavigation(page, scenario.key);
         }
         assert.deepEqual(pageErrors, []);
         report.screenshots.push(...screenshots.map(shot => ({ ...shot, consoleErrors: [...consoleErrors] })));
