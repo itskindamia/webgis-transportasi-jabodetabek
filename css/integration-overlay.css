@@ -77,7 +77,9 @@
   }
   .tl-app .tl-integration-target-symbol {
     box-sizing: border-box;
-    width: 176px;
+    width: max-content;
+    min-width: 176px;
+    max-width: 240px;
     height: 34px;
     display: flex;
     align-items: center;
@@ -97,14 +99,19 @@
   .tl-app .tl-integration-target-line {
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex: 0 0 26px;
-    width: 26px;
+    justify-content: flex-start;
+    gap: 3px;
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 26px;
     height: 26px;
-    min-width: 0;
-    border-radius: 50%;
     color: var(--tl-integration-color, #34465a);
     font: 700 9px/1 'PT Sans',sans-serif;
+    /* Only the first badge remains the marker click target. Extra badges and
+       the long station label must not intercept nearby map markers. */
+    pointer-events: none;
+  }
+  .tl-app .tl-integration-target-line > :first-child {
     pointer-events: auto;
   }
   .tl-app .tl-integration-target-line .rail-line-badge-wrap,
@@ -114,9 +121,21 @@
     width: 25px;
     height: 25px;
     min-width: 25px;
+    max-width: 25px;
+    flex: 0 0 25px;
     align-items: center;
     justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
     border-radius: 50%;
+  }
+  /* A one-digit route such as 4 must have exactly the same numeral
+     proportions as 6, independent of the container-query badge defaults. */
+  .tl-app .tl-integration-target-line .brt-route-badge .tj-route-code {
+    font-size: 10px;
+    line-height: 1;
+    letter-spacing: 0;
+    font-weight: 700;
   }
   .tl-app .tl-integration-target-line .rail-line-badge-image {
     display: block;
