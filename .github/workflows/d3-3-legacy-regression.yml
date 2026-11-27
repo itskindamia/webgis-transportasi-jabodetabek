@@ -1,0 +1,52 @@
+name: D3.3 Legacy Assertion Migration
+
+on:
+  pull_request:
+    paths:
+      - 'tools/test-layout-desktop-d1.mjs'
+      - 'tools/test-layout-desktop-popup-d3.mjs'
+      - 'tools/test-layout-refinement.mjs'
+      - 'tools/test-layout-summary.mjs'
+      - 'tools/test-layout-tabler.mjs'
+      - 'tools/test-layout-ux.mjs'
+      - 'docs/layout-tabler/source-integrity.json'
+      - '.github/workflows/d3-3-legacy-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  migrated-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [desktop, data-and-summary, tour-and-layout]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Locate Chromium
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install chromium
+          fi
+      - name: Desktop popup & sidebar
+        if: matrix.group == 'desktop'
+        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-desktop-d1.mjs tools/test-layout-desktop-popup-d3.mjs
+      - name: Source data, route relations and responsive summary
+        if: matrix.group == 'data-and-summary'
+        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-refinement.mjs tools/test-layout-summary.mjs
+      - name: UI hooks, information and tour
+        if: matrix.group == 'tour-and-layout'
+        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-tabler.mjs tools/test-layout-ux.mjs
