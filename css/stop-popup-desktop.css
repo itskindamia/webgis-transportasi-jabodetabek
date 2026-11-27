@@ -798,3 +798,23 @@
     justify-self: start;
   }
 }
+
+/* Persistent link to the more complete Panel, placed between the scrollable
+   quick-glance body and the always-visible previous/next footer. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] > .tl-show-stop-in-panel {
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 38px;
+  margin: 0;
+  padding: 10px 16px;
+  border-top: 1px solid #edf0f4;
+  border-radius: 0;
+  background: #fafbfd;
+  color: #285381;
+  font: 600 12px/1.2 'PT Sans',sans-serif;
+  text-align: center;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] > .tl-show-stop-in-panel:hover {
+  background: #eef4fa;
+}
