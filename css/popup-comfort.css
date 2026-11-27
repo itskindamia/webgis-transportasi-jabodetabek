@@ -151,6 +151,27 @@
     color: #4c6783;
     font-size: 15px;
   }
+  /* When the source disclosure opens, its metadata returns to a full
+     width row while the summary itself remains a small icon control. */
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell:has(.stop-source-card[open]) {
+    flex: 0 0 100%;
+    width: 100%;
+    order: 4;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-source-card[open] {
+    width: 100%;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-source-card[open] .stop-source-summary {
+    margin-left: auto;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-source-card[open] .stop-source-body {
+    padding: 9px 4px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .tl-app #selectedStopInfo .tl-integration-quick-logo {
+    display: none !important;
+  }
   .tl-app .leaflet-popup .stop-popup-ui .tl-show-stop-in-panel {
     order: 3;
     flex: 0 0 100%;
