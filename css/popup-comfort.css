@@ -2,6 +2,12 @@
    Scoped to Leaflet popups: the Detail panel retains full operator,
    badge, source and extended information. Mobile remains unchanged. */
 @media (min-width: 1024px) {
+  /* Relocate D4 summary while a popup is open, avoiding the header
+     collision seen at Dukuh Atas. Keep it above the bottom-left dock. */
+  .tl-app #map:has(.leaflet-popup .stop-popup-ui) > .tl-integration-map-summary {
+    top: auto;
+    bottom: 80px;
+  }
   .tl-app #tlMapStatus {
     font-size: 10px;
     font-weight: 400;
