@@ -3,6 +3,9 @@ name: P0 Tour and Popup Stability
 on:
   pull_request:
     paths:
+      - 'js/layout-tabler.js'
+      - 'js/stop-popup-ui.js'
+      - 'js/map.js'
       - 'tools/test-layout-refinement.mjs'
       - 'tools/test-lrt-popup.mjs'
       - '.github/workflows/p0-tour-stability.yml'

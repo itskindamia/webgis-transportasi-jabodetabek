@@ -38,7 +38,7 @@ npm run build:ui
 npm run test:regression
 ```
 
-- `audit.mjs` memblokir rilis untuk masalah runtime/kode dan menampilkan kekurangan GeoJSON sebagai **catatan data**.
+- Workflow regresi mencatat hasil `audit.mjs` sebagai pembanding data. Bandingkan dengan hasil pada commit dasar dan selidiki setiap temuan baru sebelum rilis.
 - `audit-navigation.mjs` tetap ketat terhadap benturan sequence BRT. Jika audit ini gagal, perbaikan harus dilakukan pada GeoJSON; script tidak menutup-nutupi konflik data.
 
 ## Checklist browser

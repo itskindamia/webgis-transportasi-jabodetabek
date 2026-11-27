@@ -251,12 +251,22 @@
   }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-action-cell .stop-source-body {
     margin-top: 6px;
-    padding: 8px;
+    padding: 4px 8px;
     border: 1px solid var(--tl-border);
     border-radius: 7px;
     background: #f8fafc;
     min-width: 0;
     overflow-wrap: anywhere;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-source-item { padding-block: 0; }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-source-name { font-size: 12px; }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-source-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 32px;
+    margin: 0;
+    font-size: 12px;
   }
   /* Maps and Source remain square icon controls; Panel is a single
      compact button on their right rather than a separate full-width row. */
