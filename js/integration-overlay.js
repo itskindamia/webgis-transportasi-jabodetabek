@@ -202,7 +202,8 @@
       currentLocations = [selection.origin, ...selection.entries.map(x => x.point)];
       summary.hidden = false;
       const countLabel = summary.querySelector(".tl-integration-map-count");
-      countLabel.textContent = String(visibleCount) + " tujuan integrasi pada peta";
+      countLabel.textContent = String(visibleCount) + " lokasi tujuan terpetakan"
+        + (selection.unresolved ? " · " + String(selection.unresolved) + " belum terpetakan" : "");
       if (selection.unresolved) {
         countLabel.title = String(selection.unresolved) + " relasi lain belum dapat dipetakan. Lihat popup/panel untuk informasi lengkap.";
       } else {
