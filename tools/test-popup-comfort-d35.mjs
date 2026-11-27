@@ -85,3 +85,32 @@ test("D3.5 bidirectional route text is presentation-only and mobile popup remain
   assert.equal(await page.locator("#tlDockGuide").isVisible(), false);
   assert.equal(await page.locator("#tlDockAbout").isVisible(), false);
 });
+
+test("D3.5 long Dukuh Atas popup keeps Panel action visible above navigation", async t => {
+  const page = await app(t);
+  await page.click('[data-mode="LRT"]');
+  await selectRoute(page, "LRT_JB_BK");
+  await page.locator('#stopList [data-stop-key="LRTJB001_01"]').click();
+  const popup = page.locator(".leaflet-popup .stop-popup-ui");
+  await popup.waitFor();
+  const panelButton = popup.locator(":scope > .tl-show-stop-in-panel");
+  await panelButton.waitFor({ state: "visible" });
+  const state = await panelButton.evaluate(button => {
+    const rect = button.getBoundingClientRect();
+    const root = button.closest(".stop-popup-ui").getBoundingClientRect();
+    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    return {
+      within: rect.top >= root.top && rect.bottom <= root.bottom,
+      clickable: button.contains(hit),
+      sourceStop: currentSelectedStopKey,
+      activeRoute: currentSelectedRouteId
+    };
+  });
+  assert.equal(state.within, true, "panel action in visible popup area");
+  assert.equal(state.clickable, true, "panel action is not covered by navigation");
+  assert.equal(state.sourceStop, "LRTJB001_01");
+  await panelButton.click();
+  await page.locator("#selectedStopInfo > .stop-popup-ui").waitFor();
+  assert.equal(await page.evaluate(() => currentSelectedStopKey), state.sourceStop);
+  assert.equal(await page.evaluate(() => currentSelectedRouteId), state.activeRoute);
+});
