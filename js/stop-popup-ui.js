@@ -40,7 +40,15 @@
       const hint = document.createElement("p");
       hint.className = "stop-popup-more-destinations";
       hint.textContent = `+${allDestinations.length - previewCount} tujuan lainnya di Panel kanan`;
-      root.querySelector(".stop-popup-section--integration .integration-list")?.after(hint);
+      const section = root.querySelector(".stop-popup-section--integration");
+      section?.querySelector(".integration-list")?.after(hint);
+      const label = section?.querySelector(".stop-popup-label");
+      if (label) {
+        const count = document.createElement("span");
+        count.className = "stop-popup-integration-count";
+        count.textContent = ` · ${allDestinations.length} tujuan`;
+        label.append(count);
+      }
     }
 
     const maps = root.querySelector(".stop-popup-maps-link");
@@ -179,12 +187,13 @@
       if (actions) {
         const button = textElement("button", "tl-show-stop-in-panel", "Tampilkan di panel");
         button.type = "button";
-        // Keep the full-panel action permanently available below the only
-        // scrollable popup body; otherwise long interchanges bury the CTA.
-        // Event delegation still routes it through D3.2's existing handler.
+        actions.append(button);
+        // All three actions belong to one persistent toolbar rather than
+        // the scrolling content, so icons cannot get clipped behind the
+        // fixed navigation on compact or heavily integrated stations.
         const navigation = root.querySelector(".stop-popup-navigation");
-        if (navigation) navigation.before(button);
-        else root.append(button);
+        if (navigation) navigation.before(actions);
+        else root.append(actions);
       }
       return template.innerHTML;
     };
