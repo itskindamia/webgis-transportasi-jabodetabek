@@ -147,6 +147,17 @@
     if (maps) {
       maps.setAttribute("aria-label", "Buka lokasi di Google Maps");
       maps.setAttribute("title", "Google Maps");
+      // Symbol-only quick action with a distinct local map-pin icon.
+      const visual = maps.querySelector(".stop-popup-external-link-icon");
+      if (visual) {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("class", "tl-quick-action-svg");
+        svg.setAttribute("aria-hidden", "true");
+        const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        use.setAttribute("href", "assets/icons/tabler.svg#map-pin");
+        svg.append(use);
+        visual.replaceChildren(svg);
+      }
     }
     if (source) {
       source.setAttribute("aria-label", "Tampilkan sumber data");
