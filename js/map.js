@@ -27030,18 +27030,28 @@ function drawStops(routeId) {
             );
         }
 
-        layer.bindPopup(
-          safeBuildStopPopup(
-            feature,
-            routeId
-          ),
-          getStopPopupOptions()
-        );
-        // Leaflet's own layer click and the delayed selection callbacks both
-        // enter through openPopup. Keep the binding for either presentation.
+        // Building all popup HTML eagerly blocks route changes even when
+        // the user opens just one station. Resolve the exact same content
+        // on demand, both for Leaflet Popup and the detailed Panel view.
+        layer.bindPopup("", getStopPopupOptions());
+        const boundPopup = layer.getPopup();
+        let resolvedStopPopup = null;
+        const ensureStopPopupContent = () => {
+          if (resolvedStopPopup === null) {
+            resolvedStopPopup = safeBuildStopPopup(feature, routeId);
+            boundPopup.setContent(resolvedStopPopup);
+          }
+          return resolvedStopPopup;
+        };
+        boundPopup.getContent = function () {
+          return ensureStopPopupContent();
+        };
+        // Leaflet clicks and delayed selection callbacks use openPopup.
+        // Panel mode reads getContent() without opening a map Popup.
         const openBoundStopPopup = layer.openPopup;
         layer.openPopup = function (latlng) {
           if (window.webgisLayout?.usesStopInfoPanel?.()) return this;
+          ensureStopPopupContent();
           return openBoundStopPopup.call(this, latlng);
         };
 
