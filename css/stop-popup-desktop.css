@@ -741,3 +741,14 @@
 .tl-app #selectedStopInfo > .stop-popup-ui .stop-popup-action-row {
   margin-top: 16px;
 }
+
+/* Location is now an accessible icon action, not an extra printed heading. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-section--location .stop-popup-label {
+  display: none;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-section--location {
+  margin: 0;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-cell:has(.stop-source-card[open]) .stop-source-summary {
+  width: 38px;
+}
