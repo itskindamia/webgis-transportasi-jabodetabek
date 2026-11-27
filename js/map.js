@@ -2513,6 +2513,12 @@ function normalizeRouteNameForDisplay(value) {
     .trim();
 }
 
+// Route endpoint typography is purely presentational. Endpoint parsing
+// continues using the normalized " - " separator from the GeoJSON.
+function getRouteRelationDisplayText(value) {
+  return String(value ?? "").replace(/\s+[-–—]\s+/g, " ↔ ");
+}
+
 
 /*
   RELASI EFEKTIF UNTUK MODA REL
@@ -2736,7 +2742,7 @@ function getRouteTitle(feature) {
     diubah; penggabungan hanya berlaku pada teks UI.
   */
   if (mode === "BRT") {
-    return `Koridor ${p.LINE} (${routeName})`;
+    return `Koridor ${p.LINE} (${getRouteRelationDisplayText(routeName)})`;
   }
 
   const operator = cleanText(p.OPERATOR);
@@ -2760,7 +2766,7 @@ function getRouteTitle(feature) {
   }
 
   if (baseName && relation) {
-    return `${baseName} (${relation})`;
+    return `${baseName} (${getRouteRelationDisplayText(relation)})`;
   }
 
   if (baseName) {
@@ -2839,7 +2845,7 @@ function getRailLineTitle(feature) {
   const relation = getEffectiveRouteRelation(feature);
 
   if (baseName && relation) {
-    return `${baseName} (${relation})`;
+    return `${baseName} (${getRouteRelationDisplayText(relation)})`;
   }
 
   if (baseName) {
@@ -2889,9 +2895,9 @@ function getRouteHeadingParts(feature) {
         cleanText(p.OPERATOR) ||
         "TransJakarta",
       lineName: lineNumber ? `Koridor ${lineNumber}` : "Koridor",
-      relation: getRoutePresentationName(
+      relation: getRouteRelationDisplayText(getRoutePresentationName(
         relationFeature
-      ),
+      )),
       badgeHTML: buildBrtBadge(routeId)
     };
   }
@@ -2899,7 +2905,7 @@ function getRouteHeadingParts(feature) {
   return {
     systemName: getRouteSystemName(feature),
     lineName: getRailLineBaseName(feature) || getRouteTitle(feature),
-    relation: getEffectiveRouteRelation(feature),
+    relation: getRouteRelationDisplayText(getEffectiveRouteRelation(feature)),
     badgeHTML: buildLineBadge(routeId)
   };
 }
@@ -2922,7 +2928,7 @@ function getRouteOptionText(feature) {
   );
 
   return relation
-    ? `Koridor ${lineNumber} (${relation})`
+    ? `Koridor ${lineNumber} (${getRouteRelationDisplayText(relation)})`
     : `Koridor ${lineNumber}`;
 }
 

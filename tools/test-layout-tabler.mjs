@@ -152,7 +152,7 @@ test("global transport search, online place search, basemaps, legend and about r
   await page.click("#tlLegendToggle");
   assert.equal(await page.locator("#rightInfoPanel .legend-section").count() >= 4, true);
   await page.click("#mobileInfoClose");
-  await page.click("#tlAbout");
+  await page.click("#tlDockAbout");
   assert.equal(await page.locator("#infoModal").isVisible(), true);
   assert.deepEqual(app.errors, []);
 });

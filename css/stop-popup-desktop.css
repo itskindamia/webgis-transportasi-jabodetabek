@@ -511,3 +511,381 @@
   white-space: normal;
   overflow-wrap: anywhere;
 }
+
+
+/* D3.3 Visual Comfort: the map popup is a quick glance. The selected-stop
+   detail Panel intentionally retains badges, source labels and full metadata.
+   This stylesheet applies only at desktop widths (>= 1024px). */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] {
+  --popup-padding: 16px;
+  --popup-secondary: #69788a;
+  line-height: 1.46;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-scroll {
+  padding: 15px var(--popup-padding) 17px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .lrt-popup-header {
+  padding: 15px var(--popup-padding) 0;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .lrt-popup-main .stop-popup-scroll {
+  padding-top: 3px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-eyebrow {
+  margin-bottom: 6px;
+  font-size: 10px;
+  letter-spacing: .035em;
+  font-weight: 500;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-title {
+  font-size: 21px;
+  line-height: 1.18;
+  letter-spacing: -.025em;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-station-code {
+  margin-top: 5px;
+  font-size: 11px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-meta-row {
+  gap: 5px 9px;
+  margin-top: 11px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-meta-row > * {
+  padding: 1px 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #69788a;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-section {
+  margin-top: 16px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-section--integration {
+  margin-top: 17px;
+  padding-top: 15px;
+  border-color: #e9edf2;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-label {
+  margin-bottom: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #536275;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-direct-routes {
+  gap: 8px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-direct-routes .stop-popup-route-button {
+  min-height: 34px;
+  padding: 5px 7px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .lrt-service-name {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Each interchange in a popup uses only the operator logo and destination.
+   Line/corridor symbols still exist and remain visible in the Detail Panel. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-group + .integration-group {
+  margin-top: 6px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-group-header,
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-line-badges,
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-relationship-meta {
+  display: none;
+}
+/* Non-existing integration statuses are material map facts, so retain them
+   unobtrusively rather than making planned/proposed links look existing. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-status {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #7d8aa0;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-list {
+  gap: 2px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 35px;
+  margin: 0;
+  padding: 6px 2px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-row-button:hover {
+  background: #f3f7fa;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-row-operator-logo {
+  display: block;
+  flex: 0 0 29px;
+  width: 29px;
+  height: 22px;
+  max-width: 29px;
+  max-height: 22px;
+  object-fit: contain;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-name-wrap {
+  flex: 1 1 auto;
+  order: 0;
+  min-width: 0;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-name {
+  font-size: 12px;
+  line-height: 1.42;
+  font-weight: 400;
+  color: #31445c;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-link-arrow {
+  margin-left: auto;
+  font-size: 15px;
+  color: #94a3b5;
+}
+
+/* Icon-only secondary actions; preserve full accessible names and the
+   underlying source disclosure, including its complete provenance links. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #edf0f4;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-cell {
+  flex: 0 0 38px;
+  min-width: 0;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-cell :is(.stop-popup-maps-link, .stop-source-summary) {
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 7px;
+  border: 1px solid #e2e9ef;
+  background: #f7f9fc;
+  border-radius: 8px;
+  color: #50657c;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-maps-link > span:last-child,
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-source-summary-copy,
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-source-chevron {
+  display: none;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] :is(.stop-popup-external-link-icon, .stop-source-summary-icon) {
+  display: grid;
+  place-items: center;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] :is(.stop-popup-external-link-icon, .stop-source-summary-icon) .icon {
+  width: 18px;
+  height: 18px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .tl-show-stop-in-panel {
+  flex: 1 1 auto;
+  width: auto;
+  min-height: 38px;
+  margin-left: auto;
+  padding: 8px 10px;
+  background: transparent;
+  font-size: 11px;
+  text-align: right;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-cell:has(.stop-source-card[open]) {
+  flex: 1 1 100%;
+  order: 4;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-cell:has(.stop-source-card[open]) .stop-source-card {
+  width: 100%;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-cell:has(.stop-source-card[open]) .stop-source-body {
+  width: 100%;
+  padding: 10px 2px 2px;
+}
+/* Navigation remains fixed; larger whitespace comes from grouping, not
+   increasing scrolling nests or squeezing the text. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-navigation {
+  border-color: #e6ebf1;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-nav-button {
+  min-height: 53px;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-nav-label {
+  font-size: 10px;
+  font-weight: 400;
+}
+
+/* Detailed panel: retain full source names, route/corridor symbols, operator
+   headers and all status metadata. Do not repeat the compact popup-only logo. */
+.tl-app #selectedStopInfo > .stop-popup-ui .integration-row-operator-logo {
+  display: none;
+}
+.tl-app #selectedStopInfo > .stop-popup-ui .integration-group {
+  margin-bottom: 12px;
+}
+.tl-app #selectedStopInfo > .stop-popup-ui .integration-operator {
+  font-weight: 600;
+}
+.tl-app #selectedStopInfo > .stop-popup-ui .integration-line-badges {
+  display: flex;
+}
+.tl-app #selectedStopInfo > .stop-popup-ui .stop-popup-action-row {
+  margin-top: 16px;
+}
+
+/* Location is now an accessible icon action, not an extra printed heading. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-section--location .stop-popup-label {
+  display: none;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-section--location {
+  margin: 0;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-action-cell:has(.stop-source-card[open]) .stop-source-summary {
+  width: 38px;
+}
+
+/* Quiet metadata is shared by both presentations; the Panel remains more
+   complete in content, not louder in its status labels. */
+.tl-app #selectedStopInfo > .stop-popup-ui .stop-popup-meta-row {
+  gap: 6px 10px;
+  margin-top: 9px;
+}
+.tl-app #selectedStopInfo > .stop-popup-ui .stop-popup-meta-row > * {
+  padding: 1px 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  font-size: 11px;
+  line-height: 1.45;
+  font-weight: 400;
+  color: #64758a;
+}
+
+/* Long hubs disclose the rest of their integrations in the full Panel.
+   Hidden rows remain in DOM for spatial D4 target resolution. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-row.is-popup-extra-destination {
+  display: none;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-more-destinations {
+  margin: 6px 0 0 39px;
+  padding: 0;
+  color: #728399;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.tl-app #selectedStopInfo > .stop-popup-ui .stop-popup-more-destinations { display: none; }
+/* Passenger facility descriptions remain available in the full Panel. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-activity {
+  display: none;
+}
+/* Compact the D4 info card when it would overlap the map popup at hubs.
+   The verified destination count and explicit Lihat semua action remain. */
+@media (min-width: 1200px) {
+  .tl-app #map:has(.leaflet-popup .stop-popup-ui) .tl-integration-map-summary {
+    max-width: 202px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tl-app #map:has(.leaflet-popup .stop-popup-ui) .tl-integration-map-summary .tl-integration-fit {
+    justify-self: start;
+  }
+}
+
+/* Persistent link to the more complete Panel, placed between the scrollable
+   quick-glance body and the always-visible previous/next footer. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] > .tl-show-stop-in-panel {
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 38px;
+  margin: 0;
+  padding: 10px 16px;
+  border-top: 1px solid #edf0f4;
+  border-radius: 0;
+  background: #fafbfd;
+  color: #285381;
+  font: 600 12px/1.2 'PT Sans',sans-serif;
+  text-align: center;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] > .tl-show-stop-in-panel:hover {
+  background: #eef4fa;
+}
+
+/* The complete action strip is now a direct popup child and stays visible
+   even while a hub's single content body scrolls. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] > .stop-popup-action-row {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 8px var(--popup-padding);
+  border-top: 1px solid #edf0f4;
+  background: #fafbfd;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] > .stop-popup-action-row > .tl-show-stop-in-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0 0 0 auto;
+  padding: 8px 0;
+  text-align: right;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .stop-popup-integration-count {
+  font-size: 10px;
+  font-weight: 400;
+  color: #8291a3;
+}
+
+/* Longer station names need slightly more vertical room to show the short
+   interchange preview and its fixed action rail together. This is a maximum,
+   not a forced height; short popups stay compact. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"]:has(.stop-popup-more-destinations) {
+  max-height: min(500px, var(--tl-popup-content-height, 500px), calc(100dvh - 174px));
+}
+
+/* Consistent with the agreed reading order: destination name at left,
+   the operator identity at the far right of each transfer row. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-row .integration-place-name-wrap {
+  order: 0;
+  flex: 1 1 auto;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-row .integration-row-operator-logo {
+  order: 2;
+  margin-left: auto;
+}
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] .integration-place-row .integration-place-link-arrow {
+  order: 3;
+  margin-left: 0;
+}
+
+/* Expanded source metadata stays usable despite the pinned action rail:
+   the infrequent disclosure receives its own bounded scroll when needed,
+   while the map popup's navigation and primary action remain accessible. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] > .stop-popup-action-row .stop-source-card[open] .stop-source-body {
+  max-height: min(170px, 28dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding-bottom: 9px;
+}

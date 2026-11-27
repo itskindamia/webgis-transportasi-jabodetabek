@@ -15,7 +15,13 @@ for (const [width, height] of [[1366, 900], [390, 844]]) for (const [mode, id] o
     await page.click(`[data-mode="${mode}"]`); await selectRoute(page, id); await page.waitForTimeout(850);
     await page.evaluate(() => { webgisLayout.showPopupDetails(); webgisLayout.setTab("route"); });
     const expected = JSON.parse(await readFile("docs/summary-refinement/verification/baseline-summary.json", "utf8"))[id];
-    assert.equal(await page.locator("#routeInfo").evaluate(el => el.textContent.replace(/\s+/g, " ").trim()), expected.text, "all source metadata and statistics unchanged");
+    // Only the actual origin–destination field changes punctuation.
+    // Line names such as "Lin Utara - Selatan" must retain their hyphen.
+    const currentRelation = (await page.locator("#routeInfo .route-heading-relation").textContent()).trim();
+    const oldRelation = currentRelation.replace(/\s+↔\s+/g, " - ");
+    const expectedText = expected.text.replace(oldRelation, currentRelation);
+    assert.equal(await page.locator("#routeInfo").evaluate(el => el.textContent.replace(/\s+/g, " ").trim()), expectedText,
+      "all source metadata and statistics remain identical apart from endpoint typography");
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width);
     for (const button of await page.locator("#routeInfo .route-geometry-view-button").all()) {
       const style = await button.evaluate(el => ({ font: parseFloat(getComputedStyle(el).fontSize), family: getComputedStyle(el).fontFamily, height: el.getBoundingClientRect().height }));

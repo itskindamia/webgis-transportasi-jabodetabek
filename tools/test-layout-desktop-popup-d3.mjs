@@ -68,7 +68,7 @@ for (const [width, height] of [[1024, 650], [1366, 768], [1440, 900], [1920, 108
     await assertPlacement(page);
     assert.equal(await page.locator(popup).count(), 1);
     assert.equal((await page.locator(`${popup} .stop-popup-title`).innerText()).trim(), "Cawang");
-    assert.equal(await page.locator(`${popup} .stop-popup-title`).evaluate(el => getComputedStyle(el).fontSize), "22px");
+    assert.equal(await page.locator(`${popup} .stop-popup-title`).evaluate(el => getComputedStyle(el).fontSize), "21px");
     assert.equal((await page.locator("#selectedStopInfo .selected-stop-title").textContent()).trim(), "Cawang");
     assert.equal(await page.locator("#tlDetailPanel").getAttribute("data-tab"), "stops");
     assert.equal(await page.locator(`#stopList [aria-current="true"]`).getAttribute("data-stop-key"), cawang);
@@ -122,13 +122,19 @@ test("D3 shows the repository's explicit transfer, branding and reachable footer
   const transfer = page.locator(`${popup} [data-integration-stop-key="MRT012_01"][data-integration-route-id="MRT_NS"]`);
   assert.match(await transfer.innerText(), /Dukuh Atas BNI/);
   assert.equal(await transfer.locator("xpath=ancestor::*[contains(@class, 'integration-group')][1]")
-    .locator(".integration-logo").getAttribute("src"), "assets/logos/mrt-jakarta.svg");
+    .locator(".integration-group-header .integration-logo").getAttribute("src"), "assets/logos/mrt-jakarta.svg");
   const scroll = await page.locator(popup).evaluate(root => [...root.querySelectorAll("*")]
     .filter(el => el.clientHeight && el.scrollHeight > el.clientHeight + 1 && ["auto", "scroll"].includes(getComputedStyle(el).overflowY))
     .map(el => el.classList.contains("lrt-popup-body")));
   assert.deepEqual(scroll, [true], "only the body scrolls when the source list is long");
   await assertPlacement(page);
-  await transfer.click();
+  // The map popup intentionally previews only the first two destinations.
+  // The full Panel contains every clickable destination, including MRT.
+  assert.equal(await transfer.isVisible(), false);
+  await page.locator(`${popup} .tl-show-stop-in-panel`).click();
+  const fullTransfer = page.locator('#selectedStopInfo [data-integration-stop-key="MRT012_01"][data-integration-route-id="MRT_NS"]');
+  await fullTransfer.waitFor();
+  await fullTransfer.click();
   await waitForStation(page, "MRT012_01");
   assert.equal(await page.evaluate(() => currentSelectedRouteId), "MRT_NS");
   assert.equal(await page.locator(`#stopList [aria-current="true"]`).getAttribute("data-stop-key"), "MRT012_01");

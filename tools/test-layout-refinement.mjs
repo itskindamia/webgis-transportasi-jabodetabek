@@ -87,7 +87,7 @@ for (const [width, height] of [[320, 568], [360, 800], [390, 844], [768, 1024], 
     await cameraClose(page, camera);
     assert.equal(await page.evaluate(() => routeLayer === uxPinnedRouteLayer && uxPinnedMarkers.every(([key, marker]) => stopMarkerByKey.get(key) === marker)), true, "panels do not rebuild layers");
     if (width < 1024) assert.equal(await page.evaluate(() => uxInvalidations), 0, "overlay-only panels do not invalidate Leaflet");
-    await page.click("#tlAbout");
+    await page.click(width >= 1024 ? "#tlDockAbout" : "#tlAbout");
     const grid = await page.locator(".info-guide-grid").evaluate(el => ({ display: getComputedStyle(el).display, columns: getComputedStyle(el).gridTemplateColumns.split(" ").length, family: getComputedStyle(el).fontFamily }));
     assert.equal(grid.display, "grid");
     assert.equal(grid.columns, width < 768 ? 1 : 2);
@@ -112,7 +112,15 @@ test("list identities, sequence and all line/role/status/direction badges match 
   for (const route of ["BRT_01", "BRT_03"]) {
     await chooseRoute(page, route);
     const actual = await page.locator("#stopList .stop-list-item").evaluateAll(rows => rows.map(el => ({ key: el.dataset.stopKey, logicalKey: el.dataset.stopLogicalKey, name: el.querySelector(".stop-list-name").textContent.trim(), sequence: el.querySelector(".stop-seq-badge")?.textContent.trim(), lines: [...el.querySelectorAll(".stop-list-route-badge")].map(b => ({ text: b.textContent.trim(), title: b.title, color: b.style.background })), badges: [...el.querySelectorAll(".stop-list-badges > *")].map(b => ({ text: b.textContent.trim(), className: b.className })) })));
-    assert.deepEqual(actual, baseline[route]);
+    // Identity, sequence, status, color and badge coverage is unchanged.
+    // Only a user-facing origin–destination separator became bidirectional.
+    const expected = baseline[route].map(row => ({
+      ...row,
+      lines: row.lines.map(line => ({
+        ...line, title: line.title.replace(/\s+[-–—]\s+/g, " ↔ ")
+      }))
+    }));
+    assert.deepEqual(actual, expected);
     for (const name of route === "BRT_03" ? ["Damai", "Jelambar"] : []) {
       const row = page.locator("#stopList .stop-list-item").filter({ has: page.locator(".stop-list-name", { hasText: name }) }).first();
       await row.scrollIntoViewIfNeeded();

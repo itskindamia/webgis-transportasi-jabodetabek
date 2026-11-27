@@ -1,0 +1,41 @@
+name: Desktop Visual Comfort QA
+
+on:
+  pull_request:
+    paths:
+      - 'css/stop-popup-desktop.css'
+      - 'css/layout-tabler.css'
+      - 'js/stop-popup-ui.js'
+      - 'js/layout-tabler.js'
+      - 'js/map.js'
+      - 'index.html'
+      - 'tools/test-layout-visual-comfort.mjs'
+      - '.github/workflows/d3-3-visual-comfort.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visual-comfort:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Locate Chromium
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install chromium
+          fi
+      - name: Verify popup/panel presentation and utility controls
+        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-visual-comfort.mjs

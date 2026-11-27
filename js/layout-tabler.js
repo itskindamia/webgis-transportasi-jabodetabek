@@ -366,6 +366,10 @@
     byId("tlNetworkToggle").focus({ preventScroll: true });
   });
   byId("tlLegendToggle").addEventListener("click", toggleLegend);
+  // Reuse the existing guide and information dialogs. These new desktop
+  // controls are shortcuts; no duplicate tours or modal handlers are created.
+  byId("tlDockGuide").addEventListener("click", () => byId("rightInfoGuideButton").click());
+  byId("tlDockAbout").addEventListener("click", () => byId("rightInfoAboutButton").click());
   for (const id of ["tlDetailsToggle", "tlMobileDetails"]) {
     byId(id).addEventListener("click", () => {
       if ((mobile() || body.classList.contains("tl-short-landscape")) && stopPopup?.isOpen() && !detailsOverPopup) showPopupDetails();
@@ -669,7 +673,7 @@
         return {
           minWidth: width,
           maxWidth: width,
-          maxHeight: Math.min(440, Math.max(64, mapElement.clientHeight - top - bottom - 30)),
+          maxHeight: Math.min(500, Math.max(64, mapElement.clientHeight - top - bottom - 30)),
           autoPan: true,
           keepInView: true,
           autoPanPaddingTopLeft: [left, top],
