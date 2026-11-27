@@ -6,7 +6,7 @@
 }
 
 .tl-app .tj-route-code {
-  color: var(--tj-route-code-color, #fff);
+  color: #fff;
   font-family: "PT Sans", Arial, sans-serif;
   font-weight: 700;
   font-size: 10px;
