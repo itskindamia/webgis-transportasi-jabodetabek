@@ -1,0 +1,43 @@
+name: D3.3 Desktop Screenshot Review
+
+on:
+  pull_request:
+    paths:
+      - 'css/stop-popup-desktop.css'
+      - 'js/stop-popup-ui.js'
+      - 'tools/capture-d3-3-visual-comfort.mjs'
+      - '.github/workflows/d3-3-screenshots.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Locate Chromium
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install chromium
+          fi
+      - name: Render desktop popup and panel scenarios
+        run: node tools/capture-d3-3-visual-comfort.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: d3-3-visual-comfort
+          path: artifacts/d3-3-visual-comfort/
+          if-no-files-found: warn
