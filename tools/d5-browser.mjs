@@ -85,6 +85,10 @@ export function popupCoverage(page) {
       controlsCovered: count(bounds, controls.map(el => el.getBoundingClientRect())),
       mapped: markers.length,
       bounds: bounds.toJSON(),
+      mapBounds: region.toJSON(),
+      offset: [x, y],
+      pane: map.getPane("mapPane").style.transform,
+      scroll: [map.getContainer().scrollLeft, map.getContainer().scrollTop],
       anchor: [map._popup.getLatLng().lng, map._popup.getLatLng().lat],
       coordinates: stop.geometry.coordinates,
       links: Object.values(map._layers).filter(layer => layer instanceof L.Polyline && layer.options.pane === "tlIntegrationLinkPane")

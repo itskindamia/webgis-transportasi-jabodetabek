@@ -7,6 +7,7 @@
 
   window.addEventListener("webgis:map-ready", () => {
     const container = map.getContainer();
+    const mapPane = map.getPane("mapPane");
     const controls = document.querySelectorAll(
       ".tl-map-caption, .tl-map-actions, .tl-map-navigation, .tl-dock, #rightInfoPanel, #basemapPanel, .leaflet-control-attribution"
     );
@@ -19,6 +20,9 @@
     let nativePosition = "";
 
     function setPlacement(nextX, nextY, nextSide, nextTip) {
+      nextX = Math.round(nextX * 10) / 10;
+      nextY = Math.round(nextY * 10) / 10;
+      nextTip = Math.round(nextTip * 10) / 10;
       if (!element || (x === nextX && y === nextY && side === nextSide && tip === nextTip)) return;
       [x, y, side, tip] = [nextX, nextY, nextSide, nextTip];
       if (side) {
@@ -31,6 +35,8 @@
         element.style.removeProperty("--tl-popup-tip");
       }
       map.fire("stopPopupPlacement");
+      // Reconcile once the browser has laid out the new visual position.
+      schedule();
     }
 
     function position() {
@@ -116,7 +122,7 @@
       // Leaflet also updates its position when rebuilding the popup after a
       // zoom or content change. Ignore this module's translate and tip styles.
       const { left, bottom, transform } = element.style;
-      const position = `${left} ${bottom} ${transform}`;
+      const position = `${left} ${bottom} ${transform} ${mapPane.style.transform}`;
       if (position === nativePosition) return;
       nativePosition = position;
       schedule();
@@ -127,6 +133,7 @@
       element = root;
       nativePosition = "";
       positionObserver.observe(root, { attributes: true, attributeFilter: ["style"] });
+      positionObserver.observe(mapPane, { attributes: true, attributeFilter: ["style"] });
       sizeObserver.observe(root.querySelector(".leaflet-popup-content-wrapper"));
       schedule();
     });
@@ -138,6 +145,7 @@
       element = null;
     });
     map.on("moveend resize integrationdisplaychange", schedule);
+    container.addEventListener("scroll", schedule, { passive: true });
     for (const control of controls) sizeObserver.observe(control);
     desktop.addEventListener("change", schedule);
   }, { once: true });
