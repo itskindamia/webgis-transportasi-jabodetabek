@@ -5,6 +5,7 @@ import { chromium } from "playwright";
 import { openLayout, selectRoute } from "./layout-browser.mjs";
 
 const targets = [
+  { name: "dukuh-atas-brt", mode: "BRT", route: "BRT_01", stop: "BRT010_REG", display: "panel" },
   { name: "cawang", mode: "LRT", route: "LRT_JB_BK", stop: "LRTJB008_01", display: "popup" },
   { name: "dukuh-atas", mode: "LRT", route: "LRT_JB_BK", stop: "LRTJB001_01", display: "panel" },
   { name: "dukuh-atas", mode: "LRT", route: "LRT_JB_BK", stop: "LRTJB001_01", display: "popup" },
@@ -61,6 +62,12 @@ try {
         assert.equal(state.popup, sample.display === "popup");
         assert.equal(state.panel, sample.display === "panel");
         assert.deepEqual(view.errors, [], `${sample.name}: console error`);
+        if (sample.name === "dukuh-atas-brt") {
+          const galunggung = page.locator('.tl-integration-target-marker[title*="Galunggung"]');
+          await galunggung.waitFor();
+          assert.deepEqual(await galunggung.locator(".tj-route-code").allTextContents(),
+            ["4", "6"], "screenshot must contain [4] [6] Galunggung");
+        }
         const file = `${width}x${height}-${sample.name}-${sample.display}.png`;
         await page.screenshot({ path: path.join(folder,file), fullPage: false });
         report.push({ viewport: `${width}x${height}`, scenario: sample.name, file, ...state });
