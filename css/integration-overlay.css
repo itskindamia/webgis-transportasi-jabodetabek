@@ -90,6 +90,9 @@
     box-shadow: 0 0 0 3px rgb(255 255 255 / 78%), 0 3px 9px rgb(20 35 55 / 22%);
     font: 600 11px/1.15 'PT Sans',sans-serif;
     transition: transform .14s ease;
+    /* Only the 30px badge is interactive. Labels must not intercept
+       a nearby station marker in dense interchanges. */
+    pointer-events: none;
   }
   .tl-app .tl-integration-target-line {
     display: flex;
@@ -102,6 +105,7 @@
     border-radius: 50%;
     color: var(--tl-integration-color, #34465a);
     font: 700 9px/1 'PT Sans',sans-serif;
+    pointer-events: auto;
   }
   .tl-app .tl-integration-target-line .rail-line-badge-wrap,
   .tl-app .tl-integration-target-line .rail-line-badge-fallback,
