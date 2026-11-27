@@ -208,10 +208,14 @@
       for (const target of selection.entries) {
         const near = selection.origin.distanceTo(target.point) < 40;
         const color = colors[target.mode] || "#485b73";
-        const symbol = ({
-          BRT: "B", MRT: "M", LRT: "L", KRL: "K",
-          KA_BANDARA: "A", ICT: "KA"
-        })[target.mode] || "•";
+        // A verified integration already carries the destination's actual
+        // route ID. Render its line badge, not a generic K/B/L/M mode letter.
+        // The shared badge builders reuse existing local line assets and
+        // route colors; the map tooltip and action keep their original target.
+        const routeBadge = target.mode === "BRT"
+          ? (typeof buildBrtBadge === "function" ? buildBrtBadge(target.route) : "")
+          : (typeof buildLineBadge === "function" ? buildLineBadge(target.route) : "");
+        const label = stopName(target.feature);
         const line = L.polyline([selection.origin, target.point], {
           pane: "tlIntegrationLinkPane",
           color: "#435367",
@@ -225,25 +229,25 @@
 
         const icon = document.createElement("span");
         icon.className = "tl-integration-target-symbol";
-        icon.textContent = symbol;
         icon.style.setProperty("--tl-integration-color", color);
+        icon.innerHTML = `<span class="tl-integration-target-line" aria-hidden="true">${routeBadge || safeText(target.route)}</span><span class="tl-integration-target-name">${safeText(label)}</span>`;
         const marker = L.marker(target.point, {
           pane: "tlIntegrationTargetPane",
           icon: L.divIcon({
             className: "tl-integration-target-marker" + (near ? " is-near-origin" : ""),
             html: icon.outerHTML,
-            iconSize: [30, 30],
-            // Offset ONLY the icon, not target.point or its relationship line.
-            // Cawang's LRT and TJ stops are approximately 9 m apart.
-            iconAnchor: near ? [-35, -25] : [15, 15],
-            tooltipAnchor: near ? [50, 40] : [0, 0]
+            iconSize: [176, 34],
+            // Badge center remains on the real coordinate; the station label
+            // extends right. Nearby transfers preserve the existing offset.
+            iconAnchor: near ? [-35, -25] : [17, 17],
+            tooltipAnchor: near ? [60, 36] : [55, -2]
           }),
           keyboard: true,
           bubblingMouseEvents: false,
           riseOnHover: true,
-          title: "Buka integrasi: " + stopName(target.feature)
+          title: "Buka integrasi: " + label + " (" + target.route + ")"
         }).addTo(markers);
-        marker.bindTooltip(safeText(stopName(target.feature)), {
+        marker.bindTooltip(safeText(label) + " · " + safeText(target.route), {
           direction: "top", offset: [0, -18], opacity: 0.96,
           className: "tl-integration-target-tooltip"
         });
