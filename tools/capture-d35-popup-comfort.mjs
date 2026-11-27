@@ -10,7 +10,7 @@ const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_C
 const scenarios = [
   {name:"cawang-lrt",mode:"LRT",route:"LRT_JB_BK",stop:"LRTJB008_01"},
   {name:"dukuh-atas-lrt",mode:"LRT",route:"LRT_JB_BK",stop:"LRTJB001_01"},
-  {name:"jembatan-merah-brt",mode:"BRT",route:"BRT_05",stop:"BRT082"}
+  {name:"jembatan-merah-brt",mode:"BRT",route:"BRT_05",stop:"BRT082_REG"}
 ];
 const report=[];
 try {
