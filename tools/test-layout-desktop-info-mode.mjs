@@ -34,9 +34,12 @@ async function chooseBekasi(page) {
 
 async function changeMode(page, value) {
   await page.click("#basemapButton");
+  // Opening the existing basemap dialog moves focus on the next frame.
+  await page.waitForFunction(() => document.activeElement?.id === "basemapClose");
   const control = page.locator(picker);
   await control.focus();
   await control.selectOption(value);
+  assert.equal(await control.inputValue(), value);
   assert.equal(await control.evaluate(el => document.activeElement === el), true);
   await page.click("#basemapClose");
 }

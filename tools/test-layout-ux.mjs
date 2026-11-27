@@ -162,7 +162,7 @@ test("primary mobile controls and detail actions offer at least 44px touch targe
     const elements = page.locator(selector);
     for (const element of await elements.all()) {
       const rect = await element.boundingBox();
-      assert.ok(rect.width >= 44 && rect.height >= 44, selector);
+      assert.ok(rect.width >= 44 && rect.height >= 44, `${selector}: ${rect.width}×${rect.height}`);
     }
   }
   assert.deepEqual(app.errors, []);
