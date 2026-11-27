@@ -50,17 +50,18 @@ async function chooseFromList(page, key) {
 }
 
 async function clickMarker(page, key) {
-  const point = await page.evaluate(stop => {
-    const anchor = stopMarkerByKey.get(stop).getLatLng();
-    map.setView(anchor, STOP_ZOOM, { animate: false });
-    const hitTarget = stopHitLayer.getLayers().find(layer => layer.getLatLng().equals(anchor) &&
-      layer.getElement()?.classList.contains("stop-hit-target")).getElement();
-    const rect = hitTarget.getBoundingClientRect();
-    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  await waitForCamera(page);
+  await page.evaluate(stop => {
+    map.setView(stopMarkerByKey.get(stop).getLatLng(), STOP_ZOOM, { animate: false });
   }, key);
-  const targetClass = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.className.toString(), point);
-  assert.match(targetClass, /\bstop-hit-target\b/);
-  await page.mouse.click(point.x, point.y);
+  const target = await page.waitForFunction(stop => {
+    const anchor = stopMarkerByKey.get(stop)?.getLatLng();
+    return stopHitLayer.getLayers().find(layer => layer.getLatLng().equals(anchor) &&
+      layer.getElement()?.classList.contains("stop-hit-target"))?.getElement();
+  }, key);
+  // Playwright waits for the actual Leaflet hit target to be stable and receive pointer events.
+  await target.asElement().click();
+  await target.dispose();
 }
 
 async function selected(page, key, route) {
@@ -71,7 +72,7 @@ async function selected(page, key, route) {
 }
 
 async function waitForCamera(page) {
-  await page.waitForFunction(() => map.getZoom() === STOP_ZOOM && !map._panAnim?._inProgress &&
+  await page.waitForFunction(() => map.getZoom() === STOP_ZOOM && !map._panAnim?._inProgress && !map._animatingZoom &&
     map.getSize().x === map.getContainer().clientWidth);
 }
 
