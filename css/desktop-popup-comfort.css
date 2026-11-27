@@ -1,0 +1,187 @@
+/* D3.3 — visual-comfort pass for desktop Popup and station Detail Panel.
+ * Presentation-only. Reuses the engine's original Google Maps anchor,
+ * native <details>/<summary> source disclosure, route buttons and transfers.
+ * Mobile and tablet keep the existing D3.2 design.
+ */
+@media (min-width: 1024px) {
+  .tl-app .stop-popup-ui {
+    --popup-padding: 17px;
+    max-height: min(526px, calc(100dvh - 140px));
+    line-height: 1.42;
+  }
+
+  .tl-app .stop-popup-ui .stop-popup-scroll {
+    padding: 13px var(--popup-padding) 15px;
+  }
+
+  .tl-app .stop-popup-ui .lrt-popup-header {
+    padding-top: 14px;
+    padding-bottom: 5px;
+  }
+
+  .tl-app .stop-popup-ui .stop-popup-eyebrow {
+    margin-bottom: 6px;
+  }
+
+  .tl-app .stop-popup-ui .stop-popup-meta-row {
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .tl-app .stop-popup-ui .stop-popup-section {
+    margin-top: 13px;
+  }
+
+  .tl-app .stop-popup-ui .stop-popup-label {
+    margin-bottom: 8px;
+  }
+
+  .tl-app .stop-popup-ui .stop-popup-direct-routes {
+    gap: 8px;
+  }
+
+  .tl-app .stop-popup-ui .stop-popup-section--integration {
+    margin-top: 17px;
+    padding-top: 14px;
+    border-top-color: #e7edf2;
+  }
+
+  .tl-app .stop-popup-ui .integration-list {
+    gap: 13px;
+  }
+
+  .tl-app .stop-popup-ui .integration-group-header {
+    min-height: 25px;
+    margin-bottom: 4px;
+  }
+
+  .tl-app .stop-popup-ui .integration-place-list {
+    gap: 6px;
+  }
+
+  .tl-app .stop-popup-ui .integration-place-row {
+    align-items: center;
+    min-height: 40px;
+    gap: 9px;
+    padding: 6px 3px;
+  }
+
+  .tl-app .stop-popup-ui .integration-place-name-wrap {
+    min-width: 0;
+    flex: 1 1 auto;
+    order: -1;
+  }
+
+  .tl-app .stop-popup-ui .integration-line-badges:not(:empty) {
+    flex: 0 0 auto;
+    max-width: 98px;
+    margin-left: auto;
+    justify-content: flex-end;
+    gap: 5px;
+  }
+
+  /* Three-piece, single-row toolbar: Google Maps icon, Sumber Data icon,
+     and the existing Tampilkan di panel action. The original interactive
+     nodes remain in place, preserving handlers and keyboard semantics. */
+  .tl-app .stop-popup-ui .stop-popup-action-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 17px 0 2px;
+  }
+
+  .tl-app .stop-popup-ui .stop-popup-action-cell {
+    flex: 0 0 44px;
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
+  }
+
+  .tl-app .stop-popup-ui .stop-popup-action-cell :is(.stop-popup-maps-link, .stop-source-summary) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    background: var(--tl-surface);
+    border: 1px solid #d8e1e9;
+    border-radius: 9px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .tl-app .stop-popup-ui .stop-popup-action-cell :is(.stop-popup-external-link-icon, .stop-source-summary-icon) {
+    display: grid;
+    place-items: center;
+    flex: 0 0 19px;
+    width: 19px;
+    height: 19px;
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  /* The text is visually hidden, not removed from the accessibility tree.
+     The Google Maps link also retains its full title and original href. */
+  .tl-app .stop-popup-ui .stop-popup-action-cell :is(.stop-popup-maps-link > span:last-child, .stop-source-summary-copy) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .tl-app .stop-popup-ui .stop-source-chevron {
+    display: none;
+  }
+
+  .tl-app .stop-popup-ui .tl-show-stop-in-panel {
+    order: 1;
+    flex: 1 1 110px;
+    min-width: 110px;
+    min-height: 44px;
+    padding: 8px 9px;
+    margin: 0;
+    border: 1px solid #dbe3eb;
+    border-radius: 9px;
+    background: #f7fafc;
+    color: #2d5d81;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* Native <details> stays keyboard-operable. On expansion, its source
+     documents move into their own full-width row within the same scroller. */
+  .tl-app .stop-popup-ui .stop-popup-action-cell:has(.stop-source-card[open]) {
+    order: 2;
+    flex-basis: 100%;
+    width: 100%;
+    max-width: none;
+  }
+
+  .tl-app .stop-popup-ui .stop-source-card[open] .stop-source-body {
+    margin-top: 9px;
+    padding: 10px 4px 2px;
+    border-top: 1px solid #e7edf2;
+  }
+
+  .tl-app .stop-popup-ui .stop-popup-navigation {
+    padding: 11px 13px 12px;
+    background: #f8fafc;
+    border-top: 1px solid #e7edf2;
+  }
+
+  .tl-app .stop-popup-ui .stop-popup-nav-button {
+    min-height: 44px;
+    padding: 7px 9px;
+  }
+}

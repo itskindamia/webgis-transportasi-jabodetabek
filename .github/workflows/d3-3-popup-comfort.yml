@@ -1,0 +1,45 @@
+name: D3.3 Desktop Popup Comfort QA
+
+on:
+  pull_request:
+    paths:
+      - 'css/desktop-popup-comfort.css'
+      - 'js/stop-popup-ui.js'
+      - 'index.html'
+      - 'tools/capture-d3-3-popup-comfort.mjs'
+      - '.github/workflows/d3-3-popup-comfort.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  popup-visual-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Locate Chromium
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install chromium
+          fi
+      - name: Verify desktop popup visual comfort in Chromium
+        run: node tools/capture-d3-3-popup-comfort.mjs
+      - name: Upload preview screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d3-3-popup-visual-comfort
+          path: artifacts/d3-3-popup/
+          if-no-files-found: warn

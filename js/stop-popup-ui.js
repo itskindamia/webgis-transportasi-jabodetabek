@@ -124,6 +124,11 @@
       template.innerHTML = html;
       const root = enhance(template.content.querySelector(".stop-popup"), feature, routeId);
       const actions = root?.querySelector(".stop-popup-action-row");
+      // The desktop D3.3 stylesheet renders the source disclosure as an
+      // icon. Keep the native summary and give it a useful hover tooltip.
+      if (matchMedia("(min-width: 1024px)").matches) {
+        root?.querySelector(".stop-source-summary")?.setAttribute("title", "Lihat sumber data");
+      }
       if (actions) {
         const button = textElement("button", "tl-show-stop-in-panel", "Tampilkan di panel");
         button.type = "button";
