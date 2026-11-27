@@ -1,0 +1,65 @@
+name: D5.1 UI and route switching performance
+on:
+  pull_request:
+    paths:
+      - 'js/map.js'
+      - 'js/layout-tabler.js'
+      - 'css/tj-route-badge.css'
+      - 'css/popup-comfort.css'
+      - 'tools/benchmark-d51-route-switch.mjs'
+      - 'tools/test-d51-visual.mjs'
+      - '.github/workflows/d51-release.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  visual-and-performance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 9e3b2f03462f9664be0300bebc075fa5ea70ffbb
+          path: d51-baseline
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Use runner Chromium
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install chromium
+          fi
+      - name: Validate postrelease visual corrections
+        run: node --test --test-reporter=tap tools/test-d51-visual.mjs
+      - name: Benchmark baseline and candidate with warm caches
+        shell: bash
+        run: |
+          mkdir -p artifacts/d51
+          LAYOUT_APP_ROOT="$PWD/d51-baseline" node tools/benchmark-d51-route-switch.mjs > artifacts/d51/baseline.json
+          node tools/benchmark-d51-route-switch.mjs > artifacts/d51/candidate.json
+          cat artifacts/d51/baseline.json
+          cat artifacts/d51/candidate.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const a=JSON.parse(fs.readFileSync('artifacts/d51/baseline.json'));
+          const b=JSON.parse(fs.readFileSync('artifacts/d51/candidate.json'));
+          for(const mode of ['BRT','KRL','LRT','MRT','ALL']){
+            const before=a.summary[mode].handlerMs.median;
+            const after=b.summary[mode].handlerMs.median;
+            console.log(mode+': median handler '+before+' ms -> '+after+' ms');
+          }
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: d51-performance-report
+          path: artifacts/d51/
+          if-no-files-found: warn
