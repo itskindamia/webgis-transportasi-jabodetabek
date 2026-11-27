@@ -391,6 +391,14 @@
   byId("tlDetailExpand").classList.add("tl-sheet-position");
   byId("tlDetailExpand").replaceChildren(document.createTextNode("Penuh"));
   setSheetPosition("half");
+  // Reuse the existing guide/disclaimer handlers rather than duplicating
+  // modal and tour state for the compact map-dock controls.
+  byId("tlDockGuide")?.addEventListener("click", () => {
+    byId("rightInfoGuideButton")?.click();
+  });
+  byId("tlDockAbout")?.addEventListener("click", () => {
+    byId("rightInfoAboutButton")?.click();
+  });
   for (const id of ["tlAbout", "tlNetworkAbout"]) {
     byId(id).addEventListener("click", () => { if (ready) setInfoModalOpen(true); });
   }
