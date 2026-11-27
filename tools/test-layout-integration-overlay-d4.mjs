@@ -164,6 +164,54 @@ test("D4 Cawang preserves its exact-name BRT stop and offsets the selectable nea
   assert.deepEqual(errors, []);
 });
 
+test("D4 shows all actual Transjakarta corridors at an integration destination with equal-sized badges", async t => {
+  const { page, errors } = await setup(t);
+  await page.locator('[data-mode="BRT"]').click();
+  await selectRoute(page, "BRT_01");
+  await page.locator("#tlTabStops").click();
+  await page.locator('#stopList [data-stop-key="BRT010_REG"]').click();
+  await page.waitForFunction(() => currentSelectedStopKey === "BRT010_REG");
+  await page.waitForFunction(() =>
+    window.webgisSpatialIntegrations?.targets.some(target => target.key === "BRT078_REG")
+  );
+
+  // Galunggung really has both corridors in its own ROUTES property.
+  // This guards against hardcoding one interchange in the renderer.
+  const state = await page.evaluate(() => {
+    const target = webgisSpatialIntegrations.targets.find(item => item.key === "BRT078_REG");
+    const feature = getStopByKey(target.key);
+    return {
+      sourceRoutes: getStopRoutes(feature).filter(id => id.startsWith("BRT_")),
+      displayedRoutes: target.displayedRoutes,
+      targetRoute: target.route
+    };
+  });
+  assert.deepEqual(state.sourceRoutes, ["BRT_04", "BRT_06"]);
+  assert.deepEqual(state.displayedRoutes, state.sourceRoutes);
+
+  const marker = page.locator('.tl-integration-target-marker[title*="Galunggung"]');
+  await marker.waitFor();
+  assert.equal(await marker.count(), 1, "multi-line stop remains one physical marker");
+  assert.deepEqual(await marker.locator(".brt-route-badge .tj-route-code").allTextContents(),
+    ["4", "6"], "render all served corridors in the source field order");
+  const visuals = await marker.locator(".brt-route-badge").evaluateAll(nodes => nodes.map(node => {
+    const box = node.getBoundingClientRect();
+    const code = node.querySelector(".tj-route-code");
+    const font = getComputedStyle(code);
+    return { width: box.width, height: box.height, fontSize: font.fontSize,
+      weight: font.fontWeight, padding: getComputedStyle(node).padding };
+  }));
+  assert.equal(visuals.length, 2);
+  assert.deepEqual(visuals[0], visuals[1],
+    "route 4 numeral, dimensions and padding match route 6");
+  assert.equal(await marker.evaluate(node => {
+    const rect = node.getBoundingClientRect();
+    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    return node.contains(hit);
+  }), true, "the first badge retains an accessible marker hit area");
+  assert.deepEqual(errors, []);
+});
+
 test("D4 Popup Lihat semua temporarily clears popup obstruction and restores the detail camera", async t => {
   const { page, errors } = await setup(t);
   await selectStation(page, dukuh);
