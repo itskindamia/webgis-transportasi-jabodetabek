@@ -1,0 +1,60 @@
+name: D3.5 Popup/Panel Screenshot Review
+
+on:
+  pull_request:
+    paths:
+      - 'css/popup-comfort.css'
+      - 'js/stop-popup-ui.js'
+      - 'tools/capture-d35-popup-comfort.mjs'
+      - '.github/workflows/d35-popup-screenshots.yml'
+  workflow_dispatch:
+    inputs:
+      production:
+        description: Capture and smoke-test the published GitHub Pages site
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Locate Chromium
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install chromium
+          fi
+      - name: Capture live basemap, popup and panel on desktop and mobile
+        env:
+          D35_CAPTURE_URL: ${{ inputs.production && 'https://itskindamia.github.io/webgis-transportasi-jabodetabek/' || 'http://127.0.0.1:5173/' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$D35_CAPTURE_URL" == 'http://127.0.0.1:5173/' ]]; then
+            node tools/serve-layout.mjs &
+            capture_server_pid=$!
+            trap 'kill "$capture_server_pid"' EXIT
+            curl --retry 10 --retry-connrefused --retry-delay 1 --fail --silent --show-error --output /dev/null "$D35_CAPTURE_URL"
+          fi
+          node tools/capture-d35-popup-comfort.mjs
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.production && 'd35-popup-production' || 'd35-popup-comfort-visual-review' }}
+          path: artifacts/d35-comfort/
+          if-no-files-found: error

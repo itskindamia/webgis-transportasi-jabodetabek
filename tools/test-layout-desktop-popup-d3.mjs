@@ -48,8 +48,9 @@ async function assertPlacement(page) {
     const card = popup.querySelector(".leaflet-popup-content-wrapper").getBoundingClientRect();
     const bounds = document.querySelector("#map").getBoundingClientRect();
     const footer = popup.querySelector(".stop-popup-navigation")?.getBoundingClientRect();
-    const overlays = [".tl-map-caption", ".tl-map-actions", ".tl-map-navigation",
-      ".tl-dock", "#filterPanel", "#tlDetailPanel"].map(selector => document.querySelector(selector).getBoundingClientRect());
+    const overlays = [...document.querySelectorAll(".tl-map-caption, .tl-map-actions, .tl-map-navigation, " +
+      ".tl-dock, #filterPanel, #tlDetailPanel, .tl-integration-map-summary:not([hidden])")]
+      .map(element => element.getBoundingClientRect());
     const overlaps = overlays.some(rect => card.left < rect.right - 1 && card.right > rect.left + 1 &&
       card.top < rect.bottom - 1 && card.bottom > rect.top + 1);
     return !overlaps && card.width >= 300 && card.width <= 320 &&
@@ -68,7 +69,7 @@ for (const [width, height] of [[1024, 650], [1366, 768], [1440, 900], [1920, 108
     await assertPlacement(page);
     assert.equal(await page.locator(popup).count(), 1);
     assert.equal((await page.locator(`${popup} .stop-popup-title`).innerText()).trim(), "Cawang");
-    assert.equal(await page.locator(`${popup} .stop-popup-title`).evaluate(el => getComputedStyle(el).fontSize), "22px");
+    assert.equal(await page.locator(`${popup} .stop-popup-title`).evaluate(el => getComputedStyle(el).fontSize), "20px");
     assert.equal((await page.locator("#selectedStopInfo .selected-stop-title").textContent()).trim(), "Cawang");
     assert.equal(await page.locator("#tlDetailPanel").getAttribute("data-tab"), "stops");
     assert.equal(await page.locator(`#stopList [aria-current="true"]`).getAttribute("data-stop-key"), cawang);
@@ -126,10 +127,20 @@ test("D3 shows the repository's explicit transfer, branding and reachable footer
   const scroll = await page.locator(popup).evaluate(root => [...root.querySelectorAll("*")]
     .filter(el => el.clientHeight && el.scrollHeight > el.clientHeight + 1 && ["auto", "scroll"].includes(getComputedStyle(el).overflowY))
     .map(el => el.classList.contains("lrt-popup-body")));
-  assert.deepEqual(scroll, [true], "only the body scrolls when the source list is long");
+  assert.ok(scroll.every(Boolean) && scroll.length <= 1,
+    "compact Popup has no nested scrolling surfaces");
   await assertPlacement(page);
-  await transfer.click();
-  await waitForStation(page, "MRT012_01");
+  // D3.5 quick glance shows only three destinations; the full physical
+  // transfer stays available through the visible Detail Panel.
+  await page.locator(`${popup} .tl-show-stop-in-panel`).click();
+  const fullTransfer = page.locator('#selectedStopInfo [data-integration-stop-key="MRT012_01"][data-integration-route-id="MRT_NS"]');
+  await fullTransfer.waitFor({ state: "visible" });
+  await fullTransfer.click();
+  await page.waitForFunction(() => currentSelectedStopKey === "MRT012_01" && currentSelectedRouteId === "MRT_NS");
+  const selectedMrt = page.locator('#selectedStopInfo > .stop-popup-ui[data-stop-key="MRT012_01"]');
+  await selectedMrt.waitFor();
+  assert.equal(await page.locator("#tlDetailPanel").getAttribute("data-tab"), "selected");
+  assert.match(await selectedMrt.locator(".stop-popup-title").innerText(), /Dukuh Atas BNI/);
   assert.equal(await page.evaluate(() => currentSelectedRouteId), "MRT_NS");
   assert.equal(await page.locator(`#stopList [aria-current="true"]`).getAttribute("data-stop-key"), "MRT012_01");
   assert.deepEqual(errors, []);

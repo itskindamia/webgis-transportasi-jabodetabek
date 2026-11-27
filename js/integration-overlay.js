@@ -42,6 +42,7 @@
     L.DomEvent.disableScrollPropagation(summary);
 
     let refreshFrame = 0;
+    let summaryFrame = 0;
     let signature = "";
     let currentLocations = [];
     let visibleCount = 0;
@@ -269,6 +270,41 @@
       } else {
         countLabel.removeAttribute("title");
       }
+      scheduleSummaryPlacement();
+    }
+
+    function scheduleSummaryPlacement() {
+      if (summaryFrame || summary.hidden) return;
+      summaryFrame = requestAnimationFrame(() => {
+        summaryFrame = 0;
+        if (summary.hidden) return;
+        const popup = map._popup;
+        const card = !overviewActive && popup?.isOpen()
+          ? popup.getElement()?.querySelector(".leaflet-popup-content-wrapper")?.getBoundingClientRect()
+          : null;
+        const mapBounds = map.getContainer().getBoundingClientRect();
+        // Compare against the summary's default upper-left box, even when
+        // the previous frame placed it at the bottom. This avoids oscillation.
+        const left = mapBounds.left + 12;
+        const top = mapBounds.top + 59;
+        summary.classList.remove("is-compact");
+        const overlaps = card && card.left < left + summary.offsetWidth && card.right > left &&
+          card.top < top + summary.offsetHeight && card.bottom > top;
+        summary.classList.toggle("is-below-popup", Boolean(overlaps));
+        if (!overlaps) {
+          summary.removeAttribute("title");
+          return;
+        }
+        const dock = document.getElementById("bottomToolbar").getBoundingClientRect();
+        const bottom = Math.ceil(mapBounds.bottom - dock.top + 3);
+        summary.style.setProperty("--tl-summary-bottom", `${bottom}px`);
+        // Compact the lower card on short desktops so the popup footer and
+        // the dock both remain reachable. The note is retained for AT.
+        const compact = card.bottom > mapBounds.bottom - bottom - summary.offsetHeight;
+        summary.classList.toggle("is-compact", compact);
+        if (compact) summary.title = summary.querySelector(".tl-integration-map-note").textContent;
+        else summary.removeAttribute("title");
+      });
     }
 
     function schedule() {
@@ -329,6 +365,8 @@
     if (popupPane) observer.observe(popupPane, observerOptions);
 
     map.on("popupopen popupclose", schedule);
+    map.on("move zoomend resize popupopen popupclose", scheduleSummaryPlacement);
+    map.getContainer().addEventListener("toggle", scheduleSummaryPlacement, true);
     desktop.addEventListener?.("change", () => { signature = ""; schedule(); });
 
     // A selected stop may be restored from a permalink after data arrives.

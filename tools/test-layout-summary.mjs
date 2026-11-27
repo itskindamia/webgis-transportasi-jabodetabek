@@ -15,7 +15,18 @@ for (const [width, height] of [[1366, 900], [390, 844]]) for (const [mode, id] o
     await page.click(`[data-mode="${mode}"]`); await selectRoute(page, id); await page.waitForTimeout(850);
     await page.evaluate(() => { webgisLayout.showPopupDetails(); webgisLayout.setTab("route"); });
     const expected = JSON.parse(await readFile("docs/summary-refinement/verification/baseline-summary.json", "utf8"))[id];
-    assert.equal(await page.locator("#routeInfo").evaluate(el => el.textContent.replace(/\s+/g, " ").trim()), expected.text, "all source metadata and statistics unchanged");
+    const copy = await page.locator("#routeInfo").evaluate(el => {
+      const relation = el.querySelector(".route-heading-relation")?.textContent.trim();
+      const canonical = getRouteHeadingParts(getRouteById(currentSelectedRouteId)).relation;
+      const snapshot = el.cloneNode(true);
+      // Reverse only the deliberate presentation change. Compare the full
+      // remaining markup text to the original summary fixture.
+      if (relation) snapshot.querySelector(".route-heading-relation").textContent = canonical;
+      return { relation, canonical, text: snapshot.textContent.replace(/\s+/g, " ").trim() };
+    });
+    const displayRelation = width >= 1024 ? copy.canonical.replace(/\s+[-–]\s+/g, " ↔ ") : copy.canonical;
+    assert.equal(copy.relation, displayRelation || undefined, "only desktop uses the presentation arrow");
+    assert.equal(copy.text, expected.text, "all source metadata and statistics unchanged");
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width);
     for (const button of await page.locator("#routeInfo .route-geometry-view-button").all()) {
       const style = await button.evaluate(el => ({ font: parseFloat(getComputedStyle(el).fontSize), family: getComputedStyle(el).fontFamily, height: el.getBoundingClientRect().height }));

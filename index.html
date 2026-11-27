@@ -12,13 +12,15 @@
     <link rel="preload" href="assets/fonts/pt-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="stylesheet" href="css/tabler-components.css?v=mobile-ux-20261107-1">
     <link rel="stylesheet" href="css/legacy-components.css?v=mobile-ux-20261107-1">
-    <link rel="stylesheet" href="css/layout-tabler.css?v=panel-return-popup-1">
+    <link rel="stylesheet" href="css/layout-tabler.css?v=panel-return-popup-2">
     <link rel="stylesheet" href="css/lrt-popup.css?v=desktop-d3-1">
     <link rel="stylesheet" href="css/font-pt-sans.css?v=mobile-ux-20261107-1">
     <link rel="stylesheet" href="css/mobile-route-discovery.css?v=mobile-20261111-1">
     <link rel="stylesheet" href="css/stop-popup-mobile.css?v=shared-20261111-1">
     <link rel="stylesheet" href="css/stop-popup-desktop.css?v=desktop-d3-3" media="(min-width: 1024px)">
     <link rel="stylesheet" href="css/integration-overlay.css?v=d4-1" media="(min-width: 1024px)">
+    <link rel="stylesheet" href="css/popup-comfort.css?v=d35-4">
+    <link rel="stylesheet" href="css/tj-route-badge.css?v=1">
   </head>
   <body class="tl-app">
     <div class="tl-shell" id="tlShell">
@@ -506,6 +508,8 @@
           </svg>
           <span class="mobile-toolbar-label">Detail</span>
         </button>
+        <button id="tlDockGuide" class="tl-dock-utility btn" type="button" title="Cara Menggunakan" aria-label="Cara Menggunakan" aria-haspopup="dialog" aria-controls="productTour">?</button>
+        <button id="tlDockAbout" class="tl-dock-utility btn" type="button" title="Informasi dan Catatan" aria-label="Informasi dan Catatan" aria-haspopup="dialog" aria-controls="infoModal"><svg class="icon" aria-hidden="true"><use href="assets/icons/tabler.svg#info-circle"></use></svg></button>
         <button aria-controls="basemapPanel" aria-expanded="false" aria-haspopup="dialog" aria-label="Buka pilihan peta dasar" class="toolbar-button basemap-main-button btn" id="basemapButton" title="Peta Dasar" type="button">
           <svg class="icon" aria-hidden="true">
             <use href="assets/icons/tabler.svg#stack-2"></use>
@@ -1001,11 +1005,11 @@
         </div>
       </div>
     </div>
-    <script src="js/layout-tabler.js?v=panel-return-popup-1"></script>
-    <script src="js/layout-tabler-ux.js?v=compact-tour-20261107-5"></script>
-    <script src="js/stop-popup-ui.js?v=desktop-d3-2"></script>
+    <script src="js/layout-tabler.js?v=d35-popup-comfort-4"></script>
+    <script src="js/layout-tabler-ux.js?v=compact-tour-20261127-9"></script>
+    <script src="js/stop-popup-ui.js?v=d35-3"></script>
     <script crossorigin="anonymous" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/integration-overlay.js?v=d4-1"></script>
-    <script src="js/app-loader.js?v=desktop-d3-2"></script>
+    <script src="js/integration-overlay.js?v=d4-popup-placement-3"></script>
+    <script src="js/app-loader.js?v=tj-route-badge-1"></script>
   </body>
 </html>

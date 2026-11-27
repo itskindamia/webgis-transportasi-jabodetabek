@@ -21181,8 +21181,22 @@ function routeNumberFromId(routeId) {
     : raw.replace("BRT_", "");
 }
 
+function buildBrtBadgeLabel(code, background) {
+  // Render the code separately from its container so old font-size rules
+  // on the outer badge cannot change the proportions across placements.
+  const rgb = /^#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$/i.exec(background);
+  const luminance = rgb && rgb.slice(1).reduce((value, hex, index) => {
+    const channel = parseInt(hex, 16) / 255;
+    const linear = channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    return value + linear * [0.2126, 0.7152, 0.0722][index];
+  }, 0);
+  const ink = luminance > 0.179 ? "#000" : "#fff";
+  return `<span class="tj-route-code${code.length > 2 ? " is-long" : ""}" style="--tj-route-code-color:${ink}">${escapeHTML(code)}</span>`;
+}
+
 function buildBrtBadge(routeId) {
   const number = routeNumberFromId(routeId);
+  const color = getRouteColor(routeId);
 
   const isDoubleDigit =
     Number(number) >= 10;
@@ -21195,10 +21209,10 @@ function buildBrtBadge(routeId) {
       "
       style="
         --route-color:
-        ${escapeHTML(getRouteColor(routeId))};
+        ${escapeHTML(color)};
       "
     >
-      ${escapeHTML(number)}
+      ${buildBrtBadgeLabel(number, color)}
     </span>
   `;
 }
@@ -21255,6 +21269,7 @@ function buildSmallRouteBadge(
       routeNumberFromId(
         routeId
       );
+    const color = getRouteColor(routeId);
 
     return `
       <span
@@ -21265,13 +21280,13 @@ function buildSmallRouteBadge(
         "
         style="
           background:
-          ${escapeHTML(getRouteColor(routeId))};
+          ${escapeHTML(color)};
         "
         title="${escapeHTML(
           titleParts.join(" · ")
         )}"
       >
-        ${escapeHTML(number)}
+        ${buildBrtBadgeLabel(number, color)}
       </span>
     `;
   }

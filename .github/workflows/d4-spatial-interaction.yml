@@ -5,7 +5,10 @@ on:
     paths:
       - 'js/map.js'
       - 'js/integration-overlay.js'
+      - 'js/stop-popup-ui.js'
+      - 'js/layout-tabler.js'
       - 'css/integration-overlay.css'
+      - 'css/popup-comfort.css'
       - 'tools/test-layout-integration-overlay-d4.mjs'
       - '.github/workflows/d4-spatial-interaction.yml'
   workflow_dispatch:

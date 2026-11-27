@@ -178,8 +178,24 @@
       byId("globalSearchInput").setAttribute("aria-expanded", saved.searchExpanded || "false");
       if (completed) saveProductTourCompleted();
       requestAnimationFrame(() => {
-        map.invalidateSize({ animate: false });
-        map.setView(saved.center, saved.zoom, { animate: false });
+        if (!saved.manual && currentSelectedStopKey) {
+          // Opening a permalink starts the station flyTo while the welcome
+          // tour can still be dismissed. Do not cancel it with an older view.
+          const popup = map._popup;
+          if (popup?.isOpen()) {
+            const fitPopup = () => {
+              if (!popup.isOpen()) return;
+              if (!Number.isInteger(map.getZoom()) || map._animatingZoom || map._panAnim?._inProgress) {
+                map.once("moveend", fitPopup);
+                return;
+              }
+              popup.setLatLng(popup.getLatLng());
+            };
+            fitPopup();
+          }
+        } else {
+          ui.restoreCamera(saved);
+        }
         const focus = saved.focus?.isConnected && !saved.focus.closest("[inert]") && visibleRect(saved.focus) ? saved.focus : byId("tlNetworkToggle");
         focus.focus({ preventScroll: true });
         scheduleLabels();

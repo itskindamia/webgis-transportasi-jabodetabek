@@ -116,6 +116,62 @@
     return root;
   }
 
+  function decorateQuickGlance(root, feature) {
+    if (!root) return;
+    const operatorLogo = {
+      BRT: TRANSIT_LOGOS.TJ,
+      MRT: TRANSIT_LOGOS.MRT,
+      KRL: TRANSIT_LOGOS.KRL,
+      KA_BANDARA: TRANSIT_LOGOS.KAI_BANDARA
+    }[normalizeMode(feature?.properties?.MODE)];
+    const eyebrow = root.querySelector(".stop-popup-eyebrow");
+    if (operatorLogo && eyebrow) {
+      const logo = document.createElement("img");
+      logo.className = "tl-stop-operator-logo";
+      logo.src = operatorLogo;
+      logo.alt = "";
+      eyebrow.prepend(logo);
+    }
+    // Keep the original operator groups and every destination in the DOM.
+    // Only the desktop popup limits which rows are visible.
+    const integrationRows = [...root.querySelectorAll(".integration-place-row")];
+    const compactLimit = 3;
+    if (integrationRows.length > compactLimit) {
+      integrationRows.slice(compactLimit).forEach(row => {
+        row.dataset.quickGlanceOverflow = "true";
+      });
+      const integration = root.querySelector(".stop-popup-section--integration");
+      if (integration) {
+        const note = textElement("button", "tl-integration-more-note",
+          `+${integrationRows.length - compactLimit} integrasi lainnya di panel`);
+        note.type = "button";
+        integration.append(note);
+      }
+    }
+    const maps = root.querySelector(".stop-popup-maps-link");
+    const source = root.querySelector(".stop-source-summary");
+    if (maps) {
+      maps.setAttribute("aria-label", "Buka lokasi di Google Maps");
+      maps.setAttribute("title", "Google Maps");
+      // Symbol-only quick action with a distinct local map-pin icon.
+      const visual = maps.querySelector(".stop-popup-external-link-icon");
+      if (visual) {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("class", "tl-quick-action-svg");
+        svg.setAttribute("aria-hidden", "true");
+        const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        use.setAttribute("href", "assets/icons/tabler.svg#map-pin");
+        svg.append(use);
+        const externalGlyph = textElement("span", "tl-maps-external-indicator", visual.textContent.trim());
+        visual.replaceChildren(externalGlyph, svg);
+      }
+    }
+    if (source) {
+      source.setAttribute("aria-label", "Tampilkan sumber data");
+      source.setAttribute("title", "Sumber Data");
+    }
+  }
+
   window.addEventListener("webgis:map-ready", () => {
     const engineRenderer = buildStopPopup;
     buildStopPopup = (feature, routeId) => {
@@ -123,11 +179,20 @@
       const template = document.createElement("template");
       template.innerHTML = html;
       const root = enhance(template.content.querySelector(".stop-popup"), feature, routeId);
+      decorateQuickGlance(root, feature);
       const actions = root?.querySelector(".stop-popup-action-row");
       if (actions) {
         const button = textElement("button", "tl-show-stop-in-panel", "Tampilkan di panel");
         button.type = "button";
-        actions.append(button);
+        // Keep this essential presentation switch outside the scrolling body,
+        // immediately above the previous/next navigation controls.
+        // No popup content or engine actions are removed.
+        const navigation = root.querySelector(".stop-popup-navigation");
+        if (navigation?.parentElement === root) {
+          root.insertBefore(button, navigation);
+        } else {
+          actions.append(button);
+        }
       }
       return template.innerHTML;
     };
