@@ -878,3 +878,14 @@
   order: 3;
   margin-left: 0;
 }
+
+/* Expanded source metadata stays usable despite the pinned action rail:
+   the infrequent disclosure receives its own bounded scroll when needed,
+   while the map popup's navigation and primary action remain accessible. */
+.tl-app .leaflet-popup .stop-popup-ui[data-visual-comfort="true"] > .stop-popup-action-row .stop-source-card[open] .stop-source-body {
+  max-height: min(170px, 28dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding-bottom: 9px;
+}
