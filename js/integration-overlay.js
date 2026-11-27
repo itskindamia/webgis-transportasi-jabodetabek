@@ -45,12 +45,55 @@
     let signature = "";
     let currentLocations = [];
     let visibleCount = 0;
+    let visibleTargets = [];
+    let overviewActive = false;
+    let overviewStopKey = "";
+    let cameraBeforeOverview = null;
+
+    // Overview is explicitly chosen, so the normal station-selection camera
+    // remains untouched until the user clicks "Lihat semua".
+    function setOverview(active) {
+      overviewActive = Boolean(active);
+      map.getContainer().classList.toggle("tl-d4-integration-overview", overviewActive);
+      const button = summary.querySelector(".tl-integration-fit");
+      button.textContent = overviewActive ? "Kembali ke popup" : "Lihat semua";
+      button.title = overviewActive
+        ? "Kembali ke detail halte atau stasiun"
+        : "Sesuaikan peta ke semua titik integrasi";
+      button.setAttribute("aria-pressed", String(overviewActive));
+      if (!overviewActive) {
+        overviewStopKey = "";
+        cameraBeforeOverview = null;
+      }
+    }
 
     const stopFeature = key => typeof getStopByKey === "function" ? getStopByKey(key) : null;
     const stopName = feature => typeof getStopDisplayName === "function" ? getStopDisplayName(feature) : "Halte / stasiun";
     const safeText = value => String(value ?? "").replace(/[&<>"']/g, c => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     }[c]));
+
+    // Name-based resolution is permitted only for a single distinct physical
+    // stop of the same mode; similar names (Cawang Baru, Cawang Sentral) never
+    // qualify. Keep 0.1 m precision so nearby platforms are not conflated.
+    const plainName = value => String(value ?? "").trim().toLowerCase()
+      .replace(/^(halte|stasiun)\s+/, "").replace(/\s+/g, " ").trim();
+    function nameIsUnique(row, target) {
+      if (typeof stopData === "undefined" || !Array.isArray(stopData?.features)) return false;
+      const requested = plainName(row.querySelector(".integration-place-name")?.textContent);
+      const resolved = plainName(stopName(target));
+      if (!requested || requested !== resolved) return false;
+      const targetMode = String(target.properties?.MODE || "").toUpperCase();
+      const locations = new Set();
+      for (const feature of stopData.features) {
+        if (String(feature.properties?.MODE || "").toUpperCase() !== targetMode) continue;
+        if (plainName(stopName(feature)) !== resolved) continue;
+        const coordinates = feature.geometry?.coordinates;
+        if (feature.geometry?.type !== "Point" || !Array.isArray(coordinates)) continue;
+        locations.add(Number(coordinates[0]).toFixed(6) + "," + Number(coordinates[1]).toFixed(6));
+      }
+      return locations.size === 1;
+    }
 
     const locationFor = feature => {
       const coordinates = feature?.geometry?.type === "Point"
@@ -85,6 +128,7 @@
       summary.hidden = true;
       currentLocations = [];
       visibleCount = 0;
+      visibleTargets = [];
     }
 
     function collect() {
@@ -110,7 +154,9 @@
         const target = stopFeature(targetKey);
         const destination = locationFor(target);
         const disabled = row.matches(":disabled,[aria-disabled='true'],[data-webgis-integration-disabled='1']");
-        if (!targetKey || !targetRoute || !destination || disabled || !validRoute(target, targetRoute)) {
+        const basis = String(row.dataset.integrationBasis || "");
+        const verified = basis === "int_stop" || (basis === "name" && nameIsUnique(row, target));
+        if (!targetKey || !targetRoute || !destination || disabled || !verified || !validRoute(target, targetRoute)) {
           unresolved++;
           continue;
         }
@@ -123,7 +169,7 @@
         deduped.add(spatialKey);
         entries.push({
           key: targetKey, route: targetRoute, feature: target, point: destination,
-          mode: String(target.properties?.MODE || "").toUpperCase()
+          mode: String(target.properties?.MODE || "").toUpperCase(), basis
         });
       }
       return { key, route, origin, entries, unresolved };
@@ -133,13 +179,20 @@
       refreshFrame = 0;
       if (!desktop.matches || !checkbox.checked) {
         signature = "";
+        setOverview(false);
         clear();
         return;
       }
       const selection = collect();
+      if (overviewActive && (selection.key !== overviewStopKey
+        || !selection.origin || window.webgisLayout?.usesStopInfoPanel?.())) {
+        // Selecting another station or changing to Panel mode must never
+        // leave a newly opened popup hidden behind the prior overview.
+        setOverview(false);
+      }
       const nextSignature = JSON.stringify([
         selection.key, selection.route,
-        selection.entries.map(x => [x.key, x.route, x.point.lat, x.point.lng]),
+        selection.entries.map(x => [x.key, x.route, x.point.lat, x.point.lng, x.basis]),
         selection.unresolved
       ]);
       if (nextSignature === signature) return;
@@ -152,6 +205,7 @@
         KRL: "#329cbb", KA_BANDARA: "#62519a", ICT: "#7d8797"
       };
       for (const target of selection.entries) {
+        const near = selection.origin.distanceTo(target.point) < 40;
         const color = colors[target.mode] || "#485b73";
         const symbol = ({
           BRT: "B", MRT: "M", LRT: "L", KRL: "K",
@@ -175,10 +229,13 @@
         const marker = L.marker(target.point, {
           pane: "tlIntegrationTargetPane",
           icon: L.divIcon({
-            className: "tl-integration-target-marker",
+            className: "tl-integration-target-marker" + (near ? " is-near-origin" : ""),
             html: icon.outerHTML,
             iconSize: [30, 30],
-            iconAnchor: [15, 15]
+            // Offset ONLY the icon, not target.point or its relationship line.
+            // Cawang's LRT and TJ stops are approximately 9 m apart.
+            iconAnchor: near ? [-35, -25] : [15, 15],
+            tooltipAnchor: near ? [50, 40] : [0, 0]
           }),
           keyboard: true,
           bubblingMouseEvents: false,
@@ -199,6 +256,9 @@
         marker.on("mouseout", () => line.setStyle({ weight: 2, opacity: 0.72 }));
       }
       visibleCount = selection.entries.length;
+      visibleTargets = selection.entries.map(x => ({
+        key: x.key, route: x.route, mode: x.mode, basis: x.basis
+      }));
       currentLocations = [selection.origin, ...selection.entries.map(x => x.point)];
       summary.hidden = false;
       const countLabel = summary.querySelector(".tl-integration-map-count");
@@ -217,9 +277,25 @@
 
     summary.querySelector("button").addEventListener("click", () => {
       if (!currentLocations.length) return;
+      if (overviewActive) {
+        const previous = cameraBeforeOverview;
+        setOverview(false);
+        if (previous) {
+          map.flyTo(previous.center, previous.zoom, { animate: true, duration: 0.4 });
+        }
+        return;
+      }
+      if (!window.webgisLayout?.usesStopInfoPanel?.()) {
+        // Do not remove the popup from the DOM: it provides the resolved,
+        // selected-stop integration data. Temporarily hide only its pixels,
+        // so all destination markers are clickable in the fit view.
+        cameraBeforeOverview = { center: map.getCenter(), zoom: map.getZoom() };
+        overviewStopKey = String(currentSelectedStopKey || "");
+        setOverview(true);
+      }
       map.fitBounds(L.latLngBounds(currentLocations).pad(0.18), {
-        paddingTopLeft: [35, 100],
-        paddingBottomRight: [35, 65],
+        paddingTopLeft: [70, 100],
+        paddingBottomRight: [70, 80],
         maxZoom: 16,
         animate: true,
         duration: 0.4
@@ -235,7 +311,7 @@
     const observerOptions = {
       subtree: true, childList: true, attributes: true,
       attributeFilter: ["data-integration-stop-key", "data-integration-route-id",
-        "data-webgis-target-repaired", "disabled", "data-webgis-integration-disabled"]
+        "data-integration-basis", "data-webgis-target-repaired", "disabled", "data-webgis-integration-disabled"]
     };
     const observer = new MutationObserver(schedule);
     observer.observe(selectedInfo, observerOptions);
@@ -251,6 +327,9 @@
 
     window.webgisSpatialIntegrations = Object.freeze({
       get count() { return visibleCount; },
+      get linkCount() { return lines.getLayers().length; },
+      get targets() { return visibleTargets.map(target => ({ ...target })); },
+      get overviewActive() { return overviewActive; },
       get enabled() { return checkbox.checked && desktop.matches; }
     });
     schedule();
