@@ -37,6 +37,20 @@ async function waitForCamera(page) {
   );
 }
 
+async function waitForSettledCamera(page) {
+  // FlyTo and subsequent popup auto-pan can be distinct animations.
+  // Require several identical camera samples before comparing states.
+  await page.waitForFunction(() => {
+    const center = map.getCenter();
+    const current = [center.lat, center.lng, map.getZoom()].join(",");
+    window.__d4CameraStable = window.__d4CameraLast === current
+      ? (window.__d4CameraStable || 0) + 1 : 0;
+    window.__d4CameraLast = current;
+    return window.__d4CameraStable >= 4 &&
+      !map._panAnim?._inProgress && !map._animatingZoom;
+  }, null, { polling: 140 });
+}
+
 async function setPanelMode(page, mode) {
   await page.click("#basemapButton");
   await page.locator("#tlStopInfoMode").selectOption(mode);
@@ -154,7 +168,8 @@ test("D4 Popup Lihat semua temporarily clears popup obstruction and restores the
   const { page, errors } = await setup(t);
   await selectStation(page, dukuh);
   await page.waitForFunction(() => window.webgisSpatialIntegrations?.count === 4);
-  await page.waitForFunction(() => map.getZoom() === STOP_ZOOM && !map._animatingZoom);
+  await page.waitForFunction(() => map.getZoom() === STOP_ZOOM);
+  await waitForSettledCamera(page);
   const before = await page.evaluate(() => ({
     stop: currentSelectedStopKey, route: currentSelectedRouteId,
     center: map.getCenter(), zoom: map.getZoom(), url: location.href
@@ -181,7 +196,8 @@ test("D4 Popup Lihat semua temporarily clears popup obstruction and restores the
     "every destination must be visible and not covered in the overview: " + JSON.stringify(accessible));
   await page.locator("#map .tl-integration-fit").click();
   await page.waitForFunction(() => !webgisSpatialIntegrations.overviewActive
-    && map.getZoom() === STOP_ZOOM && !map._animatingZoom);
+    && map.getZoom() === STOP_ZOOM);
+  await waitForSettledCamera(page);
   assert.equal(await page.locator(".leaflet-popup").isVisible(), true);
   const after = await page.evaluate(() => ({
     stop: currentSelectedStopKey, route: currentSelectedRouteId,
@@ -191,6 +207,7 @@ test("D4 Popup Lihat semua temporarily clears popup obstruction and restores the
   assert.equal(after.route, before.route);
   assert.equal(after.url, before.url);
   assert.equal(after.zoom, before.zoom);
-  assert.ok(mapDistance(after.center, before.center) < 0.00001);
+  assert.ok(mapDistance(after.center, before.center) < 0.00001,
+    "overview return must restore camera: " + JSON.stringify({ before: before.center, after: after.center }));
   assert.deepEqual(errors, []);
 });
