@@ -212,6 +212,32 @@
     background: transparent;
     color: #2a628f;
   }
+  /* Ordinary boarding/alighting need not consume a full card in the
+     quick glance; keep exceptions visible and leave the full data in Panel. */
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-activity:has(.stop-popup-activity-value.is-both) {
+    display: none;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui .stop-popup-activity {
+    padding: 4px 0;
+    border: 0;
+    background: transparent;
+    font-weight: 400;
+  }
+  .tl-app .leaflet-popup .stop-popup-ui > .tl-show-stop-in-panel {
+    flex: 0 0 auto;
+    min-height: 34px;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 8px 12px;
+    border: 0;
+    border-top: 1px solid #edf0f4;
+    border-radius: 0;
+    background: #fff;
+    color: #28628b;
+    font-size: 11px;
+    font-weight: 600;
+  }
   .tl-app .leaflet-popup .stop-popup-ui .stop-popup-navigation {
     margin-top: 9px;
     background: #f8fafc;
