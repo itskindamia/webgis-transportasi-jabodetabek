@@ -76,17 +76,61 @@
     background: none;
   }
   .tl-app .tl-integration-target-symbol {
-    width: 30px;
-    height: 30px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: white;
-    color: var(--tl-integration-color, #34465a);
-    border: 3px solid var(--tl-integration-color, #34465a);
-    box-shadow: 0 0 0 4px rgb(255 255 255 / 70%), 0 3px 9px rgb(20 35 55 / 25%);
-    font: 700 10px/1 'PT Sans',sans-serif;
+    box-sizing: border-box;
+    width: 176px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px 3px 3px;
+    border-radius: 18px;
+    background: rgb(255 255 255 / 97%);
+    color: #263a4e;
+    border: 1px solid color-mix(in srgb, var(--tl-integration-color, #34465a) 55%, white);
+    box-shadow: 0 0 0 3px rgb(255 255 255 / 78%), 0 3px 9px rgb(20 35 55 / 22%);
+    font: 600 11px/1.15 'PT Sans',sans-serif;
     transition: transform .14s ease;
+  }
+  .tl-app .tl-integration-target-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 26px;
+    width: 26px;
+    height: 26px;
+    min-width: 0;
+    border-radius: 50%;
+    color: var(--tl-integration-color, #34465a);
+    font: 700 9px/1 'PT Sans',sans-serif;
+  }
+  .tl-app .tl-integration-target-line .rail-line-badge-wrap,
+  .tl-app .tl-integration-target-line .rail-line-badge-fallback,
+  .tl-app .tl-integration-target-line .brt-route-badge {
+    display: inline-flex;
+    width: 25px;
+    height: 25px;
+    min-width: 25px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .tl-app .tl-integration-target-line .rail-line-badge-image {
+    display: block;
+    width: 25px;
+    height: 25px;
+    object-fit: contain;
+  }
+  .tl-app .tl-integration-target-line .rail-line-badge-fallback {
+    font-size: 9px;
+    border: 2px solid currentColor;
+  }
+  .tl-app .tl-integration-target-name {
+    display: block;
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   /* The point geometry stays unchanged. Only its icon is schematically
      displaced when transfer stops almost coincide (e.g. Cawang LRT/TJ).
