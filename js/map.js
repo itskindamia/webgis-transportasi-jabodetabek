@@ -9173,7 +9173,7 @@ function syncStopPopupIntegrationOverflow(popupElement) {
   POPUP NAVIGATION — DELEGATED CLICK HANDLER
   ==========================================================
 
-  Listener ditempel sekali pada container peta.
+  Listener dipakai bersama oleh popup peta dan kartu Terpilih.
 
   Kenapa:
   Leaflet dapat menghitung ulang / memperbarui DOM popup saat
@@ -9184,10 +9184,12 @@ function syncStopPopupIntegrationOverflow(popupElement) {
   Event delegation membuat tombol Sebelumnya/Berikutnya
   tetap berfungsi walaupun DOM popup berubah.
 */
-map
-  .getContainer()
-  .addEventListener(
-    "click",
+function onStopInformationClick(handler) {
+  map.getContainer().addEventListener("click", handler, true);
+  selectedStopInfoEl.addEventListener("click", handler, true);
+}
+
+onStopInformationClick(
     event => {
       const button =
         event.target
@@ -9241,8 +9243,7 @@ map
         stopKey,
         routeId
       );
-    },
-    true
+    }
   );
 
 /*
@@ -9250,13 +9251,10 @@ map
   SPLIT STOP — DELEGATED COUNTERPART CLICK
   ==========================================================
 
-  Popup Leaflet dapat dibuat ulang, jadi listener ditempel
-  sekali pada container peta.
+  Markup bisa dibuat ulang pada kedua tampilan, jadi gunakan
+  delegasi dari container yang tetap.
 */
-map
-  .getContainer()
-  .addEventListener(
-    "click",
+onStopInformationClick(
     event => {
       const button =
         event.target
@@ -9310,8 +9308,7 @@ map
         false,
         0.62
       );
-    },
-    true
+    }
   );
 
 
@@ -23967,10 +23964,7 @@ function switchRouteFromStopPopup(
   menggunakan event delegation. Ini membuat klik tetap berfungsi
   walaupun Leaflet memperbarui DOM popup setelah resize/update.
 */
-map
-  .getContainer()
-  .addEventListener(
-    "click",
+onStopInformationClick(
     event => {
       const button =
         event.target
@@ -24028,8 +24022,7 @@ map
         routeId,
         stopKey
       );
-    },
-    true
+    }
   );
 
 
@@ -24042,10 +24035,7 @@ map
   dapat dibuka langsung. Fasilitas tanpa route/stop dataset
   (mis. Terminal/KAJJ pada tahap ini) tetap informasi statis.
 */
-map
-  .getContainer()
-  .addEventListener(
-    "click",
+onStopInformationClick(
     event => {
       const button =
         event.target
@@ -24083,8 +24073,7 @@ map
         stopKey,
         routeId
       );
-    },
-    true
+    }
   );
 
 
@@ -27008,6 +26997,13 @@ function drawStops(routeId) {
           ),
           getStopPopupOptions()
         );
+        // Leaflet's own layer click and the delayed selection callbacks both
+        // enter through openPopup. Keep the binding for either presentation.
+        const openBoundStopPopup = layer.openPopup;
+        layer.openPopup = function (latlng) {
+          if (window.webgisLayout?.usesStopInfoPanel?.()) return this;
+          return openBoundStopPopup.call(this, latlng);
+        };
 
         const labelOperationalState =
           getOperationalStopState(
@@ -27122,9 +27118,11 @@ function drawStops(routeId) {
               layer.getPopup();
 
             if (popup) {
+              const autoPan = popup.options.autoPan;
               Object.assign(
                 popup.options,
-                getStopPopupOptions()
+                getStopPopupOptions(),
+                matchMedia("(min-width: 1024px)").matches ? { autoPan } : null
               );
 
               requestAnimationFrame(
@@ -27174,6 +27172,8 @@ function drawStops(routeId) {
               String(routeId);
 
             if (
+              window.webgisLayout?.usesStopInfoPanel?.()
+              ||
               !isCurrentSelectedStop ||
               !isCurrentSelectedRoute
             ) {
@@ -27848,6 +27848,13 @@ function selectStop(
 
   marker.bringToFront();
 
+  const openTargetPopup = () => {
+    // Desktop mode can change while a camera animation is still in flight.
+    if (matchMedia("(min-width: 1024px)").matches &&
+        (currentSelectedStopKey !== String(stopKey) || currentSelectedRouteId !== String(routeId))) return;
+    marker.openPopup();
+  };
+
   if (restoreOnly) {
 
     if (popupWasOpen) {
@@ -27876,7 +27883,7 @@ function selectStop(
     );
 
     setTimeout(
-      () => marker.openPopup(),
+      openTargetPopup,
       380
     );
 
@@ -27916,10 +27923,6 @@ function selectStop(
       targetPoint.distanceTo(
         centerPoint
       );
-
-    const openTargetPopup = () => {
-      marker.openPopup();
-    };
 
     /*
       Kalau titik tujuan sudah dekat pusat layar, tidak perlu

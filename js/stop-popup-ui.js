@@ -122,7 +122,13 @@
       const html = engineRenderer(feature, routeId);
       const template = document.createElement("template");
       template.innerHTML = html;
-      enhance(template.content.querySelector(".stop-popup"), feature, routeId);
+      const root = enhance(template.content.querySelector(".stop-popup"), feature, routeId);
+      const actions = root?.querySelector(".stop-popup-action-row");
+      if (actions) {
+        const button = textElement("button", "tl-show-stop-in-panel", "Tampilkan di panel");
+        button.type = "button";
+        actions.append(button);
+      }
       return template.innerHTML;
     };
     map.on("popupopen", ({ popup }) => {
