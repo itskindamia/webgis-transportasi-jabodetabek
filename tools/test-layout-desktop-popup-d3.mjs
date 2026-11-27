@@ -126,10 +126,17 @@ test("D3 shows the repository's explicit transfer, branding and reachable footer
   const scroll = await page.locator(popup).evaluate(root => [...root.querySelectorAll("*")]
     .filter(el => el.clientHeight && el.scrollHeight > el.clientHeight + 1 && ["auto", "scroll"].includes(getComputedStyle(el).overflowY))
     .map(el => el.classList.contains("lrt-popup-body")));
-  assert.deepEqual(scroll, [true], "only the body scrolls when the source list is long");
+  assert.ok(scroll.every(Boolean) && scroll.length <= 1,
+    "compact Popup has no nested scrolling surfaces");
   await assertPlacement(page);
-  await transfer.click();
-  await waitForStation(page, "MRT012_01");
+  // D3.5 quick glance shows only three destinations; the full physical
+  // transfer stays available through the visible Detail Panel.
+  await page.locator(`${popup} .tl-show-stop-in-panel`).click();
+  const fullTransfer = page.locator('#selectedStopInfo [data-integration-stop-key="MRT012_01"][data-integration-route-id="MRT_NS"]');
+  await fullTransfer.waitFor({ state: "visible" });
+  await fullTransfer.click();
+  await page.waitForFunction(() => currentSelectedStopKey === "MRT012_01" && currentSelectedRouteId === "MRT_NS");
+  await page.locator('#selectedStopInfo[data-stop-key="MRT012_01"]').waitFor();
   assert.equal(await page.evaluate(() => currentSelectedRouteId), "MRT_NS");
   assert.equal(await page.locator(`#stopList [aria-current="true"]`).getAttribute("data-stop-key"), "MRT012_01");
   assert.deepEqual(errors, []);
