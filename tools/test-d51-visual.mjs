@@ -93,3 +93,28 @@ test("D5.24 reused route layers preserve correct geometry, stops, and click targ
   assert.equal(result.popupsBound, true, "route click/popups stay bound");
   assert.deepEqual(errors, []);
 });
+
+test("D5.24 Popup markup is lazy but still available to both Popup and Panel", async t => {
+  const browser = await launch();
+  t.after(() => browser.close());
+  const { page, context, errors } = await openLayout(browser, 1440, 900);
+  t.after(() => context.close());
+  await page.locator('[data-mode="BRT"]').click();
+  await selectRoute(page, "BRT_01");
+  const before = await page.evaluate(() => {
+    const layers = stopLayer.getLayers();
+    return {
+      total: layers.length,
+      eager: layers.filter(layer => Boolean(layer.getPopup()?._content)).length
+    };
+  });
+  assert.ok(before.total > 0, "the route creates stop markers");
+  assert.equal(before.eager, 0, "stop popup markup is not built for unopened stops");
+  await page.locator('#stopList [data-stop-key="BRT010_REG"]').click();
+  await page.waitForFunction(() => currentSelectedStopKey === "BRT010_REG");
+  const popup = await page.evaluate(() => stopMarkerByKey.get("BRT010_REG").getPopup().getContent());
+  assert.match(popup, /Dukuh Atas/);
+  await page.locator(".leaflet-popup .tl-show-stop-in-panel").click();
+  assert.match(await page.locator("#selectedStopInfo").innerText(), /Dukuh Atas/);
+  assert.deepEqual(errors, []);
+});
