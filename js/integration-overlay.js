@@ -66,6 +66,7 @@
         overviewStopKey = "";
         cameraBeforeOverview = null;
       }
+      map.fire("integrationdisplaychange");
     }
 
     const stopFeature = key => typeof getStopByKey === "function" ? getStopByKey(key) : null;
@@ -146,6 +147,7 @@
       currentLocations = [];
       visibleCount = 0;
       visibleTargets = [];
+      map.fire("integrationdisplaychange");
     }
 
     function collect() {
@@ -395,7 +397,7 @@
     if (popupPane) observer.observe(popupPane, observerOptions);
 
     map.on("popupopen popupclose", schedule);
-    map.on("move zoomend resize popupopen popupclose", scheduleSummaryPlacement);
+    map.on("move zoomend resize popupopen popupclose stopPopupPlacement", scheduleSummaryPlacement);
     map.getContainer().addEventListener("toggle", scheduleSummaryPlacement, true);
     desktop.addEventListener?.("change", () => { signature = ""; schedule(); });
 

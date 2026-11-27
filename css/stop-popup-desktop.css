@@ -16,6 +16,26 @@
   overflow: visible;
 }
 
+.tl-app .leaflet-popup[data-popup-side] .leaflet-popup-tip-container {
+  left: var(--tl-popup-tip);
+  transform-origin: top center;
+}
+.tl-app .leaflet-popup[data-popup-side="below"] .leaflet-popup-tip-container {
+  top: 1px;
+  transform: rotate(180deg);
+}
+.tl-app .leaflet-popup:is([data-popup-side="left"], [data-popup-side="right"]) .leaflet-popup-tip-container {
+  top: var(--tl-popup-tip);
+}
+.tl-app .leaflet-popup[data-popup-side="left"] .leaflet-popup-tip-container {
+  left: calc(100% - 1px);
+  transform: rotate(-90deg);
+}
+.tl-app .leaflet-popup[data-popup-side="right"] .leaflet-popup-tip-container {
+  left: 1px;
+  transform: rotate(90deg);
+}
+
 .tl-app .leaflet-container .leaflet-popup:has(.stop-popup-ui) a.leaflet-popup-close-button {
   display: grid;
   place-items: center;
