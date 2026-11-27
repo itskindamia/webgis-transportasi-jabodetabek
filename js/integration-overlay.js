@@ -66,6 +66,7 @@
         overviewStopKey = "";
         cameraBeforeOverview = null;
       }
+      map.fire("integrationdisplaychange");
     }
 
     const stopFeature = key => typeof getStopByKey === "function" ? getStopByKey(key) : null;
@@ -146,6 +147,7 @@
       currentLocations = [];
       visibleCount = 0;
       visibleTargets = [];
+      map.fire("integrationdisplaychange");
     }
 
     function collect() {
@@ -313,26 +315,38 @@
           ? popup.getElement()?.querySelector(".leaflet-popup-content-wrapper")?.getBoundingClientRect()
           : null;
         const mapBounds = map.getContainer().getBoundingClientRect();
-        // Compare against the summary's default upper-left box, even when
-        // the previous frame placed it at the bottom. This avoids oscillation.
-        const left = mapBounds.left + 12;
-        const top = mapBounds.top + 59;
-        summary.classList.remove("is-compact");
-        const overlaps = card && card.left < left + summary.offsetWidth && card.right > left &&
-          card.top < top + summary.offsetHeight && card.bottom > top;
-        summary.classList.toggle("is-below-popup", Boolean(overlaps));
-        if (!overlaps) {
-          summary.removeAttribute("title");
-          return;
-        }
         const dock = document.getElementById("bottomToolbar").getBoundingClientRect();
+        const rail = document.querySelector(".tl-map-actions").getBoundingClientRect();
         const bottom = Math.ceil(mapBounds.bottom - dock.top + 3);
+        const right = Math.ceil(mapBounds.right - rail.left + 8);
+        const badges = markers.getLayers().map(marker => marker.getElement().getBoundingClientRect());
+        const overlaps = (a, b) => b && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+
+        // Evaluate fixed boxes from the map bounds. The previous position
+        // never becomes an input, so popup and summary cannot chase each other.
+        function candidates() {
+          const width = summary.offsetWidth;
+          const height = summary.offsetHeight;
+          return [[false, false], [true, false], [false, true], [true, true]].map(([below, rightAligned]) => {
+            const left = rightAligned ? mapBounds.right - right - width : mapBounds.left + 12;
+            const top = below ? mapBounds.bottom - bottom - height : mapBounds.top + 59;
+            const box = { left, top, right: left + width, bottom: top + height };
+            return { below, rightAligned, popup: overlaps(box, card), badges: badges.some(badge => overlaps(box, badge)) };
+          });
+        }
+        summary.classList.remove("is-compact");
+        let placement = candidates().find(position => !position.popup && !position.badges);
+        if (!placement) {
+          summary.classList.add("is-compact");
+          const compact = candidates();
+          placement = compact.find(position => !position.popup && !position.badges) ||
+            compact.find(position => !position.popup) || compact[0];
+        }
         summary.style.setProperty("--tl-summary-bottom", `${bottom}px`);
-        // Compact the lower card on short desktops so the popup footer and
-        // the dock both remain reachable. The note is retained for AT.
-        const compact = card.bottom > mapBounds.bottom - bottom - summary.offsetHeight;
-        summary.classList.toggle("is-compact", compact);
-        if (compact) summary.title = summary.querySelector(".tl-integration-map-note").textContent;
+        summary.style.setProperty("--tl-summary-right", `${right}px`);
+        summary.classList.toggle("is-below-popup", placement.below);
+        summary.classList.toggle("is-right-aligned", placement.rightAligned);
+        if (summary.classList.contains("is-compact")) summary.title = summary.querySelector(".tl-integration-map-note").textContent;
         else summary.removeAttribute("title");
       });
     }
@@ -395,7 +409,7 @@
     if (popupPane) observer.observe(popupPane, observerOptions);
 
     map.on("popupopen popupclose", schedule);
-    map.on("move zoomend resize popupopen popupclose", scheduleSummaryPlacement);
+    map.on("move zoomend resize popupopen popupclose stopPopupPlacement", scheduleSummaryPlacement);
     map.getContainer().addEventListener("toggle", scheduleSummaryPlacement, true);
     desktop.addEventListener?.("change", () => { signature = ""; schedule(); });
 

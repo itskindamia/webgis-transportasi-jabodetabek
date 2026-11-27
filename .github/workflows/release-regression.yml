@@ -4,6 +4,7 @@ on:
     branches:
       - fix/a01-toggle-non-existing
       - fix/mobile-ux-refinement
+      - feat/d5-final-ui-refinement
   workflow_dispatch:
 permissions:
   contents: read

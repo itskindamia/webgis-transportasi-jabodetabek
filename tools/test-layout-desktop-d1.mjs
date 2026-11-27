@@ -25,7 +25,8 @@ for (const [width, height] of [[1366, 768], [1440, 900], [1920, 1080]]) {
     assert.equal(await page.locator("#routeSelect").count(), 1, "native route picker stays in the DOM");
     assert.equal(await page.locator(".route-select-field").boundingBox(), null, "picker and label take no desktop space");
 
-    const controls = ["#gpsButton", "#homeButton", "#northButton", "#zoomInButton", "#zoomOutButton", "#basemapButton"];
+    const controls = ["#gpsButton", "#homeButton", "#zoomInButton", "#zoomOutButton", "#basemapButton"];
+    assert.equal(await page.locator("#northButton").boundingBox(), null, "the north-up map has no rotation control");
     async function assertControlsReachable() {
       for (const selector of controls) {
         const reachable = await page.locator(selector).evaluate(button => {

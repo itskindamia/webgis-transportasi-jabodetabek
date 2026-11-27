@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { chromium } from "playwright";
+import { waitForCamera } from "./d5-browser.mjs";
 
 const url = process.env.D35_CAPTURE_URL || "http://127.0.0.1:5173/";
 const output = process.env.D35_CAPTURE_OUTPUT || "artifacts/d35-comfort";
@@ -19,20 +20,7 @@ const scenarios = [
 ];
 
 async function waitForMap(page) {
-  await page.waitForFunction(async () => {
-    const bounds = map.getContainer().getBoundingClientRect();
-    const tiles = [...map.getContainer().querySelectorAll("img.leaflet-tile")].filter(tile => {
-      const rect = tile.getBoundingClientRect();
-      return rect.width && rect.height && rect.left < bounds.right && rect.right > bounds.left &&
-        rect.top < bounds.bottom && rect.bottom > bounds.top;
-    });
-    if (!tiles.length || tiles.some(tile => !tile.complete || tile.naturalWidth <= 1)) return false;
-    const viewport = () => JSON.stringify([map.getZoom(), map.getCenter(), map.getSize()]);
-    const start = viewport();
-    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    return start === viewport() && !map._panAnim?._inProgress && !map._animatingZoom &&
-      map.getContainer().clientWidth === map.getSize().x;
-  }, null, { timeout: 45000 });
+  await waitForCamera(page, { realTiles: true });
 }
 
 async function openStop(page, scenario) {

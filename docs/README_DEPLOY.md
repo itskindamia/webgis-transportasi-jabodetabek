@@ -1,6 +1,6 @@
-# WebGIS Transportasi Jabodetabek v0.16
+# Deployment WebGIS Transportasi Jabodetabek
 
-Paket ini adalah versi lengkap WebGIS statis untuk GitHub Pages. Salin seluruh isi direktori ke root situs agar struktur `index.html`, `css/`, `js/`, `data/`, dan `assets/` tetap sama.
+GitHub Pages memublikasikan WebGIS statis dari root branch `main`. Periksa hasil QA pada commit kandidat sebelum merge. Sesudah merge, cocokkan commit deployment Pages dengan SHA hasil merge dan uji kembali popup, panel, integrasi, dan permalink pada situs produksi.
 
 ## Perubahan v0.16
 
@@ -14,7 +14,7 @@ Paket ini adalah versi lengkap WebGIS statis untuk GitHub Pages. Salin seluruh i
 
 - Label **Eksplorasi WebGIS** pada legenda Status Jaringan sekarang hanya mengelompokkan **Skenario**.
 - Resolver integrasi menerima **KAJJ** dan **KAI_KAJJ** sebagai KA Jarak Jauh secara langsung.
-- Fallback font mempertahankan **Avenir Next Local** sebagai pilihan pertama ketika tersedia pada sistem pengguna.
+- Antarmuka aktif memakai **PT Sans** lokal.
 - Popup stasiun rail menampilkan `STN_CODE` sebagai metadata kecil **Kode stasiun · XXX**, bukan bagian dari judul utama.
 - Build 14 September 2026 melakukan hardening GeoJSON terukur: normalisasi identitas BRT, sequence koridor yang terdeteksi bermasalah, dan referensi integrasi yang stale.
 
@@ -34,9 +34,11 @@ Lalu buka `http://localhost:8000/` dan lakukan hard reload (`Ctrl+F5`).
 node tools/audit.mjs
 node tools/audit-navigation.mjs
 node --check js/map.js
+npm run build:ui
+npm run test:regression
 ```
 
-- `audit.mjs` memblokir rilis untuk masalah runtime/kode dan menampilkan kekurangan GeoJSON sebagai **catatan data**.
+- Workflow regresi mencatat hasil `audit.mjs` sebagai pembanding data. Bandingkan dengan hasil pada commit dasar dan selidiki setiap temuan baru sebelum rilis.
 - `audit-navigation.mjs` tetap ketat terhadap benturan sequence BRT. Jika audit ini gagal, perbaikan harus dilakukan pada GeoJSON; script tidak menutup-nutupi konflik data.
 
 ## Checklist browser

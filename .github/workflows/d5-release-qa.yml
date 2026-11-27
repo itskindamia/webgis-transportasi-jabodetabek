@@ -1,0 +1,93 @@
+name: D5 Browser UAT and Visual QA
+
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'js/popup-placement.js'
+      - 'tools/d5-browser.mjs'
+      - 'tools/test-d5-uat.mjs'
+      - 'tools/test-layout-d5.mjs'
+      - 'tools/capture-d5.mjs'
+      - '.github/workflows/d5-release-qa.yml'
+  workflow_dispatch:
+    inputs:
+      production:
+        description: Smoke-test and capture the published GitHub Pages site
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  uat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Use runner Chromium
+        run: echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+      - name: Validate placement, map controls, asset fallback and user journeys
+        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-layout-d5.mjs tools/test-d5-uat.mjs
+
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJSON(inputs.production && '["production"]' || '["before", "after"]') }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/checkout@v4
+        if: matrix.version == 'before'
+        with:
+          ref: d1aa3028fbc6af03b2bcf98ddf3cb08f995233fb
+          path: d5-baseline
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Use runner Chromium
+        run: echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+      - name: Capture actual basemap, app and data
+        env:
+          CAPTURE_VERSION: ${{ matrix.version }}
+          D5_CAPTURE_OUTPUT: artifacts/d5/${{ matrix.version }}
+        run: |
+          set -euo pipefail
+          export D5_CAPTURE_SHA=$(git rev-parse HEAD)
+          if [[ "$CAPTURE_VERSION" == 'production' ]]; then
+            export D5_CAPTURE_PRODUCTION=1
+            export D5_CAPTURE_URL=https://itskindamia.github.io/webgis-transportasi-jabodetabek/
+          else
+            export D5_CAPTURE_URL=http://127.0.0.1:5173/
+            if [[ "$CAPTURE_VERSION" == 'before' ]]; then
+              export D5_CAPTURE_BASELINE=1
+              export D5_CAPTURE_SHA=$(git -C d5-baseline rev-parse HEAD)
+              node d5-baseline/tools/serve-layout.mjs &
+            else
+              node tools/serve-layout.mjs &
+            fi
+            server_pid=$!
+            trap 'kill "$server_pid"' EXIT
+            curl --retry 10 --retry-connrefused --retry-delay 1 --fail --silent --show-error --output /dev/null "$D5_CAPTURE_URL"
+          fi
+          node tools/capture-d5.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: d5-visual-${{ matrix.version }}
+          path: artifacts/d5/${{ matrix.version }}/
+          if-no-files-found: error

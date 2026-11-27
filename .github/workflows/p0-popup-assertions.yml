@@ -3,6 +3,9 @@ name: P0 Popup Assertions
 on:
   pull_request:
     paths:
+      - 'js/stop-popup-ui.js'
+      - 'js/popup-placement.js'
+      - 'css/popup-comfort.css'
       - 'tools/test-layout-release.mjs'
       - 'tools/test-lrt-popup.mjs'
       - 'tools/test-layout-ux.mjs'

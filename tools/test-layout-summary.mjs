@@ -34,9 +34,16 @@ for (const [width, height] of [[1366, 900], [390, 844]]) for (const [mode, id] o
       assert.equal(await button.evaluate(el => el.classList.contains("is-active")), (await button.getAttribute("aria-pressed")) === "true");
     }
     for (const stat of await page.locator(".route-summary-grid .route-summary-item").all()) {
-      assert.ok((await stat.boundingBox()).height <= 40, "simple statistics stay compact while long values can wrap");
-      assert.equal(await stat.locator("span").evaluate(el => parseFloat(getComputedStyle(el).fontSize)), 12);
-      assert.equal(await stat.locator("strong").evaluate(el => parseFloat(getComputedStyle(el).fontSize)), 16);
+      assert.ok((await stat.boundingBox()).height <= 40, "statistics stay compact");
+      assert.equal(await stat.locator("span").evaluate(el => parseFloat(getComputedStyle(el).fontSize)), width >= 1024 ? 11 : 12);
+      assert.equal(await stat.locator("strong").evaluate(el => parseFloat(getComputedStyle(el).fontSize)), width >= 1024 ? 14 : 16);
+      if (width >= 1024) {
+        const [label, value] = await Promise.all([stat.locator("span").boundingBox(), stat.locator("strong").boundingBox()]);
+        assert.ok(label.x + label.width <= value.x, "label is left of value");
+        assert.ok(Math.abs(label.y + label.height / 2 - value.y - value.height / 2) < 1, "label and value share a centerline");
+        assert.equal(await stat.locator("strong").evaluate(el => getComputedStyle(el).fontVariantNumeric), "tabular-nums");
+        assert.ok(await stat.evaluate(el => el.scrollWidth <= el.clientWidth + 1), "numbers and units fit without clipping");
+      }
       assert.equal(await stat.locator("span").evaluate(el => el.scrollWidth > el.clientWidth + 1), false, "statistic labels are readable without ellipsis");
       assert.ok(await stat.evaluate(el => el.scrollHeight <= el.clientHeight + 1), "statistic values fit their card");
     }

@@ -63,7 +63,7 @@
       brand.className = "lrt-popup-brand-logo";
       brand.src = logoPath;
       brand.alt = isJabodebek ? "LRT Jabodebek" : "LRT Jakarta";
-      brand.onerror = () => brand.remove();
+      brand.setAttribute("data-optional-logo", "");
       header.prepend(brand);
     }
 
@@ -87,8 +87,8 @@
       copy.className = "lrt-service-copy";
       copy.append(textElement("strong", "lrt-service-operator", card.dataset.operator),
         textElement("span", "lrt-service-name", cleanText(metadata.LINE_NAME) || getRouteTitle(route)));
-      // Preserve the existing assets/lines/ image (including its onerror
-      // text fallback) and the original route-switch button.
+      // Preserve the actual line image, its text fallback and the original
+      // route-switch button.
       const badge = button.querySelector(".rail-line-badge-wrap, .rail-line-badge-fallback");
       const visual = badge || textElement("span", "lrt-line-symbol", symbol);
       if (!badge) visual.setAttribute("aria-hidden", "true");
@@ -130,6 +130,7 @@
       logo.className = "tl-stop-operator-logo";
       logo.src = operatorLogo;
       logo.alt = "";
+      logo.setAttribute("data-optional-logo", "");
       eyebrow.prepend(logo);
     }
     // Keep the original operator groups and every destination in the DOM.
@@ -142,9 +143,8 @@
       });
       const integration = root.querySelector(".stop-popup-section--integration");
       if (integration) {
-        const note = textElement("button", "tl-integration-more-note",
+        const note = textElement("span", "tl-integration-more-note",
           `+${integrationRows.length - compactLimit} integrasi lainnya di panel`);
-        note.type = "button";
         integration.append(note);
       }
     }
@@ -167,8 +167,9 @@
       }
     }
     if (source) {
-      source.setAttribute("aria-label", "Tampilkan sumber data");
+      source.setAttribute("aria-label", "Sumber Data");
       source.setAttribute("title", "Sumber Data");
+      source.setAttribute("aria-expanded", String(source.parentElement.open));
     }
   }
 

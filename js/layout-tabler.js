@@ -865,7 +865,7 @@
       syncPopupPresentation();
     });
     map.getContainer().addEventListener("click", event => {
-      const button = event.target.closest(".tl-show-stop-in-panel, .tl-integration-more-note");
+      const button = event.target.closest(".tl-show-stop-in-panel");
       if (!desktopLayout.matches || !currentSelectedStopKey ||
           button?.closest(".stop-popup-ui")?.dataset.stopKey !== currentSelectedStopKey) return;
       event.stopPropagation();
@@ -873,8 +873,10 @@
       saveStopInfoMode();
       byId("tlTabSelected").focus({ preventScroll: true });
     }, true);
-    map.getContainer().addEventListener("toggle", ({ target }) => {
-      if (!desktopLayout.matches || !target.open || !target.matches(".stop-source-card")) return;
+    document.addEventListener("toggle", ({ target }) => {
+      if (!target.matches(".stop-source-card")) return;
+      target.querySelector("summary").setAttribute("aria-expanded", String(target.open));
+      if (!desktopLayout.matches || !target.open) return;
       if (!stopPopup?.isOpen() || !stopPopup.getElement().contains(target)) return;
       // A source disclosure can grow an open popup. Reapply Leaflet's pan
       // at the same anchor without rebuilding the disclosure or moving focus.
