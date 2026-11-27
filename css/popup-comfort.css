@@ -302,5 +302,6 @@
 }
 @media (max-width: 1023px) {
   .tl-app .tl-dock .tl-dock-utility { display: none !important; }
-  .tl-app .tl-integration-quick-logo { display: none !important; }
+  .tl-app .tl-integration-quick-logo,
+  .tl-app .tl-integration-more-note { display: none !important; }
 }
