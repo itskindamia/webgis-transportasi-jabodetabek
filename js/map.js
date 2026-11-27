@@ -17679,8 +17679,29 @@ function bindRouteClickTarget(feature, layer) {
   );
 }
 
-function drawRoutes(features) {
+// Reuse a bounded number of already constructed Leaflet layer groups when
+// revisiting a route. GeoJSON, coordinates, styles, and click handlers are not
+// modified. Only single-route contexts are cached (overview/compare are not).
+const routeLayerCache = new Map();
+const ROUTE_LAYER_CACHE_LIMIT = 6;
+
+function drawRoutes(features, cacheKey = "") {
   removeRouteLayers();
+
+  if (cacheKey && routeLayerCache.has(cacheKey)) {
+    const cached = routeLayerCache.get(cacheKey);
+    // Refresh LRU order and attach the same Leaflet layers to the map.
+    routeLayerCache.delete(cacheKey);
+    routeLayerCache.set(cacheKey, cached);
+    routeHaloLayer = cached.halo;
+    routeLayer = cached.main;
+    routeStructureLayer = cached.structure;
+    routeClickLayer = cached.click;
+    for (const layer of [routeHaloLayer, routeLayer, routeStructureLayer, routeClickLayer]) {
+      if (layer) layer.addTo(map);
+    }
+    return;
+  }
 
   const fc = featureCollection(features);
 
@@ -17734,6 +17755,18 @@ function drawRoutes(features) {
         bindRouteClickTarget
     }
   ).addTo(map);
+
+  if (cacheKey) {
+    routeLayerCache.set(cacheKey, {
+      halo: routeHaloLayer,
+      main: routeLayer,
+      structure: routeStructureLayer,
+      click: routeClickLayer
+    });
+    while (routeLayerCache.size > ROUTE_LAYER_CACHE_LIMIT) {
+      routeLayerCache.delete(routeLayerCache.keys().next().value);
+    }
+  }
 }
 
 
@@ -17839,10 +17872,16 @@ function drawSelectedRouteGeometry(
     Pemilihan Saat ini / Reguler tidak pernah menggambar keduanya
     secara bersamaan.
   */
+  // Bound the cache by all inputs that alter selected-route geometry or
+  // styling. Comparison overlays are intentionally rebuilt as before.
+  const cacheKey = comparisonFeature ? "" : [
+    "single", routeId, getRouteConditionMode(routeId),
+    statusSelect?.value || "ALL", modeSelect?.value || "ALL"
+  ].join("|");
   drawRoutes([
     ...comparisonFeatures,
     ...primaryActive
-  ]);
+  ], cacheKey);
 }
 
 /* =========================================================
