@@ -116,6 +116,22 @@
       return Boolean(a && a === b);
     };
 
+    // BRT identities come from the destination stop's ROUTES field, not
+    // from the single route chosen by the integration navigator. This also
+    // covers other multi-corridor stops without location-specific exceptions.
+    function servedBrtRoutes(target) {
+      const candidateIds = typeof getStopRoutes === "function"
+        ? getStopRoutes(target.feature) : [];
+      const verifiedIds = [...new Set(candidateIds)].filter(routeId =>
+        String(routeId).startsWith("BRT_") &&
+        validRoute(target.feature, routeId)
+      );
+      // An already-verified link can still be displayed if legacy data has
+      // no usable membership field; never invent a second corridor.
+      return verifiedIds.length ? verifiedIds :
+        (validRoute(target.feature, target.route) ? [target.route] : []);
+    }
+
     function activeRoot() {
       if (window.webgisLayout?.usesStopInfoPanel?.()) {
         return selectedInfo.querySelector(".stop-popup-ui");
@@ -212,9 +228,16 @@
         // route ID. Render its line badge, not a generic K/B/L/M mode letter.
         // The shared badge builders reuse existing local line assets and
         // route colors; the map tooltip and action keep their original target.
+        const servedRouteIds = target.mode === "BRT"
+          ? servedBrtRoutes(target) : [target.route];
         const routeBadge = target.mode === "BRT"
-          ? (typeof buildBrtBadge === "function" ? buildBrtBadge(target.route) : "")
+          ? servedRouteIds.map(routeId => typeof buildBrtBadge === "function"
+              ? buildBrtBadge(routeId) : "").join("")
           : (typeof buildLineBadge === "function" ? buildLineBadge(target.route) : "");
+        const routeLabels = servedRouteIds.map(routeId =>
+          typeof routeNumberFromId === "function" && target.mode === "BRT"
+            ? routeNumberFromId(routeId) : routeId
+        );
         const label = stopName(target.feature);
         const line = L.polyline([selection.origin, target.point], {
           pane: "tlIntegrationLinkPane",
@@ -230,7 +253,7 @@
         const icon = document.createElement("span");
         icon.className = "tl-integration-target-symbol";
         icon.style.setProperty("--tl-integration-color", color);
-        icon.innerHTML = `<span class="tl-integration-target-line" aria-hidden="true">${routeBadge || safeText(target.route)}</span><span class="tl-integration-target-name">${safeText(label)}</span>`;
+        icon.innerHTML = `<span class="tl-integration-target-line${target.mode === "BRT" ? " is-multi-brt" : ""}" aria-hidden="true">${routeBadge || safeText(target.route)}</span><span class="tl-integration-target-name">${safeText(label)}</span>`;
         const marker = L.marker(target.point, {
           pane: "tlIntegrationTargetPane",
           icon: L.divIcon({
@@ -246,9 +269,9 @@
           keyboard: true,
           bubblingMouseEvents: false,
           riseOnHover: true,
-          title: "Buka integrasi: " + label + " (" + target.route + ")"
+          title: "Buka integrasi: " + label + " (lin/koridor " + routeLabels.join(", ") + ")"
         }).addTo(markers);
-        marker.bindTooltip(safeText(label) + " · " + safeText(target.route), {
+        marker.bindTooltip(safeText(label) + " · " + safeText(routeLabels.join(", ")), {
           direction: "top", offset: [0, -18], opacity: 0.96,
           className: "tl-integration-target-tooltip"
         });
@@ -263,7 +286,9 @@
       }
       visibleCount = selection.entries.length;
       visibleTargets = selection.entries.map(x => ({
-        key: x.key, route: x.route, mode: x.mode, basis: x.basis
+        key: x.key, route: x.route, mode: x.mode, basis: x.basis,
+        // Read-only diagnostics, reflecting the destination's actual membership.
+        displayedRoutes: x.mode === "BRT" ? servedBrtRoutes(x) : [x.route]
       }));
       currentLocations = [selection.origin, ...selection.entries.map(x => x.point)];
       summary.hidden = false;
