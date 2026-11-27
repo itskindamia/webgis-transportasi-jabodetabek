@@ -12,12 +12,12 @@
     <link rel="preload" href="assets/fonts/pt-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="stylesheet" href="css/tabler-components.css?v=mobile-ux-20261107-1">
     <link rel="stylesheet" href="css/legacy-components.css?v=mobile-ux-20261107-1">
-    <link rel="stylesheet" href="css/layout-tabler.css?v=panel-return-popup-1">
+    <link rel="stylesheet" href="css/layout-tabler.css?v=d3-3-visual-comfort">
     <link rel="stylesheet" href="css/lrt-popup.css?v=desktop-d3-1">
     <link rel="stylesheet" href="css/font-pt-sans.css?v=mobile-ux-20261107-1">
     <link rel="stylesheet" href="css/mobile-route-discovery.css?v=mobile-20261111-1">
     <link rel="stylesheet" href="css/stop-popup-mobile.css?v=shared-20261111-1">
-    <link rel="stylesheet" href="css/stop-popup-desktop.css?v=desktop-d3-3" media="(min-width: 1024px)">
+    <link rel="stylesheet" href="css/stop-popup-desktop.css?v=d3-3-visual-comfort" media="(min-width: 1024px)">
     <link rel="stylesheet" href="css/integration-overlay.css?v=d4-1" media="(min-width: 1024px)">
   </head>
   <body class="tl-app">
@@ -513,6 +513,14 @@
           <img alt="Peta dasar" class="toolbar-thumbnail" id="currentBasemapThumb" hidden="hidden">
           <span class="mobile-toolbar-label">Peta dasar</span>
         </button>
+        <button id="tlDockGuide" class="toolbar-button tl-dock-utility btn" type="button"
+          aria-label="Cara Menggunakan" aria-controls="productTour" aria-haspopup="dialog" title="Cara Menggunakan">
+          <span aria-hidden="true" class="tl-dock-utility-glyph">?</span>
+        </button>
+        <button id="tlDockAbout" class="toolbar-button tl-dock-utility btn" type="button"
+          aria-label="Informasi dan Catatan" aria-controls="infoModal" aria-haspopup="dialog" title="Informasi dan Catatan">
+          <svg class="icon" aria-hidden="true"><use href="assets/icons/tabler.svg#info-circle"></use></svg>
+        </button>
         <button aria-controls="rightInfoPanel infoModal" aria-expanded="false" aria-haspopup="dialog" aria-label="Buka informasi dan disclaimer" class="toolbar-button info-button btn" id="infoButton" title="Informasi dan Catatan" type="button">
           <svg aria-hidden="true" class="toolbar-icon" viewbox="0 0 24 24">
             <circle cx="12" cy="12" fill="none" r="8.5" stroke="currentColor" stroke-width="1.8"></circle>
@@ -1001,11 +1009,11 @@
         </div>
       </div>
     </div>
-    <script src="js/layout-tabler.js?v=panel-return-popup-1"></script>
+    <script src="js/layout-tabler.js?v=d3-3-visual-comfort"></script>
     <script src="js/layout-tabler-ux.js?v=compact-tour-20261107-5"></script>
-    <script src="js/stop-popup-ui.js?v=desktop-d3-2"></script>
+    <script src="js/stop-popup-ui.js?v=d3-3-visual-comfort"></script>
     <script crossorigin="anonymous" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/integration-overlay.js?v=d4-1"></script>
-    <script src="js/app-loader.js?v=desktop-d3-2"></script>
+    <script src="js/app-loader.js?v=d3-3-visual-comfort"></script>
   </body>
 </html>
