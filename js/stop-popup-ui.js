@@ -139,7 +139,9 @@
           icon.textContent = operator.slice(0, 2).toUpperCase();
           icon.title = operator;
         }
-        row.insertBefore(icon, label);
+        // The destination is read first; the actual operator mark sits
+        // on its right, before any navigation chevron.
+        row.insertBefore(icon, row.querySelector(".integration-place-link-arrow"));
       }
     }
     const maps = root.querySelector(".stop-popup-maps-link");
