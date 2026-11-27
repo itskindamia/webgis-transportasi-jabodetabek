@@ -14,6 +14,7 @@
   const detail = byId("tlDetailPanel");
   const selectedStopInfo = byId("selectedStopInfo");
   const stopInfoMode = byId("tlStopInfoMode");
+  const returnToPopup = byId("tlReturnToPopup");
   const stopInfoPreference = "webgis.stopInfoMode";
   try {
     if (localStorage.getItem(stopInfoPreference) === "panel") stopInfoMode.value = "panel";
@@ -210,6 +211,7 @@
     if (focus && open) byId("tlDetailClose").focus({ preventScroll: true });
     resizeMap();
     syncPopupPresentation();
+    syncReturnToPopup();
   }
 
   function showSelectedStopInPanel() {
@@ -273,6 +275,11 @@
     }
   }
 
+  function syncReturnToPopup() {
+    returnToPopup.hidden = !(usesStopInfoPanel() && currentSelectedStopKey
+      && !selectedStopInfo.hidden && !detail.inert);
+  }
+
   function saveStopInfoMode() {
     try {
       localStorage.setItem(stopInfoPreference, stopInfoMode.value);
@@ -280,9 +287,23 @@
       // The choice still applies for this page.
     }
     applyStopInfoMode();
+    syncReturnToPopup();
   }
 
   stopInfoMode.addEventListener("change", saveStopInfoMode);
+  returnToPopup.addEventListener("click", () => {
+    // The same state transition used by the Peta Dasar setting avoids a
+    // second, divergent popup implementation and retains permalink/camera.
+    if (!usesStopInfoPanel() || !currentSelectedStopKey || selectedStopInfo.hidden) return;
+    stopInfoMode.value = "popup";
+    saveStopInfoMode();
+    requestAnimationFrame(() => {
+      const marker = stopMarkerByKey.get(currentSelectedStopKey);
+      marker?.getPopup()?.getElement()
+        ?.querySelector(".leaflet-popup-close-button")
+        ?.focus({ preventScroll: true });
+    });
+  });
 
   function syncPanelControls() {
     const networkOpen = mobile()
@@ -585,6 +606,7 @@
     lastStop = stop;
     lastSelectedHeading = selectedHeading;
     syncPanelControls();
+    syncReturnToPopup();
   }
 
   function scheduleSync() {
