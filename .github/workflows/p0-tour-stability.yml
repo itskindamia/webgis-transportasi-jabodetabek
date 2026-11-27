@@ -1,0 +1,52 @@
+name: P0 Tour and Popup Stability
+
+on:
+  pull_request:
+    paths:
+      - 'tools/test-layout-refinement.mjs'
+      - 'tools/test-lrt-popup.mjs'
+      - '.github/workflows/p0-tour-stability.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-tour-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Locate Chromium
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install chromium
+          fi
+      - name: Repeat mobile tour restore 10 times without relaxing assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 10); do
+            echo "::group::Tour replay $i/10"
+            node --test --test-reporter=tap --test-name-pattern="mobile station search, status filters and guided tour preserve LRT selection and popup scroll" tools/test-lrt-popup.mjs
+            echo "::endgroup::"
+          done
+      - name: Repeat mobile sheet/camera restore 10 times
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 10); do
+            echo "::group::Sheet replay $i/10"
+            node --test --test-reporter=tap --test-name-pattern="Mini/half/full and tab changes preserve selected LRT" tools/test-layout-refinement.mjs
+            echo "::endgroup::"
+          done
