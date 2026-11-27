@@ -74,8 +74,8 @@ try {
         assert.deepEqual(await popup.locator("img:visible").evaluateAll(images =>
           images.filter(image => image.complete && !image.naturalWidth).map(image => image.src)), []);
         if (desktop && !baseline) {
-          assert.equal(coverage.insideMap, true);
-          assert.equal(coverage.controlsCovered, 0);
+          assert.equal(coverage.insideMap, true, `${fixture.name} fits ${width}×${height}: ${JSON.stringify(coverage.bounds)}`);
+          assert.equal(coverage.controlsCovered, 0, `${fixture.name} keeps map controls reachable`);
           assert.equal(coverage.covered, 0, "every visible transfer badge is clear of the popup");
         }
         await capture(page, report, fixture, "popup", width, height, { coverage, totalRows });

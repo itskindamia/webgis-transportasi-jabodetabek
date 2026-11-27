@@ -4,10 +4,14 @@
 .tl-app :is(.tl-quick-action-svg, .tl-stop-operator-logo, .tl-integration-more-note) { display: none; }
 
 @media (min-width: 1024px) {
-  /* Move the D4 count only when the Popup occupies its upper position. */
+  /* The count yields to the popup and transfer hit targets. */
   .tl-app #map > .tl-integration-map-summary.is-below-popup {
     top: auto;
     bottom: var(--tl-summary-bottom, 80px);
+  }
+  .tl-app #map > .tl-integration-map-summary.is-right-aligned {
+    right: var(--tl-summary-right, 64px);
+    left: auto;
   }
   .tl-app #map > .tl-integration-map-summary.is-compact {
     padding: 2px 6px;

@@ -28,10 +28,15 @@ export async function acceptWelcome(page) {
 
 export async function waitForCamera(page, { zoomAtStop = false, realTiles = false } = {}) {
   await page.waitForFunction(async ({ zoomAtStop, realTiles }) => {
-    const viewport = () => JSON.stringify([map.getZoom(), map.getCenter(), map.getSize()]);
-    const start = viewport();
-    await new Promise(resolve => setTimeout(resolve, 100));
-    if (start !== viewport() || (zoomAtStop && map.getZoom() !== STOP_ZOOM)
+    // Leaflet can queue moveend when a grid resize invalidates its size,
+    // then perform keepInView pan. Wait for a quiet interval past that timer.
+    let moved = false;
+    const record = () => { moved = true; };
+    const events = "move zoom resize autopanstart stopPopupPlacement";
+    map.on(events, record);
+    await new Promise(resolve => setTimeout(resolve, 420));
+    map.off(events, record);
+    if (moved || (zoomAtStop && map.getZoom() !== STOP_ZOOM)
         || map._panAnim?._inProgress || map._animatingZoom
         || map.getContainer().clientWidth !== map.getSize().x) return false;
     if (!realTiles) return true;

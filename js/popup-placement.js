@@ -36,9 +36,9 @@
       frame = 0;
       if (!element) return;
       const markerPane = map.getPane("tlIntegrationTargetPane");
-      const markers = markerPane?.querySelectorAll(".tl-integration-target-marker");
+      const markers = markerPane?.querySelectorAll(".tl-integration-target-marker") ?? [];
       const card = element.querySelector(".leaflet-popup-content-wrapper");
-      if (!desktop.matches || !markers?.length || !card || container.classList.contains("tl-d4-integration-overview")) {
+      if (!desktop.matches || !card || container.classList.contains("tl-d4-integration-overview")) {
         setPlacement(0, 0, "", 0);
         return;
       }
@@ -62,15 +62,17 @@
         return style.visibility !== "hidden" && style.display !== "none" && style.opacity !== "0";
       }).map(control => control.getBoundingClientRect());
       const badges = Array.from(markers, marker => marker.getBoundingClientRect()).filter(rect => area(bounds, rect));
-      const labels = Array.from(markerPane.querySelectorAll(".tl-integration-target-symbol"), label =>
+      const labels = Array.from(markerPane?.querySelectorAll(".tl-integration-target-symbol") ?? [], label =>
         label.getBoundingClientRect()).filter(rect => area(bounds, rect));
       const base = { left, top, right: left + width, bottom: top + height };
+      const fits = rect => rect.left >= bounds.left && rect.right <= bounds.right &&
+        rect.top >= bounds.top && rect.bottom <= bounds.bottom && !obstacles.some(obstacle => area(rect, obstacle));
       const coverage = rect => ({
         badges: badges.filter(badge => area(rect, badge) >= 1).length,
         labels: labels.reduce((sum, label) => sum + area(rect, label), 0)
       });
-      let best = { ...coverage(base), left, top, side: "", tip: 0 };
-      if (!best.badges && best.labels < 1) {
+      let best = { ...coverage(base), fits: fits(base), left, top, side: "", tip: 0 };
+      if (best.fits && !best.badges && best.labels < 1) {
         setPlacement(0, 0, "", 0);
         return;
       }
@@ -80,8 +82,9 @@
       const minLeft = Math.max(bounds.left, anchorX - width + 20);
       const maxLeft = Math.min(bounds.right - width, anchorX - 20);
       const verticalTop = clamp(anchorY - height / 2, bounds.top, bounds.bottom - height);
+      const above = best.fits ? top : anchorY - height - 12;
       const candidates = [
-        [minLeft, top, "above"], [maxLeft, top, "above"],
+        [clamp(left, minLeft, maxLeft), above, "above"], [minLeft, above, "above"], [maxLeft, above, "above"],
         [anchorX - width - 12, verticalTop, "left"], [anchorX + 12, verticalTop, "right"],
         [clamp(left, minLeft, maxLeft), anchorY + 12, "below"],
         [minLeft, anchorY + 12, "below"], [maxLeft, anchorY + 12, "below"]
@@ -90,12 +93,10 @@
         const rect = { left: candidateLeft, top: candidateTop, right: candidateLeft + width, bottom: candidateTop + height };
         const horizontal = candidateSide === "above" || candidateSide === "below";
         const candidateTip = horizontal ? anchorX - candidateLeft : anchorY - candidateTop;
-        if (candidateTip < 19 || candidateTip > (horizontal ? width : height) - 19 ||
-            rect.left < bounds.left || rect.right > bounds.right || rect.top < bounds.top || rect.bottom > bounds.bottom ||
-            obstacles.some(obstacle => area(rect, obstacle))) continue;
+        if (!fits(rect) || candidateTip < 19 || candidateTip > (horizontal ? width : height) - 19) continue;
         const score = coverage(rect);
-        if (score.badges < best.badges || (score.badges === best.badges && score.labels + 16 < best.labels)) {
-          best = { ...score, left: candidateLeft, top: candidateTop, side: candidateSide, tip: candidateTip };
+        if (!best.fits || score.badges < best.badges || (score.badges === best.badges && score.labels + 16 < best.labels)) {
+          best = { ...score, fits: true, left: candidateLeft, top: candidateTop, side: candidateSide, tip: candidateTip };
         }
       }
       setPlacement(best.left - left, best.top - top, best.side, best.tip);
