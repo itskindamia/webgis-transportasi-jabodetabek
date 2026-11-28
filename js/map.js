@@ -26191,6 +26191,7 @@ function refreshStopLabelPlacements() {
 }
 
 function updateStopZoomVisualState() {
+  updateOneWayStopArrowVisibility();
   const mapElement =
     map.getContainer();
 
@@ -26622,6 +26623,46 @@ function getStopPopupOptions() {
    STOP LAYER
    ========================================================= */
 
+// Rendered symbols are separate, non-interactive overlays. Their own
+// orientation comes from data + geometry, never from screen-left/right.
+let stopOneWayArrowMarkers = [];
+
+function getBrtOneWayStopArrowInfo(routeId, features) {
+  if (!String(routeId).startsWith("BRT_") ||
+      !window.webgisOneWayStopArrows?.calculate) return new Map();
+
+  const records = features.flatMap(feature => {
+    if (isStopTerminusForRoute(feature, routeId) ||
+        isPaidAreaLinkedMultiBuildingStop(feature, routeId)) return [];
+
+    const direction = getStopDirectionInfo(feature, routeId);
+    if (!direction.isOneWay) return [];
+
+    const destination = normalizeDirectionPlaceKey(
+      getUnambiguousDirectionPlace(getRawStopDirectionForRoute(feature, routeId))
+    );
+    const latlng = getPointLatLngFromFeature(feature);
+    const side = getStopListDirectionArrowInfo(feature, routeId).side;
+    const sequence = (side
+      ? getContextDirectionalSequenceRaw(feature, routeId, side)
+      : "") || getStopSequenceRaw(feature, routeId);
+    if (!destination || !latlng || !sequence) return [];
+    return [{
+      id: getStopKey(feature),
+      destination, side, sequence,
+      lng: latlng.lng, lat: latlng.lat
+    }];
+  });
+  return window.webgisOneWayStopArrows.calculate(
+    records, getSelectedRouteGeometryFeatures(routeId)
+  );
+}
+
+function updateOneWayStopArrowVisibility() {
+  const opacity = map.getZoom() >= 15 ? 1 : 0;
+  for (const marker of stopOneWayArrowMarkers) marker.setOpacity(opacity);
+}
+
 function removeStops() {
   if (stopLayer) {
     map.removeLayer(stopLayer);
@@ -26634,6 +26675,7 @@ function removeStops() {
   }
 
   stopMarkerByKey.clear();
+  stopOneWayArrowMarkers = [];
 }
 
 
@@ -26906,6 +26948,8 @@ function drawStops(routeId) {
     return;
   }
 
+  const oneWayArrows = getBrtOneWayStopArrowInfo(routeId, features);
+
   /*
     Layer khusus hit-area transparan.
     Radius 12 px memberi target klik yang nyaman, tetapi tidak
@@ -26974,6 +27018,28 @@ function drawStops(routeId) {
             .addTo(
               stopHitLayer
             );
+
+        const oneWay = oneWayArrows.get(stopKey);
+        if (oneWay) {
+          const routeColor = getRouteColor(routeId);
+          const color = /^#[a-f0-9]{6}$/i.test(routeColor)
+            ? routeColor : "#267d48";
+          const bearing = oneWay.bearing;
+          // Keep the original 36px hit marker and geographic coordinate.
+          // Only the child SVG rotates; Leaflet's marker transform stays intact.
+          const arrowMarker = L.marker(layer.getLatLng(), {
+            pane: "stopHitPane",
+            icon: L.divIcon({
+              className: "stop-oneway-indicator",
+              html: `<span class="stop-oneway-indicator-inner" data-oneway-bearing="${bearing}" style="--stop-oneway-angle:${bearing}deg;--stop-oneway-color:${color}" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M10 15V5M5.5 9.5 10 5l4.5 4.5"/></svg></span>`,
+              iconSize: [20, 20],
+              iconAnchor: [10, 10]
+            }),
+            interactive: false,
+            keyboard: false
+          }).addTo(stopHitLayer);
+          stopOneWayArrowMarkers.push(arrowMarker);
+        }
 
         hitMarker.on(
           "click",
