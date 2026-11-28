@@ -10,11 +10,19 @@ try {
   for(const [width,height] of [[1440,900],[1280,720],[390,844]]) {
     const {page,context,errors} = await openLayout(browser,width,height);
     try {
-      await page.locator('[data-mode="BRT"]').click();
-      await selectRoute(page,"BRT_12");
-      await page.locator('#stopList [data-stop-key="BRT176_REG"]').waitFor();
-      await page.locator("#tlTabStops").click();
-      await page.locator('#stopList [data-stop-key="BRT176_REG"]').click();
+      if (width < 760) {
+        // Mobile keeps the route picker inside a collapsed drawer. Use
+        // the same public routing state rather than clicking a hidden button.
+        await page.evaluate(() => {
+          showSingleRoute("BRT_12");
+          selectStop("BRT176_REG", "BRT_12", true);
+        });
+      } else {
+        await page.locator('[data-mode="BRT"]').click();
+        await selectRoute(page,"BRT_12");
+        await page.locator("#tlTabStops").click();
+        await page.locator('#stopList [data-stop-key="BRT176_REG"]').click();
+      }
       await page.waitForFunction(() => currentSelectedStopKey==="BRT176_REG" &&
         stopOneWayArrowMarkers.length>0 && !map._animatingZoom && !map._panAnim?._inProgress);
       await page.evaluate(() => map.setZoom(16,{animate:false}));
