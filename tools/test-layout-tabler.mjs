@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test, before, after } from "node:test";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { chromium } from "playwright";
 import { openLayout, chooseRoute, readMap } from "./layout-browser.mjs";
@@ -11,9 +11,23 @@ after(async () => { await browser?.close(); });
 
 test("source geometry, attributes, operation engine and existing DOM hooks remain intact", async () => {
   const integrity = JSON.parse(await readFile(new URL("../docs/layout-tabler/source-integrity.json", import.meta.url)));
+  const digest = input => createHash("sha256").update(input).digest("hex");
+  const geojson = (await readdir(new URL("../data/", import.meta.url), { recursive: true }))
+    .filter(file => file.endsWith(".geojson")).map(file => `data/${file}`).sort();
+  assert.deepEqual(geojson, Object.keys(integrity.sha256).filter(file => file.endsWith(".geojson")).sort(),
+    "every shipped GeoJSON is pinned");
   for (const [file, expected] of Object.entries(integrity.sha256)) {
     const bytes = await readFile(new URL("../" + file, import.meta.url));
-    assert.equal(createHash("sha256").update(bytes).digest("hex"), expected, file);
+    assert.equal(digest(bytes), expected, file);
+  }
+  const engine = await readFile(new URL("../js/map.js", import.meta.url), "utf8");
+  for (const { scope, from, until, sha256 } of integrity.protectedMapSections) {
+    assert.equal(engine.split(from).length, 2, `${scope} start marker`);
+    assert.equal(engine.split(until).length, 2, `${scope} end marker`);
+    const start = engine.indexOf(from);
+    const end = engine.indexOf(until);
+    assert.ok(start < end, `${scope} source order`);
+    assert.equal(digest(engine.slice(start, end)), sha256, scope);
   }
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);

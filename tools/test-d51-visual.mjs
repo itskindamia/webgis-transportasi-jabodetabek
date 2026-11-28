@@ -94,27 +94,76 @@ test("D5.24 reused route layers preserve correct geometry, stops, and click targ
   assert.deepEqual(errors, []);
 });
 
-test("D5.24 Popup markup is lazy but still available to both Popup and Panel", async t => {
+test("D5.24 cached BRT layers follow both directions and restore the full alignment", async t => {
   const browser = await launch();
   t.after(() => browser.close());
   const { page, context, errors } = await openLayout(browser, 1440, 900);
   t.after(() => context.close());
   await page.locator('[data-mode="BRT"]').click();
   await selectRoute(page, "BRT_01");
+  await page.locator("#tlTabRoute").click();
+  await page.evaluate(() => { window.__d51FullAlignment = routeLayer; });
+
+  const readAlignment = () => page.evaluate(() => {
+    const route = currentSelectedRouteId;
+    const features = routeLayer.getLayers().map(layer => layer.feature);
+    return {
+      direction: getRouteGeometryView(route),
+      ids: features.map(feature => feature.properties.GEOM_ID),
+      matches: JSON.stringify(features) === JSON.stringify(getSelectedRouteGeometryFeatures(route)),
+      reusedFull: routeLayer === window.__d51FullAlignment
+    };
+  });
+  const full = await readAlignment();
+  assert.equal(full.direction, "FULL");
+  assert.ok(full.matches);
+  await page.locator('[data-route-geometry-view="DIRECTION"]').click();
+  const first = await readAlignment();
+  assert.ok(first.matches && first.ids.length < full.ids.length && !first.reusedFull);
+  await page.locator('[data-route-direction-toggle="BRT_01"]').click();
+  const second = await readAlignment();
+  assert.deepEqual([first.direction, second.direction].sort(), ["A", "B"]);
+  assert.ok(second.matches && second.ids.length < full.ids.length);
+  assert.notDeepEqual(second.ids, first.ids);
+
+  await page.locator('[data-route-geometry-view="FULL"]').click();
+  assert.deepEqual(await readAlignment(), full);
+  assert.deepEqual(errors, []);
+});
+
+test("D5.24 Popup markup is lazy but still available to both Popup and Panel", async t => {
+  const browser = await launch();
+  t.after(() => browser.close());
+  const { page, context, errors } = await openLayout(browser, 1440, 900);
+  t.after(() => context.close());
+  await page.locator('[data-mode="BRT"]').click();
+  await page.evaluate(() => {
+    const build = window.safeBuildStopPopup;
+    window.__d51PopupBuilds = [];
+    window.safeBuildStopPopup = function (feature, routeId) {
+      window.__d51PopupBuilds.push([getStopKey(feature), routeId]);
+      return build.call(this, feature, routeId);
+    };
+  });
+  await selectRoute(page, "BRT_01");
   const before = await page.evaluate(() => {
     const layers = stopLayer.getLayers();
     return {
       total: layers.length,
-      eager: layers.filter(layer => Boolean(layer.getPopup()?._content)).length
+      lazy: layers.filter(layer => typeof layer.getPopup()?.getContent() === "function").length,
+      builds: window.__d51PopupBuilds.length
     };
   });
   assert.ok(before.total > 0, "the route creates stop markers");
-  assert.equal(before.eager, 0, "stop popup markup is not built for unopened stops");
+  assert.equal(before.lazy, before.total, "each marker uses Leaflet's deferred content callback");
+  assert.equal(before.builds, 0, "unopened stops do not build HTML");
   await page.locator('#stopList [data-stop-key="BRT010_REG"]').click();
   await page.waitForFunction(() => currentSelectedStopKey === "BRT010_REG");
   const popup = await page.evaluate(() => stopMarkerByKey.get("BRT010_REG").getPopup().getContent());
   assert.match(popup, /Dukuh Atas/);
   await page.locator(".leaflet-popup .tl-show-stop-in-panel").click();
   assert.match(await page.locator("#selectedStopInfo").innerText(), /Dukuh Atas/);
+  assert.deepEqual(await page.evaluate(() => window.__d51PopupBuilds), [["BRT010_REG", "BRT_01"]],
+    "the selected HTML is generated once and shared across presentations");
   assert.deepEqual(errors, []);
 });

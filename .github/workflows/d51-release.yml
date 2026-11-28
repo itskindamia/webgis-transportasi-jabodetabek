@@ -7,20 +7,32 @@ on:
       - 'css/tj-route-badge.css'
       - 'css/popup-comfort.css'
       - 'tools/benchmark-d51-route-switch.mjs'
+      - 'tools/capture-d5.mjs'
       - 'tools/test-d51-visual.mjs'
       - '.github/workflows/d51-release.yml'
   workflow_dispatch:
+    inputs:
+      production:
+        description: Benchmark and capture the published GitHub Pages site
+        type: boolean
+        default: false
 permissions:
   contents: read
+env:
+  D51_BASELINE: 9e3b2f03462f9664be0300bebc075fa5ea70ffbb
+  WEBGIS_URL: https://itskindamia.github.io/webgis-transportasi-jabodetabek/
 jobs:
   visual-and-performance:
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
         with:
-          ref: 9e3b2f03462f9664be0300bebc075fa5ea70ffbb
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/checkout@v4
+        if: ${{ !inputs.production }}
+        with:
+          ref: ${{ env.D51_BASELINE }}
           path: d51-baseline
       - uses: actions/setup-node@v4
         with:
@@ -38,28 +50,99 @@ jobs:
             npx playwright install chromium
           fi
       - name: Validate postrelease visual corrections
-        run: node --test --test-reporter=tap tools/test-d51-visual.mjs
+        run: node --test --test-reporter=tap --test-concurrency=1 tools/test-d51-visual.mjs
       - name: Benchmark baseline and candidate with warm caches
+        if: ${{ !inputs.production }}
         shell: bash
         run: |
           mkdir -p artifacts/d51
-          LAYOUT_APP_ROOT="$PWD/d51-baseline" node tools/benchmark-d51-route-switch.mjs > artifacts/d51/baseline.json
-          node tools/benchmark-d51-route-switch.mjs > artifacts/d51/candidate.json
-          cat artifacts/d51/baseline.json
-          cat artifacts/d51/candidate.json
+          D51_BENCH_SHA="$D51_BASELINE" LAYOUT_APP_ROOT="$PWD/d51-baseline" node tools/benchmark-d51-route-switch.mjs > artifacts/d51/baseline.json
+          D51_BENCH_SHA="$(git rev-parse HEAD)" node tools/benchmark-d51-route-switch.mjs > artifacts/d51/candidate.json
           node - <<'NODE'
-          const fs=require('fs');
-          const a=JSON.parse(fs.readFileSync('artifacts/d51/baseline.json'));
-          const b=JSON.parse(fs.readFileSync('artifacts/d51/candidate.json'));
-          for(const mode of ['BRT','KRL','LRT','MRT','ALL']){
-            const before=a.summary[mode].handlerMs.median;
-            const after=b.summary[mode].handlerMs.median;
-            console.log(mode+': median handler '+before+' ms -> '+after+' ms');
+          const assert = require('node:assert/strict');
+          const { readFileSync } = require('node:fs');
+          const before = JSON.parse(readFileSync('artifacts/d51/baseline.json'));
+          const after = JSON.parse(readFileSync('artifacts/d51/candidate.json'));
+          const counts = records => records.map(({route, routePaths, stopItems, stopMarkers, hitTargets}) =>
+            [route, routePaths, stopItems, stopMarkers, hitTargets]);
+          assert.deepEqual(counts(after.samples), counts(before.samples), 'each route renders the same features and targets');
+          assert.deepEqual(counts(after.crossMode), counts(before.crossMode), 'cross-mode routes render the same features and targets');
+          for (const mode of ['BRT', 'KRL', 'LRT', 'MRT', 'ALL', 'CROSS_MODE']) {
+            for (const metric of ['handlerMs', 'drawStops', 'renderStopList', 'cameraMotionMs', 'visualFrameMs', 'interactiveReadyMs']) {
+              const a = before.summary[mode][metric];
+              const b = after.summary[mode][metric];
+              console.log(`${mode} ${metric} median/p95 ${a.median}/${a.p95} ms (n=${a.count}) → ${b.median}/${b.p95} ms (n=${b.count})`);
+            }
+          }
+          for (const metric of ['handlerMs', 'cameraMotionMs', 'visualFrameMs']) {
+            const a = before.summary.ALL[metric];
+            const b = after.summary.ALL[metric];
+            assert.ok(a.count && b.count && b.median < a.median && b.p95 < a.p95,
+              `median and p95 improve for ${metric}`);
           }
           NODE
+      - name: Benchmark the deployed site with real basemap tiles
+        if: inputs.production
+        shell: bash
+        run: |
+          mkdir -p artifacts/d51
+          D51_BENCH_SHA="$(git rev-parse HEAD)" D51_BENCH_URL="$WEBGIS_URL" node tools/benchmark-d51-route-switch.mjs > artifacts/d51/production.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: d51-performance-report
+          name: ${{ inputs.production && 'd51-production-performance' || 'd51-performance-report' }}
           path: artifacts/d51/
-          if-no-files-found: warn
+          if-no-files-found: error
+
+  screenshot-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJSON(inputs.production && '["production"]' || '["before", "after"]') }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/checkout@v4
+        if: matrix.version == 'before'
+        with:
+          ref: ${{ env.D51_BASELINE }}
+          path: d51-baseline
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Use runner Chromium
+        run: echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+      - name: Capture real tiles and verify the active station and presentation
+        env:
+          D5_CAPTURE_PROFILE: d51
+          D5_CAPTURE_VERSION: ${{ matrix.version }}
+          D5_CAPTURE_OUTPUT: artifacts/d51/${{ matrix.version }}
+        shell: bash
+        run: |
+          export D5_CAPTURE_SHA="$(git rev-parse HEAD)"
+          if [[ "$D5_CAPTURE_VERSION" == 'production' ]]; then
+            export D5_CAPTURE_PRODUCTION=1 D5_CAPTURE_URL="$WEBGIS_URL"
+          else
+            export D5_CAPTURE_URL=http://127.0.0.1:5173/
+            if [[ "$D5_CAPTURE_VERSION" == 'before' ]]; then
+              export D5_CAPTURE_SHA="$D51_BASELINE"
+              node d51-baseline/tools/serve-layout.mjs &
+            else
+              node tools/serve-layout.mjs &
+            fi
+            server_pid=$!
+            trap 'kill "$server_pid"' EXIT
+            curl --retry 10 --retry-connrefused --retry-delay 1 --fail --silent --show-error --output /dev/null "$D5_CAPTURE_URL"
+          fi
+          node tools/capture-d5.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: d51-visual-${{ matrix.version }}
+          path: artifacts/d51/${{ matrix.version }}/
+          if-no-files-found: error
