@@ -1,0 +1,48 @@
+name: D5.2 One-way Stop Direction QA
+on:
+  pull_request:
+    paths:
+      - "js/map.js"
+      - "js/stop-direction-arrows.js"
+      - "css/stop-direction-arrows.css"
+      - "index.html"
+      - "js/app-loader.js"
+      - "tools/test-d52-oneway-arrows.mjs"
+      - "tools/capture-d52-oneway-arrows.mjs"
+      - ".github/workflows/d52-oneway-arrows.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  one-way-direction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Set browser executable
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install chromium
+          fi
+      - name: Report source integrity digest for changed renderer
+        run: sha256sum js/map.js
+      - name: Directional stop marker browser QA
+        run: node --test --test-reporter=tap tools/test-d52-oneway-arrows.mjs
+      - name: Capture visual review
+        run: node tools/capture-d52-oneway-arrows.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: d52-oneway-visual-review
+          path: artifacts/d52-oneway/
+          if-no-files-found: warn
