@@ -49,11 +49,14 @@ async function chooseFromList(page, key) {
   await page.locator(`#stopList [data-stop-key="${key}"]`).click();
 }
 
-async function clickMarker(page, key) {
+async function clickMarker(page, key, { fromDifferentView = false } = {}) {
   await waitForCamera(page);
-  await page.evaluate(stop => {
-    map.setView(stopMarkerByKey.get(stop).getLatLng(), STOP_ZOOM, { animate: false });
-  }, key);
+  await page.evaluate(({ key, fromDifferentView }) => {
+    const anchor = stopMarkerByKey.get(key).getLatLng();
+    const zoom = fromDifferentView ? STOP_ZOOM - 1 : STOP_ZOOM;
+    const center = fromDifferentView ? map.unproject(map.project(anchor, zoom).subtract([115, 45]), zoom) : anchor;
+    map.setView(center, zoom, { animate: false });
+  }, { key, fromDifferentView });
   const target = await page.waitForFunction(stop => {
     const anchor = stopMarkerByKey.get(stop)?.getLatLng();
     return stopHitLayer.getLayers().find(layer => layer.getLatLng().equals(anchor) &&
@@ -173,6 +176,15 @@ test("D3.2 Panel navigates, switches lin and reopens after a real marker click w
   await changeMode(page, "panel");
   await chooseBekasi(page);
   await watchStationPopups(page);
+  // Reproduce the race regardless of runner speed. Only the initial station
+  // flight is slowed; Prev/Next and the marker click use production timings.
+  await page.evaluate(() => {
+    const flyTo = map.flyTo;
+    map.flyTo = function (center, zoom, options) {
+      this.flyTo = flyTo;
+      return flyTo.call(this, center, zoom, { ...options, duration: 2.4 });
+    };
+  });
   await chooseFromList(page, cawang);
   await page.locator(panelCard).waitFor();
   await selected(page, cawang, bekasi);
@@ -181,15 +193,21 @@ test("D3.2 Panel navigates, switches lin and reopens after a real marker click w
   await selected(page, cawang, cibubur);
   const nextButton = page.locator(`${panelCard} [data-stop-nav="next"]`);
   const next = await nextButton.getAttribute("data-stop-key");
+  assert.ok(await page.evaluate(() => map.getZoom() < STOP_ZOOM), "navigation interrupts the initial flight");
   await nextButton.press("Enter");
   await selected(page, next, cibubur);
+  await waitForCamera(page);
+  const centerError = key => page.evaluate(stop => map.project(map.getCenter())
+    .distanceTo(map.project(stopMarkerByKey.get(stop).getLatLng())), key);
+  assert.ok(await centerError(next) <= 2, "Next finishes at the destination station");
   await page.click("#tlDetailClose");
   assert.equal(await page.locator(detail).isVisible(), false);
   await selected(page, next, cibubur);
-  await clickMarker(page, next);
+  await clickMarker(page, cawang, { fromDifferentView: true });
   await page.locator(panelCard).waitFor();
-  await selected(page, next, cibubur);
+  await selected(page, cawang, cibubur);
   await waitForCamera(page);
+  assert.ok(await centerError(cawang) <= 2, "real marker click changes the station, center and zoom");
   assert.equal(await page.evaluate(() => window.d32PopupOpens), 0);
   assert.equal(await page.locator(popup).count(), 0);
   assert.equal(await page.locator(panelCard).count(), 1);

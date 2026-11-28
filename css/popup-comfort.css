@@ -323,7 +323,8 @@
   }
   .tl-app #selectedStopInfo .stop-popup-activity {
     align-items: center;
-    padding-block: 7px;
+    margin-top: 11px !important;
+    padding-block: 8px;
     line-height: 1.35;
   }
   .tl-app #selectedStopInfo .stop-popup-activity :is(.stop-popup-activity-label, .stop-popup-activity-value) {

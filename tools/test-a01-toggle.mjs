@@ -313,13 +313,15 @@ for (const width of [1366, 390, 568]) {
   test(`Koridor 13: preserve a closed popup during pending selection at ${width}px`, async t => {
     const app = await openRoute(t, "BRT_13", width);
     // A list click selects immediately but opens its popup after 380 ms.
-    // Interrupt navigation as a drag would, then toggle in the same event turn.
+    // Cancel the flight, then toggle in the same event turn with the popup pending.
     const before = await app.page.evaluate(width => {
       const row = [...document.querySelectorAll("#stopList .stop-list-item")].find(row =>
         getStopStatus(getStopByKey(row.dataset.stopKey)) === "Existing"
       );
       row.click();
-      map.stop();
+      // Leaflet's stop() can queue an animated zoom snap from a fractional
+      // flight frame. Settle the test setup synchronously before reading it.
+      map.setView(map.getCenter(), map.getZoom(), { animate: false });
       map.panBy([160, 80], { animate: false });
       setMobileFilterOpen(width !== 390);
       window.a01CameraCalls = [];

@@ -625,8 +625,11 @@
     byId("tlTabStops").textContent = ["ALL", "BRT"].includes(byId("modeSelect").value) ? "Daftar halte" : "Daftar stasiun";
     byId("tlDetailEyebrow").textContent = route ? "DETAIL JARINGAN" : "JARINGAN JABODETABEK";
     byId("tlDetailTitle").textContent = route ? (heading?.textContent.trim() || option?.text || route) : "Jelajahi jaringan";
+    // The selected stop already has its own title in the Terpilih tab.
+    // Keep the network heading concise and avoid duplicate stop names.
+    byId("tlDetailSubtitle").hidden = Boolean(route);
     byId("tlDetailSubtitle").textContent = route
-      ? (selected && selectedHeading ? selectedHeading.textContent.trim() : "Rute, daftar halte, dan integrasi")
+      ? ""
       : "Pilih lin atau koridor untuk melihat detail.";
     if (usesStopInfoPanel() && selected && (routeChanged || stopChanged || lastSelectedHeading !== selectedHeading)) {
       showSelectedStopInPanel();

@@ -17679,8 +17679,33 @@ function bindRouteClickTarget(feature, layer) {
   );
 }
 
-function drawRoutes(features) {
+// Reuse a bounded number of already constructed Leaflet layer groups when
+// revisiting a route. GeoJSON, coordinates, styles, and click handlers are not
+// modified. Only single-route contexts are cached (overview/compare are not).
+const routeLayerCache = new Map();
+const ROUTE_LAYER_CACHE_LIMIT = 6;
+
+function drawRoutes(features, cacheKey = "") {
   removeRouteLayers();
+
+  if (cacheKey && routeLayerCache.has(cacheKey)) {
+    const cached = routeLayerCache.get(cacheKey);
+    // Refresh LRU order and attach the same Leaflet layers to the map.
+    routeLayerCache.delete(cacheKey);
+    routeLayerCache.set(cacheKey, cached);
+    routeHaloLayer = cached.halo;
+    routeLayer = cached.main;
+    routeStructureLayer = cached.structure;
+    routeClickLayer = cached.click;
+    // Detached layers miss zoomend; restore styling for the current view.
+    routeHaloLayer?.setStyle(haloStyle);
+    routeLayer?.setStyle(routeStyle);
+    routeStructureLayer?.setStyle(routeStructureStyle);
+    for (const layer of [routeHaloLayer, routeLayer, routeStructureLayer, routeClickLayer]) {
+      if (layer) layer.addTo(map);
+    }
+    return;
+  }
 
   const fc = featureCollection(features);
 
@@ -17734,6 +17759,18 @@ function drawRoutes(features) {
         bindRouteClickTarget
     }
   ).addTo(map);
+
+  if (cacheKey) {
+    routeLayerCache.set(cacheKey, {
+      halo: routeHaloLayer,
+      main: routeLayer,
+      structure: routeStructureLayer,
+      click: routeClickLayer
+    });
+    while (routeLayerCache.size > ROUTE_LAYER_CACHE_LIMIT) {
+      routeLayerCache.delete(routeLayerCache.keys().next().value);
+    }
+  }
 }
 
 
@@ -17839,10 +17876,16 @@ function drawSelectedRouteGeometry(
     Pemilihan Saat ini / Reguler tidak pernah menggambar keduanya
     secara bersamaan.
   */
+  // Bound the cache by all inputs that alter selected-route geometry or
+  // styling. Comparison overlays are intentionally rebuilt as before.
+  const cacheKey = comparisonFeature ? "" : [
+    "single", routeId, getRouteConditionMode(routeId), getRouteGeometryView(routeId),
+    statusSelect?.value || "ALL", modeSelect?.value || "ALL"
+  ].join("|");
   drawRoutes([
     ...comparisonFeatures,
     ...primaryActive
-  ]);
+  ], cacheKey);
 }
 
 /* =========================================================
@@ -21172,16 +21215,9 @@ function routeNumberFromId(routeId) {
 }
 
 function buildBrtBadgeLabel(code, background) {
-  // Render the code separately from its container so old font-size rules
-  // on the outer badge cannot change the proportions across placements.
-  const rgb = /^#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$/i.exec(background);
-  const luminance = rgb && rgb.slice(1).reduce((value, hex, index) => {
-    const channel = parseInt(hex, 16) / 255;
-    const linear = channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-    return value + linear * [0.2126, 0.7152, 0.0722][index];
-  }, 0);
-  const ink = luminance > 0.179 ? "#000" : "#fff";
-  return `<span class="tj-route-code${code.length > 2 ? " is-long" : ""}" style="--tj-route-code-color:${ink}">${escapeHTML(code)}</span>`;
+  // Every Transjakarta route code uses white ink; the corridor color stays
+  // unchanged. Keep the shared code renderer for Popup, Panel and map labels.
+  return `<span class="tj-route-code${code.length > 2 ? " is-long" : ""}">${escapeHTML(code)}</span>`;
 }
 
 function buildBrtBadge(routeId) {
@@ -23936,6 +23972,7 @@ function switchRouteFromStopPopup(
 
   requestAnimationFrame(
     () => {
+      if (currentSelectedRouteId !== String(routeId) || currentSelectedStopKey) return;
       selectStop(
         stopKey,
         routeId,
@@ -23945,6 +23982,7 @@ function switchRouteFromStopPopup(
 
       requestAnimationFrame(
         () => {
+          if (currentSelectedRouteId !== String(routeId) || currentSelectedStopKey !== String(stopKey)) return;
           const selectedItem =
             stopListEl
               ?.querySelector(
@@ -26998,15 +27036,9 @@ function drawStops(routeId) {
             );
         }
 
-        layer.bindPopup(
-          safeBuildStopPopup(
-            feature,
-            routeId
-          ),
-          getStopPopupOptions()
-        );
-        // Leaflet's own layer click and the delayed selection callbacks both
-        // enter through openPopup. Keep the binding for either presentation.
+        // Leaflet resolves a content function only when it opens the popup.
+        // selectStop supplies fresh HTML for both Popup and Panel.
+        layer.bindPopup(() => safeBuildStopPopup(feature, routeId), getStopPopupOptions());
         const openBoundStopPopup = layer.openPopup;
         layer.openPopup = function (latlng) {
           if (window.webgisLayout?.usesStopInfoPanel?.()) return this;
@@ -27782,6 +27814,13 @@ function clearSelectedStop() {
     });
 }
 
+let pendingStopFocus = null;
+
+function clearPendingStopFocus() {
+  pendingStopFocus = null;
+  map.off("movestart zoomend dragstart", clearPendingStopFocus);
+}
+
 function selectStop(
   stopKey,
   routeId,
@@ -27857,13 +27896,13 @@ function selectStop(
   marker.bringToFront();
 
   const openTargetPopup = () => {
-    // Desktop mode can change while a camera animation is still in flight.
-    if (matchMedia("(min-width: 1024px)").matches &&
-        (currentSelectedStopKey !== String(stopKey) || currentSelectedRouteId !== String(routeId))) return;
+    if (currentSelectedStopKey !== String(stopKey) || currentSelectedRouteId !== String(routeId) ||
+        stopMarkerByKey.get(String(stopKey)) !== marker) return;
     marker.openPopup();
   };
 
   if (restoreOnly) {
+    clearPendingStopFocus();
 
     if (popupWasOpen) {
       const popup = marker.getPopup();
@@ -27879,16 +27918,20 @@ function selectStop(
       });
     }
 
-  } else if (zoomIn) {
+  } else if (zoomIn || pendingStopFocus) {
 
-    map.flyTo(
-      marker.getLatLng(),
-      STOP_ZOOM,
-      {
-        animate: true,
-        duration: 0.65
+    // Prev/Next preserves the requested station zoom even when a flyTo
+    // is still between zoom levels. Switching lines at the same point can
+    // let that flight finish. A new camera gesture clears its intent.
+    const target = marker.getLatLng();
+    if (zoomIn || !pendingStopFocus.equals(target)) {
+      clearPendingStopFocus();
+      map.flyTo(target, STOP_ZOOM, { animate: true, duration: 0.65 });
+      if (map.getZoom() !== STOP_ZOOM || !map.getCenter().equals(target)) {
+        pendingStopFocus = target;
+        map.on("movestart zoomend dragstart", clearPendingStopFocus);
       }
-    );
+    }
 
     setTimeout(
       openTargetPopup,
@@ -27950,6 +27993,7 @@ function selectStop(
         }
 
         popupOpened = true;
+        map.off("moveend", openOnce);
         openTargetPopup();
       };
 
@@ -29174,6 +29218,7 @@ function updateOperationalLegend(
 function showAllRoutes(
   fit = false
 ) {
+  clearPendingStopFocus();
   dismissedStopLogicalKey = "";
 
   clearPoiMarker();
@@ -29341,6 +29386,7 @@ function showSingleRoute(
     (sliding/pan) menuju halte/stasiun target.
   */
   if (fitToRoute) {
+    clearPendingStopFocus();
     fitRouteToScreen();
   }
 
