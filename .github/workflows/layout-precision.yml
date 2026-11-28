@@ -8,6 +8,10 @@ on:
     paths:
       - 'css/layout-tabler.css'
       - 'js/layout-tabler*.js'
+      - 'js/map.js'
+      - 'js/stop-direction-arrows.js'
+      - 'css/stop-direction-arrows.css'
+      - 'docs/layout-tabler/source-integrity.json'
       - 'tools/test-layout-*.mjs'
       - '.github/workflows/layout-precision.yml'
   workflow_dispatch:
